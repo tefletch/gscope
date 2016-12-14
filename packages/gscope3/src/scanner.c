@@ -1,0 +1,1 @@
+../../gscope/src/scanner.c

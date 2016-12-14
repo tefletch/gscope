@@ -1,0 +1,1 @@
+../../gscope/src/auto_gen.h
