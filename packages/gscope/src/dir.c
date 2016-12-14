@@ -1,6 +1,6 @@
-/*	Gscope - interactive C symbol cross-reference
+/*  Gscope - interactive C symbol cross-reference
  *
- *	directory searching functions
+ *  directory searching functions
  */
 
 #ifdef __ghs__      // hack to make ftw() work when using (32-bit) GHS tool chain [fixes size conflict]
@@ -35,8 +35,8 @@
 #define OLD_HASH        1
 
 
-//#define	DIRSEPS	" ,:"	/* directory list separators */
-#define	DIRINC	40	        /* directory list size increment */
+//#define   DIRSEPS " ,:"   /* directory list separators */
+#define DIRINC  40          /* directory list size increment */
 
 /* As of Jan-2016:  Largest known database had 85000 files                             */
 /* For a data set of this size, and composition (med-to-long pathname strings), a hash */
@@ -49,9 +49,9 @@
 #define HASH_SIZE           ( (uint32_t) 1 << (HASH_SIZE_EXPONENT)) /* New hash function -- best if a power of 2 */
 #endif
 #define HASH_MASK           ( (HASH_SIZE) - 1)
-#define	SRC_GROW_INCREMENT  10000   	                            /* source file list size increment */
+#define SRC_GROW_INCREMENT  10000                                   /* source file list size increment */
 
-//#define HASHMOD	2003	    /* (old hash function -- mod prime) must be a prime number - original cscope value */
+//#define HASHMOD   2003        /* (old hash function -- mod prime) must be a prime number - original cscope value */
 
 
 /*
@@ -638,13 +638,13 @@ void DIR_list_join(char *usr_list, dir_list_e dir_list)
 
             if ( usr_len == 0 )  // usr_list is "empty" (null string)
             {
-                master_ignored_list = g_malloc(sizeof(CSCOPE_BLD_DIR) + 2); // +2 for delimiters
-                sprintf(master_ignored_list,":%s:", CSCOPE_BLD_DIR);        // Always ignore the autogen BUILD directory.
+                master_ignored_list = g_malloc(sizeof(GSCOPE_BLD_DIR) + 2); // +2 for delimiters
+                sprintf(master_ignored_list,":%s:", GSCOPE_BLD_DIR);        // Always ignore the autogen BUILD directory.
             }
             else  // usr_list is (a valid) not-empty list, append to it using the user-selected delimiter
             {
-                master_ignored_list = g_malloc(usr_len + sizeof(CSCOPE_BLD_DIR) + 1);                   // +1 for delimiter
-                sprintf(master_ignored_list,"%s%s%c", usr_list, CSCOPE_BLD_DIR, settings.ignoredDelim); // Always ignore the autogen BLD directory.
+                master_ignored_list = g_malloc(usr_len + sizeof(GSCOPE_BLD_DIR) + 1);                   // +1 for delimiter
+                sprintf(master_ignored_list,"%s%s%c", usr_list, GSCOPE_BLD_DIR, settings.ignoredDelim); // Always ignore the autogen BLD directory.
             }
 
             if ( !APP_CONFIG_valid_list("Master Ignored List", master_ignored_list, &master_ignored_delim) )
@@ -1164,8 +1164,8 @@ void DIR_addsrcfile(char *name)
 {
     char    *clean_name;
     char    *tmp_name; // Modified version of "name".
-    char    synthetic_name[PATHLEN + sizeof(CSCOPE_GEN_DIR) + sizeof(settings.autoGenId) + 3];   // +2 for '.c' or '.h', +1 for null
-    char    full_path[PATHLEN*2 + sizeof(CSCOPE_GEN_DIR) + sizeof(settings.autoGenId) + 3]; 
+    char    synthetic_name[PATHLEN + sizeof(GSCOPE_GEN_DIR) + sizeof(settings.autoGenId) + 3];   // +2 for '.c' or '.h', +1 for null
+    char    full_path[PATHLEN*2 + sizeof(GSCOPE_GEN_DIR) + sizeof(settings.autoGenId) + 3];
     char    *work_ptr;
     struct stat statstruct;
 
@@ -1187,7 +1187,7 @@ void DIR_addsrcfile(char *name)
         if (work_ptr)
             *work_ptr = '\0';
 
-        sprintf(synthetic_name, "%s/%s%s.c", CSCOPE_GEN_DIR, tmp_name, settings.autoGenId);
+        sprintf(synthetic_name, "%s/%s%s.c", GSCOPE_GEN_DIR, tmp_name, settings.autoGenId);
         sprintf(full_path, "%s/%s", DIR_get_path(DIR_DATA), synthetic_name);
         
         // Adds compiled output files before they are created if they do not already exist
@@ -1274,12 +1274,12 @@ gboolean DIR_file_on_include_search_path(gchar *srcfile)
 
 
 /*
- *	compress_path(pathname)
+ *  compress_path(pathname)
  *
- *	This function compresses pathname.  All strings of multiple slashes are
- *	changed to a single slash.  All occurrences of "./" are removed.
- *	Whenever possible, strings of "/.." are removed together with
- *	the directory names that they follow.
+ *  This function compresses pathname.  All strings of multiple slashes are
+ *  changed to a single slash.  All occurrences of "./" are removed.
+ *  Whenever possible, strings of "/.." are removed together with
+ *  the directory names that they follow.
  *
  *  WARNING: The string passed via parameter 'pathname' is altered by
  *           this function.  The caller should save a duplicate copy
@@ -1288,161 +1288,161 @@ gboolean DIR_file_on_include_search_path(gchar *srcfile)
  */
 static char * compress_path(char *pathname)
 {
-	register char	*nextchar;
-	register char	*lastchar;
-	char	*sofar;
-	char	*pnend;
+    register char   *nextchar;
+    register char   *lastchar;
+    char    *sofar;
+    char    *pnend;
 
-	int	pnlen;
+    int pnlen;
 
-		/*
-		 *	do not change the path if it has no "/"
-		 */
+        /*
+         *  do not change the path if it has no "/"
+         */
 
-	if (strchr(pathname, '/') == 0)
-		return(pathname);
+    if (strchr(pathname, '/') == 0)
+        return(pathname);
 
-		/*
-		 *	find all strings consisting of more than one '/'
-		 */
+        /*
+         *  find all strings consisting of more than one '/'
+         */
 
-	for (lastchar = pathname + 1; *lastchar != '\0'; lastchar++)
-		if ((*lastchar == '/') && (*(lastchar - 1) == '/'))
-		{
+    for (lastchar = pathname + 1; *lastchar != '\0'; lastchar++)
+        if ((*lastchar == '/') && (*(lastchar - 1) == '/'))
+        {
 
-			/*
-			 *	find the character after the last slash
-			 */
+            /*
+             *  find the character after the last slash
+             */
 
-			nextchar = lastchar;
-			while (*++lastchar == '/')
-			{
-			}
+            nextchar = lastchar;
+            while (*++lastchar == '/')
+            {
+            }
 
-			/*
-			 *	eliminate the extra slashes by copying
-			 *	everything after the slashes over the slashes
-			 */
+            /*
+             *  eliminate the extra slashes by copying
+             *  everything after the slashes over the slashes
+             */
 
-			sofar = nextchar;
-			while ((*nextchar++ = *lastchar++) != '\0')
-				;
-			lastchar = sofar;
-		}
+            sofar = nextchar;
+            while ((*nextchar++ = *lastchar++) != '\0')
+                ;
+            lastchar = sofar;
+        }
 
-		/*
-		 *	find all strings of "./"
-		 */
+        /*
+         *  find all strings of "./"
+         */
 
-	for (lastchar = pathname + 1; *lastchar != '\0'; lastchar++)
-		if ((*lastchar == '/') && (*(lastchar - 1) == '.') &&
-		    ((lastchar - 1 == pathname) || (*(lastchar - 2) == '/')))
-		{
+    for (lastchar = pathname + 1; *lastchar != '\0'; lastchar++)
+        if ((*lastchar == '/') && (*(lastchar - 1) == '.') &&
+            ((lastchar - 1 == pathname) || (*(lastchar - 2) == '/')))
+        {
 
-			/*
-			 *	copy everything after the "./" over the "./"
-			 */
+            /*
+             *  copy everything after the "./" over the "./"
+             */
 
-			nextchar = lastchar - 1;
-			sofar = nextchar;
-			while ((*nextchar++ = *++lastchar) != '\0')
-				;
-			lastchar = sofar;
-		}
+            nextchar = lastchar - 1;
+            sofar = nextchar;
+            while ((*nextchar++ = *++lastchar) != '\0')
+                ;
+            lastchar = sofar;
+        }
 
-		/*
-		 *	find each occurrence of "/.."
-		 */
+        /*
+         *  find each occurrence of "/.."
+         */
 
-	for (lastchar = pathname + 1; *lastchar != '\0'; lastchar++)
-		if ((lastchar != pathname) && (*lastchar == '/') &&
-		    (*(lastchar + 1) == '.') && (*(lastchar + 2) == '.') &&
-		    ((*(lastchar + 3) == '/') || (*(lastchar + 3) == '\0')))
-		{
+    for (lastchar = pathname + 1; *lastchar != '\0'; lastchar++)
+        if ((lastchar != pathname) && (*lastchar == '/') &&
+            (*(lastchar + 1) == '.') && (*(lastchar + 2) == '.') &&
+            ((*(lastchar + 3) == '/') || (*(lastchar + 3) == '\0')))
+        {
 
-			/*
-			 *	find the directory name preceding the "/.."
-			 */
+            /*
+             *  find the directory name preceding the "/.."
+             */
 
-			nextchar = lastchar - 1;
-			while ((nextchar != pathname) &&
-			    (*(nextchar - 1) != '/'))
-				--nextchar;
+            nextchar = lastchar - 1;
+            while ((nextchar != pathname) &&
+                (*(nextchar - 1) != '/'))
+                --nextchar;
 
-			/*
-			 *	make sure the preceding directory's name
-			 *	is not "." or ".."
-			 */
+            /*
+             *  make sure the preceding directory's name
+             *  is not "." or ".."
+             */
 
-			if ((*nextchar == '.') &&
-			    (*(nextchar + 1) == '/') ||
-			    ((*(nextchar + 1) == '.') && (*(nextchar + 2) == '/')))
-				/* EMPTY */;
-			else
-			{
+            if ((*nextchar == '.') &&
+                (*(nextchar + 1) == '/') ||
+                ((*(nextchar + 1) == '.') && (*(nextchar + 2) == '/')))
+                /* EMPTY */;
+            else
+            {
 
-				/*
-				 * 	prepare to eliminate either
-				 *	"dir_name/../" or "dir_name/.."
-				 */
+                /*
+                 *  prepare to eliminate either
+                 *  "dir_name/../" or "dir_name/.."
+                 */
 
-				if (*(lastchar + 3) == '/')
-					lastchar += 4;
-				else
-					lastchar += 3;
+                if (*(lastchar + 3) == '/')
+                    lastchar += 4;
+                else
+                    lastchar += 3;
 
-				/*
-				 *	copy everything after the "/.." to
-				 *	before the preceding directory name
-				 */
+                /*
+                 *  copy everything after the "/.." to
+                 *  before the preceding directory name
+                 */
 
-				sofar = nextchar - 1;
-				while ((*nextchar++ = *lastchar++) != '\0');
-					
-				lastchar = sofar;
+                sofar = nextchar - 1;
+                while ((*nextchar++ = *lastchar++) != '\0');
+                    
+                lastchar = sofar;
 
-				/*
-				 *	if the character before what was taken
-				 *	out is '/', set up to check if the
-				 *	slash is part of "/.."
-				 */
+                /*
+                 *  if the character before what was taken
+                 *  out is '/', set up to check if the
+                 *  slash is part of "/.."
+                 */
 
-				if ((sofar + 1 != pathname) && (*sofar == '/'))
-					--lastchar;
-			}
-		}
+                if ((sofar + 1 != pathname) && (*sofar == '/'))
+                    --lastchar;
+            }
+        }
 
-	/*
- 	 *	if the string is more than a character long and ends
-	 *	in '/', eliminate the '/'.
-	 */
+    /*
+     *  if the string is more than a character long and ends
+     *  in '/', eliminate the '/'.
+     */
 
-	pnlen = strlen(pathname);
-	pnend = strchr(pathname, '\0') - 1;
+    pnlen = strlen(pathname);
+    pnend = strchr(pathname, '\0') - 1;
 
-	if ((pnlen > 1) && (*pnend == '/'))
-	{
-		*pnend-- = '\0';
-		pnlen--;
-	}
+    if ((pnlen > 1) && (*pnend == '/'))
+    {
+        *pnend-- = '\0';
+        pnlen--;
+    }
 
-	/*
-	 *	if the string has more than two characters and ends in
-	 *	"/.", remove the "/.".
-	 */
+    /*
+     *  if the string has more than two characters and ends in
+     *  "/.", remove the "/.".
+     */
 
-	if ((pnlen > 2) && (*(pnend - 1) == '/') && (*pnend == '.'))
-		*--pnend = '\0';
+    if ((pnlen > 2) && (*(pnend - 1) == '/') && (*pnend == '.'))
+        *--pnend = '\0';
 
-	/*
-	 *	if all characters were deleted, return ".";
-	 *	otherwise return pathname
-	 */
+    /*
+     *  if all characters were deleted, return ".";
+     *  otherwise return pathname
+     */
 
-	if (*pathname == '\0')
-		(void) strcpy(pathname, ".");
+    if (*pathname == '\0')
+        (void) strcpy(pathname, ".");
 
-	return(pathname);
+    return(pathname);
 }
 
 
@@ -1450,12 +1450,12 @@ static char * compress_path(char *pathname)
 #if (OLD_HASH == 1)
 static int  hash(const char *ss)
 {
-	int	i;
-	unsigned char 	*s = (unsigned char *)ss;
-	
-	for (i = 0; *s != '\0'; )
-		i += *s++;	/* += is faster than <<= for cscope */
-	return(i % HASH_SIZE);
+    int i;
+    unsigned char   *s = (unsigned char *)ss;
+    
+    for (i = 0; *s != '\0'; )
+        i += *s++;  /* += is faster than <<= for cscope */
+    return(i % HASH_SIZE);
 }
 
 #else

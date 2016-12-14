@@ -100,7 +100,7 @@ void AUTOGEN_init(char *data_dir)
 
     /*** Initialize "auto generated" symlink and destination ***/
     /***********************************************************/
-    sprintf(gen_symlink_path, "%s/%s", data_dir, CSCOPE_GEN_DIR);
+    sprintf(gen_symlink_path, "%s/%s", data_dir, GSCOPE_GEN_DIR);
     num_bytes = readlink(gen_symlink_path, link_dest, PATHLEN - 1);
     if (num_bytes < 0)  // Symlink does not exist
     {
@@ -144,7 +144,7 @@ void AUTOGEN_init(char *data_dir)
 
     /*** Initialize "auto build" symlink and destination ***/
     /*******************************************************/
-    sprintf(bld_symlink_path, "%s/%s", data_dir, CSCOPE_BLD_DIR);
+    sprintf(bld_symlink_path, "%s/%s", data_dir, GSCOPE_BLD_DIR);
     num_bytes = readlink(bld_symlink_path, link_dest, PATHLEN - 1);
     if (num_bytes < 0)  // Symlink does not exist
     {
@@ -222,7 +222,7 @@ void AUTOGEN_init(char *data_dir)
         {
             num_proto_files++;
 
-            sprintf(file_path, "%s/%s/%s", data_dir, CSCOPE_BLD_DIR, ent->d_name);
+            sprintf(file_path, "%s/%s/%s", data_dir, GSCOPE_BLD_DIR, ent->d_name);
             real_path = realpath(file_path, NULL); 
             if (settings.updateAll) // Unlink all symlinks
             {
@@ -286,9 +286,9 @@ void AUTOGEN_run(char *data_dir)
     time_t  compile_time;       //Last time file was compiled
     gboolean no_compile_flag;   //Indicates if compiled .pb-c.c can not be found
 
-    char    full_path_buf[PATHLEN + sizeof(CSCOPE_BLD_DIR) + PATHLEN + 10];     // +10 for literal chars and null-terminator
+    char    full_path_buf[PATHLEN + sizeof(GSCOPE_BLD_DIR) + PATHLEN + 10];     // +10 for literal chars and null-terminator
     char    file_path_buf[PATHLEN + PATHLEN + 10];
-    char    compiledBuf  [PATHLEN + sizeof(CSCOPE_GEN_DIR) + PATHLEN + PATHLEN + 10]; //Path to the compiled .pb-c.c file
+    char    compiledBuf  [PATHLEN + sizeof(GSCOPE_GEN_DIR) + PATHLEN + PATHLEN + 10]; //Path to the compiled .pb-c.c file
 
     gettimeofday(&autogen_time_start, NULL);
 
@@ -305,20 +305,20 @@ void AUTOGEN_run(char *data_dir)
         /* <directory>/<file.proto> */
         sprintf(file_path_buf, "%s/%s", file_info_list[src_file_index].unique_dirname, file_info_list[src_file_index].unique_basename);
         
-        /* /home/<user>/sirius/CSCOPE_BLD_DIR/<symlink to .proto> */
+        /* /home/<user>/sirius/GSCOPE_BLD_DIR/<symlink to .proto> */
         sprintf(full_path_buf, "%s/%s/%s", 
                                data_dir,
-                               CSCOPE_BLD_DIR,
+                               GSCOPE_BLD_DIR,
                                file_info_list[src_file_index].unique_basename);
 
-        /* /home/<user>/sirius/CSCOPE_GEN_DIR/<directory>/<file.proto> */ 
+        /* /home/<user>/sirius/GSCOPE_GEN_DIR/<directory>/<file.proto> */
         sprintf(compiledBuf, "%s/%s/%s/%s", 
                              data_dir, 
-                             CSCOPE_GEN_DIR, 
+                             GSCOPE_GEN_DIR,
                              file_info_list[src_file_index].unique_dirname, 
                              file_info_list[src_file_index].true_basename);
 
-        /* /home/<user>/sirius/cscope_gen/<directory>/<file.pb-c.c> */ 
+        /* /home/<user>/sirius/gscope_gen/<directory>/<file.pb-c.c> */
         sprintf(strstr(compiledBuf, settings.autoGenSuffix), "%s%s", settings.autoGenId,".c");
 
         /* Checks to not compile file if it is already up to date */ 
@@ -418,7 +418,7 @@ void AUTOGEN_addproto(char* name)
 
     // If this bassename already exists in the build directory, create a synthetic 
     // "unique" base name and use it as the name for the new symlink.
-    sprintf(build_link_src, "%s/%s", CSCOPE_BLD_DIR, baseName);
+    sprintf(build_link_src, "%s/%s", GSCOPE_BLD_DIR, baseName);
 
     if ( access(build_link_src, F_OK) == -1 )
     {
@@ -432,7 +432,7 @@ void AUTOGEN_addproto(char* name)
         uid = 0;
         do
         {
-            sprintf(build_link_src, "%s/%s", CSCOPE_BLD_DIR, baseName);
+            sprintf(build_link_src, "%s/%s", GSCOPE_BLD_DIR, baseName);
             sprintf(strstr(build_link_src, settings.autoGenSuffix), "__%d%s", ++uid, settings.autoGenSuffix);
         }
         while ( access(build_link_src, F_OK) == 0 );
@@ -524,13 +524,13 @@ unsigned int AUTOGEN_get_file_count(void)
 static void _remove_old_symlinks(char *data_dir)
 {
     int     file_info_index;
-    char    remove_buf[PATHLEN + sizeof(CSCOPE_BLD_DIR) + PATHLEN + 10];    // +10 for literal chars and null-terminator  
+    char    remove_buf[PATHLEN + sizeof(GSCOPE_BLD_DIR) + PATHLEN + 10];    // +10 for literal chars and null-terminator
     
     for (file_info_index = 0; file_info_index < nfile_info; file_info_index++)
     {
         if (!file_info_list[file_info_index].exists) //If target proto file is no longer found in directory
         {
-            sprintf(remove_buf, "%s/%s/%s", data_dir, CSCOPE_BLD_DIR, file_info_list[file_info_index].unique_basename);
+            sprintf(remove_buf, "%s/%s/%s", data_dir, GSCOPE_BLD_DIR, file_info_list[file_info_index].unique_basename);
             (void) remove(remove_buf);
 
             g_free(file_info_list[file_info_index].unique_basename);
@@ -560,9 +560,9 @@ static void _protobuf_csrc (const char *full_filename, char *data_dir)
     char    *proto_ptr;     // Used to remove ".proto" from file name
     char    *realpath_ptr;  //Holds the target path of the symlink
 
-    char    output_dir  [PATHLEN + sizeof(CSCOPE_GEN_DIR) + PATHLEN + 10];  // +10 for literal chars and null-terminator
-    char    symlink_buf [PATHLEN + sizeof(CSCOPE_BLD_DIR) + PATHLEN + 10];
-    char    isearch_buf [PATHLEN + sizeof(CSCOPE_BLD_DIR) + 10];
+    char    output_dir  [PATHLEN + sizeof(GSCOPE_GEN_DIR) + PATHLEN + 10];  // +10 for literal chars and null-terminator
+    char    symlink_buf [PATHLEN + sizeof(GSCOPE_BLD_DIR) + PATHLEN + 10];
+    char    isearch_buf [PATHLEN + sizeof(GSCOPE_BLD_DIR) + 10];
     char    command_buf [sizeof(settings.autoGenCmd) + 
                          sizeof(output_dir) + 
                          PATHLEN + 
@@ -571,10 +571,10 @@ static void _protobuf_csrc (const char *full_filename, char *data_dir)
                          PATHLEN + 100]; // +100 for literal chars in fmt string and null-terminator
 
     // Build the protobuf compiler include search path
-    sprintf(isearch_buf, "%s/%s", data_dir, CSCOPE_BLD_DIR);
+    sprintf(isearch_buf, "%s/%s", data_dir, GSCOPE_BLD_DIR);
 
     // Get the target of the symlink as input to compiler. Used to remove unique identifier from compiled output
-    sprintf(symlink_buf, "%s/%s/%s", data_dir, CSCOPE_BLD_DIR, my_basename(full_filename));
+    sprintf(symlink_buf, "%s/%s/%s", data_dir, GSCOPE_BLD_DIR, my_basename(full_filename));
     realpath_ptr = realpath(symlink_buf, NULL);
 
     // Exit if target of symlink is missing
@@ -586,7 +586,7 @@ static void _protobuf_csrc (const char *full_filename, char *data_dir)
 
     // Construct/re-use a session specific, output directory
     dirname_ptr = my_dirname(strdup(full_filename));
-    sprintf(output_dir, "%s/%s/%s", data_dir, CSCOPE_GEN_DIR, dirname_ptr);
+    sprintf(output_dir, "%s/%s/%s", data_dir, GSCOPE_GEN_DIR, dirname_ptr);
     _mkdir_all(output_dir);
 
 

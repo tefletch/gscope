@@ -1,6 +1,6 @@
 
-#define CSCOPE_GEN_DIR  "cscope_gen"
-#define CSCOPE_BLD_DIR  "cscope_bld"
+#define GSCOPE_GEN_DIR  ".gscope_gen"
+#define GSCOPE_BLD_DIR  ".gscope_bld"
 
 // auto_gen puplic interfaces
 void AUTOGEN_init(char *data_dir);

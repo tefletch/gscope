@@ -17,11 +17,7 @@
 "    2) Open-file-manager (in containing folder)\n"\
 "    3) Quickview (Open file with built-in file viewer).\n\n"
 #endif
-// Version 1.48 special announcement
+// Version 2.1 special announcement
 #define VERSION_ANNOUNCE \
-"<span color=\"blue\" weight=\"bold\">New Gscope-related Application Introduction:\n</span>" \
-"The G-Scope Multi-Repository Source File Aggregator \"gview\" is available\n"\
-"for Beta testing.  Contact Tom Fletcher (fletcher@hp.com) for details if\n"\
-"you would like to participate in the early-adopter introduction.\n\n"
-
+"Welcome to the first Open Source version of Gscope."
 
