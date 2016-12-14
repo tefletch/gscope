@@ -305,20 +305,20 @@ void AUTOGEN_run(char *data_dir)
         /* <directory>/<file.proto> */
         sprintf(file_path_buf, "%s/%s", file_info_list[src_file_index].unique_dirname, file_info_list[src_file_index].unique_basename);
         
-        /* /home/<user>/sirius/GSCOPE_BLD_DIR/<symlink to .proto> */
+        /* .../GSCOPE_BLD_DIR/<symlink to .proto> */
         sprintf(full_path_buf, "%s/%s/%s", 
                                data_dir,
                                GSCOPE_BLD_DIR,
                                file_info_list[src_file_index].unique_basename);
 
-        /* /home/<user>/sirius/GSCOPE_GEN_DIR/<directory>/<file.proto> */
+        /* .../GSCOPE_GEN_DIR/<directory>/<file.proto> */
         sprintf(compiledBuf, "%s/%s/%s/%s", 
                              data_dir, 
                              GSCOPE_GEN_DIR,
                              file_info_list[src_file_index].unique_dirname, 
                              file_info_list[src_file_index].true_basename);
 
-        /* /home/<user>/sirius/gscope_gen/<directory>/<file.pb-c.c> */
+        /* .../GSCOPE_GEN_DIR/<directory>/<file.pb-c.c> */
         sprintf(strstr(compiledBuf, settings.autoGenSuffix), "%s%s", settings.autoGenId,".c");
 
         /* Checks to not compile file if it is already up to date */ 
