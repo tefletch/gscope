@@ -6,7 +6,7 @@
 #################################################################
 .cscope*
 .gscope*
-cscope_db.out
+cscope*
 
 # ignore files created by autotools
 ###################################
