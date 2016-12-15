@@ -19,5 +19,7 @@
 #endif
 // Version 2.1 special announcement
 #define VERSION_ANNOUNCE \
-"Welcome to the first Open Source version of Gscope."
+"Welcome to the <span color=\"blue\" weight=\"bold\">Open Source</span> version of Gscope.\n" \
+"This application is provided to the open source community\n" \
+"courtesy of Hewlett Packard Inc.\n\n"
 
