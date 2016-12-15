@@ -1543,7 +1543,7 @@ gchar *template =
 "\nautoGenEnable   = false"
 "\n"
 "\n# Path to auto-generated source files cache."
-"\nautoGenPath     = /local"
+"\nautoGenPath     = /tmp"
 "\n"
 "\n# The autogen meta-source file type (suffix) to search for."
 "\nautoGenSuffix   = .proto"
