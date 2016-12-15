@@ -1,7 +1,31 @@
-cscope*
-gscope*
+# ignore objects and archives, anywhere in the tree
+###################################################
+*.[oa]
+
+# ignore files/symlinks created by running gscope within the tree
+#################################################################
 .cscope*
 .gscope*
-*autom4te*
-*.o
+cscope_db.out
+
+# ignore files created by autotools
+###################################
+autom4te.cache
 *.Po
+config.*
+configure
+packages/gscope*/COPYING
+packages/gscope*/INSTALL
+packages/gscope*/Makefile
+packages/gscope*/Makefile.in
+packages/gscope*/depcomp
+packages/gscope*/install-sh
+packages/gscope*/aclocal.m4
+packages/gscope*/missing
+packages/gscope*/sclocal.m4
+packages/gscope*/stamp-h1
+
+packages/gscope*/src/gscope
+packages/gscope*/src/Makefile
+packages/gscope*/src/Makefile.in
+
