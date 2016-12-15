@@ -1,0 +1,7 @@
+cscope*
+gscope*
+.cscope*
+.gscope*
+*autom4te*
+*.o
+*.Po
