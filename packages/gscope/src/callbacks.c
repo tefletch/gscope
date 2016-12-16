@@ -611,7 +611,7 @@ on_about1_activate                     (GtkMenuItem     *menuitem,
 
         gtk_about_dialog_set_comments (GTK_ABOUT_DIALOG (dialog), full_comment);
 
-        gtk_about_dialog_set_website (GTK_ABOUT_DIALOG (dialog), "https://hpwiki.int.hp.com/wiki/Gscope");
+        gtk_about_dialog_set_website (GTK_ABOUT_DIALOG (dialog), "https://github.com/tefletch/gscope/wiki");
         gtk_about_dialog_set_website_label (GTK_ABOUT_DIALOG (dialog), "Gscope Wiki");
 
         gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(gscope_main));
@@ -2974,7 +2974,7 @@ void
 on_overview_wiki_activate              (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-    gtk_show_uri(NULL, "https://hpwiki.int.hp.com/wiki/Gscope", GDK_CURRENT_TIME, NULL);
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki", GDK_CURRENT_TIME, NULL);
 }
 
 
@@ -2982,7 +2982,7 @@ void
 on_usage_wiki_activate                 (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-    gtk_show_uri(NULL, "https://hpwiki.int.hp.com/wiki/Using_Gscope", GDK_CURRENT_TIME, NULL);
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Using-Gscope", GDK_CURRENT_TIME, NULL);
 }
 
 
@@ -2990,7 +2990,7 @@ void
 on_configure_wiki_activate             (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-    gtk_show_uri(NULL, "https://hpwiki.int.hp.com/wiki/Configuring_Gscope", GDK_CURRENT_TIME, NULL);
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Configuring-Gscope", GDK_CURRENT_TIME, NULL);
 }
 
 
@@ -2998,7 +2998,7 @@ void
 on_prefs_help_search_button_clicked    (GtkButton       *button,
                                         gpointer         user_data)
 {
-    gtk_show_uri(NULL, "https://hpwiki.int.hp.com/wiki/Configuring_Gscope#Search_and_View_Tab", GDK_CURRENT_TIME, NULL);
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Configuring-Gscope#Search_and_View_Tab", GDK_CURRENT_TIME, NULL);
 }
 
 
@@ -3006,7 +3006,7 @@ void
 on_prefs_help_cross_button_clicked     (GtkButton       *button,
                                         gpointer         user_data)
 {
-    gtk_show_uri(NULL, "https://hpwiki.int.hp.com/wiki/Configuring_Gscope#Cross_Reference_Tab", GDK_CURRENT_TIME, NULL);
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Configuring-Gscope#Cross_Reference_Tab", GDK_CURRENT_TIME, NULL);
 }
 
 
@@ -3014,7 +3014,7 @@ void
 on_prefs_help_source_button_clicked    (GtkButton       *button,
                                         gpointer         user_data)
 {
-    gtk_show_uri(NULL, "https://hpwiki.int.hp.com/wiki/Configuring_Gscope#Source_File_Search_Tab", GDK_CURRENT_TIME, NULL);
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Configuring-Gscope#Source_File_Search_Tab", GDK_CURRENT_TIME, NULL);
 }
 
 
@@ -3022,7 +3022,7 @@ void
 on_prefs_help_file_button_clicked      (GtkButton       *button,
                                         gpointer         user_data)
 {
-    gtk_show_uri(NULL, "https://hpwiki.int.hp.com/wiki/Configuring_Gscope#File_Names_Tab", GDK_CURRENT_TIME, NULL);
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Configuring-Gscope#File_Names_Tab", GDK_CURRENT_TIME, NULL);
 }
 
 
@@ -3030,7 +3030,7 @@ void
 on_prefs_help_general_button_clicked   (GtkButton       *button,
                                         gpointer         user_data)
 {
-    gtk_show_uri(NULL, "https://hpwiki.int.hp.com/wiki/Configuring_Gscope#General_Tab", GDK_CURRENT_TIME, NULL);
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Configuring-Gscope#General_Tab", GDK_CURRENT_TIME, NULL);
 }
 
 
@@ -3039,7 +3039,7 @@ void
 on_release_wiki_activate               (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-    gtk_show_uri(NULL, "https://hpwiki.int.hp.com/wiki/Gscope_release_notes", GDK_CURRENT_TIME, NULL);
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Gscope-Release-Notes", GDK_CURRENT_TIME, NULL);
 }
 
 

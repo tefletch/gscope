@@ -349,7 +349,7 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
             gtk_box_pack_start (GTK_BOX (update_dialog_hbox), update_dialog_notification_label, TRUE, TRUE, 0);
 
 
-            release_notes_button = gtk_link_button_new_with_label("https://hpwiki.int.hp.com/wiki/Gscope_release_notes",
+            release_notes_button = gtk_link_button_new_with_label("https://github.com/tefletch/gscope/wiki/Gscope-Release-Notes",
                                                                   "Gscope Release Notes");
             gtk_widget_set_name (release_notes_button, "release_notes_button");
 
@@ -380,7 +380,7 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
             gtk_widget_show (update_dialog_action_area);
             gtk_button_box_set_layout (GTK_BUTTON_BOX (update_dialog_action_area), GTK_BUTTONBOX_SPREAD);
 
-            release_notes_button = gtk_link_button_new_with_label("https://hpwiki.int.hp.com/wiki/Gscope_release_notes",
+            release_notes_button = gtk_link_button_new_with_label("https://github.com/tefletch/gscope/wiki/Gscope-Release-Notes",
                                                                   "Gscope Release Notes");
 
             gtk_widget_set_name (release_notes_button, "release_notes_button");
