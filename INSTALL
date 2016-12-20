@@ -1,0 +1,35 @@
+Installation Instructions for Gscope Packages
+*********************************************
+
+Gscope is provided in the form of two packages:
+    1. gscope  - The GTK2 based implementation.
+    2. gscope3 - The GTK3 based implementation.
+
+Either package can be found in the "packages" subdirectory of the gscope repo.
+
+Most of the gscope3 functional code is shared by both versions with only minimal adaptation.
+The build/install process is intended to be identical for either package and these
+instructions will apply to both packages.
+
+Go to the gscope (or gscope3) package directory <repo>/packages/gscope.
+
+Run the autogen tools to create the initial makefiles, etc...
+
+# sh autogen.sh
+
+Run "configure" to update the default package configuration settings.  For example:
+
+# ./configure --PREFIX=/usr
+
+Now run make
+
+# make
+
+The gscope executable will be created in <repo>/packages/gscope[3]/src/gscope
+
+The gscope binary is a standalone executable that can be installed most anywhere desired.
+
+Exception Alert:
+The gscope binary for the gscope3 package requires gscope3.glade to be copied to the same
+location as the gscope3 binary.  This requirement may be relaxed in the future.
+
