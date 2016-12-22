@@ -25,7 +25,13 @@ Now run make
 
 # make
 
-The gscope executable will be created in <repo>/packages/gscope[3]/src/gscope
+If you have sufficient permission to write to the location specified by --PREFIX then
+you can install the bits with this command
+
+# make install
+
+If you need to install gscope manually, the gscope executable will be created
+in <repo>/packages/gscope[3]/src/gscope
 
 The gscope binary is a standalone executable that can be installed most anywhere desired.
 
@@ -33,3 +39,5 @@ Exception Alert:
 The gscope binary for the gscope3 package requires gscope3.glade to be copied to the same
 location as the gscope3 binary.  This requirement may be relaxed in the future.
 
+In addition to the binary, the Gscope pixmaps must also be installed in the proper
+location beneath the --PREFIX path.
