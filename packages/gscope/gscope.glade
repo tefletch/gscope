@@ -1980,7 +1980,10 @@ Build: 25-May-2008</property>
 		      <child>
 			<widget class="GtkEntry" id="editor_command_entry">
 			  <property name="visible">True</property>
-			  <property name="tooltip" translatable="yes">Enter the command to run your preferred text editor.</property>
+			  <property name="tooltip" translatable="yes">Enter the command to run your preferred text editor.  
+Any editor that supports the vi-style line positioning option &quot;+&lt;linenum&gt;&quot; will work.
+
+Don't forget to launch a terminal window for your editor if it needs one.</property>
 			  <property name="can_focus">True</property>
 			  <property name="editable">True</property>
 			  <property name="visibility">True</property>
@@ -1995,8 +1998,8 @@ Build: 25-May-2008</property>
 			</widget>
 			<packing>
 			  <property name="padding">0</property>
-			  <property name="expand">False</property>
-			  <property name="fill">False</property>
+			  <property name="expand">True</property>
+			  <property name="fill">True</property>
 			</packing>
 		      </child>
 		    </widget>

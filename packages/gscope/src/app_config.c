@@ -1000,7 +1000,8 @@ static void parse_app_config(const char *filename)
         {
             if ( strcmp(tmp_ptr, "cscope.out") == 0 )
             {
-                /*** Temporary name transition logic: cscope.out is no longer allowed as a cref file name ***/
+                /*** Due to cref database format upgrade and conflict with cscope-vim integration,
+                     cscope.out is no longer allowed as a cref file name ***/
                 APP_CONFIG_set_string("refFile", refFileDef);
             }
             else
@@ -1499,7 +1500,7 @@ gchar *template =
 "\n"
 "\n# Use this editor instead of the built-in gscope file viewer."
 "\n# See 'useEditor' value."
-"\nfileEditor      = /bin/vi"
+"\nfileEditor      =  gnome-terminal --execute vim"
 "\n"
 "\n# Leave search pattern in query field after performing a search"
 "\nretainInput     = false"
@@ -1527,7 +1528,7 @@ gchar *template =
 "\nshowIncludes    = false"
 "\n"
 "\n# Trace the directories searced by a recursive source-file-search"
-"\nsearchLogFile   = cscope_srch.log"
+"\nsearchLogFile   = gscope_srch.log"
 "\n"
 "\n# Only files with the following suffixes are considered to be 'source' files."
 "\nsuffixList      = :c:h:cpp:hpp:arm:fml:mf:l:y:s:ld:lnk:"

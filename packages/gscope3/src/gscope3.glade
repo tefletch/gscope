@@ -2356,6 +2356,7 @@ Build: 25-Oct-2015</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="tooltip_text" translatable="yes">Leave search text in query field after search completes</property>
                         <property name="image">image26</property>
                         <property name="xalign">0</property>
                         <property name="always_show_image">True</property>
@@ -2374,6 +2375,7 @@ Build: 25-Oct-2015</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="tooltip_text" translatable="yes">Leave search text in query field only if the search has failed.  Allow correction of typos.</property>
                         <property name="margin_left">30</property>
                         <property name="image">retain_text_failed_search_image</property>
                         <property name="xalign">0</property>
@@ -2393,6 +2395,7 @@ Build: 25-Oct-2015</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="tooltip_text" translatable="yes">Perform all searches in case-insensitive mode</property>
                         <property name="image">image27</property>
                         <property name="xalign">0</property>
                         <property name="always_show_image">True</property>
@@ -2466,6 +2469,7 @@ Build: 25-Oct-2015</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="tooltip_text" translatable="yes">Use G-scope's built-in [Readonly] file viewer</property>
                         <property name="xalign">0</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
@@ -2484,6 +2488,7 @@ Build: 25-Oct-2015</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="tooltip_text" translatable="yes">When selected: Use a single File View window, otherwise open a new window for each file.</property>
                         <property name="margin_left">30</property>
                         <property name="xalign">0</property>
                         <property name="draw_indicator">True</property>
@@ -2502,6 +2507,7 @@ Build: 25-Oct-2015</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="tooltip_text" translatable="yes">Use the specified text editor to view/modify files.</property>
                         <property name="xalign">0</property>
                         <property name="draw_indicator">True</property>
                         <property name="group">use_viewer_radiobutton</property>
@@ -2535,12 +2541,17 @@ Build: 25-Oct-2015</property>
                           <object class="GtkEntry" id="editor_command_entry">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
+                            <property name="tooltip_text" translatable="yes">Enter the command to run your preferred text editor. 
+
+Any editor that supports the vi-style line positioning option "+&lt;linenum&gt;" will work.
+
+Don't forget to launch a terminal window for your editor if it needs one</property>
                             <signal name="changed" handler="on_editor_command_entry_changed" swapped="no"/>
                             <signal name="focus-out-event" handler="on_editor_command_entry_focus_out_event" swapped="no"/>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
                             <property name="position">1</property>
                           </packing>
                         </child>

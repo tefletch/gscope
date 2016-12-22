@@ -1489,8 +1489,8 @@ create_gscope_preferences (void)
   editor_command_entry = gtk_entry_new ();
   gtk_widget_set_name (editor_command_entry, "editor_command_entry");
   gtk_widget_show (editor_command_entry);
-  gtk_box_pack_start (GTK_BOX (hbox18), editor_command_entry, FALSE, FALSE, 0);
-  gtk_tooltips_set_tip (tooltips, editor_command_entry, "Enter the command to run your preferred text editor.", NULL);
+  gtk_box_pack_start (GTK_BOX (hbox18), editor_command_entry, TRUE, TRUE, 0);
+  gtk_tooltips_set_tip (tooltips, editor_command_entry, "Enter the command to run your preferred text editor.  \nAny editor that supports the vi-style line positioning option \"+<linenum>\" will work.\n\nDon't forget to launch a terminal window for your editor if it needs one.", NULL);
   gtk_entry_set_invisible_char (GTK_ENTRY (editor_command_entry), 8226);
   gtk_entry_set_width_chars (GTK_ENTRY (editor_command_entry), 20);
 

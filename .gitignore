@@ -29,3 +29,9 @@ packages/gscope*/src/gscope
 packages/gscope*/src/Makefile
 packages/gscope*/src/Makefile.in
 
+# ignore GUI builder backup files
+#################################
+*.glade.bak
+*.gladep.bak
+interface.[ch].bak
+
