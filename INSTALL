@@ -19,7 +19,7 @@ Run the autogen tools to create the initial makefiles, etc...
 
 Run "configure" to update the default package configuration settings.  For example:
 
-# ./configure --PREFIX=/usr
+# ./configure --prefix=/usr
 
 Now run make
 
