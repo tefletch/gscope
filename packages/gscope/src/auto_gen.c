@@ -15,12 +15,12 @@
 #include <stdint.h>
 #include <unistd.h>
 
-#include "global.h"
 #include "dir.h"
 #include "utils.h"
 #include "auto_gen.h"
 #include "search.h"
 #include "display.h"
+#include "app_config.h"
 
 //===============================================================
 //       Defines

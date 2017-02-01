@@ -66,21 +66,21 @@ ends with
     
 A mark is a tab followed by one of these characters:
 
-    Char	Meaning
-    @	new file
-    $	function definition
-    `	function call
-    }	function end
-    #	#define
-    )	#define end
-    ~	#include
-    c	class definition
-    e	enum definition
-    g	other global definition
-    m	global enum/struct/union member definition
-    s	struct definition
-    t	typedef definition
-    u	union definition
+    Char    Meaning
+    @   new file
+    $   function definition
+    `   function call
+    }   function end
+    #   #define
+    )   #define end
+    ~   #include
+    c   class definition
+    e   enum definition
+    g   other global definition
+    m   global enum/struct/union member definition
+    s   struct definition
+    t   typedef definition
+    u   union definition
 
 A #include mark is followed by '<' or '"' to determine if the current
 directory should be searched. An untagged enum/struct/union definition
@@ -129,7 +129,7 @@ line of the header to the trailer.
 #include <gtk/gtk.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>	      /* O_RDONLY */
+#include <fcntl.h>        /* O_RDONLY */
 #include <sys/types.h>
 #include <sys/stat.h>     /* stat */
 #include <sys/time.h>
@@ -139,7 +139,7 @@ line of the header to the trailer.
 #include <errno.h>
 #include <stdint.h>
 
-#include "global.h"
+#include "global.h"     /* For dbputc() macro */
 #include "dir.h"
 #include "utils.h"
 #include "crossref.h"
@@ -148,6 +148,7 @@ line of the header to the trailer.
 #include "lookup.h"
 #include "scanner.h"
 #include "display.h"
+#include "app_config.h"
 #include "auto_gen.h"
 
 
@@ -1015,7 +1016,7 @@ static void putheader(char *dir)
 /* copy this file's symbol data */
 static void copydata(char *src_ptr)
 {
-    char   symbol[MAX_SYMBOL_SIZE + 1];
+    char   symbol[PATHLEN + 1];
 
     for (;;)
     {

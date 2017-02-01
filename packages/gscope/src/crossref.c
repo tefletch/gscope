@@ -1,7 +1,7 @@
 
-/*	cscope - interactive C symbol cross-reference
+/*  cscope - interactive C symbol cross-reference
  *
- *	build cross-reference file
+ *  build cross-reference file
  */
 
 #include <gtk/gtk.h>
@@ -13,28 +13,29 @@
 #include <ctype.h>
 #include <stdint.h>
 
-#include "global.h"
+#include "global.h"     /* For dbputc() macro */
 #include "crossref.h"
 #include "scanner.h"
 #include "build.h"
 #include "lookup.h"
 #include "utils.h"
+#include "app_config.h"
 
 
 /* convert long to a string */
-#define	ltobase(value)	n = value; \
-			s = buf + (sizeof(buf) - 1); \
-			*s = '\0'; \
-			digits = 1; \
-			while (n >= BASE) { \
-				++digits; \
-				i = n; \
-				n /= BASE; \
-				*--s = i - n * BASE + '!'; \
-			} \
-			*--s = n + '!';
+#define ltobase(value)  n = value; \
+            s = buf + (sizeof(buf) - 1); \
+            *s = '\0'; \
+            digits = 1; \
+            while (n >= BASE) { \
+                ++digits; \
+                i = n; \
+                n /= BASE; \
+                *--s = i - n * BASE + '!'; \
+            } \
+            *--s = n + '!';
 
-#define	SYMBOLINC	20	/* symbol list size increment */
+#define SYMBOLINC   20  /* symbol list size increment */
 
 uint32_t    dboffset;       /* new database offset */
 gboolean    errorsfound;    /* prompt before clearing messages */

@@ -17,7 +17,6 @@
 #include <regex.h>
 #include <string.h>
 
-#include "global.h"
 #include "build.h"
 #include "scanner.h"        /* for token definitions */
 #include "dir.h"
@@ -26,11 +25,15 @@
 #include "crossref.h"
 #include "utils.h"
 #include "display.h"
+#include "app_config.h"
 
 
 //===============================================================
 //       Defines
 //===============================================================
+#define     MSGLEN                  PATHLEN + 80    /* displayed message length */
+#define     TMPDIR                  "/tmp"
+#define     MAX_SYMBOL_SIZE         PATHLEN         /* a more readable name for PATLEN & PATHLEN */
 
 
 //===============================================================
@@ -1121,52 +1124,6 @@ static gboolean writerefsfound()
     return(TRUE);
 }
 
-
-#if 0
-/* count the references found */
-static void countrefs()
-{
-    char file[MAX_SYMBOL_SIZE + 1];      /* file name */
-    char function[MAX_SYMBOL_SIZE + 1];   /* function name */
-    char linenum[NUMLEN + 1];    /* line number */
-    uint32_t ref_count = 0;
-    int i;
-
-    /*
-     * count the references found
-     */
-
-    //**************************************************************************
-    // The following logic ASSUMES that a source line never exceeds 5000000
-    // characters in length.   The maximum field width of 500000 prevents
-    // an internal buffer overflow of the stored string, but if it actually
-    // triggers, it will leave the remaining charaters [however many there are]
-    // in the input stream.   Those remaining character will subsequently be
-    // interpereted [erroneously] as one or more "phantom" matches.  These
-    // phantom matches will produce bad data in the results display.
-    // If the mega-long source line character stream ends somewhere in the
-    // first 507 bytes of the "next" fscanf, the results could be problematic.
-    //
-    // This function needs to be rewritten without using fscanf()
-    //**************************************************************************
-    while ((i = fscanf(refsfound, "%250[^|]%*1c%250s%s %5000000[^\n]%*1c",
-                       file, function, linenum, tempstring)) != EOF)
-    {
-        //printf("file = %s; function = %s; line = %s; temp = %s\n", file, function, linenum,tempstring);
-        if (i != 4 || !isgraph(*file) || !isgraph(*function) || !isdigit(*linenum))
-        {
-            char message[512];
-            sprintf(message, "File does not have expected_format [Error at ref_count = %d]", ref_count);
-            DISPLAY_status(message);
-            return;
-        }
-        ++ref_count;
-    }
-
-    SEARCH_results_count(COUNT_SET, &ref_count);
-    rewind(refsfound);
-}
-#endif
 
 
 /*****************************************************************************/

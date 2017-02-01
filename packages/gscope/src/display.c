@@ -18,11 +18,12 @@
 
 #include "support.h"    // Must precede global.h to allow GTK3 "support" function call re-mapping
 
-#include "global.h"
+#include "global.h"     // For top-level widgets
 #include "search.h"
 #include "display.h"
 #include "dir.h"
 #include "utils.h"
+#include "app_config.h"
 
 // ==== defines ====
 #define MAX_FUNCTION_SIZE       100     /* Max size of function name */
@@ -677,13 +678,13 @@ void DISPLAY_msg(GtkMessageType type, const gchar *message)
 
 void DISPLAY_message_dialog(GtkMessageType type, const gchar *message, gboolean modal)
 {
-	static GtkWidget *MsgDialog;
+    static GtkWidget *MsgDialog;
 //    GdkPixbuf        *MsgWindowIcon;
 
     MsgDialog = gtk_message_dialog_new_with_markup (
-		                      GTK_WINDOW(msg_dialog_parent),
-		                      GTK_DIALOG_DESTROY_WITH_PARENT,
-		                      type, 
+                              GTK_WINDOW(msg_dialog_parent),
+                              GTK_DIALOG_DESTROY_WITH_PARENT,
+                              type, 
                               GTK_BUTTONS_CLOSE,
                               message);
 
@@ -849,28 +850,6 @@ static void update_list_store(search_results_t *results)
 
     while (lines-- > 0)
     {
-        #if 0
-        //**************************************************************************
-        // The following logic ASSUMES that a source line never exceeds 32700 
-        // characters in length.   The maximum field width of 32700 prevents
-        // an internal buffer overflow of the stored string, but if it actually
-        // triggers, it will leave the remaining charaters [however many there are]
-        // in the input stream.   Those remaining character will subsequently be
-        // interpereted [erroneously] as one or more "phantom" matches.  These
-        // phantom matches will produce bad data in the results display.
-        // If the mega-long source line character stream ends somewhere in the
-        // first 507 bytes of the "next" fscanf, the results could be problematic.
-        //
-        // This function needs to be rewritten without using fscanf()
-        //**************************************************************************
-        if (fscanf(refsfound, "%250[^|]%*1c%250s%7s %32700[^\n]", file, function, linenum, tempstring) < 4)
-        {
-            fprintf(stderr, "Gscope::DISPLAY_query:Unexpected error reading query results");
-            break;
-        }
-        getc(refsfound); /* skip newline */
-        #endif
-
         // Each line of the search results has the following fields [although some fields may have dummy values]:
         //   File Name
         //   Function Name

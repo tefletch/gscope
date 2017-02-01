@@ -63,7 +63,6 @@
 #include <stdint.h>
 #include <config.h>
 
-#include "global.h"
 #include "app_config.h"
 #include "version.h"
 #include "dir.h"
@@ -76,6 +75,8 @@
 
 /*** Version Checking Defines ***/
 #define     VCHECK_SIZE     30
+
+#define     MAX_LIST_SIZE           1023            /* Max size for all lists.  All lists must be the same size */
 
 #ifdef GTK3_BUILD   // GTK3 (gscope.css)
 #define     CURRENT_CONFIG_VERSION   "000"
@@ -103,6 +104,76 @@ static void      pixmap_path_fixup       (char *filename, char *path, GtkWidget 
 static void      gtk_config_parse        (char *gtk_config_file);
 
 static gboolean  create_gtk_config_file  (const char *filename);  /* GTK V2/V3 specific config file */
+
+
+//===============================================================
+// Global Variables
+//===============================================================
+
+// Applicaton settings (with defaults initialized)
+
+settings_t settings = {
+    /*.refOnly            =*/refOnlyDef,
+    /*.noBuild            =*/noBuildDef,
+    /*.updateAll          =*/updateAllDef,
+    /*.truncateSymbols    =*/truncateSymbolsDef,
+    /*.compressDisable    =*/compressDisableDef,
+    /*.recurseDir         =*/recurseDirDef,
+    /*.version            =*/versionDef,
+    /*.ignoreCase         =*/ignoreCaseDef,
+    /*.useEditor          =*/useEditorDef,
+    /*.retainInput        =*/retainInputDef,
+    /*.retainFailed       =*/retainFailedDef,
+    /*.searchLogging      =*/searchLoggingDef,
+    /*.reuseWin           =*/reuseWinDef,
+    /*.exitConfirm        =*/exitConfirmDef,
+    /*.menuIcons          =*/menuIconsDef,
+    /*.singleClick        =*/singleClickDef,
+    /*.showIncludes       =*/showIncludesDef,
+    /*.autoGenEnable      =*/autoGenEnableDef,
+    /*.refFile            =*/refFileDef,
+    /*.nameFile           =*/nameFileDef,
+    /*.includeDir         =*/includeDirDef,
+    /*.includeDirDelim    =*/includeDirDelimDef,
+    /*.srcDir             =*/srcDirDef,
+    /*.rcFile             =*/rcFileDef,
+    /*.fileEditor         =*/fileEditorDef,
+    /*.autoGenPath        =*/autoGenPathDef,
+    /*.autoGenSuffix      =*/autoGenSuffixDef,
+    /*.autoGenCmd         =*/autoGenCmdDef,
+    /*.autoGenRoot        =*/autoGenRootDef,
+    /*.autoGenId          =*/autoGenIdDef,
+    /*.autoGenThresh      =*/autoGenThreshDef,
+    /*.searchLogFile      =*/searchLogFileDef,
+    /*.suffixList         =*/suffixListDef,
+    /*.suffixDelim        =*/suffixDelimDef,
+    /*.typelessList       =*/typelessListDef,
+    /*.typelessDelim      =*/typelessDelimDef,
+    /*.ignoredList        =*/ignoredListDef,
+    /*.ignoredDelim       =*/ignoredDelimDef,
+    /*.histFile           =*/histFileDef,
+    /*.terminalApp        =*/terminalAppDef,
+    /*.fileManager        =*/fileManagerDef,
+    /*.trackedVersion     =*/trackedVersionDef,
+    /*.smartQuery         =*/TRUE
+};
+
+
+// Settings (initialized from the config file) that can be temporarily overriden
+// via the "options menu" need to be saved in order to keep the preferences
+// dialog and options menu in-sync.
+//
+// A preference dialog" change
+//          - updates the application behavior
+//          - updates the options menu
+//          - is remembered across sessions
+//
+// An "options menu" change
+//          - temporarily alters the application behavior
+//          - does not alter the preferences dialog
+//          - is NOT remembered across sessions
+
+sticky_t sticky_settings;
 
 
 

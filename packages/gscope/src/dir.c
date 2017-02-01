@@ -20,7 +20,7 @@
 #include <stdint.h>
 #include <errno.h>
 
-#include "global.h"
+#include "global.h"         /* For filearc and fileargv (main.c arguments) */
 #include "app_config.h"
 #include "utils.h"
 #include "dir.h"
@@ -31,8 +31,13 @@
 #include "auto_gen.h"
 
 
-#define ANALYZE_HASH    2      /* set to 1 to enable hash analysis */
-#define OLD_HASH        1
+//===============================================================
+// Defines
+//===============================================================
+
+#define     ANALYZE_HASH    2      /* set to 1 to enable hash analysis */
+#define     OLD_HASH        1
+#define     MAX_SUFFIX      60     /* Support up to a 60 character file suffix */
 
 
 //#define   DIRSEPS " ,:"   /* directory list separators */

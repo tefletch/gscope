@@ -44,11 +44,15 @@
 #include <glib.h>
 #include <stdint.h>
 
-#include "global.h"
 #include "scanner.h"
 #include "lookup.h"
 #include "crossref.h"
 #include "dir.h"
+#include "utils.h"
+#include "app_config.h"
+
+#define     PATLEN                  PATHLEN         /* symbol pattern length */
+#define     STMTMAX                 50000           /* maximum source statement length */
 
 /* the line counting has been moved from character reading for speed */
 /* comments are discarded */

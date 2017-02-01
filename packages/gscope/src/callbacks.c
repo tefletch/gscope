@@ -8,7 +8,7 @@
 #include "version.h"
 #include "support.h"    // Must precede global.h to allow GTK3 "support" function call re-mapping
 
-#include "global.h"
+#include "global.h"         /* For Top-level widget globals */
 #include "callbacks.h"
 #include "search.h"
 #include "string.h"

@@ -4,8 +4,8 @@
 
 #include "support.h"
 #include "callbacks.h"
-#include "global.h"
 #include "fileview.h"
+#include "app_config.h"
 
 // ---- Defines ----
 
@@ -282,13 +282,13 @@ static gboolean open_file (GtkSourceBuffer *sBuf, const gchar *filename, gint li
     g_return_val_if_fail (GTK_IS_SOURCE_BUFFER (sBuf), FALSE);
     #endif
 
-#if 0	/* Gtksourceview 1.x logic */
+#if 0   /* Gtksourceview 1.x logic */
     /* get the Language for C source mimetype */
     lm = g_object_get_data (G_OBJECT (sBuf), "languages-manager");
 
     language = gtk_source_language_manager_get_language_from_mime_type (lm, "text/x-csrc");
     //g_print("Language: [%s]\n", gtk_source_language_get_name(language));
-#else	/* Gtksourceview 2.x logic */
+#else   /* Gtksourceview 2.x logic */
     lm = gtk_source_language_manager_get_default();
     if( is_mf_or_makefile(filename) )
         language = gtk_source_language_manager_get_language (lm, "makefile");
