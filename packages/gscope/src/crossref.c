@@ -13,7 +13,6 @@
 #include <ctype.h>
 #include <stdint.h>
 
-#include "global.h"     /* For dbputc() macro */
 #include "crossref.h"
 #include "scanner.h"
 #include "build.h"

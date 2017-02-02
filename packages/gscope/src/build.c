@@ -139,7 +139,6 @@ line of the header to the trailer.
 #include <errno.h>
 #include <stdint.h>
 
-#include "global.h"     /* For dbputc() macro */
 #include "dir.h"
 #include "utils.h"
 #include "crossref.h"
