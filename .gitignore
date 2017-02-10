@@ -12,6 +12,7 @@ cscope*
 ###################################
 autom4te.cache
 *.Po
+*.Tpo
 config.*
 configure
 packages/gscope*/COPYING
