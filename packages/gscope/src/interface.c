@@ -32,6 +32,7 @@ create_gscope_main (void)
   GtkWidget *gscope_main;
   GdkPixbuf *gscope_main_icon_pixbuf;
   GtkWidget *vbox1;
+  GtkWidget *vbox21;
   GtkWidget *hbox1;
   GtkWidget *vbox2;
   GtkWidget *hbox2;
@@ -87,9 +88,7 @@ create_gscope_main (void)
   GtkWidget *image538;
   GtkWidget *imagemenuitem12;
   GtkWidget *label1;
-  GtkWidget *hbox3;
-  GtkWidget *frame1;
-  GtkWidget *alignment1;
+  GtkWidget *search_button_frame;
   GtkWidget *hbox4;
   GtkWidget *vbuttonbox1;
   GtkWidget *find_c_identifier_button;
@@ -102,21 +101,19 @@ create_gscope_main (void)
   GtkWidget *find_files_button;
   GtkWidget *find_files_including_button;
   GtkWidget *vbox3;
-  GtkWidget *scrolledwindow1;
+  GtkWidget *history_scrolledwindow;
   GtkWidget *history_treeview;
   GtkWidget *hbox64;
-  GtkWidget *vbox4;
-  GtkWidget *label2;
+  GtkWidget *query_vbox;
+  GtkWidget *query_entry_label;
   GtkWidget *query_entry;
   GtkWidget *clear_query_button;
   GtkWidget *image502;
-  GtkWidget *frame2;
+  GtkWidget *status_frame;
   GtkWidget *vbox20;
-  GtkWidget *alignment2;
   GtkWidget *status_label;
   GtkWidget *rebuild_progressbar;
-  GtkWidget *vbox5;
-  GtkWidget *scrolledwindow2;
+  GtkWidget *results_scrolledwindow;
   GtkWidget *treeview1;
   GtkWidget *hbox5;
   GtkWidget *session_info_button;
@@ -153,16 +150,20 @@ create_gscope_main (void)
   gtk_widget_show (vbox1);
   gtk_container_add (GTK_CONTAINER (gscope_main), vbox1);
 
-  hbox1 = gtk_hbox_new (FALSE, 0);
+  vbox21 = gtk_vbox_new (FALSE, 2);
+  gtk_widget_set_name (vbox21, "vbox21");
+  gtk_widget_show (vbox21);
+  gtk_box_pack_start (GTK_BOX (vbox1), vbox21, FALSE, FALSE, 0);
+
+  hbox1 = gtk_hbox_new (FALSE, 7);
   gtk_widget_set_name (hbox1, "hbox1");
   gtk_widget_show (hbox1);
-  gtk_box_pack_start (GTK_BOX (vbox1), hbox1, FALSE, TRUE, 0);
-  gtk_widget_set_size_request (hbox1, -1, 177);
+  gtk_box_pack_start (GTK_BOX (vbox21), hbox1, TRUE, TRUE, 0);
 
   vbox2 = gtk_vbox_new (FALSE, 0);
   gtk_widget_set_name (vbox2, "vbox2");
   gtk_widget_show (vbox2);
-  gtk_box_pack_start (GTK_BOX (hbox1), vbox2, FALSE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox1), vbox2, FALSE, FALSE, 0);
 
   hbox2 = gtk_hbox_new (FALSE, 0);
   gtk_widget_set_name (hbox2, "hbox2");
@@ -172,7 +173,7 @@ create_gscope_main (void)
   menubar1 = gtk_menu_bar_new ();
   gtk_widget_set_name (menubar1, "menubar1");
   gtk_widget_show (menubar1);
-  gtk_box_pack_start (GTK_BOX (hbox2), menubar1, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox2), menubar1, TRUE, TRUE, 0);
 
   menuitem1 = gtk_menu_item_new_with_mnemonic ("_Commands");
   gtk_widget_set_name (menuitem1, "menuitem1");
@@ -432,31 +433,20 @@ create_gscope_main (void)
   gtk_label_set_use_markup (GTK_LABEL (label1), TRUE);
   gtk_misc_set_alignment (GTK_MISC (label1), 0.5, 0.7);
 
-  hbox3 = gtk_hbox_new (FALSE, 0);
-  gtk_widget_set_name (hbox3, "hbox3");
-  gtk_widget_show (hbox3);
-  gtk_box_pack_start (GTK_BOX (vbox2), hbox3, FALSE, FALSE, 0);
+  search_button_frame = gtk_frame_new (NULL);
+  gtk_widget_set_name (search_button_frame, "search_button_frame");
+  gtk_widget_show (search_button_frame);
+  gtk_box_pack_start (GTK_BOX (vbox2), search_button_frame, FALSE, FALSE, 0);
 
-  frame1 = gtk_frame_new (NULL);
-  gtk_widget_set_name (frame1, "frame1");
-  gtk_widget_show (frame1);
-  gtk_box_pack_start (GTK_BOX (hbox3), frame1, TRUE, TRUE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (frame1), 10);
-
-  alignment1 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_set_name (alignment1, "alignment1");
-  gtk_widget_show (alignment1);
-  gtk_container_add (GTK_CONTAINER (frame1), alignment1);
-
-  hbox4 = gtk_hbox_new (TRUE, 0);
+  hbox4 = gtk_hbox_new (FALSE, 0);
   gtk_widget_set_name (hbox4, "hbox4");
   gtk_widget_show (hbox4);
-  gtk_container_add (GTK_CONTAINER (alignment1), hbox4);
+  gtk_container_add (GTK_CONTAINER (search_button_frame), hbox4);
 
   vbuttonbox1 = gtk_vbutton_box_new ();
   gtk_widget_set_name (vbuttonbox1, "vbuttonbox1");
   gtk_widget_show (vbuttonbox1);
-  gtk_box_pack_start (GTK_BOX (hbox4), vbuttonbox1, TRUE, TRUE, 4);
+  gtk_box_pack_start (GTK_BOX (hbox4), vbuttonbox1, FALSE, FALSE, 0);
 
   find_c_identifier_button = gtk_button_new_with_mnemonic ("Find C identifier");
   gtk_widget_set_name (find_c_identifier_button, "find_c_identifier_button");
@@ -498,7 +488,7 @@ create_gscope_main (void)
   vbuttonbox2 = gtk_vbutton_box_new ();
   gtk_widget_set_name (vbuttonbox2, "vbuttonbox2");
   gtk_widget_show (vbuttonbox2);
-  gtk_box_pack_start (GTK_BOX (hbox4), vbuttonbox2, TRUE, TRUE, 4);
+  gtk_box_pack_start (GTK_BOX (hbox4), vbuttonbox2, FALSE, FALSE, 4);
 
   find_text_string_button = gtk_button_new_with_mnemonic ("Find text string");
   gtk_widget_set_name (find_text_string_button, "find_text_string_button");
@@ -542,17 +532,17 @@ create_gscope_main (void)
   gtk_widget_show (vbox3);
   gtk_box_pack_start (GTK_BOX (hbox1), vbox3, TRUE, TRUE, 0);
 
-  scrolledwindow1 = gtk_scrolled_window_new (NULL, NULL);
-  gtk_widget_set_name (scrolledwindow1, "scrolledwindow1");
-  gtk_widget_show (scrolledwindow1);
-  gtk_box_pack_start (GTK_BOX (vbox3), scrolledwindow1, TRUE, TRUE, 8);
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow1), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolledwindow1), GTK_SHADOW_IN);
+  history_scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
+  gtk_widget_set_name (history_scrolledwindow, "history_scrolledwindow");
+  gtk_widget_show (history_scrolledwindow);
+  gtk_box_pack_start (GTK_BOX (vbox3), history_scrolledwindow, TRUE, TRUE, 2);
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (history_scrolledwindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (history_scrolledwindow), GTK_SHADOW_IN);
 
   history_treeview = gtk_tree_view_new ();
   gtk_widget_set_name (history_treeview, "history_treeview");
   gtk_widget_show (history_treeview);
-  gtk_container_add (GTK_CONTAINER (scrolledwindow1), history_treeview);
+  gtk_container_add (GTK_CONTAINER (history_scrolledwindow), history_treeview);
   GTK_WIDGET_UNSET_FLAGS (history_treeview, GTK_CAN_FOCUS);
   gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (history_treeview), FALSE);
   gtk_tree_view_set_enable_search (GTK_TREE_VIEW (history_treeview), FALSE);
@@ -562,22 +552,22 @@ create_gscope_main (void)
   gtk_widget_show (hbox64);
   gtk_box_pack_start (GTK_BOX (vbox3), hbox64, FALSE, FALSE, 0);
 
-  vbox4 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_set_name (vbox4, "vbox4");
-  gtk_widget_show (vbox4);
-  gtk_box_pack_start (GTK_BOX (hbox64), vbox4, TRUE, TRUE, 0);
+  query_vbox = gtk_vbox_new (FALSE, 0);
+  gtk_widget_set_name (query_vbox, "query_vbox");
+  gtk_widget_show (query_vbox);
+  gtk_box_pack_start (GTK_BOX (hbox64), query_vbox, TRUE, TRUE, 0);
 
-  label2 = gtk_label_new ("Query Input:");
-  gtk_widget_set_name (label2, "label2");
-  gtk_widget_show (label2);
-  gtk_box_pack_start (GTK_BOX (vbox4), label2, FALSE, FALSE, 0);
-  gtk_label_set_use_markup (GTK_LABEL (label2), TRUE);
-  gtk_misc_set_alignment (GTK_MISC (label2), 0.01, 0.5);
+  query_entry_label = gtk_label_new ("Query Input:");
+  gtk_widget_set_name (query_entry_label, "query_entry_label");
+  gtk_widget_show (query_entry_label);
+  gtk_box_pack_start (GTK_BOX (query_vbox), query_entry_label, FALSE, FALSE, 0);
+  gtk_label_set_use_markup (GTK_LABEL (query_entry_label), TRUE);
+  gtk_misc_set_alignment (GTK_MISC (query_entry_label), 0.01, 0.5);
 
   query_entry = gtk_entry_new ();
   gtk_widget_set_name (query_entry, "query_entry");
   gtk_widget_show (query_entry);
-  gtk_box_pack_start (GTK_BOX (vbox4), query_entry, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (query_vbox), query_entry, FALSE, FALSE, 0);
   gtk_entry_set_invisible_char (GTK_ENTRY (query_entry), 8226);
   gtk_entry_set_activates_default (GTK_ENTRY (query_entry), TRUE);
 
@@ -596,30 +586,25 @@ create_gscope_main (void)
   gtk_container_add (GTK_CONTAINER (clear_query_button), image502);
   gtk_widget_set_size_request (image502, 22, 22);
 
-  frame2 = gtk_frame_new (NULL);
-  gtk_widget_set_name (frame2, "frame2");
-  gtk_widget_show (frame2);
-  gtk_box_pack_start (GTK_BOX (vbox1), frame2, FALSE, TRUE, 8);
+  status_frame = gtk_frame_new (NULL);
+  gtk_widget_set_name (status_frame, "status_frame");
+  gtk_widget_show (status_frame);
+  gtk_box_pack_start (GTK_BOX (vbox21), status_frame, FALSE, FALSE, 4);
 
   vbox20 = gtk_vbox_new (FALSE, 0);
   gtk_widget_set_name (vbox20, "vbox20");
   gtk_widget_show (vbox20);
-  gtk_container_add (GTK_CONTAINER (frame2), vbox20);
-
-  alignment2 = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_widget_set_name (alignment2, "alignment2");
-  gtk_widget_show (alignment2);
-  gtk_box_pack_start (GTK_BOX (vbox20), alignment2, TRUE, TRUE, 0);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment2), 5, 5, 12, 0);
+  gtk_container_add (GTK_CONTAINER (status_frame), vbox20);
 
   status_label = gtk_label_new ("Status: ");
   gtk_widget_set_name (status_label, "status_label");
   gtk_widget_show (status_label);
-  gtk_container_add (GTK_CONTAINER (alignment2), status_label);
+  gtk_box_pack_start (GTK_BOX (vbox20), status_label, TRUE, TRUE, 3);
   GTK_WIDGET_SET_FLAGS (status_label, GTK_CAN_FOCUS);
   gtk_label_set_use_markup (GTK_LABEL (status_label), TRUE);
   gtk_label_set_selectable (GTK_LABEL (status_label), TRUE);
   gtk_misc_set_alignment (GTK_MISC (status_label), 0, 0.5);
+  gtk_misc_set_padding (GTK_MISC (status_label), 8, 0);
   gtk_label_set_single_line_mode (GTK_LABEL (status_label), TRUE);
 
   rebuild_progressbar = gtk_progress_bar_new ();
@@ -628,22 +613,17 @@ create_gscope_main (void)
   gtk_widget_set_sensitive (rebuild_progressbar, FALSE);
   gtk_progress_bar_set_text (GTK_PROGRESS_BAR (rebuild_progressbar), "Building Cross Reference...Please Wait");
 
-  vbox5 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_set_name (vbox5, "vbox5");
-  gtk_widget_show (vbox5);
-  gtk_box_pack_start (GTK_BOX (vbox1), vbox5, TRUE, TRUE, 0);
-
-  scrolledwindow2 = gtk_scrolled_window_new (NULL, NULL);
-  gtk_widget_set_name (scrolledwindow2, "scrolledwindow2");
-  gtk_widget_show (scrolledwindow2);
-  gtk_box_pack_start (GTK_BOX (vbox5), scrolledwindow2, TRUE, TRUE, 0);
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow2), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolledwindow2), GTK_SHADOW_IN);
+  results_scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
+  gtk_widget_set_name (results_scrolledwindow, "results_scrolledwindow");
+  gtk_widget_show (results_scrolledwindow);
+  gtk_box_pack_start (GTK_BOX (vbox1), results_scrolledwindow, TRUE, TRUE, 0);
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (results_scrolledwindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (results_scrolledwindow), GTK_SHADOW_IN);
 
   treeview1 = gtk_tree_view_new ();
   gtk_widget_set_name (treeview1, "treeview1");
   gtk_widget_show (treeview1);
-  gtk_container_add (GTK_CONTAINER (scrolledwindow2), treeview1);
+  gtk_container_add (GTK_CONTAINER (results_scrolledwindow), treeview1);
   gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (treeview1), TRUE);
   gtk_tree_view_set_reorderable (GTK_TREE_VIEW (treeview1), TRUE);
 
@@ -853,6 +833,7 @@ create_gscope_main (void)
   /* Store pointers to all widgets, for use by lookup_widget(). */
   GLADE_HOOKUP_OBJECT_NO_REF (gscope_main, gscope_main, "gscope_main");
   GLADE_HOOKUP_OBJECT (gscope_main, vbox1, "vbox1");
+  GLADE_HOOKUP_OBJECT (gscope_main, vbox21, "vbox21");
   GLADE_HOOKUP_OBJECT (gscope_main, hbox1, "hbox1");
   GLADE_HOOKUP_OBJECT (gscope_main, vbox2, "vbox2");
   GLADE_HOOKUP_OBJECT (gscope_main, hbox2, "hbox2");
@@ -908,9 +889,7 @@ create_gscope_main (void)
   GLADE_HOOKUP_OBJECT (gscope_main, image538, "image538");
   GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem12, "imagemenuitem12");
   GLADE_HOOKUP_OBJECT (gscope_main, label1, "label1");
-  GLADE_HOOKUP_OBJECT (gscope_main, hbox3, "hbox3");
-  GLADE_HOOKUP_OBJECT (gscope_main, frame1, "frame1");
-  GLADE_HOOKUP_OBJECT (gscope_main, alignment1, "alignment1");
+  GLADE_HOOKUP_OBJECT (gscope_main, search_button_frame, "search_button_frame");
   GLADE_HOOKUP_OBJECT (gscope_main, hbox4, "hbox4");
   GLADE_HOOKUP_OBJECT (gscope_main, vbuttonbox1, "vbuttonbox1");
   GLADE_HOOKUP_OBJECT (gscope_main, find_c_identifier_button, "find_c_identifier_button");
@@ -923,21 +902,19 @@ create_gscope_main (void)
   GLADE_HOOKUP_OBJECT (gscope_main, find_files_button, "find_files_button");
   GLADE_HOOKUP_OBJECT (gscope_main, find_files_including_button, "find_files_including_button");
   GLADE_HOOKUP_OBJECT (gscope_main, vbox3, "vbox3");
-  GLADE_HOOKUP_OBJECT (gscope_main, scrolledwindow1, "scrolledwindow1");
+  GLADE_HOOKUP_OBJECT (gscope_main, history_scrolledwindow, "history_scrolledwindow");
   GLADE_HOOKUP_OBJECT (gscope_main, history_treeview, "history_treeview");
   GLADE_HOOKUP_OBJECT (gscope_main, hbox64, "hbox64");
-  GLADE_HOOKUP_OBJECT (gscope_main, vbox4, "vbox4");
-  GLADE_HOOKUP_OBJECT (gscope_main, label2, "label2");
+  GLADE_HOOKUP_OBJECT (gscope_main, query_vbox, "query_vbox");
+  GLADE_HOOKUP_OBJECT (gscope_main, query_entry_label, "query_entry_label");
   GLADE_HOOKUP_OBJECT (gscope_main, query_entry, "query_entry");
   GLADE_HOOKUP_OBJECT (gscope_main, clear_query_button, "clear_query_button");
   GLADE_HOOKUP_OBJECT (gscope_main, image502, "image502");
-  GLADE_HOOKUP_OBJECT (gscope_main, frame2, "frame2");
+  GLADE_HOOKUP_OBJECT (gscope_main, status_frame, "status_frame");
   GLADE_HOOKUP_OBJECT (gscope_main, vbox20, "vbox20");
-  GLADE_HOOKUP_OBJECT (gscope_main, alignment2, "alignment2");
   GLADE_HOOKUP_OBJECT (gscope_main, status_label, "status_label");
   GLADE_HOOKUP_OBJECT (gscope_main, rebuild_progressbar, "rebuild_progressbar");
-  GLADE_HOOKUP_OBJECT (gscope_main, vbox5, "vbox5");
-  GLADE_HOOKUP_OBJECT (gscope_main, scrolledwindow2, "scrolledwindow2");
+  GLADE_HOOKUP_OBJECT (gscope_main, results_scrolledwindow, "results_scrolledwindow");
   GLADE_HOOKUP_OBJECT (gscope_main, treeview1, "treeview1");
   GLADE_HOOKUP_OBJECT (gscope_main, hbox5, "hbox5");
   GLADE_HOOKUP_OBJECT (gscope_main, session_info_button, "session_info_button");

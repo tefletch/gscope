@@ -40,68 +40,6 @@
 
 // Applicaton settings (with defaults initialized)
 
-settings_t settings = {
-    /*.refOnly            =*/refOnlyDef,
-    /*.noBuild            =*/noBuildDef,
-    /*.updateAll          =*/updateAllDef,
-    /*.truncateSymbols    =*/truncateSymbolsDef,
-    /*.compressDisable    =*/compressDisableDef,
-    /*.recurseDir         =*/recurseDirDef,
-    /*.version            =*/versionDef,
-    /*.ignoreCase         =*/ignoreCaseDef,
-    /*.useEditor          =*/useEditorDef,
-    /*.retainInput        =*/retainInputDef,
-    /*.retainFailed       =*/retainFailedDef,
-    /*.searchLogging      =*/searchLoggingDef,
-    /*.reuseWin           =*/reuseWinDef,
-    /*.exitConfirm        =*/exitConfirmDef,
-    /*.menuIcons          =*/menuIconsDef,
-    /*.singleClick        =*/singleClickDef,
-    /*.showIncludes       =*/showIncludesDef,
-    /*.autoGenEnable      =*/autoGenEnableDef,
-    /*.refFile            =*/refFileDef,
-    /*.nameFile           =*/nameFileDef,
-    /*.includeDir         =*/includeDirDef,
-    /*.includeDirDelim    =*/includeDirDelimDef,
-    /*.srcDir             =*/srcDirDef,
-    /*.rcFile             =*/rcFileDef,
-    /*.fileEditor         =*/fileEditorDef,
-    /*.autoGenPath        =*/autoGenPathDef,
-    /*.autoGenSuffix      =*/autoGenSuffixDef,
-    /*.autoGenCmd         =*/autoGenCmdDef,
-    /*.autoGenRoot        =*/autoGenRootDef,
-    /*.autoGenId          =*/autoGenIdDef,
-    /*.autoGenThresh      =*/autoGenThreshDef,
-    /*.searchLogFile      =*/searchLogFileDef,
-    /*.suffixList         =*/suffixListDef,
-    /*.suffixDelim        =*/suffixDelimDef,
-    /*.typelessList       =*/typelessListDef,
-    /*.typelessDelim      =*/typelessDelimDef,
-    /*.ignoredList        =*/ignoredListDef,
-    /*.ignoredDelim       =*/ignoredDelimDef,
-    /*.histFile           =*/histFileDef,
-    /*.terminalApp        =*/terminalAppDef,
-    /*.fileManager        =*/fileManagerDef,
-    /*.trackedVersion     =*/trackedVersionDef,
-    /*.smartQuery         =*/TRUE
-};
-
-
-// Settings (initialized from the config file) that can be temporarily overriden
-// via the "options menu" need to be saved in order to keep the preferences
-// dialog and options menu in-sync.
-//
-// A preference dialog" change
-//          - updates the application behavior
-//          - updates the options menu
-//          - is remembered across sessions
-//
-// An "options menu" change
-//          - temporarily alters the application behavior541
-//          - does not alter the preferences dialog
-//          - is NOT remembered across sessions
-
-sticky_t sticky_settings;
 
 
 // Temporary hack (global)
