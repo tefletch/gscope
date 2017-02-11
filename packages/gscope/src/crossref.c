@@ -205,7 +205,28 @@ static gboolean file_is_ascii_text(FILE *filename)
     for (i = 0; i < bytes_read; i++)
     {
         if (*check_ptr < 9)
-            return(FALSE);
+        {
+            // Check for UTF-8 encoded Unicode BOM (special "text file" exception)
+            if (i == 0              &&  // This is the first byte in the file
+                bytes_read > 2      &&  // The file has at least 3 bytes and they are 0xef, 0xbb and 0xbf
+                check_buf[0] == -17 &&  // 0xef
+                check_buf[1] == -69 &&  // 0xbb
+                check_buf[2] == -65 )   // 0xbf
+            {
+                // Warning:  Ugly, INTENTIONAL, function side effect ahead!
+                fread(check_buf, 1, 3, filename);   // Advance the FILE position indicator past the first three bytes
+
+                // Besides being ugly, this behavior is a tad dangerous.  If we encounter a real UTF8 file that contains
+                // a variety of 8-bit extended ASCII characters [instead of just one or two copyright symbols] Gscope will probably
+                // behave badly and maybe even crash.  If this happens, the BOM detect-and-skip logic might need to
+                // be normally-off [Default = Treat any file with BOM as binary] and assign a command line argurment to enable
+                // BOM detect-and-skip on a per session basis.
+
+                return(TRUE);           // _Assume_ the remaining (TEXT_CHECK_SIZE - 3) bytes are ASCII
+            }
+            else
+                return(FALSE);
+        }
         if (*check_ptr > 126)
             return(FALSE);
         if ( (*check_ptr > 13) && (*check_ptr < 32) )
