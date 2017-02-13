@@ -224,6 +224,7 @@ int main(int argc, char *argv[])
                 fprintf(stderr, "Application abort: Could not get location of Gscope binary.\nUnable to load UI...\n");
                 exit(EXIT_FAILURE);
             }
+            ui_file_path[255] = '\0';        // Ensure path string is null terminated -- readlink() does not append a null if it truncates.
             my_dirname(ui_file_path);
             strcat(ui_file_path, "/gscope3.glade");
             builder = gtk_builder_new_from_file(ui_file_path);
