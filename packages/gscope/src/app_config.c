@@ -77,6 +77,7 @@
 #define     VCHECK_SIZE     30
 
 #define     MAX_LIST_SIZE           1023            /* Max size for all lists.  All lists must be the same size */
+#define     MAX_OVERRIDE_PATH_SIZE  255
 
 #ifdef GTK3_BUILD   // GTK3 (gscope.css)
 #define     CURRENT_CONFIG_VERSION   "000"
@@ -268,7 +269,7 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
     }
     else
     {
-        // create a ap-config file and populate it with the program defaults
+        // create an app-config file and populate it with the program defaults
         if ( create_app_config_file(app_config_file) )
         {
             parse_app_config(app_config_file);
@@ -1677,7 +1678,62 @@ gchar *template =
 "\n"
 };
 
-    return( create_template_file(filename, template) );
+    gchar       override_path[MAX_OVERRIDE_PATH_SIZE + 1];
+    gboolean    use_override = FALSE;
+    const gchar config_file[] = "site_default_override";
+    gchar       *buf;
+    struct stat statstruct;
+    FILE        *override_file;
+    guint       num_chars;
+
+    printf("\nChecking for a site-specific-defaults file: ");
+
+    num_chars = readlink("/proc/self/exe", override_path, MAX_OVERRIDE_PATH_SIZE);
+    override_path[num_chars] = '\0';    // Null terminate the path.
+
+    if ( num_chars >= 0)
+    {
+        my_dirname(override_path);
+        if ( strlen(override_path) + strlen(config_file) + 1 < MAX_OVERRIDE_PATH_SIZE )
+        {
+            strcat(override_path, "/");
+            strcat(override_path, config_file);
+            printf("%s\n", override_path);
+
+            if ( g_file_test(override_path, G_FILE_TEST_EXISTS) )
+            {
+                if ( stat(override_path, &statstruct) == 0 && ((override_file = fopen(override_path, "rb")) != NULL) )
+                {
+                    buf = g_malloc(statstruct.st_size + 1);
+                    if ( buf )
+                    {
+                        if ( fread(buf, 1, statstruct.st_size, override_file) == statstruct.st_size )
+                        {
+                            buf[statstruct.st_size] = '\0';     // Null terminate the file data.
+                            use_override = TRUE;
+                        }
+                    }
+                    fclose(override_file);
+                }
+            }
+        }
+    }
+
+    printf("Performing first time application configuration using: ");
+    if ( use_override )
+    {
+        gboolean retval;
+
+        printf("Site defaults.\n");
+        retval = create_template_file(filename, buf);
+        g_free(buf);
+        return(retval);
+    }
+    else
+    {
+        printf("Built-in defaults\n");
+        return (create_template_file(filename, template));
+    }
 }
 
 

@@ -117,7 +117,8 @@ int main(int argc, char *argv[])
 
     };
 
-    // Depricated since GTK 2.24 (now automatically called by gtk_init() //gtk_set_locale(); 
+    // Depricated since GTK 2.24 (now automatically called by gtk_init()
+    //gtk_set_locale();
 
     if (!gtk_init_with_args(&argc, &argv, "[source files]", options, NULL, &error))
     {
