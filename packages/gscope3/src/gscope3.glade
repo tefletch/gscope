@@ -443,6 +443,7 @@
                                         <property name="image">image10</property>
                                         <property name="use_stock">False</property>
                                         <property name="always_show_image">True</property>
+                                        <signal name="activate" handler="on_usage1_activate" swapped="no"/>
                                       </object>
                                     </child>
                                     <child>
