@@ -686,7 +686,7 @@ void DISPLAY_message_dialog(GtkMessageType type, const gchar *message, gboolean 
                               GTK_DIALOG_DESTROY_WITH_PARENT,
                               type, 
                               GTK_BUTTONS_CLOSE,
-                              "%s", message);
+                              message);
 
  // Pango markup example:
  //    _("<span foreground=\"blue\" size=\"x-large\" weight=\"bold\">Build Monitor 0.1</span>\nA panel application for monitoring print build status\n2007 Tom Fletcher")
