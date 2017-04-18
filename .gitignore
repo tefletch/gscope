@@ -35,4 +35,6 @@ packages/gscope*/src/Makefile.in
 *.glade.bak
 *.gladep.bak
 interface.[ch].bak
-
+/packages/gscope/compile
+/packages/gscope3/compile
+/packages/gscope3/src/gscope3.glade~

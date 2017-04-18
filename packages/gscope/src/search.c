@@ -1614,7 +1614,7 @@ search_results_t *SEARCH_lookup(search_t search_operation, gchar *pattern)
     }
 
     /* append the non-global references */
-    freopen(temp2, "r", nonglobalrefs);
+    if (freopen(temp2, "r", nonglobalrefs) == 0) /*do nothing*/; /* this should never happen, added if() just to shut up the compiler */
     while ((c = getc(nonglobalrefs)) != EOF)
     {
         putc(c, refsfound);
@@ -1636,7 +1636,7 @@ search_results_t *SEARCH_lookup(search_t search_operation, gchar *pattern)
 
 
     /* reopen the references found file for reading */
-    (void) freopen(temp1, "r", refsfound);
+    if (freopen(temp1, "r", refsfound) == 0) /*do nothing*/;  /* this should never happen, added if() just to shut up the compiler */
 
     if ( stat(temp1, &statstruct) != 0 )
     {

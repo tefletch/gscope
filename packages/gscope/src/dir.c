@@ -944,7 +944,8 @@ static void find_srcfiles_in_tree(gchar *src_dir)
     /* Temporarily set the CWD for this process to match the user-specified source "root" directory */
     /* It seems a little silly to do this, but things stay much simpler if we only use the "." form */
     /* of the ftw() function call */
-    chdir(src_dir);
+    if (chdir(src_dir) == -1)
+	fprintf(stderr,"Unexpected chdir() error in dir.c:  Dir = %s\n", src_dir); /* Should never happen */
 
     /* walk the tree & build source file list */
     if ( ftw(".", list, 1) < 0 )
@@ -960,7 +961,8 @@ static void find_srcfiles_in_tree(gchar *src_dir)
     }
 
     /* Pop back to the original CWD */
-    chdir( DIR_get_path(DIR_CURRENT_WORKING) );
+    if (chdir(DIR_get_path(DIR_CURRENT_WORKING)) == -1)
+	fprintf(stderr,"Unexpected chdir() error in dir.c:  Dir = %s\n", DIR_get_path(DIR_CURRENT_WORKING)); /* Should never happen */
 
     return;
 }

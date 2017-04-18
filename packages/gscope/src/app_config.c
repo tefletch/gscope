@@ -66,6 +66,7 @@
 #include "app_config.h"
 #include "version.h"
 #include "dir.h"
+#include "utils.h"
 
 
 //===============================================================
@@ -425,8 +426,7 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
                                                                   "Gscope Release Notes");
             gtk_widget_set_name (release_notes_button, "release_notes_button");
 
-            update_dialog_action_area = gtk_dialog_get_action_area( GTK_DIALOG(update_dialog) );
-            gtk_container_add (GTK_CONTAINER(update_dialog_action_area), release_notes_button);
+            gtk_dialog_add_action_widget(GTK_DIALOG(update_dialog), release_notes_button, 0);
 
             gtk_widget_show_all(update_dialog);
 

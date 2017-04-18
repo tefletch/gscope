@@ -309,6 +309,7 @@ static void process_query(search_t query_type)
 static void start_text_editor(gchar *filename, gchar *linenum)
 {
     gchar command[1024];
+    int response;
 
     if ( strcmp(my_basename(settings.fileEditor), "vs") == 0 )
     {
@@ -318,7 +319,7 @@ static void start_text_editor(gchar *filename, gchar *linenum)
     {
         sprintf(command, "%s +%s \"%s\" &", settings.fileEditor, linenum, filename);
     }
-    system(command);
+    response = system(command);
 }
 
 

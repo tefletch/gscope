@@ -26,6 +26,8 @@
 #include "utils.h"
 #include "build.h"
 #include "callbacks.h"
+#include "search.h"
+#include "display.h"
 
 
 // set this value to TRUE to utilize GTK builder XML file ./gscope3.glade

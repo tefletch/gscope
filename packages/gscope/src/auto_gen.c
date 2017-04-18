@@ -90,6 +90,7 @@ void AUTOGEN_init(char *data_dir)
     char    bld_symlink_path[PATHLEN + 10];
     char    euid[MAX_STRING_ARG_SIZE];                          // Per session/direAUTOGEN_initctory unique ID.  
     char    link_dest[PATHLEN + PATHLEN + sizeof(BLD_PREFIX) + sizeof(euid) + 20];   // +20 for literal chars and null-terminator
+    int     response;
 
     DIR     *dir;
     struct  dirent *ent;
@@ -105,12 +106,12 @@ void AUTOGEN_init(char *data_dir)
     if (num_bytes < 0)  // Symlink does not exist
     {
         // Create new EUID
-        sprintf(euid, "%d", time(NULL));
+        sprintf(euid, "%ld", time(NULL));
 
         // Create new "auto generated" symlink and destination
         sprintf (link_dest,"%s/%s/%s%s", settings.autoGenPath, getenv("USER"), GEN_PREFIX, euid);
         _mkdir_all(link_dest);
-        symlink (link_dest , gen_symlink_path);
+        response = symlink (link_dest , gen_symlink_path);
 
         _do_garbage_collection();  // Every time we create a new cache directory, manage the overall collection of caches.
     }
@@ -153,7 +154,7 @@ void AUTOGEN_init(char *data_dir)
         // Create new "auto build" symlink and destination
         sprintf (link_dest,"%s/%s/%s%s", settings.autoGenPath, getenv("USER"), BLD_PREFIX, euid);
         _mkdir_all(link_dest);
-        symlink (link_dest, bld_symlink_path);
+        response = symlink (link_dest, bld_symlink_path);
     }
     else            // Symlink exists
     {
@@ -372,6 +373,7 @@ void AUTOGEN_addproto(char* name)
 
     int     uid;
     int     file_info_index;
+    int     response;
 
 
     baseName = my_basename(name);
@@ -461,7 +463,7 @@ void AUTOGEN_addproto(char* name)
         }
     }
     
-    symlink(build_link_dest, build_link_src);       // Create the new "build file" symlink
+    response = symlink(build_link_dest, build_link_src);       // Create the new "build file" symlink
 
     file_info_list[nfile_info].exists  = TRUE;      // Symlink and target file exists
 
