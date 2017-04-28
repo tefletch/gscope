@@ -7,11 +7,6 @@ C++ is supported but the scanner can be confused by the use of many templates.
 
 Gscope is provided courtesy of Hewlett Packard Inc.
 
-Pending Open Source Migration Issues
-================================
-
-None (so far)
-
 Acknowledgements
 ================
 
