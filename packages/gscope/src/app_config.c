@@ -62,6 +62,7 @@
 #include <glib/gstdio.h>
 #include <stdint.h>
 #include <config.h>
+#include <errno.h>
 
 #include "app_config.h"
 #include "version.h"
@@ -1684,15 +1685,21 @@ gchar *template =
     gchar       *buf;
     struct stat statstruct;
     FILE        *override_file;
-    guint       num_chars;
+    ssize_t     num_chars;
 
     printf("\nChecking for a site-specific-defaults file: ");
 
     num_chars = readlink("/proc/self/exe", override_path, MAX_OVERRIDE_PATH_SIZE);
-    override_path[num_chars] = '\0';    // Null terminate the path.
 
-    if ( num_chars >= 0)
+    if ( num_chars < 0)
     {
+        fprintf(stderr, "Fatal Error: Unexpected readlink(\"/proc/self/exe\") failure\n%s\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        override_path[num_chars] = '\0';    // Null terminate the path.
+
         my_dirname(override_path);
         if ( strlen(override_path) + strlen(config_file) + 1 < MAX_OVERRIDE_PATH_SIZE )
         {

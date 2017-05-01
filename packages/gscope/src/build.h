@@ -11,4 +11,5 @@ extern time_t       autogen_elapsed_sec;
 extern suseconds_t  autogen_elapsed_usec;
 
 void  BUILD_initDatabase(void);
+void  BUILD_init_cli_file_list(int argc, char *argv[]);
 

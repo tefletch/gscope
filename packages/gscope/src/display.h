@@ -15,7 +15,7 @@ void DISPLAY_history_load(void);
 void DISPLAY_history_save(void);
 
 /* Initialize the display module */
-void DISPLAY_init(void);
+void DISPLAY_init(GtkWidget *main);
 
 /* Return the contents of the 'clicked' history list item */
 gboolean DISPLAY_get_clicked_entry(gint widget_x, gint widget_y, gchar **entry_p);
@@ -53,3 +53,5 @@ void DISPLAY_message_set_transient_parent(GtkWidget *parent);
 /* Display a message over a specified "parent" */
 void DISPLAY_message_dialog_on_parent(GtkWindow *parent, GtkMessageType severity, const char *message);
 
+/* Select the "active" progress bar widget (splash or rebuild) */
+void DISPLAY_set_active_progress_bar(GtkWidget *progress_bar);

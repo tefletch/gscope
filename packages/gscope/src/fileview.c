@@ -174,7 +174,6 @@ static void createFileViewer(ViewWindow *windowPtr)
     GtkWidget *pScrollWin;
     GtkWidget *sView;
     GtkSourceBuffer *sBuf;
-    PangoFontDescription *font_desc;
     GtkSourceLanguageManager *lm;
     GdkPixbuf *fileview_icon_pixbuf;
     const gchar * const *lang_dirs;

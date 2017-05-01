@@ -16,9 +16,8 @@
 #include <string.h>
 #include <stdint.h>
 
-#include "support.h"    // Must precede global.h to allow GTK3 "support" function call re-mapping
+#include "support.h"
 
-#include "global.h"     // For top-level widgets
 #include "search.h"
 #include "display.h"
 #include "dir.h"
@@ -73,7 +72,11 @@ GtkWidget   *msg_dialog_parent = NULL;
 gboolean line_number_info_avail = FALSE;   // Indicates if the most recent query 
                                            // produced line number information.
 
-/*** Local Functions ***/
+//  ==== Private Global Variables ====
+static GtkWidget   *gscope_main = NULL;
+static GtkWidget   *active_progress_bar = NULL;
+
+/*** Local Function Prototypes ***/
 
 static void on_filename_col_clicked(GtkTreeViewColumn *column, gpointer user_data);
 static void on_function_col_clicked(GtkTreeViewColumn *column, gpointer user_data);
@@ -84,12 +87,14 @@ static void update_list_store(search_results_t *results);
 static gboolean search_equal_func(GtkTreeModel *model, gint column, const gchar *key, GtkTreeIter *iter, gpointer search_data);
 
 
-void DISPLAY_init()
+void DISPLAY_init(GtkWidget *main)
 {
     
     GtkCellRenderer *renderer;
     GtkWidget *image1;
     GtkWidget *sms_button;
+
+    gscope_main = main;     // Save a convenience pointer to the main window
 
     // ======== Set up the search RESULTS treeview ========
     // Add four columms to the GtkTreeView.  
@@ -555,6 +560,10 @@ void DISPLAY_update_progress_bar(guint count, guint max)
 }
 
 
+void DISPLAY_set_active_progress_bar(GtkWidget *progress_bar)
+{
+    active_progress_bar = progress_bar;
+}
 
 void DISPLAY_update_build_progress(guint count, guint max)
 {
@@ -564,8 +573,8 @@ void DISPLAY_update_build_progress(guint count, guint max)
     fraction = (gdouble)count/(gdouble)max;
     message = g_strdup_printf("Building Cross Reference:  %.0f%% Complete", fraction * 100.0);
 
-    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(build_progress), fraction);
-    gtk_progress_bar_set_text(GTK_PROGRESS_BAR(build_progress), message);
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(active_progress_bar), fraction);
+    gtk_progress_bar_set_text(GTK_PROGRESS_BAR(active_progress_bar), message);
 
     while (gtk_events_pending() )
         gtk_main_iteration();

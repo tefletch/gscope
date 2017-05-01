@@ -90,7 +90,6 @@ void AUTOGEN_init(char *data_dir)
     char    bld_symlink_path[PATHLEN + 10];
     char    euid[MAX_STRING_ARG_SIZE];                          // Per session/direAUTOGEN_initctory unique ID.  
     char    link_dest[PATHLEN + PATHLEN + sizeof(BLD_PREFIX) + sizeof(euid) + 20];   // +20 for literal chars and null-terminator
-    int     response;
 
     DIR     *dir;
     struct  dirent *ent;
@@ -111,7 +110,11 @@ void AUTOGEN_init(char *data_dir)
         // Create new "auto generated" symlink and destination
         sprintf (link_dest,"%s/%s/%s%s", settings.autoGenPath, getenv("USER"), GEN_PREFIX, euid);
         _mkdir_all(link_dest);
-        response = symlink (link_dest , gen_symlink_path);
+        if ( symlink (link_dest , gen_symlink_path) < 0 )
+        {
+            fprintf(stderr, "Fatal Error: Symlink symlnk() failed: old=%s new=%s\n%s\n", link_dest, gen_symlink_path, strerror(errno));
+            //exit(EXIT_FAILURE);
+        }
 
         _do_garbage_collection();  // Every time we create a new cache directory, manage the overall collection of caches.
     }
@@ -135,7 +138,7 @@ void AUTOGEN_init(char *data_dir)
 
                 default:
                     // Handle (unlikely) permission errors (and other errors)
-                    fprintf(stderr, "Fatal Error: Cannot access autogen cache directory: %s\n%s\n", link_dest, strerror(errno));
+                    fprintf(stderr, "1Fatal Error: Cannot access autogen cache directory: %s\n%s\n", link_dest, strerror(errno));
                     exit(EXIT_FAILURE);
                 break;
             }
@@ -154,7 +157,11 @@ void AUTOGEN_init(char *data_dir)
         // Create new "auto build" symlink and destination
         sprintf (link_dest,"%s/%s/%s%s", settings.autoGenPath, getenv("USER"), BLD_PREFIX, euid);
         _mkdir_all(link_dest);
-        response = symlink (link_dest, bld_symlink_path);
+        if ( symlink (link_dest, bld_symlink_path) < 0 )
+        {
+            fprintf(stderr, "2Fatal Error: Symlink symlnk() failed: old=%s new=%s\n%s\n", link_dest, gen_symlink_path, strerror(errno));
+            //exit(EXIT_FAILURE);
+        }
     }
     else            // Symlink exists
     {
@@ -373,7 +380,6 @@ void AUTOGEN_addproto(char* name)
 
     int     uid;
     int     file_info_index;
-    int     response;
 
 
     baseName = my_basename(name);
@@ -463,7 +469,11 @@ void AUTOGEN_addproto(char* name)
         }
     }
     
-    response = symlink(build_link_dest, build_link_src);       // Create the new "build file" symlink
+    if ( symlink(build_link_dest, build_link_src) < 0 )       // Create the new "build file" symlink
+    {
+        fprintf(stderr, "Fatal Error: 3Symlink symlnk() failed: old=%s new=%s\n%s\n", build_link_dest, build_link_src, strerror(errno));
+        //exit(EXIT_FAILURE);
+    }
 
     file_info_list[nfile_info].exists  = TRUE;      // Symlink and target file exists
 

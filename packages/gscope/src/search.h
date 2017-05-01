@@ -1,10 +1,3 @@
-typedef struct {
-    uint32_t    lineoffset; /* source line database offset */
-    uint32_t    fcnoffset;  /* function name database offset */
-    uint32_t    fileindex : 24; /* source file name index */
-    uint32_t    type : 8;   /* reference type (mark character) */
-} POSTING;
-
 
 typedef enum  {
     FIND_SYMBOL = 0,

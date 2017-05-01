@@ -20,7 +20,6 @@
 #include <stdint.h>
 #include <errno.h>
 
-#include "global.h"         /* For filearc and fileargv (main.c arguments) */
 #include "app_config.h"
 #include "utils.h"
 #include "dir.h"
@@ -199,6 +198,10 @@ static int      max_include_dirs;           /* maximum number of #include direct
 static char     *master_ignored_list = NULL;
 static char     master_ignored_delim;
 
+static int      fileargc;          /* file argument count */
+static char     **fileargv;        /* file argument values */
+
+
 int     msrcdirs;                 /* maximum number of source directories */
 char    *namefile;                /* file of file names */
 FILE    *rlogfile;
@@ -262,6 +265,14 @@ void DIR_init(dir_init_e init_type)
     {
         _alloc_src_file_list();
     }
+}
+
+
+void     DIR_init_cli_file_list(int argc, char *argv[])
+{
+    /* skip program name */
+    fileargc = --argc;
+    fileargv = ++argv;
 }
 
 
@@ -945,7 +956,7 @@ static void find_srcfiles_in_tree(gchar *src_dir)
     /* It seems a little silly to do this, but things stay much simpler if we only use the "." form */
     /* of the ftw() function call */
     if (chdir(src_dir) == -1)
-	fprintf(stderr,"Unexpected chdir() error in dir.c:  Dir = %s\n", src_dir); /* Should never happen */
+    fprintf(stderr,"Unexpected chdir() error in dir.c:  Dir = %s\n", src_dir); /* Should never happen */
 
     /* walk the tree & build source file list */
     if ( ftw(".", list, 1) < 0 )
@@ -962,7 +973,7 @@ static void find_srcfiles_in_tree(gchar *src_dir)
 
     /* Pop back to the original CWD */
     if (chdir(DIR_get_path(DIR_CURRENT_WORKING)) == -1)
-	fprintf(stderr,"Unexpected chdir() error in dir.c:  Dir = %s\n", DIR_get_path(DIR_CURRENT_WORKING)); /* Should never happen */
+    fprintf(stderr,"Unexpected chdir() error in dir.c:  Dir = %s\n", DIR_get_path(DIR_CURRENT_WORKING)); /* Should never happen */
 
     return;
 }

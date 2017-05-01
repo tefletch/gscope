@@ -39,4 +39,5 @@ void     DIR_free_offset_hash(void);
 void     DIR_free_src_names_hash(void);
 char     *DIR_get_old_offset(char *filename);
 void     DIR_list_join(char *usr_list, dir_list_e dir_list);
+void     DIR_init_cli_file_list(int argc, char *argv[]);
 

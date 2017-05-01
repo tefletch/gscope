@@ -58,7 +58,7 @@ static void _register_child_handler()
 
 char *my_basename(const char *path)
 {
-	char	*base = strrchr(path, '/');
+    char    *base = strrchr(path, '/');
     return( base ? base + 1 : (char *) path);
 }
 
@@ -88,6 +88,14 @@ char *my_dirname(char *path)
         *path = '\0';   // No path, just a basename, return a null string.
 
     return (path);
+}
+
+
+
+void my_chdir(gchar *path)
+{
+    if ( chdir(path) < 0 )      // Report chdir() failure and continue.
+        fprintf(stderr, "Fatal Error: chdir() failed: path=%s\n%s\n", path, strerror(errno));
 }
 
 

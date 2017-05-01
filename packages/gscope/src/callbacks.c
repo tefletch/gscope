@@ -6,9 +6,8 @@
 #include <config.h>
 
 #include "version.h"
-#include "support.h"    // Must precede global.h to allow GTK3 "support" function call re-mapping
+#include "support.h"
 
-#include "global.h"         /* For Top-level widget globals */
 #include "callbacks.h"
 #include "search.h"
 #include "string.h"
@@ -83,6 +82,17 @@ static gboolean  file_manager_app_entry_changed = FALSE;
 static unsigned int active_dir_entry;
 static unsigned int active_input_entry;
 static unsigned int active_output_entry;
+
+// Top-level Widget global convenince pointers
+static GtkWidget    *gscope_main = NULL;
+static GtkWidget    *quit_dialog = NULL;
+static GtkWidget    *aboutdialog1 = NULL;
+static GtkWidget    *gscope_preferences = NULL;
+static GtkWidget    *stats_dialog = NULL;
+static GtkWidget    *folder_chooser_dialog = NULL;
+static GtkWidget    *open_file_chooser_dialog = NULL;
+static GtkWidget    *output_file_chooser_dialog = NULL;
+static GtkWidget    *save_results_file_chooser_dialog = NULL;
 
 
 //---------------------------------------------------------------------------
@@ -309,7 +319,6 @@ static void process_query(search_t query_type)
 static void start_text_editor(gchar *filename, gchar *linenum)
 {
     gchar command[1024];
-    int response;
 
     if ( strcmp(my_basename(settings.fileEditor), "vs") == 0 )
     {
@@ -319,7 +328,8 @@ static void start_text_editor(gchar *filename, gchar *linenum)
     {
         sprintf(command, "%s +%s \"%s\" &", settings.fileEditor, linenum, filename);
     }
-    response = system(command);
+    if ( system(command) < 0 )
+        fprintf(stderr, "Failed to spawn text editor\n");   // Note the failure and just carry on.
 }
 
 
@@ -327,6 +337,25 @@ static void start_text_editor(gchar *filename, gchar *linenum)
 //
 //------------------------------ Callback Functions ----------------------------
 //
+
+void CALLBACKS_init(GtkWidget *main)
+{
+
+    // Initialize a private global that references the main window widget for all callbacks to use.
+    gscope_main = main;
+    DISPLAY_init(main);
+
+    quit_dialog  = create_quit_confirm_dialog();
+    aboutdialog1 = create_aboutdialog1();
+    gscope_preferences = create_gscope_preferences();
+    stats_dialog = create_stats_dialog();
+    folder_chooser_dialog = create_folder_chooser_dialog();
+    open_file_chooser_dialog = create_open_file_chooser_dialog();
+    output_file_chooser_dialog = create_output_file_chooser_dialog();
+    save_results_file_chooser_dialog = create_save_results_file_chooser_dialog();
+}
+
+
 
 void
 on_rebuild_database1_activate          (GtkMenuItem     *menuitem,
@@ -338,10 +367,7 @@ on_rebuild_database1_activate          (GtkMenuItem     *menuitem,
     {
         in_progress_lockout = TRUE;
 
-        // Select the "rebuild" progress bar as the "build progress meter".
-        build_progress = lookup_widget(gscope_main,"rebuild_progressbar");
-
-        gtk_widget_show(build_progress);
+        gtk_widget_show(lookup_widget(gscope_main, "rebuild_progressbar"));
         gtk_widget_hide(lookup_widget(gscope_main, "status_label"));
 
         // This widget will not actually appear until the first progress bar update.
@@ -363,9 +389,8 @@ on_rebuild_database1_activate          (GtkMenuItem     *menuitem,
          */
          process_query(FIND_NULL);
 
-         gtk_widget_hide(build_progress);
+         gtk_widget_hide(lookup_widget(gscope_main, "rebuild_progressbar"));
          gtk_widget_show(lookup_widget(gscope_main, "status_label"));
-         build_progress = NULL;               // Destroy the obsolete progress_bar widget pointer
 
          DISPLAY_status("<span foreground=\"seagreen\" weight=\"bold\">Cross Reference rebuild complete</span>");
          in_progress_lockout = FALSE;
@@ -432,15 +457,12 @@ static void shutdown()
 
 static gboolean exit_confirmed()
 {
-    GtkWidget *dialog;
-
     if (settings.exitConfirm)
     {
-        dialog = lookup_widget(GTK_WIDGET (quit_dialog), "quit_confirm_dialog");
-        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET (dialog), "confirm_exit_checkbutton")), TRUE );
+        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET (quit_dialog), "confirm_exit_checkbutton")), TRUE );
 
-        gtk_dialog_run (GTK_DIALOG (dialog));
-        gtk_widget_hide(GTK_WIDGET (dialog));
+        gtk_dialog_run (GTK_DIALOG (quit_dialog));
+        gtk_widget_hide(GTK_WIDGET (quit_dialog));
     }
     else
         ok_to_quit = TRUE;
@@ -577,12 +599,9 @@ void
 on_about1_activate                     (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-    GtkWidget *dialog;
     GdkPixbuf *pixbuf;
 
     static gboolean customized = FALSE;
-
-    dialog = lookup_widget(GTK_WIDGET(aboutdialog1), "aboutdialog1");
 
     if ( !customized )
     {
@@ -597,11 +616,11 @@ on_about1_activate                     (GtkMenuItem     *menuitem,
         pixbuf = create_pixbuf ("gnome-stock-about.png");
         if (pixbuf)
         {
-            gtk_window_set_icon (GTK_WINDOW (dialog), pixbuf);
+            gtk_window_set_icon (GTK_WINDOW (aboutdialog1), pixbuf);
             g_object_unref (pixbuf);
         }
 
-        gtk_about_dialog_set_version (GTK_ABOUT_DIALOG (dialog), VERSION);
+        gtk_about_dialog_set_version (GTK_ABOUT_DIALOG (aboutdialog1), VERSION);
 
         sprintf(full_comment, "%s%s%s%s%d.%d.%d%s",
                               description,
@@ -610,18 +629,18 @@ on_about1_activate                     (GtkMenuItem     *menuitem,
                               gtk_version, gtk_major_version, gtk_minor_version, gtk_micro_version,
                               build_date);
 
-        gtk_about_dialog_set_comments (GTK_ABOUT_DIALOG (dialog), full_comment);
+        gtk_about_dialog_set_comments (GTK_ABOUT_DIALOG (aboutdialog1), full_comment);
 
-        gtk_about_dialog_set_website (GTK_ABOUT_DIALOG (dialog), "https://github.com/tefletch/gscope/wiki");
-        gtk_about_dialog_set_website_label (GTK_ABOUT_DIALOG (dialog), "Gscope Wiki");
+        gtk_about_dialog_set_website (GTK_ABOUT_DIALOG (aboutdialog1), "https://github.com/tefletch/gscope/wiki");
+        gtk_about_dialog_set_website_label (GTK_ABOUT_DIALOG (aboutdialog1), "Gscope Wiki");
 
-        gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(gscope_main));
+        gtk_window_set_transient_for(GTK_WINDOW(aboutdialog1), GTK_WINDOW(gscope_main));
 
         customized = TRUE;
     }
 
 
-    gtk_widget_show (dialog);
+    gtk_widget_show (aboutdialog1);
 
 }
 
@@ -787,7 +806,7 @@ on_preferences_activate               (GtkMenuItem     *menuitem,
 
     extern void gtk_image_menu_item_set_always_show_image(GtkImageMenuItem *, gboolean) __attribute__((weak));
 
-    prefs_dialog = lookup_widget(GTK_WIDGET(gscope_preferences), "gscope_preferences");
+    prefs_dialog = gscope_preferences;
 
     if ( !initialized )
     {
@@ -1946,10 +1965,7 @@ on_include_entry_focus_out_event       (GtkWidget       *widget,
 // ==== Input File Selection ====
 static void open_file_name_browser(void)
 {
-    static GtkWidget *chooser;
-
-    chooser = lookup_widget(GTK_WIDGET(open_file_chooser_dialog), "open_file_chooser_dialog");
-    gtk_widget_show(chooser);
+    gtk_widget_show(open_file_chooser_dialog);
 }
 
 
@@ -2075,10 +2091,7 @@ on_file_name_browse_button_clicked     (GtkButton       *button,
 // ==== Output file selection ====
 static void open_output_file_name_browser(void)
 {
-    static GtkWidget *chooser;
-
-    chooser = lookup_widget(GTK_WIDGET(output_file_chooser_dialog), "output_file_chooser_dialog");
-    gtk_widget_show(chooser);
+    gtk_widget_show(output_file_chooser_dialog);
 }
 
 
@@ -2873,15 +2886,12 @@ void
 on_save_results_activate               (GtkMenuItem     *menuitem,
                                         gpointer         user_data)
 {
-    GtkWidget *dialog;
+    gtk_window_set_transient_for(GTK_WINDOW(save_results_file_chooser_dialog), GTK_WINDOW(gscope_main));
 
-    dialog = lookup_widget(GTK_WIDGET(save_results_file_chooser_dialog), "save_results_file_chooser_dialog");
-    gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(gscope_main));
+    gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (save_results_file_chooser_dialog), "gscope_results");
 
-    gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (dialog), "gscope_results");
-
-    gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_hide(dialog);
+    gtk_dialog_run(GTK_DIALOG(save_results_file_chooser_dialog));
+    gtk_widget_hide(save_results_file_chooser_dialog);
 }
 
 

@@ -367,6 +367,12 @@ void BUILD_initDatabase()
 
 
 
+void BUILD_init_cli_file_list(int argc, char *argv[])
+{
+    DIR_init_cli_file_list(argc, argv);
+}
+
+
 static void initialize_using_old_cref()
 {
     FILE      *old_file;           /* old cross-reference file */
@@ -723,7 +729,6 @@ static void make_new_cref(old_buf_decriptor_t *old_descriptor)
 
     time_t      starttime;
     time_t      now;
-    int         response;
 
     char        *old_offset_ptr;
     char        *new_cref_file;
@@ -784,7 +789,7 @@ static void make_new_cref(old_buf_decriptor_t *old_descriptor)
                 }
                 
                 /* if srcDir is not NULL, temporarily cd to srcDir */
-                if ( strcmp(settings.srcDir, "") != 0) response = chdir(settings.srcDir);
+                if ( strcmp(settings.srcDir, "") != 0) my_chdir(settings.srcDir);
 
                 new_file = DIR_src_files[fileindex];
 
@@ -794,7 +799,7 @@ static void make_new_cref(old_buf_decriptor_t *old_descriptor)
                     skipped++;
 
                 /* if srcDir is not NULL, pop back to the original CWD */
-                if ( strcmp(settings.srcDir, "") != 0) response = chdir( DIR_get_path(DIR_CURRENT_WORKING) );
+                if ( strcmp(settings.srcDir, "") != 0) my_chdir( DIR_get_path(DIR_CURRENT_WORKING) );
                 
             }  /* for (fileindex = firstfile; fileindex < lastfile; ++fileindex) */
 
@@ -852,7 +857,7 @@ static void make_new_cref(old_buf_decriptor_t *old_descriptor)
                 }
 
                 /* if srcDir is not NULL, temporarily cd to srcDir */
-                if ( strcmp(settings.srcDir, "") != 0) response = chdir(settings.srcDir);
+                if ( strcmp(settings.srcDir, "") != 0) my_chdir(settings.srcDir);
 
                 new_file = DIR_src_files[fileindex];
 
@@ -888,7 +893,7 @@ static void make_new_cref(old_buf_decriptor_t *old_descriptor)
                 }
 
                 /* if srcDir is not NULL, pop back to the original CWD */
-                if ( strcmp(settings.srcDir, "") != 0) response = chdir( DIR_get_path(DIR_CURRENT_WORKING) );
+                if ( strcmp(settings.srcDir, "") != 0) my_chdir( DIR_get_path(DIR_CURRENT_WORKING) );
 
             } /* for (fileindex = firstfile; fileindex < lastfile; ++fileindex) */
 
