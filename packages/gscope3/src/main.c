@@ -241,7 +241,6 @@ int main(int argc, char *argv[])
 
 
         gtk_builder_connect_signals(builder, NULL);
-        g_object_unref(G_OBJECT(builder));
 
         APP_CONFIG_init(gscope_splash);
 
@@ -292,6 +291,7 @@ int main(int argc, char *argv[])
     DISPLAY_set_active_progress_bar( GTK_WIDGET(gtk_builder_get_object(builder, "splash_progressbar")) );  // build progress meter
     BUILD_initDatabase();
     DISPLAY_set_active_progress_bar( GTK_WIDGET(gtk_builder_get_object(builder, "rebuild_progressbar")) );  // build progress meter
+    g_object_unref(G_OBJECT(builder));
 
     if (!settings.refOnly)
     {
