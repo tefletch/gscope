@@ -345,6 +345,19 @@ void CALLBACKS_init(GtkWidget *main)
     gscope_main = main;
     DISPLAY_init(main);
 
+    #ifdef GTK3_BUILD
+
+    quit_dialog  = my_lookup_widget("quit_confirm_dialog");
+    aboutdialog1 = my_lookup_widget("aboutdialog1");
+    gscope_preferences = my_lookup_widget("gscope_preferences");
+    stats_dialog = my_lookup_widget("stats_dialog");
+    folder_chooser_dialog = my_lookup_widget("folder_chooser_dialog");
+    open_file_chooser_dialog = my_lookup_widget("open_file_chooser_dialog");
+    output_file_chooser_dialog = my_lookup_widget("output_file_chooser_dialog");
+    save_results_file_chooser_dialog = my_lookup_widget("save_results_file_chooser_dialog2");
+
+    #else
+
     quit_dialog  = create_quit_confirm_dialog();
     aboutdialog1 = create_aboutdialog1();
     gscope_preferences = create_gscope_preferences();
@@ -353,6 +366,8 @@ void CALLBACKS_init(GtkWidget *main)
     open_file_chooser_dialog = create_open_file_chooser_dialog();
     output_file_chooser_dialog = create_output_file_chooser_dialog();
     save_results_file_chooser_dialog = create_save_results_file_chooser_dialog();
+
+    #endif
 }
 
 
