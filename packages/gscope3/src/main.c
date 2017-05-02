@@ -16,18 +16,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include <config.h>
 
-#include "version.h"
-#include "support.h"    // Must precede global.h to allow GTK3 "support" function call re-mapping
-
-#include "global.h"
 #include "app_config.h"
-#include "utils.h"
-#include "build.h"
+
+#include "support.h"
 #include "callbacks.h"
 #include "search.h"
 #include "display.h"
+#include "build.h"
+#include "utils.h"
 
 
 // set this value to TRUE to utilize GTK builder XML file ./gscope3.glade
@@ -40,30 +37,13 @@
 
 //  ==== Global Variables ====
 
-// Applicaton settings (with defaults initialized)
-
-
-
-// Temporary hack (global)
-GtkWidget   *gscope_main;
-GtkWidget   *quit_dialog;
-GtkWidget   *aboutdialog1;
-GtkWidget   *gscope_preferences;
-GtkWidget   *stats_dialog;
-GtkWidget   *folder_chooser_dialog;
-GtkWidget   *open_file_chooser_dialog;
-GtkWidget   *output_file_chooser_dialog;
-GtkWidget   *save_results_file_chooser_dialog;
-GtkWidget   *build_progress;
-
-int         fileargc;          /* file argument count */
-char        **fileargv;        /* file argument values */
-
 
 int main(int argc, char *argv[])
 {
-    GError      *error = NULL;
+    GtkWidget   *gscope_main;
     GtkWidget   *gscope_splash;
+
+    GError      *error = NULL;
     gchar       *home;
     char        path[PATHLEN + 1];
     char        *program_name;
@@ -75,8 +55,7 @@ int main(int argc, char *argv[])
     static gchar *rcFile = NULL;
     static gchar *srcDir = NULL;
 
-    // GTK3
-    GtkBuilder      *builder;
+    GtkBuilder      *builder;       // For GTK3
 
 #define G_OPTION_FLAG_NONE 0
 
@@ -252,7 +231,6 @@ int main(int argc, char *argv[])
 
 
         gscope_splash = GTK_WIDGET(gtk_builder_get_object(builder, "gscope_splash"));
-        build_progress = GTK_WIDGET(gtk_builder_get_object(builder, "splash_progressbar"));  // build progress meter
         gtk_widget_show(gscope_splash);
         DISPLAY_message_set_transient_parent(gscope_splash);
 
@@ -269,21 +247,12 @@ int main(int argc, char *argv[])
 
         /* Save references to top-level interface object(s) */
         gscope_main  = my_lookup_widget("gscope_main");
-        quit_dialog  = my_lookup_widget("quit_confirm_dialog");
-        aboutdialog1 = my_lookup_widget("aboutdialog1");
-        gscope_preferences = my_lookup_widget("gscope_preferences");
-        stats_dialog = my_lookup_widget("stats_dialog");
-        folder_chooser_dialog = my_lookup_widget("folder_chooser_dialog");
-        open_file_chooser_dialog = my_lookup_widget("open_file_chooser_dialog");
-        output_file_chooser_dialog = my_lookup_widget("output_file_chooser_dialog");
-        save_results_file_chooser_dialog = my_lookup_widget("save_results_file_chooser_dialog2");
 
         program_name = g_malloc(80);
         sprintf(program_name, "<span weight=\"bold\">Version %s</span>", VERSION);
         gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(gscope_main), "label1")), program_name);
         g_free(program_name);
 
-        DISPLAY_init();   /* init the display module [set up the treeview widgets] */
 
         // Initialize the Quick-option checkbox settings
         //==============================================
@@ -317,18 +286,16 @@ int main(int argc, char *argv[])
     }
 
 
-    /* save the file arguments */
-    --argc; ++argv;   /* skip program name */
-    fileargc = argc;
-    fileargv = argv;
+    /* save the filename arguments */
+    BUILD_init_cli_file_list(argc, argv);
 
+    DISPLAY_set_active_progress_bar( GTK_WIDGET(gtk_builder_get_object(builder, "splash_progressbar")) );  // build progress meter
     BUILD_initDatabase();
+    DISPLAY_set_active_progress_bar( GTK_WIDGET(gtk_builder_get_object(builder, "rebuild_progressbar")) );  // build progress meter
 
     if (!settings.refOnly)
     {
-        // Revisit glade3:
         gtk_widget_destroy(gscope_splash);  // Kill the splash screen
-        build_progress = NULL;              // Destroy the obsolete progress_bar widget pointer
         gtk_widget_show(gscope_main);
         DISPLAY_message_set_transient_parent(gscope_main);
 
