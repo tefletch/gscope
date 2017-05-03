@@ -371,13 +371,13 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
             GtkWidget *update_dialog_hbox;
             GtkWidget *update_dialog_image;
             GtkWidget *update_dialog_notification_label;
-            GtkWidget *update_dialog_action_area;
             GtkWidget *release_notes_button;
 
             #ifdef GTK3_BUILD
             GtkWidget *update_dialog_content_area;
             #else
             GtkWidget *update_dialog_vbox;
+            GtkWidget *update_dialog_action_area;
             #endif
 
             gchar     update_msg[MAX_UPDATE_MSG];
@@ -559,7 +559,6 @@ static void gtk_config_parse(char *gtk_config_file)
         GtkCssProvider  *provider;
         GdkDisplay      *display;
         GdkScreen       *screen;
-        GtkStyleContext *context;
 
         provider = gtk_css_provider_new();
 
@@ -573,6 +572,7 @@ static void gtk_config_parse(char *gtk_config_file)
         g_object_unref(provider);
 
         #else  // affect only specific widgets  g_object_get_data(G_OBJECT(widget), name)
+        GtkStyleContext *context;
 
         context = gtk_widget_get_style_context(GTK_WIDGET(gtk_builder_get_object(builder, "find_c_identifier_button")));
         gtk_css_provider_load_from_path(provider, "gscope.css", NULL);

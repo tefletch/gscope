@@ -203,14 +203,13 @@ void DISPLAY_update_stats_tooltip(gchar *msg)
 
 void DISPLAY_update_path_label(gchar *path)
 {
-    GtkWidget *path_label;
-
     #define MAX_DISPLAY_PATH    70
     #define PANGO_OVERHEAD      70
 
-    gchar cwd_buf[MAX_DISPLAY_PATH + PANGO_OVERHEAD + 1];
+    GtkWidget *path_label;
+    gchar *cwd_buf;
+    gchar *working;
 
-    gchar working[MAX_DISPLAY_PATH + 1];
     gchar *offset_ptr;
     unsigned int length;
 
@@ -223,23 +222,26 @@ void DISPLAY_update_path_label(gchar *path)
         // move forward to the first '/' character AFTER the offset
         offset_ptr = strchr(offset_ptr, '/');
         if (offset_ptr == NULL)
-            strcpy(working, "<NULL>");
+            asprintf(&working, "<NULL>");
         else
-            sprintf(working, "...%s", offset_ptr);
+            asprintf(&working, "...%s", offset_ptr);
     }
     else
-        strcpy(working, path);
+        asprintf(&working, "%s", path);
 
     // add pango markup to path string.  Caution: pango text length must not exceed PANGO_OVERHEAD
-    sprintf(cwd_buf, "Source Directory: <span foreground=\"seagreen\">%s</span>", working);
+    asprintf(&cwd_buf, "Source Directory: <span foreground=\"seagreen\">%s</span>", working);
     // update the label
     path_label = lookup_widget(GTK_WIDGET (gscope_main), "path_label");
     gtk_label_set_markup(GTK_LABEL(path_label), cwd_buf);
+    g_free(cwd_buf);
 
     // Place the path information in the main_window title bar
-    sprintf(cwd_buf, "G-Scope: %s", working);
+    asprintf(&cwd_buf, "G-Scope: %s", working);
     gtk_window_set_title(GTK_WINDOW(gscope_main), cwd_buf);
+    g_free(cwd_buf);
 
+    g_free(working);
     #undef PANGO_OVERHEAD
     #undef MAX_DISPLAY_PATH
 }

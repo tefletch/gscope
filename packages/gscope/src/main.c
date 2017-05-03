@@ -173,6 +173,7 @@ int main(int argc, char *argv[])
         /* Save references to top-level interface object(s) */
         gscope_main  = create_gscope_main();
 
+        /* Perform initial configuration for all application callbacks */
         CALLBACKS_init(gscope_main);
 
         program_name = g_malloc(80);

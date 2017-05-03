@@ -44,8 +44,6 @@ int main(int argc, char *argv[])
     GtkWidget   *gscope_splash;
 
     GError      *error = NULL;
-    gchar       *home;
-    char        path[PATHLEN + 1];
     char        *program_name;
 
     static gboolean option_error = FALSE;
@@ -166,6 +164,9 @@ int main(int argc, char *argv[])
         g_set_application_name("G-Scope");
 
         #if 0
+        gchar       *home;
+        char        path[PATHLEN + 1];
+
         /* Support optional/fall-back "local" pixmap files under $HOME/gscope/pixmaps */
         home = getenv("HOME");
         if (home == NULL) home = "";
@@ -244,8 +245,11 @@ int main(int argc, char *argv[])
 
         APP_CONFIG_init(gscope_splash);
 
-        /* Save references to top-level interface object(s) */
+        /* Get a reference to the top-level application window */
         gscope_main  = my_lookup_widget("gscope_main");
+
+        /* Perform initial configuration for all application callbacks */
+        CALLBACKS_init(gscope_main);
 
         program_name = g_malloc(80);
         sprintf(program_name, "<span weight=\"bold\">Version %s</span>", VERSION);

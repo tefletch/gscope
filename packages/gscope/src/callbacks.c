@@ -1792,10 +1792,7 @@ on_ignored_entry_focus_out_event       (GtkWidget       *widget,
 
 static void open_directory_browser(void)
 {
-    static GtkWidget *chooser;
-
-    chooser = lookup_widget(GTK_WIDGET(folder_chooser_dialog), "folder_chooser_dialog");
-    gtk_widget_show(chooser);
+    gtk_widget_show(folder_chooser_dialog);
 }
 
 
