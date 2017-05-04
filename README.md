@@ -16,3 +16,8 @@ source code provided here today.  Much of the code would not be recognizable
 to the original authors, but a few portions (like the scanner) are remarkably
 unchanged.
 
+Recommended Stable Versions
+===========================
+
+Gscope  Version 2.2
+Gscope3 Version 3.3
