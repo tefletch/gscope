@@ -214,15 +214,17 @@ static gboolean file_is_ascii_text(FILE *filename)
                 check_buf[2] == -65 )   // 0xbf
             {
                 // Warning:  Ugly, INTENTIONAL, function side effect ahead!
-                if (fread(check_buf, 1, 3, filename) == 0) // Advance the FILE position indicator past the first three bytes
-                                          //added if() to get newer compilers to stop complaining about ignored return values.
+                //=========================================================
+                // Advance the FILE position indicator past the first three bytes
                 // Besides being ugly, this behavior is a tad dangerous.  If we encounter a real UTF8 file that contains
                 // a variety of 8-bit extended ASCII characters [instead of just one or two copyright symbols] Gscope will probably
                 // behave badly and maybe even crash.  If this happens, the BOM detect-and-skip logic might need to
                 // be normally-off [Default = Treat any file with BOM as binary] and assign a command line argurment to enable
                 // BOM detect-and-skip on a per session basis.
-
-                return(TRUE);           // _Assume_ the remaining (TEXT_CHECK_SIZE - 3) bytes are ASCII
+                if (fread(check_buf, 1, 3, filename) == 0)
+                    return(FALSE);          // Something is seriously wrong if we cannot advance the pointer
+                else
+                    return(TRUE);           // _Assume_ the remaining (TEXT_CHECK_SIZE - 3) bytes are ASCII
             }
             else
                 return(FALSE);

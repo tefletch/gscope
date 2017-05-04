@@ -1187,9 +1187,15 @@ on_open_quick_view(GtkWidget *menuitem, gchar *file_and_line)
     gchar *linenum;
 
     linenum = strchr(file_and_line, '|');
-    *linenum++ = '\0';  // Null-terminate the filename and advance the linenum pointer to start of line number data
 
-    FILEVIEW_create(file_and_line, atoi(linenum) );
+    if ( linenum )
+    {
+        *linenum++ = '\0';  // Null-terminate the filename and advance the linenum pointer to start of line number data
+
+        FILEVIEW_create(file_and_line, atoi(linenum) );
+    }
+    else
+        fprintf(stderr, "Warning: Unexpected file_and_line parse error in on_open_quick_view()\nFile-view window creation failed.\n");
 }
 
 

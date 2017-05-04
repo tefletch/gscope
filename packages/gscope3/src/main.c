@@ -154,10 +154,13 @@ int main(int argc, char *argv[])
     }
 
 
+    /* save the filename arguments */
+    BUILD_init_cli_file_list(argc, argv);
 
     if (settings.refOnly)
     {
         APP_CONFIG_init(NULL);
+        BUILD_initDatabase();
     }
     else
     {
@@ -286,16 +289,13 @@ int main(int argc, char *argv[])
         }
 
         gtk_widget_hide(lookup_widget(GTK_WIDGET(gscope_main), "progressbar1"));
+
+        DISPLAY_set_active_progress_bar( GTK_WIDGET(gtk_builder_get_object(builder, "splash_progressbar")) );  // build progress meter
+        BUILD_initDatabase();
+        DISPLAY_set_active_progress_bar( GTK_WIDGET(gtk_builder_get_object(builder, "rebuild_progressbar")) );  // build progress meter
+        g_object_unref(G_OBJECT(builder));
     }
 
-
-    /* save the filename arguments */
-    BUILD_init_cli_file_list(argc, argv);
-
-    DISPLAY_set_active_progress_bar( GTK_WIDGET(gtk_builder_get_object(builder, "splash_progressbar")) );  // build progress meter
-    BUILD_initDatabase();
-    DISPLAY_set_active_progress_bar( GTK_WIDGET(gtk_builder_get_object(builder, "rebuild_progressbar")) );  // build progress meter
-    g_object_unref(G_OBJECT(builder));
 
     if (!settings.refOnly)
     {

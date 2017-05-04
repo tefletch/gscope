@@ -1614,7 +1614,11 @@ search_results_t *SEARCH_lookup(search_t search_operation, gchar *pattern)
     }
 
     /* append the non-global references */
-    if (freopen(temp2, "r", nonglobalrefs) == 0) /*do nothing*/; /* this should never happen, added if() just to shut up the compiler */
+    if ( freopen(temp2, "r", nonglobalrefs) == NULL )   // This must never happen
+    {
+        fprintf(stderr, "Error: Internal failure, freopen(temp2) should never fail:\n%s\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
     while ((c = getc(nonglobalrefs)) != EOF)
     {
         putc(c, refsfound);
@@ -1636,7 +1640,11 @@ search_results_t *SEARCH_lookup(search_t search_operation, gchar *pattern)
 
 
     /* reopen the references found file for reading */
-    if (freopen(temp1, "r", refsfound) == 0) /*do nothing*/;  /* this should never happen, added if() just to shut up the compiler */
+    if (freopen(temp1, "r", refsfound) == NULL)    // This must never happen
+    {
+        fprintf(stderr, "Error: Internal failure, freopen(temp1) should never fail:\n%s\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
 
     if ( stat(temp1, &statstruct) != 0 )
     {

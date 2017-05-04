@@ -141,10 +141,13 @@ int main(int argc, char *argv[])
     }
 
 
+    /* save the filename arguments */
+    BUILD_init_cli_file_list(argc, argv);
 
     if (settings.refOnly)
     {
         APP_CONFIG_init(NULL);
+        BUILD_initDatabase();
     }
     else
     {
@@ -211,15 +214,11 @@ int main(int argc, char *argv[])
         }
 
         gtk_widget_hide(lookup_widget(GTK_WIDGET(gscope_main), "progressbar1"));
+
+        DISPLAY_set_active_progress_bar( lookup_widget(gscope_splash, "splash_progressbar") );
+        BUILD_initDatabase();
+        DISPLAY_set_active_progress_bar( lookup_widget(gscope_main, "rebuild_progressbar") );
     }
-
-
-    /* save the filename arguments */
-    BUILD_init_cli_file_list(argc, argv);
-
-    DISPLAY_set_active_progress_bar( lookup_widget(gscope_splash, "splash_progressbar") );
-    BUILD_initDatabase();
-    DISPLAY_set_active_progress_bar( lookup_widget(gscope_main, "rebuild_progressbar") );
 
     if (!settings.refOnly)
     {
