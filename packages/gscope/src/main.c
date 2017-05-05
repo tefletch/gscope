@@ -30,8 +30,6 @@ int main(int argc, char *argv[])
 
     GError      *error = NULL;
     gchar       *home;
-    char        path[PATHLEN + 1];
-    char        *program_name;
 
     static gboolean option_error = FALSE;
     static gchar *refFile = NULL;
@@ -155,9 +153,15 @@ int main(int argc, char *argv[])
 
         /* Support optional/fall-back "local" pixmap files under $HOME/gscope/pixmaps */
         home = getenv("HOME");
-        if (home == NULL) home = "";
-        sprintf(path, "%s%s", home, "/.gscope/pixmaps");
-        add_pixmap_directory(path);  // Support for "private" installs (as a fall-back, not an override)
+        if (home == NULL)
+            home = "";
+
+        {
+            char  *path;
+            asprintf(&path, "%s%s", home, "/.gscope/pixmaps");
+            add_pixmap_directory(path);  // Support for "private" installs (as a fall-back, not an override)
+            g_free(path);
+        }
 
         /* Standard location for this application's pixmap files */
         add_pixmap_directory(PACKAGE_DATA_DIR "/" PACKAGE "/pixmaps");  // The pixmap directory "added" last is the firt to be checked
@@ -179,10 +183,12 @@ int main(int argc, char *argv[])
         /* Perform initial configuration for all application callbacks */
         CALLBACKS_init(gscope_main);
 
-        program_name = g_malloc(80);
-        sprintf(program_name, "<span weight=\"bold\">Version %s</span>", VERSION);
-        gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(gscope_main), "label1")), program_name);
-        g_free(program_name);
+        {
+            char  *program_name;
+            asprintf(&program_name, "<span weight=\"bold\">Version %s</span>", VERSION);
+            gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(gscope_main), "label1")), program_name);
+            g_free(program_name);
+        }
 
 
         // Initialize the Quick-option checkbox settings

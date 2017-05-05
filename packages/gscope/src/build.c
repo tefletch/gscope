@@ -376,7 +376,7 @@ void BUILD_init_cli_file_list(int argc, char *argv[])
 static void initialize_using_old_cref()
 {
     FILE      *old_file;           /* old cross-reference file */
-    char      format_string[100];
+    char      *format_string;
     char      options[OPTIONS_LEN + 1];
     char      *options_ptr = options;
     char      *old_file_buf = NULL;     /* Buffer that holds the entire old crossref file contents */
@@ -384,7 +384,6 @@ static void initialize_using_old_cref()
     struct    stat statstruct;          /* file status */
     char      src_file[PATHLEN +1];
     int       file_count;
-    char      working_buf[200];
 
     gettimeofday(&src_list_time_start, NULL);
 
@@ -412,7 +411,7 @@ static void initialize_using_old_cref()
 
 
     /* Construct a format_string that protects us from buffer overflows */
-    sprintf(format_string, "cscope %%d %%*s %%%ds", OPTIONS_LEN);
+    asprintf(&format_string, "cscope %%d %%*s %%%ds", OPTIONS_LEN);
 
     /* get the crossref file version but skip the current directory */
     if ( (sscanf(old_file_buf, format_string, &fileversion, options) != 2) || (fileversion < FILEVERSION) )
@@ -420,6 +419,7 @@ static void initialize_using_old_cref()
         fprintf(stderr, "Fatal Error: Incompatible pre-existing cross-reference file [%s]\n", settings.refFile);
         exit(EXIT_FAILURE);
     }
+    g_free(format_string);
 
 
     /* Process the options in the cross-reference (the options set in the cref file set the configuration) */
@@ -469,10 +469,12 @@ static void initialize_using_old_cref()
     gettimeofday(&cref_time_start, NULL);
     cref_time_stop = cref_time_start;
 
-
-    sprintf(working_buf, "Using %d Old (noBuild) Cross-reference files\n\n", 
-            file_count);
-    strcat(build_stats_msg, working_buf);
+    {
+        char *working_buf;
+        asprintf(&working_buf, "Using %d Old (noBuild) Cross-reference files\n\n", file_count);
+        strcat(build_stats_msg, working_buf);
+        g_free(working_buf);
+    }
 }
 
 
@@ -651,7 +653,7 @@ static gboolean old_crossref_is_compatible(char *file_buf)
     gboolean retval = TRUE;
     char    *data_dir;
     gboolean option_val;
-    char    format_string[100];
+    char    *format_string;
 
     char    *cref_header;
     guint   header_size;
@@ -669,7 +671,7 @@ static gboolean old_crossref_is_compatible(char *file_buf)
     if ( (sscanf(cref_header, "cscope %d", &fileversion) == 1) &&  (fileversion == FILEVERSION) ) /* File version match */
     {
         /* Construct a format_string that protects us from buffer overflows */
-        sprintf(format_string, "cscope %%*d %%%ds %%%ds", PATHLEN, OPTIONS_LEN);
+        asprintf(&format_string, "cscope %%*d %%%ds %%%ds", PATHLEN, OPTIONS_LEN);
 
         /* Get the path and options-list from the old cross-reference file */
         if (( sscanf(cref_header, format_string, olddir, options) == 2) &&    /* File format OK */
@@ -703,6 +705,7 @@ static gboolean old_crossref_is_compatible(char *file_buf)
         {
             retval = FALSE;
         }
+        g_free(format_string);
     }
     else
     {

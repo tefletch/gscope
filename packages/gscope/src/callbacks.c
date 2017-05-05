@@ -504,10 +504,11 @@ on_quit_confirm_dialog_response        (GtkDialog       *dialog,
 
         default:
             {
-              char error_string[150];
+              char *error_string;
 
-              sprintf(error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"Quit Confirmation\" dialog.", response_id);
+              asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"Quit Confirmation\" dialog.", response_id);
               DISPLAY_msg(GTK_MESSAGE_WARNING, error_string);
+              g_free(error_string);
             }
 
         break;
@@ -626,7 +627,7 @@ on_about1_activate                     (GtkMenuItem     *menuitem,
         gchar gtk_version[] = "\n\nLoaded GTK Version: ";
         gchar build_date[]  = "\n\nBuild Date: "__DATE__;
 
-        gchar full_comment[1024];
+        gchar *full_comment;
 
         pixbuf = create_pixbuf ("gnome-stock-about.png");
         if (pixbuf)
@@ -637,7 +638,7 @@ on_about1_activate                     (GtkMenuItem     *menuitem,
 
         gtk_about_dialog_set_version (GTK_ABOUT_DIALOG (aboutdialog1), VERSION);
 
-        sprintf(full_comment, "%s%s%s%s%d.%d.%d%s",
+        asprintf(&full_comment, "%s%s%s%s%d.%d.%d%s",
                               description,
                               based_on,
                               modified_by,
@@ -645,6 +646,7 @@ on_about1_activate                     (GtkMenuItem     *menuitem,
                               build_date);
 
         gtk_about_dialog_set_comments (GTK_ABOUT_DIALOG (aboutdialog1), full_comment);
+        g_free(full_comment);
 
         gtk_about_dialog_set_website (GTK_ABOUT_DIALOG (aboutdialog1), "https://github.com/tefletch/gscope/wiki");
         gtk_about_dialog_set_website_label (GTK_ABOUT_DIALOG (aboutdialog1), "Gscope Wiki");
@@ -675,10 +677,11 @@ on_aboutdialog1_response               (GtkDialog       *dialog,
 
         default:
             {
-              char error_string[150];
+              char *error_string;
 
-              sprintf(error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"about\" dialog.", response_id);
+              asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"about\" dialog.", response_id);
               DISPLAY_msg(GTK_MESSAGE_WARNING, error_string);
+              g_free(error_string);
               gtk_widget_hide(GTK_WIDGET (dialog));
             }
 
@@ -814,10 +817,6 @@ on_preferences_activate               (GtkMenuItem     *menuitem,
     GtkWidget *prefs_dialog;
 
     static gboolean initialized = FALSE;
-
-    #define PANGO_OVERHEAD      90
-    gchar markup_buf[MAX_STRING_ARG_SIZE + PANGO_OVERHEAD];
-    #undef PANGO_OVERHEAD
 
     extern void gtk_image_menu_item_set_always_show_image(GtkImageMenuItem *, gboolean) __attribute__((weak));
 
@@ -965,8 +964,13 @@ on_preferences_activate               (GtkMenuItem     *menuitem,
 
         /*** Initialize the preference dialog settings (Tab #4 "File Names") ***/
         /***********************************************************************/
-        sprintf(markup_buf, "<span foreground=\"seagreen\" weight=\"bold\">%s</span>", settings.rcFile);
-        gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET (prefs_dialog),"rc_filename_label")), markup_buf);
+
+        {
+            gchar *markup_buf;
+            asprintf(&markup_buf, "<span foreground=\"seagreen\" weight=\"bold\">%s</span>", settings.rcFile);
+            gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET (prefs_dialog),"rc_filename_label")), markup_buf);
+            g_free(markup_buf);
+        }
 
         gtk_entry_set_max_length( GTK_ENTRY(lookup_widget(GTK_WIDGET (prefs_dialog),"name_entry")),       MAX_STRING_ARG_SIZE-1);
         gtk_entry_set_text      ( GTK_ENTRY(lookup_widget(GTK_WIDGET (prefs_dialog),"name_entry")),       settings.nameFile );
@@ -1152,15 +1156,17 @@ on_treeview1_row_activated             (GtkTreeView     *treeview,
 void
 on_open_terminal(GtkWidget *menuitem, gchar *container)
 {
-    gchar command[1024];
+    gchar *command;
     gchar *coded_container;
 
     coded_container = strdup(container);
     my_space_codec(ENCODE, coded_container);     // Encode any 'space' characters found in the container path
 
-    sprintf(command, settings.terminalApp, coded_container);  // Synthesize the full command line
+    asprintf(&command, settings.terminalApp, coded_container);  // Synthesize the full command line
     my_system(command);
-    free(coded_container);
+
+    g_free(command);
+    g_free(coded_container);
 }
 
 
@@ -1168,15 +1174,17 @@ on_open_terminal(GtkWidget *menuitem, gchar *container)
 void
 on_open_file_browser(GtkWidget *menuitem, gchar *container)
 {
-    gchar command[1024];
+    gchar *command;
     gchar *coded_container;
 
     coded_container = strdup(container);
     my_space_codec(ENCODE, coded_container);     // Encode any 'space' characters found in the container path
 
-    sprintf(command, settings.fileManager, coded_container);
+    asprintf(&command, settings.fileManager, coded_container);
     my_system(command);
-    free(coded_container);
+
+    g_free(command);
+    g_free(coded_container);
 }
 
 
@@ -1363,13 +1371,14 @@ void
 on_fileview_start_editor_activate(GtkMenuItem *menuitem, gpointer user_data)
 {
     ViewWindow *windowPtr;
-    gchar line_str[20];
+    gchar *line_str;
 
     windowPtr = user_data;
 
     // Get the current line number from the ViewWindow structure
-    sprintf(line_str,"%d", windowPtr->line);
+    asprintf(&line_str,"%d", windowPtr->line);
     start_text_editor(windowPtr->filename, line_str);
+    g_free(line_str);
 
     gtk_widget_destroy(GTK_WIDGET(windowPtr->topWidget));
 }
@@ -1875,10 +1884,11 @@ on_folder_chooser_dialog_response      (GtkDialog       *dialog,
 
         default:
             {
-              char error_string[150];
+              char *error_string;
 
-              sprintf(error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"folder chooser\" dialog.", response_id);
+              asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"folder chooser\" dialog.", response_id);
               DISPLAY_msg(GTK_MESSAGE_WARNING, error_string);
+              g_free(error_string);
 
               gtk_widget_hide(GTK_WIDGET (dialog));
             }
@@ -2035,10 +2045,11 @@ on_open_file_chooser_dialog_response   (GtkDialog       *dialog,
 
         default:
             {
-              char error_string[150];
+              char *error_string;
 
-              sprintf(error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"file open\" dialog.", response_id);
+              asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"file open\" dialog.", response_id);
               DISPLAY_msg(GTK_MESSAGE_WARNING, error_string);
+              g_free(error_string);
 
               gtk_widget_hide(GTK_WIDGET (dialog));
             }
@@ -2176,10 +2187,11 @@ on_output_file_chooser_dialog_response (GtkDialog       *dialog,
 
         default:
             {
-              char error_string[150];
+              char *error_string;
 
-              sprintf(error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"output file\" dialog.", response_id);
+              asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"output file\" dialog.", response_id);
               DISPLAY_msg(GTK_MESSAGE_WARNING, error_string);
+              g_free(error_string);
 
               gtk_widget_hide(GTK_WIDGET (dialog));
             }

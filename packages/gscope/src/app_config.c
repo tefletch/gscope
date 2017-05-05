@@ -692,8 +692,7 @@ static void pixmap_path_fixup(char *filename, char *path, GtkWidget *parent)
                         char *new_filename; 
 
                         // Preserve possible end-user customization
-                        new_filename = g_malloc(strlen(filename) + 5);
-                        sprintf(new_filename, "%s.sav", filename);
+                        asprintf(&new_filename, "%s.sav", filename);
                         if ( rename(filename, new_filename) < 0 )
                             fprintf(stderr,"Warning: Unable to rename original GTK config file:\n%s\n", strerror(errno));
 

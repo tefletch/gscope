@@ -31,7 +31,6 @@
 //===============================================================
 //       Defines
 //===============================================================
-#define     MSGLEN                  PATHLEN + 80    /* displayed message length */
 #define     TMPDIR                  "/tmp"
 #define     MAX_SYMBOL_SIZE         PATHLEN         /* a more readable name for PATLEN & PATHLEN */
 
@@ -1061,16 +1060,17 @@ static void initprogress()
 static void progress(char *format, uint32_t n1, uint32_t n2)
 {
     uint32_t    now;
-    char    msg[MSGLEN];
+    char        *msg;
 
     /* Update every 1 second */
     now = time((time_t *) NULL);
     if ( (now - starttime) >= 1 )
     {
         starttime = now;
-        (void) sprintf(msg, format, n1, n2);
+        asprintf(&msg, format, n1, n2);
         DISPLAY_status(msg);
         DISPLAY_update_progress_bar(n1, n2);
+        g_free(msg);
 
         // Process any pending gtk events
         while (gtk_events_pending() )
@@ -1550,7 +1550,6 @@ void SEARCH_init()
 search_results_t *SEARCH_lookup(search_t search_operation, gchar *pattern)
 {
     int       c;
-    char      msg[MSGLEN];
     struct    stat statstruct;
 
     search_result_t         result = NOERROR;          /* findinit return code */
@@ -1680,21 +1679,25 @@ search_results_t *SEARCH_lookup(search_t search_operation, gchar *pattern)
 
     if (results.end_ptr == results.start_ptr )      // Handle the no-results case
     {
+        char      *msg;
+
         if (result == NOTSYMBOL)
         {
-            (void) sprintf(msg, "<span foreground=\"red\">This is not a C symbol:</span> %s", pattern);
+            (void) asprintf(&msg, "<span foreground=\"red\">This is not a C symbol:</span> %s", pattern);
         }
         else if (result == REGCMPERROR)
         {
-            (void) sprintf(msg,
+            (void) asprintf(&msg,
                            "<span foreground=\"red\">Error in this regcmp(3X) regular expression:</span> %s",
                            pattern);
         }
         else
         {
-            sprintf(msg, "<span foreground=\"red\">Could not find:</span> %s", pattern);
+            asprintf(&msg, "<span foreground=\"red\">Could not find:</span> %s", pattern);
         }
+
         DISPLAY_status(msg);
+        g_free(msg);
     }
     else    // We have some results - count the newlines to determine match_count
     {

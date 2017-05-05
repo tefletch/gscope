@@ -961,14 +961,16 @@ static void find_srcfiles_in_tree(gchar *src_dir)
     /* walk the tree & build source file list */
     if ( ftw(".", list, 1) < 0 )
     {
-        char message[512];
+        char *message;
 
-        sprintf(message,"\nG-Scope Error: Recursive File Tree Walk Error: %s", strerror(errno));
+        asprintf(&message,"\nG-Scope Error: Recursive File Tree Walk Error: %s", strerror(errno));
 
         if ( !settings.refOnly )  // If we are in GUI mode
             DISPLAY_msg(GTK_MESSAGE_ERROR, message);
         else
             fprintf(stderr, "%s\n", message);
+
+        g_free(message);
     }
 
     /* Pop back to the original CWD */
@@ -1182,8 +1184,8 @@ void DIR_addsrcfile(char *name)
 {
     char    *clean_name;
     char    *tmp_name; // Modified version of "name".
-    char    synthetic_name[PATHLEN + sizeof(GSCOPE_GEN_DIR) + sizeof(settings.autoGenId) + 3];   // +2 for '.c' or '.h', +1 for null
-    char    full_path[PATHLEN*2 + sizeof(GSCOPE_GEN_DIR) + sizeof(settings.autoGenId) + 3];
+    char    *synthetic_name;
+    char    *full_path;
     char    *work_ptr;
     struct stat statstruct;
 
@@ -1205,8 +1207,8 @@ void DIR_addsrcfile(char *name)
         if (work_ptr)
             *work_ptr = '\0';
 
-        sprintf(synthetic_name, "%s/%s%s.c", GSCOPE_GEN_DIR, tmp_name, settings.autoGenId);
-        sprintf(full_path, "%s/%s", DIR_get_path(DIR_DATA), synthetic_name);
+        asprintf(&synthetic_name, "%s/%s%s.c", GSCOPE_GEN_DIR, tmp_name, settings.autoGenId);
+        asprintf(&full_path, "%s/%s", DIR_get_path(DIR_DATA), synthetic_name);
         
         // Adds compiled output files before they are created if they do not already exist
         if (stat(full_path, &statstruct) != 0)
@@ -1222,7 +1224,10 @@ void DIR_addsrcfile(char *name)
                 add_src_primitive( strdup(synthetic_name) );
             }
         }
-        free(tmp_name);
+
+        g_free(synthetic_name);
+        g_free(full_path);
+        g_free(tmp_name);
     }
 }
 
