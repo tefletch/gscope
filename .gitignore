@@ -2,6 +2,10 @@
 ###################################################
 *.[oa]
 
+# ignore editor backup files
+############################
+*~
+
 # ignore files/symlinks created by running gscope within the tree
 #################################################################
 .cscope*
