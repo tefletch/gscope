@@ -7,6 +7,7 @@
 #define _FILE_OFFSET_BITS 64
 #endif
 
+#include <config.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <string.h>

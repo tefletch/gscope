@@ -53,6 +53,7 @@
 
 
 
+#include <config.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <string.h>
@@ -61,7 +62,6 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <stdint.h>
-#include <config.h>
 #include <errno.h>
 
 #include "app_config.h"
