@@ -126,6 +126,7 @@ line of the header to the trailer.
 
 /*** Includes ***/
 
+#include <config.h>
 #include <gtk/gtk.h>
 #include <stdio.h>
 #include <stdlib.h>
