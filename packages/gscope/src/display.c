@@ -595,11 +595,8 @@ void DISPLAY_always_show_image(gboolean always_show)
 {
     char item[40];
     int i;
-    extern void gtk_image_menu_item_set_always_show_image(GtkImageMenuItem *, gboolean) __attribute__((weak));
 
-    // Utilize the "weak symbol" method/trick to determine if the
-    // gtk_image_menu_item_set_always_show_image() function is available
-    if (gtk_image_menu_item_set_always_show_image)
+    if ( gtk_major_version > 2 || ((gtk_major_version == 2) && (gtk_minor_version > 15) )
     {
         for (i = 1; i <= 18; i++ )
         {

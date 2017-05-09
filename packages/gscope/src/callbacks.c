@@ -818,8 +818,6 @@ on_preferences_activate               (GtkMenuItem     *menuitem,
 
     static gboolean initialized = FALSE;
 
-    extern void gtk_image_menu_item_set_always_show_image(GtkImageMenuItem *, gboolean) __attribute__((weak));
-
     prefs_dialog = gscope_preferences;
 
     if ( !initialized )
@@ -1004,10 +1002,7 @@ on_preferences_activate               (GtkMenuItem     *menuitem,
                                         settings.exitConfirm );
 
 
-        // Utilize the "weak symbol" method/trick to determine if the
-        // gtk_image_menu_item_set_always_show_image() function is available
-        /* coverity[func_conv] */
-        if ( !gtk_image_menu_item_set_always_show_image )
+        if ( gtk_major_version > 2 || ((gtk_major_version == 2) && (gtk_minor_version > 15) )
         {
             // if the current gtk library does not provide gtk_image_menu_item_set_always_show_image()
             // We cannot support the "Show Menu Icons" functionality, so disable that preference item.
