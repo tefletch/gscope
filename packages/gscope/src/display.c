@@ -596,7 +596,7 @@ void DISPLAY_always_show_image(gboolean always_show)
     char item[40];
     int i;
 
-    if ( gtk_major_version > 2 || ((gtk_major_version == 2) && (gtk_minor_version > 15) )
+    if ( gtk_major_version > 2 || ((gtk_major_version == 2) && (gtk_minor_version > 15)) )
     {
         for (i = 1; i <= 18; i++ )
         {

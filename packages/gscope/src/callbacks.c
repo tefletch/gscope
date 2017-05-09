@@ -1002,7 +1002,7 @@ on_preferences_activate               (GtkMenuItem     *menuitem,
                                         settings.exitConfirm );
 
 
-        if ( gtk_major_version > 2 || ((gtk_major_version == 2) && (gtk_minor_version > 15) )
+        if ( gtk_major_version > 2 || ((gtk_major_version == 2) && (gtk_minor_version > 15)) )
         {
             // if the current gtk library does not provide gtk_image_menu_item_set_always_show_image()
             // We cannot support the "Show Menu Icons" functionality, so disable that preference item.
