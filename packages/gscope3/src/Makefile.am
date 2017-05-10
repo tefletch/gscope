@@ -39,6 +39,9 @@ gscope_SOURCES = \
 	utils.h 	\
 	version.h
 
+xmldir = $(prefix)/bin
+xml_DATA = gscope3.glade
+
 gscope_LDADD = @PACKAGE_LIBS@
 
 gscope_LDFLAGS = -rdynamic
