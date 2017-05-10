@@ -5,6 +5,7 @@ AM_CPPFLAGS = \
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" \
 	@PACKAGE_CFLAGS@
 
+AM_CFLAGS = -Wno-deprecated-declarations
 bin_PROGRAMS = gscope
 
 gscope_SOURCES = \
