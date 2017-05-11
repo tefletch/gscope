@@ -15,6 +15,7 @@
 #include <glib.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "support.h"
 
@@ -222,22 +223,22 @@ void DISPLAY_update_path_label(gchar *path)
         // move forward to the first '/' character AFTER the offset
         offset_ptr = strchr(offset_ptr, '/');
         if (offset_ptr == NULL)
-            asprintf(&working, "<NULL>");
+            NO_FAIL(asprintf(&working, "<NULL>"));
         else
-            asprintf(&working, "...%s", offset_ptr);
+            NO_FAIL(asprintf(&working, "...%s", offset_ptr));
     }
     else
-        asprintf(&working, "%s", path);
+        NO_FAIL(asprintf(&working, "%s", path));
 
     // add pango markup to path string.  Caution: pango text length must not exceed PANGO_OVERHEAD
-    asprintf(&cwd_buf, "Source Directory: <span foreground=\"seagreen\">%s</span>", working);
+    NO_FAIL(asprintf(&cwd_buf, "Source Directory: <span foreground=\"seagreen\">%s</span>", working));
     // update the label
     path_label = lookup_widget(GTK_WIDGET (gscope_main), "path_label");
     gtk_label_set_markup(GTK_LABEL(path_label), cwd_buf);
     g_free(cwd_buf);
 
     // Place the path information in the main_window title bar
-    asprintf(&cwd_buf, "G-Scope: %s", working);
+    NO_FAIL(asprintf(&cwd_buf, "G-Scope: %s", working));
     gtk_window_set_title(GTK_WINDOW(gscope_main), cwd_buf);
     g_free(cwd_buf);
 
@@ -694,7 +695,7 @@ void DISPLAY_message_dialog(GtkMessageType type, const gchar *message, gboolean 
                               GTK_DIALOG_DESTROY_WITH_PARENT,
                               type, 
                               GTK_BUTTONS_CLOSE,
-                              message);
+                              "%s", message);
 
  // Pango markup example:
  //    _("<span foreground=\"blue\" size=\"x-large\" weight=\"bold\">Build Monitor 0.1</span>\nA panel application for monitoring print build status\n2007 Tom Fletcher")

@@ -1068,7 +1068,7 @@ static void progress(char *format, uint32_t n1, uint32_t n2)
     if ( (now - starttime) >= 1 )
     {
         starttime = now;
-        asprintf(&msg, format, n1, n2);
+        NO_FAIL(asprintf(&msg, format, n1, n2));
         DISPLAY_status(msg);
         DISPLAY_update_progress_bar(n1, n2);
         g_free(msg);
@@ -1684,17 +1684,17 @@ search_results_t *SEARCH_lookup(search_t search_operation, gchar *pattern)
 
         if (result == NOTSYMBOL)
         {
-            (void) asprintf(&msg, "<span foreground=\"red\">This is not a C symbol:</span> %s", pattern);
+            NO_FAIL(asprintf(&msg, "<span foreground=\"red\">This is not a C symbol:</span> %s", pattern));
         }
         else if (result == REGCMPERROR)
         {
-            (void) asprintf(&msg,
+            NO_FAIL(asprintf(&msg,
                            "<span foreground=\"red\">Error in this regcmp(3X) regular expression:</span> %s",
-                           pattern);
+                           pattern));
         }
         else
         {
-            asprintf(&msg, "<span foreground=\"red\">Could not find:</span> %s", pattern);
+            NO_FAIL(asprintf(&msg, "<span foreground=\"red\">Could not find:</span> %s", pattern));
         }
 
         DISPLAY_status(msg);

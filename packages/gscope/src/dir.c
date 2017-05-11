@@ -964,7 +964,7 @@ static void find_srcfiles_in_tree(gchar *src_dir)
     {
         char *message;
 
-        asprintf(&message,"\nG-Scope Error: Recursive File Tree Walk Error: %s", strerror(errno));
+        NO_FAIL(asprintf(&message,"\nG-Scope Error: Recursive File Tree Walk Error: %s", strerror(errno)));
 
         if ( !settings.refOnly )  // If we are in GUI mode
             DISPLAY_msg(GTK_MESSAGE_ERROR, message);
@@ -1208,8 +1208,8 @@ void DIR_addsrcfile(char *name)
         if (work_ptr)
             *work_ptr = '\0';
 
-        asprintf(&synthetic_name, "%s/%s%s.c", GSCOPE_GEN_DIR, tmp_name, settings.autoGenId);
-        asprintf(&full_path, "%s/%s", DIR_get_path(DIR_DATA), synthetic_name);
+        NO_FAIL(asprintf(&synthetic_name, "%s/%s%s.c", GSCOPE_GEN_DIR, tmp_name, settings.autoGenId));
+        NO_FAIL(asprintf(&full_path, "%s/%s", DIR_get_path(DIR_DATA), synthetic_name));
         
         // Adds compiled output files before they are created if they do not already exist
         if (stat(full_path, &statstruct) != 0)
