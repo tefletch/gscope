@@ -255,7 +255,7 @@ int main(int argc, char *argv[])
 
         {
             char *program_name;
-            NO_FAIL(asprintf(&program_name, "<span weight=\"bold\">Version %s</span>", VERSION));
+            my_asprintf(&program_name, "<span weight=\"bold\">Version %s</span>", VERSION);
             gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(gscope_main), "label1")), program_name);
             g_free(program_name);
         }

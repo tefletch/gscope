@@ -11,15 +11,6 @@
 /* database output macros that update it's offset */
 #define     dbputc(c)           (++dboffset, (void) putc(c, newrefs))
 
-/* Failure-intolerant library call wrapper */
-#define     NO_FAIL(call) ({\
-        if ( call < 0 )\
-        {\
-            fprintf(stderr, "Unexpected library call failed:  %s line %d",  __FILE__, __LINE__); \
-            exit(EXIT_FAILURE); \
-        }\
-})
-
 #define     ENCODE  TRUE
 #define     DECODE  FALSE
 
@@ -41,4 +32,5 @@ void        my_add_widget(gpointer data, gpointer user_data);
 pid_t       my_system(gchar *application);
 void        my_space_codec(gboolean encode, gchar *my_string);
 void        my_chdir(gchar *path);
+void        my_asprintf(gchar **str_ptr, const char *fmt, ...);
 

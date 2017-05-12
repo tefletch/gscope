@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 
         {
             char  *path;
-            NO_FAIL(asprintf(&path, "%s%s", home, "/.gscope/pixmaps"));
+            my_asprintf(&path, "%s%s", home, "/.gscope/pixmaps");
             add_pixmap_directory(path);  // Support for "private" installs (as a fall-back, not an override)
             g_free(path);
         }
@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
 
         {
             char  *program_name;
-            NO_FAIL(asprintf(&program_name, "<span weight=\"bold\">Version %s</span>", VERSION));
+            my_asprintf(&program_name, "<span weight=\"bold\">Version %s</span>", VERSION);
             gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(gscope_main), "label1")), program_name);
             g_free(program_name);
         }

@@ -130,7 +130,6 @@ line of the header to the trailer.
 #include <gtk/gtk.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>        /* O_RDONLY */
 #include <sys/types.h>
 #include <sys/stat.h>     /* stat */
 #include <sys/time.h>
@@ -412,7 +411,7 @@ static void initialize_using_old_cref()
 
 
     /* Construct a format_string that protects us from buffer overflows */
-    NO_FAIL(asprintf(&format_string, "cscope %%d %%*s %%%ds", OPTIONS_LEN));
+    my_asprintf(&format_string, "cscope %%d %%*s %%%ds", OPTIONS_LEN);
 
     /* get the crossref file version but skip the current directory */
     if ( (sscanf(old_file_buf, format_string, &fileversion, options) != 2) || (fileversion < FILEVERSION) )
@@ -472,7 +471,7 @@ static void initialize_using_old_cref()
 
     {
         char *working_buf;
-        NO_FAIL(asprintf(&working_buf, "Using %d Old (noBuild) Cross-reference files\n\n", file_count));
+        my_asprintf(&working_buf, "Using %d Old (noBuild) Cross-reference files\n\n", file_count);
         strcat(build_stats_msg, working_buf);
         g_free(working_buf);
     }
@@ -672,7 +671,7 @@ static gboolean old_crossref_is_compatible(char *file_buf)
     if ( (sscanf(cref_header, "cscope %d", &fileversion) == 1) &&  (fileversion == FILEVERSION) ) /* File version match */
     {
         /* Construct a format_string that protects us from buffer overflows */
-        NO_FAIL(asprintf(&format_string, "cscope %%*d %%%ds %%%ds", PATHLEN, OPTIONS_LEN));
+        my_asprintf(&format_string, "cscope %%*d %%%ds %%%ds", PATHLEN, OPTIONS_LEN);
 
         /* Get the path and options-list from the old cross-reference file */
         if (( sscanf(cref_header, format_string, olddir, options) == 2) &&    /* File format OK */

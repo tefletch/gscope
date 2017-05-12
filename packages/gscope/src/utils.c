@@ -1,3 +1,4 @@
+#include <config.h>
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
@@ -196,6 +197,7 @@ void my_space_codec(gboolean encode, gchar *my_string)
     {
         from_char = '\a';
         to_char   = ' ';   // Convert all '\a' characters to ' ' (space) characters.
+
     }
 
     while (*work_ptr != '\0')
@@ -317,4 +319,21 @@ pid_t my_system(gchar *application)
 }
 
 
+// Handle 'bad' return values from asprint() as a fatal error.
+//
+// Possible Future location to "write your own" [alternate] implementation of
+// asprintf() if the  asprintf/vasprintf GNU extensions are not avialable on
+// the host platform [the need for this is presumed to be unlikely].
+//===========================================================================
+void my_asprintf(gchar **str_ptr, const char *fmt, ...)
+{
+    va_list     args;
 
+    va_start(args, fmt);
+    if ( vasprintf(str_ptr, fmt, args) < 0 )
+    {
+        fprintf(stderr, "Fatal asprintf() malloc error...Closing Gscope\n");
+        exit(EXIT_FAILURE);
+    }
+    va_end(args);
+}

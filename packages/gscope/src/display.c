@@ -223,22 +223,22 @@ void DISPLAY_update_path_label(gchar *path)
         // move forward to the first '/' character AFTER the offset
         offset_ptr = strchr(offset_ptr, '/');
         if (offset_ptr == NULL)
-            NO_FAIL(asprintf(&working, "<NULL>"));
+            my_asprintf(&working, "<NULL>");
         else
-            NO_FAIL(asprintf(&working, "...%s", offset_ptr));
+            my_asprintf(&working, "...%s", offset_ptr);
     }
     else
-        NO_FAIL(asprintf(&working, "%s", path));
+        my_asprintf(&working, "%s", path);
 
     // add pango markup to path string.  Caution: pango text length must not exceed PANGO_OVERHEAD
-    NO_FAIL(asprintf(&cwd_buf, "Source Directory: <span foreground=\"seagreen\">%s</span>", working));
+    my_asprintf(&cwd_buf, "Source Directory: <span foreground=\"seagreen\">%s</span>", working);
     // update the label
     path_label = lookup_widget(GTK_WIDGET (gscope_main), "path_label");
     gtk_label_set_markup(GTK_LABEL(path_label), cwd_buf);
     g_free(cwd_buf);
 
     // Place the path information in the main_window title bar
-    NO_FAIL(asprintf(&cwd_buf, "G-Scope: %s", working));
+    my_asprintf(&cwd_buf, "G-Scope: %s", working);
     gtk_window_set_title(GTK_WINDOW(gscope_main), cwd_buf);
     g_free(cwd_buf);
 
