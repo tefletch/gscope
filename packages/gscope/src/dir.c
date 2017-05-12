@@ -3,10 +3,6 @@
  *  directory searching functions
  */
 
-#ifdef __ghs__      // hack to make ftw() work when using (32-bit) GHS tool chain [fixes size conflict]
-#define _FILE_OFFSET_BITS 64
-#endif
-
 #include <config.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
