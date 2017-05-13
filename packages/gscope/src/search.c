@@ -1680,23 +1680,27 @@ search_results_t *SEARCH_lookup(search_t search_operation, gchar *pattern)
     if (results.end_ptr == results.start_ptr )      // Handle the no-results case
     {
         char      *msg;
+        char      *esc_pattern;
+        
+        esc_pattern = g_markup_escape_text(pattern, -1);        // Escape any/all special markup chars <,>,&
 
         if (result == NOTSYMBOL)
         {
-            my_asprintf(&msg, "<span foreground=\"red\">This is not a C symbol:</span> %s", pattern);
+            my_asprintf(&msg, "<span foreground=\"red\">This is not a C symbol:</span> %s", esc_pattern);
         }
         else if (result == REGCMPERROR)
         {
             my_asprintf(&msg,
                            "<span foreground=\"red\">Error in this regcmp(3X) regular expression:</span> %s",
-                           pattern);
+                           esc_pattern);
         }
         else
         {
-            my_asprintf(&msg, "<span foreground=\"red\">Could not find:</span> %s", pattern);
+            my_asprintf(&msg, "<span foreground=\"red\">Could not find:</span> %s", esc_pattern);
         }
 
         DISPLAY_status(msg);
+        g_free(esc_pattern);
         g_free(msg);
     }
     else    // We have some results - count the newlines to determine match_count

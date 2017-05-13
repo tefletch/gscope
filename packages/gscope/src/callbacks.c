@@ -254,6 +254,8 @@ static void process_query(search_t query_type)
 
         if ( search_results->match_count > 0 )
         {
+            char *esc_pattern;
+            
             // Disable the Cancel button
             gtk_widget_set_sensitive (cancel_button, FALSE);
 
@@ -267,10 +269,13 @@ static void process_query(search_t query_type)
             else
                 strcpy(plural,"");
 
+            esc_pattern = g_markup_escape_text(pattern, -1);
             sprintf(msg, "%s:  <span foreground=\"blue\">%s</span>   [%d match%s]", button_label[query_type],
-                                                                                    pattern,
+                                                                                    esc_pattern,
                                                                                     search_results->match_count,
                                                                                     plural);
+            g_free(esc_pattern);
+            
             if (cancel_requested)
             {
                 cancel_requested = FALSE;
