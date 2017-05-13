@@ -3,7 +3,7 @@
  *
  *  build cross-reference file
  */
-
+#include <config.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <sys/stat.h>

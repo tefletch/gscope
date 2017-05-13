@@ -1,16 +1,14 @@
-#include <config.h> /* for GTK3_BUILD */
+
 #ifdef GTK3_BUILD
 #include <gtksourceview/gtksource.h>
+#include <gtksourceview/gtksourcemarkattributes.h>
 #else
 #include <gtksourceview/gtksourceview.h>
 #endif
+
 #include <gtksourceview/gtksourcebuffer.h>
 #include <gtksourceview/gtksourcelanguage.h>
 #include <gtksourceview/gtksourcelanguagemanager.h>
-
-#ifdef GTK3_BUILD
-#include <gtksourceview/gtksourcemarkattributes.h>
-#endif
 
 
 // ---- Typedefs ----

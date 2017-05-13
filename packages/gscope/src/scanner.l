@@ -38,6 +38,7 @@
  *
  *  C symbol scanner
  */
+#include <config.h>
 #include <gtk/gtk.h>
 #include <assert.h>
 #include <string.h>

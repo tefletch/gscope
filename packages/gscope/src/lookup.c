@@ -3,6 +3,7 @@
  *  keyword look-up routine for the C symbol scanner
  */
 
+#include <config.h>
 #include <sys/types.h>
 #include <gtk/gtk.h>
 #include <string.h>
