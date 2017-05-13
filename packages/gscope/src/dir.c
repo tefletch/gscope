@@ -239,6 +239,7 @@ static void       _init_include_dir_list(void);
 static void       _alloc_src_file_list(void);
 static gboolean   is_protobuf_file(const char *filename);
 static void       add_src_primitive(char *name);
+static gboolean   is_regular_file(const char *path);
 
 #if ( OLD_HASH == 1 )
 static int  hash(const char *ss);
@@ -755,7 +756,7 @@ static void _make_src_file_list()
 
             if ( !infilelist(file) )
             {
-                if (access(file, R_OK) == 0)    /* if file is found */
+                if ( is_regular_file(file) )    /* if file is found */
                     // Add the new filename string to the source file list
                     DIR_addsrcfile(file);
                 else
@@ -784,7 +785,7 @@ static void _make_src_file_list()
 
             if (infilelist(path) == FALSE)
             {
-                if (access(path, R_OK) == 0)    /* if file is found */
+                if ( is_regular_file(path) )    /* if file is found */
                     DIR_addsrcfile(path);
                 else
                     fprintf(stderr, "Cannot find file %s\n", path);
@@ -1094,7 +1095,7 @@ void DIR_incfile(char *file)
 
     if ( *clean_name == '/')      // Is this an absolute path?
     {
-        if (access(clean_name, R_OK) == 0)  // File found
+        if ( is_regular_file(clean_name) )  // File found
         {
             /* We already know that 'file' is not in the list, so just add it */
             DIR_addsrcfile(clean_name);
@@ -1105,7 +1106,7 @@ void DIR_incfile(char *file)
         /* First look in source_dir */
         src_dir = DIR_get_path(DIR_SOURCE);
         sprintf(path, "%s/%s", src_dir, clean_name);
-        if ( (access(compress_path(path), R_OK) == 0) && (!infilelist(clean_name)) )
+        if ( (is_regular_file(compress_path(path))) && (!infilelist(clean_name)) )
         {
             DIR_addsrcfile(clean_name);   // yes, use 'file', not 'path' -- keep the name "relative"
         }
@@ -1115,7 +1116,7 @@ void DIR_incfile(char *file)
             for (i = 0; i < num_include_dirs; ++i)
             {
                 sprintf(path, "%s/%s", include_dirs[i], clean_name);
-                if ( access(compress_path(path), R_OK) == 0 )
+                if ( is_regular_file(compress_path(path)) )
                 {
                      if (!infilelist(path))
                      {
@@ -1165,6 +1166,17 @@ static gboolean is_protobuf_file(const char *filename)
     //                     unneccessary strcmp() calls
     if ( (*(ptr + 1) == settings.autoGenSuffix[1]) && (strcmp(ptr, settings.autoGenSuffix) == 0) )
         return (TRUE);
+    else
+        return(FALSE);
+}
+
+
+
+static gboolean is_regular_file(const char *path)
+{
+    struct stat path_stat;
+    if ( stat(path, &path_stat) == 0 )
+        return( S_ISREG(path_stat.st_mode) );
     else
         return(FALSE);
 }
