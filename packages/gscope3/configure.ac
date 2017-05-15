@@ -12,6 +12,8 @@ AC_DEFINE([GTK3_BUILD], [], [Build Control])
 AC_HEADER_STDC
 AC_SEARCH_LIBS([strerror],[cposix])
 
+AC_CHECK_FUNCS([asprintf])
+
 pkg_modules="gtk+-3.0 >= 3.0 gtksourceview-3.0 >= 3.8"
 PKG_CHECK_MODULES(PACKAGE, [$pkg_modules])
 AC_SUBST(PACKAGE_CFLAGS)

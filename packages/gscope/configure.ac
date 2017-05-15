@@ -11,6 +11,8 @@ AC_PROG_CC
 AC_SEARCH_LIBS([strerror],[cposix])
 AC_HEADER_STDC
 
+AC_CHECK_FUNCS([asprintf])
+
 pkg_modules="gtk+-2.0 >= 2.24 gtksourceview-2.0 >= 2.8"
 PKG_CHECK_MODULES(PACKAGE, [$pkg_modules])
 AC_SUBST(PACKAGE_CFLAGS)
