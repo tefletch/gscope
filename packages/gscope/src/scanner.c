@@ -13330,7 +13330,10 @@ char *yytext;
  *
  *  C symbol scanner
  */
-#include <config.h>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <gtk/gtk.h>
 #include <assert.h>
 #include <string.h>
@@ -13406,7 +13409,7 @@ static  void    my_yymore(void);
 
 /* exclusive start conditions. not available in AT&T lex -> use flex! */
 
-#line 13410 "scanner.c"
+#line 13413 "scanner.c"
 
 #define INITIAL 0
 #define SDL 1
@@ -13609,10 +13612,10 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 131 "scanner.l"
+#line 134 "scanner.l"
 
 
-#line 13616 "scanner.c"
+#line 13619 "scanner.c"
 
 	if ( !(yy_init) )
 		{
@@ -13704,7 +13707,7 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 133 "scanner.l"
+#line 136 "scanner.l"
 {   /* lex/yacc C declarations/definitions */
             global = TRUE;
             goto more;
@@ -13713,7 +13716,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 138 "scanner.l"
+#line 141 "scanner.l"
 {
             global = FALSE;
             goto more;
@@ -13722,7 +13725,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 143 "scanner.l"
+#line 146 "scanner.l"
 {   /* lex/yacc rules delimiter */
             braces = 0;
             if (rules == FALSE) {
@@ -13764,7 +13767,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 182 "scanner.l"
+#line 185 "scanner.l"
 { /* sdl state, treat as function def */
             braces = 1;
             fcndef = TRUE;
@@ -13775,7 +13778,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 189 "scanner.l"
+#line 192 "scanner.l"
 { /* end of an sdl state, treat as end of a function */
             goto endstate;
             /* NOTREACHED */
@@ -13783,7 +13786,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 194 "scanner.l"
+#line 197 "scanner.l"
 {   /* count unmatched left braces for fcn def detection */
             ++braces;
 
@@ -13805,7 +13808,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 213 "scanner.l"
+#line 216 "scanner.l"
 { /* start a preprocessor line */
             if (rules == FALSE)     /* don't consider CPP for lex/yacc rules */
                 BEGIN(IN_PREPROC);
@@ -13816,7 +13819,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 220 "scanner.l"
+#line 223 "scanner.l"
 {   /* #endif */
             /* delay treatment of #endif depending on whether an
              * #if comes right after it, or not */
@@ -13830,7 +13833,7 @@ YY_RULE_SETUP
 case 9:
 /* rule 9 can match eol */
 YY_RULE_SETUP
-#line 229 "scanner.l"
+#line 232 "scanner.l"
 {
             /* attempt to correct erroneous brace count caused by:
              *
@@ -13857,7 +13860,7 @@ YY_RULE_SETUP
 case 10:
 /* rule 10 can match eol */
 YY_RULE_SETUP
-#line 251 "scanner.l"
+#line 254 "scanner.l"
 {  /* an #endif with no #if right after it */
         endif:
             if (iflevel > 0) {
@@ -13874,12 +13877,12 @@ YY_RULE_SETUP
         }
 	YY_BREAK
 case 11:
-#line 267 "scanner.l"
+#line 270 "scanner.l"
 case 12:
-#line 268 "scanner.l"
+#line 271 "scanner.l"
 case 13:
 YY_RULE_SETUP
-#line 268 "scanner.l"
+#line 271 "scanner.l"
 { /* #if directive */
             elseelif = FALSE;
             if (pseudoelif == TRUE) {
@@ -13903,7 +13906,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 288 "scanner.l"
+#line 291 "scanner.l"
 { /* #else --- eat up whole line */
             elseelif = TRUE;
             if (iflevel > 0) {
@@ -13922,7 +13925,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 303 "scanner.l"
+#line 306 "scanner.l"
 { /* #elif */
             /* elseelif = TRUE; --- HBB I doubt this is correct */
         elif:
@@ -13941,10 +13944,10 @@ YY_RULE_SETUP
         }
 	YY_BREAK
 case 16:
-#line 321 "scanner.l"
+#line 324 "scanner.l"
 case 17:
 YY_RULE_SETUP
-#line 321 "scanner.l"
+#line 324 "scanner.l"
 { /* #include file */
             char    *s;
             char remember = yytext[yyleng-1];
@@ -13968,7 +13971,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 342 "scanner.l"
+#line 345 "scanner.l"
 {
             /* could be the last enum member initializer */
             if (braces == initializerbraces) {
@@ -14000,7 +14003,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 371 "scanner.l"
+#line 374 "scanner.l"
 {   /* count unmatched left parentheses for function templates */
             ++parens;
             goto more;
@@ -14009,7 +14012,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 376 "scanner.l"
+#line 379 "scanner.l"
 {
             if (--parens <= 0) {
                 parens = 0;
@@ -14025,7 +14028,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 388 "scanner.l"
+#line 391 "scanner.l"
 {   /* if a global definition initializer */
             if (!my_yytext)
                 return(LEXERR);
@@ -14039,7 +14042,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 398 "scanner.l"
+#line 401 "scanner.l"
 {   /* a if global structure field */
             if (!my_yytext)
                 return(LEXERR);
@@ -14052,7 +14055,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 407 "scanner.l"
+#line 410 "scanner.l"
 {
             if (braces == initializerbraces) {
                 initializerbraces = -1;
@@ -14065,7 +14068,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 416 "scanner.l"
+#line 419 "scanner.l"
 {   /* if the enum/struct/union was not a definition */
             if (braces == 0) {
                 esudef = FALSE;
@@ -14087,7 +14090,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 434 "scanner.l"
+#line 437 "scanner.l"
 {
 
             /* preprocessor macro or constant definition */
@@ -14115,7 +14118,7 @@ YY_RULE_SETUP
 case 26:
 /* rule 26 can match eol */
 YY_RULE_SETUP
-#line 457 "scanner.l"
+#line 460 "scanner.l"
 {   /* unknown preprocessor line */
             BEGIN(INITIAL);
                         ++myylineno;
@@ -14124,10 +14127,10 @@ YY_RULE_SETUP
         }
 	YY_BREAK
 case 27:
-#line 464 "scanner.l"
+#line 467 "scanner.l"
 case 28:
 YY_RULE_SETUP
-#line 464 "scanner.l"
+#line 467 "scanner.l"
 {   /* unknown preprocessor line */
             BEGIN(INITIAL);
             goto more;
@@ -14137,7 +14140,7 @@ YY_RULE_SETUP
 case 29:
 /* rule 29 can match eol */
 YY_RULE_SETUP
-#line 470 "scanner.l"
+#line 473 "scanner.l"
 {   /* class definition */
             classdef = TRUE;
             tagdef =  'c';
@@ -14149,7 +14152,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 479 "scanner.l"
+#line 482 "scanner.l"
 {
             ident_start = first;
             BEGIN(WAS_ESU);
@@ -14160,7 +14163,7 @@ YY_RULE_SETUP
 case 31:
 /* rule 31 can match eol */
 YY_RULE_SETUP
-#line 485 "scanner.l"
+#line 488 "scanner.l"
 { /* e/s/u definition */
             tagdef = my_yytext[ident_start];
             BEGIN(WAS_IDENTIFIER);
@@ -14170,7 +14173,7 @@ YY_RULE_SETUP
 case 32:
 /* rule 32 can match eol */
 YY_RULE_SETUP
-#line 490 "scanner.l"
+#line 493 "scanner.l"
 { /* e/s/u definition without a tag */
             tagdef = my_yytext[ident_start];
             BEGIN(INITIAL);
@@ -14185,11 +14188,11 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 /* rule 33 can match eol */
-#line 502 "scanner.l"
+#line 505 "scanner.l"
 case 34:
 /* rule 34 can match eol */
 YY_RULE_SETUP
-#line 502 "scanner.l"
+#line 505 "scanner.l"
 {   /* e/s/u usage */
             BEGIN(WAS_IDENTIFIER);
             goto ident;
@@ -14199,7 +14202,7 @@ YY_RULE_SETUP
 case 35:
 /* rule 35 can match eol */
 YY_RULE_SETUP
-#line 508 "scanner.l"
+#line 511 "scanner.l"
 {   /* ignore 'if' */
             yyless(2);
             yy_set_bol(0);
@@ -14208,7 +14211,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 514 "scanner.l"
+#line 517 "scanner.l"
 {   /* identifier found: do nothing, yet. (!) */
             BEGIN(WAS_IDENTIFIER);
             ident_start = first;
@@ -14220,7 +14223,7 @@ YY_RULE_SETUP
 case 37:
 /* rule 37 can match eol */
 YY_RULE_SETUP
-#line 522 "scanner.l"
+#line 525 "scanner.l"
 {
             /* a function definition */
             /* note: "#define a (b) {" and "#if defined(a)\n#"
@@ -14247,7 +14250,7 @@ YY_RULE_SETUP
 case 38:
 /* rule 38 can match eol */
 YY_RULE_SETUP
-#line 544 "scanner.l"
+#line 547 "scanner.l"
 {   /* function call */
         fcncal: if (fcndef == TRUE || ppdefine == TRUE || rules == TRUE) {
                 token = FCNCALL;
@@ -14265,7 +14268,7 @@ YY_RULE_SETUP
 case 39:
 /* rule 39 can match eol */
 YY_RULE_SETUP
-#line 557 "scanner.l"
+#line 560 "scanner.l"
 {   /* typedef name or modifier use */
             goto ident;
             /* NOTREACHED */
@@ -14274,7 +14277,7 @@ YY_RULE_SETUP
 case 40:
 /* rule 40 can match eol */
 YY_RULE_SETUP
-#line 561 "scanner.l"
+#line 564 "scanner.l"
 {       /* general identifer usage */
             char    *s;
 
@@ -14387,7 +14390,7 @@ YY_RULE_SETUP
 
 case 41:
 YY_RULE_SETUP
-#line 671 "scanner.l"
+#line 674 "scanner.l"
 {   /* array dimension (don't worry or about subscripts) */
             arraydimension = TRUE;
             goto more;
@@ -14396,7 +14399,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 676 "scanner.l"
+#line 679 "scanner.l"
 {
             arraydimension = FALSE;
             goto more;
@@ -14406,7 +14409,7 @@ YY_RULE_SETUP
 case 43:
 /* rule 43 can match eol */
 YY_RULE_SETUP
-#line 681 "scanner.l"
+#line 684 "scanner.l"
 {   /* preprocessor statement is continued on next line */
             /* save the '\\' to the output file, but not the '\n': */
             yyleng = 1;
@@ -14418,7 +14421,7 @@ YY_RULE_SETUP
 case 44:
 /* rule 44 can match eol */
 YY_RULE_SETUP
-#line 688 "scanner.l"
+#line 691 "scanner.l"
 {   /* end of the line */
             if (ppdefine == TRUE) { /* end of a #define */
                 ppdefine = FALSE;
@@ -14471,7 +14474,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 738 "scanner.l"
+#line 741 "scanner.l"
 {   /* character constant */
             if (sdl == FALSE)
                 BEGIN(IN_SQUOTE);
@@ -14481,7 +14484,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 744 "scanner.l"
+#line 747 "scanner.l"
 {
             BEGIN(INITIAL);
             goto more;
@@ -14490,7 +14493,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 749 "scanner.l"
+#line 752 "scanner.l"
 {   /* string constant */
             BEGIN(IN_DQUOTE);
             goto more;
@@ -14499,7 +14502,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 754 "scanner.l"
+#line 757 "scanner.l"
 {
             BEGIN(INITIAL);
             goto more;
@@ -14510,7 +14513,7 @@ YY_RULE_SETUP
 case 49:
 /* rule 49 can match eol */
 YY_RULE_SETUP
-#line 760 "scanner.l"
+#line 763 "scanner.l"
 {   /* syntax error: unexpected EOL */
             BEGIN(INITIAL);
             goto eol;
@@ -14518,10 +14521,10 @@ YY_RULE_SETUP
         }
 	YY_BREAK
 case 50:
-#line 766 "scanner.l"
+#line 769 "scanner.l"
 case 51:
 YY_RULE_SETUP
-#line 766 "scanner.l"
+#line 769 "scanner.l"
 {
             goto more;
             /* NOTREACHED */
@@ -14530,7 +14533,7 @@ YY_RULE_SETUP
 case 52:
 /* rule 52 can match eol */
 YY_RULE_SETUP
-#line 770 "scanner.l"
+#line 773 "scanner.l"
 {       /* line continuation inside a string! */
             myylineno++;
             goto more;
@@ -14540,21 +14543,21 @@ YY_RULE_SETUP
 
 case 53:
 YY_RULE_SETUP
-#line 777 "scanner.l"
+#line 780 "scanner.l"
 {       /* don't save leading white space */
         }
 	YY_BREAK
 case 54:
 /* rule 54 can match eol */
 YY_RULE_SETUP
-#line 780 "scanner.l"
+#line 783 "scanner.l"
 {       /* eat whitespace at end of line */
             unput('\n');
         }
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 784 "scanner.l"
+#line 787 "scanner.l"
 {   /* eat non-blank whitespace sequences, replace
              * by single blank */
             unput(' ');
@@ -14562,31 +14565,31 @@ YY_RULE_SETUP
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 789 "scanner.l"
+#line 792 "scanner.l"
 {   /* compress sequential whitespace here, not in putcrossref() */
             unput(' ');
         }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 793 "scanner.l"
+#line 796 "scanner.l"
 yy_push_state(COMMENT);
 	YY_BREAK
 
 case 58:
-#line 796 "scanner.l"
+#line 799 "scanner.l"
 case 59:
 YY_RULE_SETUP
-#line 796 "scanner.l"
+#line 799 "scanner.l"
 ; /* do nothing */
 	YY_BREAK
 case 60:
 /* rule 60 can match eol */
-#line 798 "scanner.l"
+#line 801 "scanner.l"
 case 61:
 /* rule 61 can match eol */
 YY_RULE_SETUP
-#line 798 "scanner.l"
+#line 801 "scanner.l"
 {
             if (ppdefine == FALSE) {
                 goto eol;
@@ -14598,7 +14601,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 806 "scanner.l"
+#line 809 "scanner.l"
 {
             /* replace the comment by a single blank */
             unput(' ');
@@ -14609,7 +14612,7 @@ YY_RULE_SETUP
 case 63:
 /* rule 63 can match eol */
 YY_RULE_SETUP
-#line 813 "scanner.l"
+#line 816 "scanner.l"
 {
             /* C++-style one-line comment */
             goto eol;
@@ -14617,12 +14620,12 @@ YY_RULE_SETUP
         }
 	YY_BREAK
 case 64:
-#line 820 "scanner.l"
+#line 823 "scanner.l"
 case 65:
-#line 821 "scanner.l"
+#line 824 "scanner.l"
 case 66:
 YY_RULE_SETUP
-#line 821 "scanner.l"
+#line 824 "scanner.l"
 {   /* punctuation and operators */
                         more:
                             my_yymore();
@@ -14631,10 +14634,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 827 "scanner.l"
+#line 830 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 14638 "scanner.c"
+#line 14641 "scanner.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(SDL):
 case YY_STATE_EOF(IN_PREPROC):
@@ -15688,7 +15691,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 827 "scanner.l"
+#line 830 "scanner.l"
 
 
 

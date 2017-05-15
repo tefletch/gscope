@@ -3,7 +3,10 @@
  *  keyword look-up routine for the C symbol scanner
  */
 
-#include <config.h>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <sys/types.h>
 #include <gtk/gtk.h>
 #include <string.h>
