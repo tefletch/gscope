@@ -180,6 +180,7 @@ static void createFileViewer(ViewWindow *windowPtr)
     GtkSourceBuffer *sBuf;
     GtkSourceLanguageManager *lm;
     GdkPixbuf *fileview_icon_pixbuf;
+    PangoFontDescription *font_desc;
     const gchar * const *lang_dirs;
     static guint x = 400;
     static guint y = 400;
@@ -249,16 +250,14 @@ static void createFileViewer(ViewWindow *windowPtr)
 
     g_signal_connect (GTK_SOURCE_VIEW(sView),"populate-popup",G_CALLBACK(ModifyTextPopUp),windowPtr);
 
-    #if 0   // There's really no good reason to override the font provided by the Theme.
     /* Set default Font name,size */
-    font_desc = pango_font_description_from_string ("mono 8");
+    font_desc = pango_font_description_from_string ("Monospace");
     #ifdef GTK3_BUILD
     gtk_widget_override_font (sView, font_desc);
     #else
     gtk_widget_modify_font (sView, font_desc);
     #endif
     pango_font_description_free (font_desc);
-    #endif
 
     /* Attach the GtkSourceView to the scrolled Window */
     gtk_container_add (GTK_CONTAINER (pScrollWin), GTK_WIDGET (sView));
