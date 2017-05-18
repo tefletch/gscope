@@ -137,6 +137,10 @@ void FILEVIEW_create(gchar *file_name, gint line)
             // create a new GtkSourceView window
             createFileViewer(windowPtr);
             s_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(windowPtr->srcViewWidget));
+
+            // Create a marker to indicate the matched line
+            gtk_text_buffer_get_iter_at_line (GTK_TEXT_BUFFER (s_buffer), &iter, line - 1);
+            gtk_source_buffer_create_source_mark (GTK_SOURCE_BUFFER (s_buffer), "LineMarker", "LMtype", &iter);
     
             if (viewListBegin == NULL)
             {
@@ -168,6 +172,10 @@ void FILEVIEW_create(gchar *file_name, gint line)
     mark = gtk_text_buffer_get_insert(GTK_TEXT_BUFFER (s_buffer));
     // Scroll to the specified line number
     gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(windowPtr->srcViewWidget), mark, 0, TRUE, 0, 0.5);
+
+    /* Move the search marker to the specified line */
+    gtk_text_buffer_move_mark_by_name (GTK_TEXT_BUFFER (s_buffer), "LineMarker", &iter);
+
     return;
 }
 
@@ -370,9 +378,6 @@ static gboolean open_file (GtkSourceBuffer *sBuf, const gchar *filename, gint li
     /* move cursor to the specified line */
     gtk_text_buffer_get_iter_at_line (GTK_TEXT_BUFFER (sBuf), &iter, line - 1);
     gtk_text_buffer_place_cursor (GTK_TEXT_BUFFER (sBuf), &iter);
-
-    /* Set a marker on the specified line */
-    gtk_source_buffer_create_source_mark (GTK_SOURCE_BUFFER(sBuf), "LineMarker", "LMtype", &iter);
 
     g_object_set_data_full (G_OBJECT (sBuf),"filename", g_strdup (filename),
                             (GDestroyNotify) g_free);
