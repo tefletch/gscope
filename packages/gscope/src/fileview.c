@@ -16,7 +16,7 @@
 // ---- Typedefs ----
 
 // ---- local function prototypes ----
-static gboolean open_file (GtkSourceBuffer *sBuf, const gchar *filename, gint line);
+static gboolean open_file (GtkSourceBuffer *sBuf, const gchar *filename);
 void ModifyTextPopUp(GtkTextView *textview, GtkMenu *menu, gpointer user_data);
 static void createFileViewer(ViewWindow *windowPtr);
 static gboolean is_mf_or_makefile(const char *filename);
@@ -80,6 +80,29 @@ void on_fileview_destroy(GtkWidget *object, gpointer user_data)
     return;
 }
 
+#ifdef GTK3_BUILD
+/* Not needed for GTK2, since the scrolling can happen correctly before
+   the window is first shown.  In GTK3, the scroll will be ignored or
+   calculated incorrectly unless the window geometry is known / visible */
+static gboolean scroll_view_cb(gpointer data)
+{
+    GtkTextView *view;
+    GtkTextBuffer *s_buffer;
+    GtkTextMark *mark;
+    gulong draw_handler;
+
+    view = GTK_TEXT_VIEW (data);
+    s_buffer = gtk_text_view_get_buffer (view);
+
+    // Scroll the cursor line into view when the widget is first shown
+    mark = gtk_text_buffer_get_insert (GTK_TEXT_BUFFER (s_buffer));
+    gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (view), mark, 0, TRUE, 0, 0.5);
+
+    // This event is handled -- don't fire it again
+    return FALSE;
+}
+#endif
+
 void FILEVIEW_create(gchar *file_name, gint line)
 {
     GtkTextMark *mark;
@@ -102,10 +125,6 @@ void FILEVIEW_create(gchar *file_name, gint line)
     if (sameName)    // --- A view window is already open for this file ---
     {
         s_buffer =gtk_text_view_get_buffer(GTK_TEXT_VIEW(windowPtr->srcViewWidget));
-
-        /* move cursor to the specified line */
-        gtk_text_buffer_get_iter_at_line (GTK_TEXT_BUFFER (s_buffer), &iter, line - 1);
-        gtk_text_buffer_place_cursor (GTK_TEXT_BUFFER (s_buffer), &iter);
     }
     else
     {   // --- No view already open for this file ---
@@ -124,6 +143,10 @@ void FILEVIEW_create(gchar *file_name, gint line)
             gtk_text_buffer_set_text (GTK_TEXT_BUFFER (s_buffer), "", 0);
             gtk_source_buffer_end_not_undoable_action (GTK_SOURCE_BUFFER (s_buffer) );
             gtk_text_buffer_set_modified (GTK_TEXT_BUFFER (s_buffer), FALSE);
+
+            #ifdef GTK3_BUILD
+            g_idle_add (&scroll_view_cb, windowPtr->srcViewWidget);
+            #endif
         }
         else
         {
@@ -137,6 +160,10 @@ void FILEVIEW_create(gchar *file_name, gint line)
             // create a new GtkSourceView window
             createFileViewer(windowPtr);
             s_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(windowPtr->srcViewWidget));
+
+            // Create a marker to indicate the matched line
+            gtk_text_buffer_get_iter_at_line (GTK_TEXT_BUFFER (s_buffer), &iter, line - 1);
+            gtk_source_buffer_create_source_mark (GTK_SOURCE_BUFFER (s_buffer), "LineMarker", "LMtype", &iter);
     
             if (viewListBegin == NULL)
             {
@@ -154,7 +181,7 @@ void FILEVIEW_create(gchar *file_name, gint line)
         }
 
         // Now load the file
-        open_file ( (GtkSourceBuffer *)s_buffer, file_name, line);
+        open_file ( GTK_SOURCE_BUFFER (s_buffer), file_name);
     }
     // Store the current line number (for future reference)
     windowPtr->line = line;
@@ -164,10 +191,18 @@ void FILEVIEW_create(gchar *file_name, gint line)
 
     gtk_widget_show (windowPtr->topWidget);
 
+    /* move cursor to the specified line */
+    gtk_text_buffer_get_iter_at_line (GTK_TEXT_BUFFER (s_buffer), &iter, line - 1);
+    gtk_text_buffer_place_cursor (GTK_TEXT_BUFFER (s_buffer), &iter);
+
     // Get the mark that represents the curent cursor position
     mark = gtk_text_buffer_get_insert(GTK_TEXT_BUFFER (s_buffer));
     // Scroll to the specified line number
     gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(windowPtr->srcViewWidget), mark, 0, TRUE, 0, 0.5);
+
+    /* Move the search marker to the specified line */
+    gtk_text_buffer_move_mark_by_name (GTK_TEXT_BUFFER (s_buffer), "LineMarker", &iter);
+
     return;
 }
 
@@ -180,6 +215,7 @@ static void createFileViewer(ViewWindow *windowPtr)
     GtkSourceBuffer *sBuf;
     GtkSourceLanguageManager *lm;
     GdkPixbuf *fileview_icon_pixbuf;
+    PangoFontDescription *font_desc;
     const gchar * const *lang_dirs;
     static guint x = 400;
     static guint y = 400;
@@ -249,16 +285,18 @@ static void createFileViewer(ViewWindow *windowPtr)
 
     g_signal_connect (GTK_SOURCE_VIEW(sView),"populate-popup",G_CALLBACK(ModifyTextPopUp),windowPtr);
 
-    #if 0   // There's really no good reason to override the font provided by the Theme.
+    #ifdef GTK3_BUILD
+    g_idle_add (&scroll_view_cb, sView);
+    #endif
+
     /* Set default Font name,size */
-    font_desc = pango_font_description_from_string ("mono 8");
+    font_desc = pango_font_description_from_string ("Monospace");
     #ifdef GTK3_BUILD
     gtk_widget_override_font (sView, font_desc);
     #else
     gtk_widget_modify_font (sView, font_desc);
     #endif
     pango_font_description_free (font_desc);
-    #endif
 
     /* Attach the GtkSourceView to the scrolled Window */
     gtk_container_add (GTK_CONTAINER (pScrollWin), GTK_WIDGET (sView));
@@ -269,7 +307,7 @@ static void createFileViewer(ViewWindow *windowPtr)
 
 
 
-static gboolean open_file (GtkSourceBuffer *sBuf, const gchar *filename, gint line)
+static gboolean open_file (GtkSourceBuffer *sBuf, const gchar *filename)
 {
     GtkSourceLanguageManager *lm;
     GtkSourceLanguage *language = NULL;
@@ -367,13 +405,6 @@ static gboolean open_file (GtkSourceBuffer *sBuf, const gchar *filename, gint li
     }
 
     gtk_text_buffer_set_modified (GTK_TEXT_BUFFER (sBuf), FALSE);
-
-    /* move cursor to the specified line */
-    gtk_text_buffer_get_iter_at_line (GTK_TEXT_BUFFER (sBuf), &iter, line - 1);
-    gtk_text_buffer_place_cursor (GTK_TEXT_BUFFER (sBuf), &iter);
-
-    /* Set a marker on the specified line */
-    gtk_source_buffer_create_source_mark (GTK_SOURCE_BUFFER(sBuf), "LineMarker", "LMtype", &iter);
 
     g_object_set_data_full (G_OBJECT (sBuf),"filename", g_strdup (filename),
                             (GDestroyNotify) g_free);
