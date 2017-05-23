@@ -690,12 +690,13 @@ void DISPLAY_message_dialog(GtkMessageType type, const gchar *message, gboolean 
     static GtkWidget *MsgDialog;
 //    GdkPixbuf        *MsgWindowIcon;
 
-    MsgDialog = gtk_message_dialog_new_with_markup (
+    MsgDialog = gtk_message_dialog_new (
                               GTK_WINDOW(msg_dialog_parent),
                               GTK_DIALOG_DESTROY_WITH_PARENT,
                               type, 
                               GTK_BUTTONS_CLOSE,
-                              "%s", message);
+                              NULL);
+    gtk_message_dialog_set_markup (GTK_MESSAGE_DIALOG (MsgDialog), message);
 
  // Pango markup example:
  //    _("<span foreground=\"blue\" size=\"x-large\" weight=\"bold\">Build Monitor 0.1</span>\nA panel application for monitoring print build status\n2007 Tom Fletcher")
