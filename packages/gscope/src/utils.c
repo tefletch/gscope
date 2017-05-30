@@ -323,10 +323,6 @@ pid_t my_system(gchar *application)
 
 
 // Handle 'bad' return values from asprint() as a fatal error.
-//
-// Possible Future location to "write your own" [alternate] implementation of
-// asprintf() if the  asprintf/vasprintf GNU extensions are not avialable on
-// the host platform [the need for this is presumed to be unlikely].
 //===========================================================================
 void my_asprintf(gchar **str_ptr, const char *fmt, ...)
 {
