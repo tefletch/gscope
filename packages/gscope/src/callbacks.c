@@ -20,6 +20,7 @@
 #include "dir.h"
 #include "build.h"
 #include "app_config.h"
+#include "browser.h"
 
 
 #ifndef GTK3_BUILD
@@ -96,6 +97,7 @@ static GtkWidget    *folder_chooser_dialog = NULL;
 static GtkWidget    *open_file_chooser_dialog = NULL;
 static GtkWidget    *output_file_chooser_dialog = NULL;
 static GtkWidget    *save_results_file_chooser_dialog = NULL;
+static GtkWidget    *browser_window = NULL;
 
 
 //---------------------------------------------------------------------------
@@ -353,6 +355,9 @@ void CALLBACKS_init(GtkWidget *main)
     gscope_main = main;
     DISPLAY_init(main);
 
+    // Instantiate the widgets define by the GUI Builders
+    //===================================================
+
     #ifdef GTK3_BUILD
 
     quit_dialog  = my_lookup_widget("quit_confirm_dialog");
@@ -376,6 +381,11 @@ void CALLBACKS_init(GtkWidget *main)
     save_results_file_chooser_dialog = create_save_results_file_chooser_dialog();
 
     #endif
+
+    // Instantiate programatically composed widgets
+    //=============================================
+    browser_window = BROWSER_init("main_function_test");
+    gtk_widget_show(browser_window);
 }
 
 
@@ -3534,4 +3544,3 @@ on_file_manager_app_entry_focus_out_event
 
   return FALSE;
 }
-
