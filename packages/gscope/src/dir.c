@@ -37,6 +37,8 @@
 #define     ANALYZE_HASH    2      /* set to 1 to enable hash analysis */
 #define     OLD_HASH        1
 #define     MAX_SUFFIX      60     /* Support up to a 60 character file suffix */
+#define     SVN_META_DIR    ".svn"
+#define     GIT_META_DIR    ".git"
 
 
 //#define   DIRSEPS " ,:"   /* directory list separators */
@@ -649,19 +651,24 @@ void DIR_list_join(char *usr_list, dir_list_e dir_list)
     {
         case MASTER_IGNORED_LIST:
             if (master_ignored_list)
-                free(master_ignored_list);  // Free any pre-existing list.
+                g_free(master_ignored_list);  // Free any pre-existing list.
 
             usr_len = strlen(usr_list);
 
             if ( usr_len == 0 )  // usr_list is "empty" (null string)
             {
-                master_ignored_list = g_malloc(sizeof(GSCOPE_BLD_DIR) + 2); // +2 for delimiters
-                sprintf(master_ignored_list,":%s:", GSCOPE_BLD_DIR);        // Always ignore the autogen BUILD directory.
+                // Always ignore: The autogen BUILD directory and CM meta-data dirs (.svn, .git)
+                my_asprintf(&master_ignored_list,":%s:%s:%s:", GSCOPE_BLD_DIR, GIT_META_DIR, SVN_META_DIR);
             }
             else  // usr_list is (a valid) not-empty list, append to it using the user-selected delimiter
             {
-                master_ignored_list = g_malloc(usr_len + sizeof(GSCOPE_BLD_DIR) + 1);                   // +1 for delimiter
-                sprintf(master_ignored_list,"%s%s%c", usr_list, GSCOPE_BLD_DIR, settings.ignoredDelim); // Always ignore the autogen BLD directory.
+                // Always ignore: The autogen BUILD directory and CM meta-data dirs (.svn, .git)
+                my_asprintf(&master_ignored_list,"%s%s%c%s%c%s%c",
+                                                    usr_list,
+                                                    GSCOPE_BLD_DIR, settings.ignoredDelim,
+                                                    GIT_META_DIR,   settings.ignoredDelim,
+                                                    SVN_META_DIR,   settings.ignoredDelim
+                                                 );
             }
 
             if ( !APP_CONFIG_valid_list("Master Ignored List", master_ignored_list, &master_ignored_delim) )
