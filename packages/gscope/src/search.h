@@ -34,7 +34,7 @@ typedef struct
 {
     gchar       *start_ptr;
     gchar       *end_ptr;
-    uint32_t    match_count;
+    guint       match_count;
 } search_results_t;
 
 

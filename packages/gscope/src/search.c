@@ -35,7 +35,7 @@
 //       Defines
 //===============================================================
 #define     TMPDIR                  "/tmp"
-#define     MAX_SYMBOL_SIZE         PATHLEN         /* a more readable name for PATLEN & PATHLEN */
+#define     MAX_SYMBOL_SIZE         1024
 
 
 //===============================================================
@@ -1015,30 +1015,43 @@ static void putline(FILE *output, char **src_ptr)
 /* put the rest of the cross-reference line into the string */
 static void get_string(char *dest, char **src)
 {
-    uint8_t byte;
-    char *src_ptr = *src;
-    unsigned int byte_count = 0;
-    char *start = dest;
+    uint8_t     byte;
+    char        *src_ptr = *src;
+    guint       byte_count = 0;
+    char        *start = dest;
+    gboolean    truncated = FALSE;
 
     while ( (byte = (unsigned) (*src_ptr)) != '\n' )
     {
         if (byte > 0x7f)
         {
+            if (byte_count + 2 > MAX_SYMBOL_SIZE)
+            {
+                truncated = TRUE;
+                break;    // The dicode expansion would overrun our buffer, so truncate
+            }
+
             byte   &= 0x7f;
             *dest++ = dichar1[byte / 8];
             *dest++ = dichar2[byte & 7];
+            byte_count += 2;
         }
         else
         {
             *dest++ = byte;
+            byte_count++;
         }
         src_ptr++;
-        byte_count++;
-        if (byte_count == MAX_SYMBOL_SIZE) break;
+
+        if (byte_count == MAX_SYMBOL_SIZE)
+        {
+            truncated = TRUE;
+            break;   // The buffer is full, so truncate
+        }
     }
     *dest++ = '\0';    // Null-terminate the extracted string
 
-    if (byte_count == MAX_SYMBOL_SIZE)
+    if (truncated)
     {
         fprintf(stderr, "Warning: Unusually large (> %d bytes) symbol encountered.  Symbol Truncated to:\n    %s\n"
                        "Pattern Matches for the non-truncated version of this symbol will fail.\n"
@@ -1410,9 +1423,9 @@ static search_result_t configure_search(char *pattern, gboolean *use_regexp, reg
 
 static gboolean mega_match(char **read_ptr, gboolean use_regexp, const regex_t *regex_ptr, char *cpattern)
 {
-    char     firstchar;             /* first character of a potential symbol */
-    char     symbol[MAX_SYMBOL_SIZE + 1];    /* symbol name */
-    gboolean match_found;
+    char        firstchar;                      /* first character of a potential symbol */
+    gboolean    match_found;
+    static char symbol[MAX_SYMBOL_SIZE + 1];    /* symbol name (off-stack) */
 
 
     match_found = FALSE;
@@ -1556,7 +1569,7 @@ search_results_t *SEARCH_lookup(search_t search_operation, gchar *pattern)
     struct    stat statstruct;
 
     search_result_t         result = NOERROR;          /* findinit return code */
-    static search_results_t results;
+    static search_results_t results = { NULL, NULL, 0 };
 
     /* open the references found (search results) file for writing */
     if ( !writerefsfound() ) return(0);
