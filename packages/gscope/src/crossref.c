@@ -183,6 +183,7 @@ gboolean crossref(char *srcfile)
     else
     {
         fprintf(stderr,"WARNING: Skipping Source File: %s\n    It is not an ASCII text file.\n", srcfile);
+        fclose(yyin);    /* close the source file */
     }
     return(FALSE);
 }
