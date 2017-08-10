@@ -161,6 +161,7 @@ int main(int argc, char *argv[])
             char  *path;
             my_asprintf(&path, "%s%s", home, "/.gscope/pixmaps");
             add_pixmap_directory(path);  // Support for "private" installs (as a fall-back, not an override)
+            add_pixmap_directory("../pixmaps");
             g_free(path);
         }
 
