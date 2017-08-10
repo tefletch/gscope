@@ -12,3 +12,5 @@ GtkWidget* create_quit_confirm_dialog (void);
 GtkWidget* create_gscope_splash (void);
 GtkWidget* create_stats_dialog (void);
 GtkWidget* create_save_results_file_chooser_dialog (void);
+GtkWidget* create_browser_window_template (void);
+GtkWidget* create_sample_browser_window (void);

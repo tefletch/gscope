@@ -13,6 +13,8 @@ gscope_SOURCES = \
 	app_types.h  \
 	auto_gen.c \
 	auto_gen.h \
+	browser.c \
+	browser.h \
 	build.c \
 	build.h \
 	callbacks.c \
