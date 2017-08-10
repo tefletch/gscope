@@ -64,12 +64,26 @@ typedef struct
 }   tcb_t;
 
 
+// Widget Table row/column tracking structure definition
+//
+//                   -------------------------
+//      column list  | 0 |  1 |  2 | ... | n |
+//                   -------------------------
+//                    |  |  |      |       |
+//                    V  V  V      V       V
+//
+//                    Linked Lists of column
+//                    specific [sparse data]
+//                    entries
+
+
 // Private Function Prototypes
 //============================
 static GtkWidget   *create_browser_window(gchar *name);
 static GtkWidget   *make_collapser(guint child_count);
 static GtkWidget   *make_expander (dir_e direction, gboolean new_expander);
 static void        expand_table(guint origin_y, guint origin_x, tcb_t *tcb, dir_e direction, guint row_add_count);
+static void        collapse_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e direction);
 static void        move_table_widget(GtkWidget *widget, tcb_t *tcb, guint row, guint col);
 
 static gboolean    on_browser_delete_event(GtkWidget *widget, GdkEvent *event, gpointer user_data);
@@ -112,8 +126,10 @@ static GtkWidget   *create_browser_window(gchar *name)
     gchar     *var_string;
     tcb_t     *tcb;
 
-    // Malloc a Table Control Block (TCB) for this window.  This keeps the table data with the widget and
-    // makes this function re-entrant-safe.
+    //
+    // Malloc a Table Control Block (TCB) for this window.  This keeps the table data with the
+    // widget and makes this function re-entrant-safe.
+    //========================================================================================
     tcb = g_malloc( sizeof(tcb_t) );
 
     browser_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -442,8 +458,13 @@ static gboolean on_left_collapser_button_release_event(GtkWidget *widget, GdkEve
 {
     GtkWidget   *expander;
     tcb_t       *tcb = user_data;
+    guint       row, col;
 
-    // Revisit: Get the widget's position in the table
+    // Get the widget's position in the table
+    gtk_container_child_get(GTK_CONTAINER(tcb->browser_table), widget,
+                            "top-attach", &row,
+                            "left-attach", &col,
+                            NULL);
 
     // Destroy the selected expander
     gtk_widget_destroy(widget);
@@ -459,6 +480,7 @@ static gboolean on_left_collapser_button_release_event(GtkWidget *widget, GdkEve
                      G_CALLBACK(on_left_expander_button_release_event),
                      user_data);  // Revisit: Pass "table" (and possibly table position)
 
+    collapse_table(row, col, tcb, LEFT);
     return FALSE;
 }
 
@@ -468,8 +490,13 @@ static gboolean on_right_collapser_button_release_event(GtkWidget *widget, GdkEv
 {
     GtkWidget   *expander;
     tcb_t       *tcb = user_data;
+    guint       row, col;
 
-    // Revisit: Get the widget's position in the table
+    // Get the widget's position in the table
+    gtk_container_child_get(GTK_CONTAINER(tcb->browser_table), widget,
+                            "top-attach", &row,
+                            "left-attach", &col,
+                            NULL);
 
     // Destroy the selected expander
     gtk_widget_destroy(widget);
@@ -485,6 +512,7 @@ static gboolean on_right_collapser_button_release_event(GtkWidget *widget, GdkEv
                      G_CALLBACK(on_right_expander_button_release_event),
                      user_data);  // Revisit: Pass "table" (and possibly table position)
 
+    collapse_table(row, col, tcb, RIGHT);
     return FALSE;
 }
 
@@ -654,8 +682,14 @@ col_list_t **load_widget_grid(GtkWidget *table, guint rows, guint cols)
     return( (col_list_t **) NULL);
 }
 
-/* Add and populate new rows and columns as required */
-void expand_table(guint origin_y, guint origin_x, tcb_t *tcb, dir_e direction, guint row_add_count)
+/*
+    This function implements a table expansion associated with an "expander"-clicked event.
+    Overall functionality includes:
+       1) Add new rows and/or new columns to the table, as required [resize table widget]
+       2) Relocate existing widgets that need to be moved in order to accommodate the expansion.
+       3) Add any new widgets: Icons and function names "exposed" by the expansion operation.
+*/
+static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e direction, guint row_add_count)
 {
     //tcb->col_list = load_widget_grid(tcb->browser_table, tcb->num_cols, tcb->num_rows);
 
@@ -677,6 +711,19 @@ void expand_table(guint origin_y, guint origin_x, tcb_t *tcb, dir_e direction, g
     add_column(origin_x, tcb, direction);
 
     #endif
+
+}
+
+
+/*
+    This function implements a table reduction associated with a "collapser"-clicked event.
+    Overall functionality includes:
+       2) Relocate existing widgets that need to be moved in order to accommodate the reduction.
+       3) Remove any eclipsed widgets: Icons and function names "hidden" by the reduction operation.
+       1) Remove existing rows and/or existing columns from the table, as required  [resize table widget]
+*/
+static void collapse_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e direction)
+{
 
 }
 
