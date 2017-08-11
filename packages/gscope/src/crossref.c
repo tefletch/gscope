@@ -225,8 +225,8 @@ static gboolean file_is_ascii_text(FILE *filename)
                 // behave badly and maybe even crash.  If this happens, the BOM detect-and-skip logic might need to
                 // be normally-off [Default = Treat any file with BOM as binary] and assign a command line argurment to enable
                 // BOM detect-and-skip on a per session basis.
-                if (fread(check_buf, 1, 3, filename) == 0)
-                    return(FALSE);          // Something is seriously wrong if we cannot advance the pointer
+                if (fread(check_buf, 1, 3, filename) < 3)
+                    return (FALSE);          // Something is seriously wrong if we cannot advance the pointer
                 else
                     return(TRUE);           // _Assume_ the remaining (TEXT_CHECK_SIZE - 3) bytes are ASCII
             }
