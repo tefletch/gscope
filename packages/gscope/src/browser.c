@@ -101,6 +101,7 @@ static gboolean    on_right_collapser_button_release_event(GtkWidget *widget, Gd
 static void         ensure_column_capacity(guint origin_col, tcb_t *tcb, dir_e direction); 
 static void         ensure_row_capacity(guint origin_row, tcb_t *t, guint row_add_count); 
 static void         make_name_column(tcb_t *tcb, guint col, dir_e direction); 
+static void         make_name_column_labeled(tcb_t *tcb, guint col, dir_e direction, guint label); 
 static void         make_expander_column(tcb_t *tcb, guint position, dir_e direction); 
 static void         make_filler_column(tcb_t *tcb, guint position); 
 static void         add_functions_to_column(tcb_t *tcb, column_entry_t function_list,
@@ -600,7 +601,6 @@ static void move_column(tcb_t *tcb, guint source, guint dest) {
     column = &(tcb->col_list[source]);
 
     delete_column(tcb, dest);
-
     if (column->type == NAME) {
         if (source == tcb->root_col) {
             // the root column is a speical case since it has
@@ -619,9 +619,10 @@ static void move_column(tcb_t *tcb, guint source, guint dest) {
             tcb->col_list[dest].type = NAME;
         } else {
             direction = source > tcb->root_col ? RIGHT : LEFT; 
-            make_name_column(tcb, dest, direction);
+            make_name_column_labeled(tcb, dest, direction, column->header_column_num);
         }
     }
+   
     if (column->type == FILLER) {
         //gtk_widget_destroy(column->header_column_label);
         make_filler_column(tcb, dest);
@@ -641,6 +642,10 @@ static void move_column(tcb_t *tcb, guint source, guint dest) {
     }
 
     delete_column(tcb, source);
+    if (column->type == NAME && source != tcb->root_col) {
+        direction = source > tcb->root_col ? RIGHT : LEFT; 
+        make_name_column(tcb, dest, direction);
+    }
 }
 
 
@@ -964,16 +969,25 @@ static void add_functions_to_column(tcb_t *tcb, column_entry_t function_list,
         
 }
 
+static void make_name_column(tcb_t *tcb, guint col, dir_e direction) {
+    guint prev_col = direction == RIGHT ? -1 : 1; 
+    guint col_num = tcb->col_list[col + 2 * prev_col].header_column_num - prev_col;
+    make_name_column_labeled(tcb, col, direction, col_num); 
+}
+
 // TODO make this funciton work
 // currently just fills in a single dummy function as a Test value
 // needs to get results for either functions calling or called by
 // probably will accept list of functions as argument 
-static void make_name_column(tcb_t *tcb, guint col, dir_e direction) {
+static void make_name_column_labeled(tcb_t *tcb, guint col, dir_e direction, guint label) {
         GtkWidget *vertical_filler_label;
         GtkWidget *header_button;
+        char num_str[3];
         col_list_t *column = &(tcb->col_list[col]);
         int left_bound = direction == RIGHT ? col : col - 1;
         int right_bound = direction == RIGHT ? col + 2 : col + 1;
+        column->header_column_num = label;
+
 
         /*
         vertical_filler_label = gtk_label_new("");
@@ -983,8 +997,9 @@ static void make_name_column(tcb_t *tcb, guint col, dir_e direction) {
                          (GtkAttachOptions)(GTK_FILL),
                          (GtkAttachOptions)(GTK_FILL), 0, 0);
                          */
-        
-        header_button  = gtk_button_new_with_mnemonic("7");
+         
+        sprintf(num_str, "%d", label);
+        header_button  = gtk_button_new_with_mnemonic(num_str);
         gtk_widget_set_name(header_button, "header_button");
         gtk_widget_show(header_button);
         gtk_table_attach(GTK_TABLE(tcb->browser_table), header_button, left_bound, right_bound, 0, 1,
@@ -992,7 +1007,7 @@ static void make_name_column(tcb_t *tcb, guint col, dir_e direction) {
                 (GtkAttachOptions)(0), 0, 0);
         gtk_widget_set_can_focus(header_button, FALSE);
         gtk_button_set_focus_on_click(GTK_BUTTON(header_button), FALSE);
-
+    
         column->type = NAME;
         column->header_column_label = header_button;
 }
