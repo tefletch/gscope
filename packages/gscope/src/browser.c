@@ -116,6 +116,7 @@ static void         shift_table_right(tcb_t *tcb, guint start_col);
 static void         move_column(tcb_t *tcb, guint source, guint dest);
 static void         shift_table_left(tcb_t *tcb, guint amount); 
 static void         delete_column(tcb_t *tcb, guint col); 
+static void         update_rows(tcb_t *tcb); 
 
 static void         column_list_insert(col_list_t *list, GtkWidget *widget, guint row);
 static void         column_list_remove(col_list_t *list, GtkWidget *widget);
@@ -516,7 +517,12 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
     // first check if we need to grow the table
     ensure_row_capacity(origin_row, tcb, row_add_count);
     ensure_column_capacity(origin_col, tcb, direction);
-    tcb->num_rows += row_add_count;
+    if(direction == RIGHT) {
+        tcb->right_height += row_add_count;
+    } else {
+        tcb->left_height += row_add_count;
+    }
+    update_rows(tcb);
     
     if (direction == RIGHT) {
         for (i = tcb->root_col; i < tcb->num_cols; i++) {
@@ -666,7 +672,9 @@ static void collapse_table(guint origin_row, guint origin_col, guint rows_remove
     guint lower_bound = column_list_get_next(list, origin_row);
     // -1 means there is no lower bound
     if (lower_bound == -1) {
-        lower_bound = tcb->num_rows;
+        lower_bound = direction == RIGHT ?
+                                         tcb->right_height + 1:
+                                         tcb->left_height + 1;
     }
     
     //delete all children of the collapser and shift up the table
@@ -685,20 +693,18 @@ static void remove_unused_columns(tcb_t *tcb, dir_e direction) {
    col_list_t *column;
 
    if (direction == RIGHT) {
-       for (i = tcb->num_cols - 3; i > tcb->root_col; i -= 2) {    // num_cols - 3 is the furthest right name_column 
+       for (i = tcb->num_cols - 1; i > tcb->root_col; i --) {    // num_cols - 3 is the furthest right name_column 
            column = &(tcb->col_list[i]);
            if (column->column_member_list == NULL) {
                // destory the column header
-               gtk_widget_destroy(tcb->col_list[i].header_column_label);
-               // move the filler column
-               gtk_widget_destroy(tcb->col_list[i + 2].header_column_label);
-               make_filler_column(tcb, i);
-
-               // update the table size
-               gtk_table_resize(GTK_TABLE(tcb->browser_table), tcb->num_rows, tcb->num_cols - 2);
-               tcb->num_cols -= 2;
+               delete_column(tcb, i);
+               count++;
            }
        }
+       count--;     // don't want to count the filler coulmn as removed
+       gtk_table_resize(GTK_TABLE(tcb->browser_table), tcb->num_rows, tcb->num_cols - count);
+       tcb->num_cols -= count;
+       make_filler_column(tcb, tcb->num_cols - 1);
     } else {
         // direction is left
        for (i = 1; i < tcb->root_col; i ++) {
@@ -737,9 +743,6 @@ static void delete_column(tcb_t *tcb, guint col) {
     }
     curr = column->column_member_list;
     while (curr != NULL) {
-        if (curr->widget == NULL) {
-            printf("hmmmm\n");
-        }
         gtk_widget_destroy(curr->widget);
         next = curr->next;
         g_free(curr);
@@ -764,7 +767,12 @@ static void shift_table_up(tcb_t *tcb, guint upper_bound, guint amount, dir_e di
             printf("ERROR COLUMN %d OUT OF ORDER:\n\n", i);
         }
     }
-    tcb->num_rows -= amount;
+    if (direction == RIGHT) {
+        tcb->right_height -= amount;
+    } else {
+        tcb->left_height -= amount;
+    }
+    update_rows(tcb);
 }
 
 static void delete_children(tcb_t *tcb, guint col, guint upper_bound, guint lower_bound, dir_e direction) {
@@ -1113,4 +1121,12 @@ static guint column_list_get_next(col_list_t *list, guint row) {
         curr = curr->next;
     }
     return -1;
+}
+
+static void update_rows(tcb_t *tcb) {
+    if (tcb->left_height >= tcb->right_height) {
+        tcb->num_rows = tcb->left_height + 1;
+    } else {
+        tcb->num_rows = tcb->right_height + 1;
+    }
 }
