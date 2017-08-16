@@ -384,7 +384,7 @@ void CALLBACKS_init(GtkWidget *main)
 
     // Instantiate programatically composed widgets
     //=============================================
-    browser_window = BROWSER_init("main_function_test");
+    browser_window = BROWSER_init("main");
     gtk_widget_show(browser_window);
 }
 
