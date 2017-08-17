@@ -803,18 +803,20 @@ static void remove_unused_columns(tcb_t *tcb, dir_e direction) {
     if (direction == RIGHT) {
         // we actually want to remove the filler column because it will need to be moved
         // if we remove any other columns
-        for (i = tcb->num_cols - 1; i > tcb->root_col; i --) { 
+
+        delete_column(tcb, tcb->num_cols - 1);  // always delete the right filler column
+        for (i = tcb->num_cols - 3; i > tcb->root_col; i -= 2) {      // num_cols - 3 is furthest right name column 
             column = &(tcb->col_list[i]);
             if (column->column_member_list == NULL) {
-                // destory the column header
+                // destory the name column and its expander column 
                 delete_column(tcb, i);
-                count++;
+                delete_column(tcb, i + 1);
+                count += 2;
             }
         }
-        count--;     // don't want to count the filler coulmn as removed
         gtk_table_resize(GTK_TABLE(tcb->browser_table), tcb->num_rows, tcb->num_cols - count);
         tcb->num_cols -= count;
-        make_filler_column(tcb, tcb->num_cols - 1);
+        make_filler_column(tcb, tcb->num_cols - 1);  // remake the right filler column
     } else {
         // direction is left
         for (i = 1; i < tcb->root_col; i ++) {
