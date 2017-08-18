@@ -550,6 +550,26 @@ gboolean DISPLAY_get_filename_and_lineinfo(GtkTreePath *path, gchar **filename, 
         return(FALSE);
 }
 
+gboolean DISPLAY_get_entry_info(GtkTreePath *path, gchar **filename, gchar **line_num, gchar **symbol)
+{
+    static gchar zero_line[] = "0";
+
+    if ( gtk_tree_model_get_iter( GTK_TREE_MODEL(store), &iter, path ) )
+    {
+        gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, FUNCTION, symbol, -1);
+        gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, FILENAME, filename, -1);
+        if (line_number_info_avail)
+            gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, LINE, line_num, -1);
+        else
+          *line_num = zero_line;
+
+        return(TRUE);
+    }
+    else
+        return(FALSE);
+     
+}
+
 void DISPLAY_update_progress_bar(guint count, guint max)
 {
     GtkWidget *progress;

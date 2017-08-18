@@ -114,7 +114,7 @@ static gboolean    on_right_expander_button_release_event(GtkWidget *widget, Gdk
 static gboolean    on_left_collapser_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean    on_right_collapser_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 
-static void         initialize_table(tcb_t *tcb, gchar *root_fname);
+static void                initialize_table(tcb_t *tcb, gchar *root_fname);
 static void         ensure_column_capacity(guint origin_col, tcb_t *tcb, dir_e direction); 
 static void         ensure_row_capacity(guint origin_row, tcb_t *t, guint row_add_count); 
 static void         make_name_column(tcb_t *tcb, guint col, dir_e direction); 
@@ -295,8 +295,6 @@ GtkWidget* BROWSER_init(gchar *name)
 }
 
 
-
-
 //
 // Private Callbacks for "Static Call Browser" functionality
 // =========================================================
@@ -470,7 +468,7 @@ static gboolean on_right_collapser_button_release_event(GtkWidget *widget, GdkEv
     return FALSE;
 }
 
-static void initialize_table(tcb_t *tcb, gchar *root_fname)
+void initialize_table(tcb_t *tcb, gchar *root_fname)
 {
     GtkWidget *header_button;
     GtkWidget *root_function_blue_eventbox;

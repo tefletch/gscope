@@ -23,6 +23,9 @@ gboolean DISPLAY_get_clicked_entry(gint widget_x, gint widget_y, gchar **entry_p
 /* Return the filename from the activated query result row [defined by path] */
 gboolean DISPLAY_get_filename_and_lineinfo(GtkTreePath *path, gchar **filename, gchar **line_num);
 
+/* Return the filename, line number, and symbol from the activated query result row */
+gboolean DISPLAY_get_entry_info(GtkTreePath *path, gchar **filename, gchar **line_num, gchar **symbol);
+
 /* Update the progress bar */
 void DISPLAY_update_progress_bar(guint count, guint max);
 
