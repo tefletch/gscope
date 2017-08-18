@@ -801,9 +801,6 @@ static void remove_unused_columns(tcb_t *tcb, dir_e direction) {
     col_list_t *column;
 
     if (direction == RIGHT) {
-        // we actually want to remove the filler column because it will need to be moved
-        // if we remove any other columns
-
         delete_column(tcb, tcb->num_cols - 1);  // always delete the right filler column
         for (i = tcb->num_cols - 3; i > tcb->root_col; i -= 2) {      // num_cols - 3 is furthest right name column 
             column = &(tcb->col_list[i]);
@@ -819,16 +816,19 @@ static void remove_unused_columns(tcb_t *tcb, dir_e direction) {
         make_filler_column(tcb, tcb->num_cols - 1);  // remake the right filler column
     } else {
         // direction is left
-        for (i = 1; i < tcb->root_col; i ++) {
+
+        // count the number of columns to be removed
+        // only count name columns, expander columns may be correctly
+        // empty
+        for (i = 2; i < tcb->root_col; i +=2) {    // 2 is furthest left name column
             col_list_t *column = &(tcb->col_list[i]);
             if (column->column_member_list == NULL) {
-                count++;
+                count += 2;
             }
         }
         if (count > 0) {
             shift_table_left(tcb, count);
             for (i = tcb->num_cols - count; i < tcb->num_cols; i++) {
-                // delete the column
                 delete_column(tcb, i);
             }
             gtk_table_resize(GTK_TABLE(tcb->browser_table), tcb->num_rows, tcb->num_cols - count);
@@ -840,7 +840,6 @@ static void remove_unused_columns(tcb_t *tcb, dir_e direction) {
 
 static void shift_table_left(tcb_t *tcb, guint amount) {
     int i;
-
     for (i = amount + 1; i < tcb->num_cols; i++) {
         move_column(tcb, i, i - amount);
     }
@@ -861,7 +860,6 @@ static void delete_column(tcb_t *tcb, guint col) {
         curr = next;
     }
     memset(column, 0, sizeof(col_list_t));
-
 }
 
 static void shift_table_up(tcb_t *tcb, guint upper_bound, guint amount, dir_e direction) {
@@ -888,26 +886,23 @@ static void shift_table_up(tcb_t *tcb, guint upper_bound, guint amount, dir_e di
 }
 
 static void delete_children(tcb_t *tcb, guint col, guint upper_bound, guint lower_bound, dir_e direction) {
-    int i, num_removed, cols_removed;
-    cols_removed = num_removed = 0;
+    int i, lowest, height, shift;
+    lowest = upper_bound;
 
     if (direction == RIGHT) {
         for (i = tcb->num_cols - 2; i > col; i--) {
-            num_removed += delete_functions_from_column(tcb, i, upper_bound, lower_bound, RIGHT);        
-            if (num_removed > 0) {
-                cols_removed++;
-            }
+            height = delete_functions_from_column(tcb, i, upper_bound, lower_bound, RIGHT);        
+            lowest = height > lowest ? height : lowest;
         }
     } else {
         // direction == left
         for (i = 2; i < col; i++) {
-            num_removed += delete_functions_from_column(tcb, i, upper_bound, lower_bound, LEFT);
-            if (num_removed > 0) {
-                cols_removed++;
-            }
+            height = delete_functions_from_column(tcb, i, upper_bound, lower_bound, LEFT);
+            lowest = height > lowest ? height : lowest;
         }
     }
-    shift_table_up(tcb, upper_bound, lower_bound - upper_bound - 1, direction);
+    shift = lowest - upper_bound; 
+    shift_table_up(tcb, upper_bound, shift, direction);
 }
 
 static int delete_functions_from_column(tcb_t *tcb, guint col, guint starting_row, guint end_row, dir_e direction) {
@@ -916,7 +911,7 @@ static int delete_functions_from_column(tcb_t *tcb, guint col, guint starting_ro
     col_list_t *function_list = &(tcb->col_list[col]);
     col_list_t *expander_list = &(tcb->col_list[col + offset]);
 
-    guint num_removed = 0;
+    guint lowest = starting_row;  // the "lowest" column removed, so highest col number
     guint i;
     column_entry_t *function, *expander;
     for (i = starting_row; i < end_row; i++) {
@@ -924,7 +919,7 @@ static int delete_functions_from_column(tcb_t *tcb, guint col, guint starting_ro
         expander = column_list_get_row(expander_list, i);
 
         if (function != NULL) {
-            num_removed++;
+            lowest = function->row > lowest ? function->row : lowest;
             gtk_widget_destroy(function->widget);
             column_list_remove(function_list, function->widget);
         }
@@ -933,7 +928,7 @@ static int delete_functions_from_column(tcb_t *tcb, guint col, guint starting_ro
             column_list_remove(expander_list, expander->widget);
         }
     }
-    return num_removed;
+    return lowest;
 }
 
 static void shift_column_up(tcb_t *tcb, guint col, guint starting_row, guint amount) {
