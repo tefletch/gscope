@@ -336,6 +336,10 @@ static void start_text_editor(gchar *filename, gchar *linenum)
     {
         sprintf(command, "%s -g %s:%s &", settings.fileEditor, filename, linenum);
     }
+    else if ( strcmp(my_basename(settings.fileEditor), "atom") == 0 )   // Atom text editor
+    {
+        sprintf(command, "%s %s:%s &", settings.fileEditor, filename, linenum);
+    }
     else            // Various UNIX text editors
     {
         sprintf(command, "%s +%s \"%s\" &", settings.fileEditor, linenum, filename);
