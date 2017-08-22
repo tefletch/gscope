@@ -566,7 +566,6 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
 {
     int i, add_pos;
     guint row_add_count;
-    column_entry_t hi;
     col_list_t *list;
     gchar *fname;
     result_t *results;
