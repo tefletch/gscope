@@ -7,6 +7,7 @@
 
 #include "support.h"
 #include "utils.h"
+#include "app_config.h"
 #include "search.h"
 
 
@@ -36,6 +37,7 @@ typedef struct result
     gchar *line_num;
     gchar *buf;
     struct result *next;
+    void *tcb;       // a pointer back to tcb so that it can be used to reset the table
 } result_t;
 
 typedef enum
@@ -46,7 +48,6 @@ typedef enum
     NUM_TYPES,
 } column_type_e;
 
-
 // node in a column member doubly linked list
 // an ordered list of widgets
 // in a column
@@ -54,6 +55,7 @@ typedef struct entry
 {
     GtkWidget       *widget;
     guint           row;
+    gchar           file[500];  // to differentiate between multi definition fuctions
     struct entry    *next;
     struct entry    *prev;
 } column_entry_t;
@@ -72,7 +74,7 @@ typedef struct
 typedef struct
 {
     GtkWidget   *browser_table;
-    GtkWidget   *root_entry;  // used to get root function name on reset
+    result_t    root_entry;    // used to store root file name and fname for callback
     guint       root_col;       // Table widget column currently containing the root/origin [0] column
     guint       num_cols;       // Total number of columns in the table
     guint       num_rows;       // Total number of rows in the table.
@@ -80,6 +82,7 @@ typedef struct
     guint       right_height;   // Current size of "tallest/first" right column (1st right column is labelled 1)
     col_list_t  col_list[NUM_COL_MAX];
 }   tcb_t;
+
 
 static int FUNCTION_NUM = 1;
 
@@ -99,7 +102,7 @@ static int FUNCTION_NUM = 1;
 
 // Private Function Prototypes
 //============================
-static GtkWidget   *create_browser_window(gchar *name);
+static GtkWidget   *create_browser_window(gchar *name, gchar *root_file, gchar *line_num);
 static GtkWidget   *make_collapser(guint child_count);
 static GtkWidget   *make_expander (dir_e direction, gboolean new_expander);
 static void        expand_table(guint origin_y, guint origin_x, tcb_t *tcb, dir_e direction);
@@ -113,8 +116,11 @@ static gboolean    on_left_expander_button_release_event(GtkWidget *widget, GdkE
 static gboolean    on_right_expander_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean    on_left_collapser_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean    on_right_collapser_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
+static gboolean    on_function_button_press(GtkWidget *widget, GdkEventButton *event, result_t *user_data);
+static void        right_click_menu(GtkWidget *widget, GdkEventButton *event, result_t *function_box); 
+static void        on_reroot(GtkWidget *menuitem, result_t *function_box);
 
-static void                initialize_table(tcb_t *tcb, gchar *root_fname);
+static void         initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gchar *line_num);
 static void         ensure_column_capacity(guint origin_col, tcb_t *tcb, dir_e direction); 
 static void         ensure_row_capacity(guint origin_row, tcb_t *t, guint row_add_count); 
 static void         make_name_column(tcb_t *tcb, guint col, dir_e direction); 
@@ -134,20 +140,24 @@ static void         shift_table_right(tcb_t *tcb, guint start_col);
 static void         move_column(tcb_t *tcb, guint source, guint dest);
 static void         shift_table_left(tcb_t *tcb, guint amount); 
 static void         delete_column(tcb_t *tcb, guint col); 
+static void         delete_table(tcb_t *tcb); 
 static void         update_rows(tcb_t *tcb); 
 
 static void         column_list_insert(col_list_t *list, GtkWidget *widget, guint row);
+static void         column_list_insert_file(col_list_t *list, GtkWidget *widget, guint row, gchar *file);
 static void         column_list_remove(col_list_t *list, GtkWidget *widget);
 static gboolean     column_list_is_sorted(col_list_t *list);
 static column_entry_t  *column_list_get_row(col_list_t *list, guint row); 
 static void         column_list_print_rows(col_list_t *list); 
 static guint        column_list_get_next(col_list_t *list, guint row); 
 
-static gchar        *get_function(tcb_t *tcb, guint col, guint row, dir_e direction);
+static void         get_function(tcb_t *tcb, guint col, guint row, dir_e direction, gchar **fname, gchar **file);
 static result_t     *parse_results(search_results_t *results); 
 static guint        results_list_remove_duplicates(result_t *front); 
 static void         results_list_sort(result_t *front); 
 static void         swap(result_t *a, result_t *b); 
+static guint        results_list_filter_file(result_t **front_ptr, gchar *file);
+static guint        get_children(gchar *function, gchar *file);
 // Local Global Variables
 //=======================
 
@@ -157,7 +167,7 @@ static GtkWidget    *test_widget;
 // Private Functions
 // ========================================================
 //
-static GtkWidget   *create_browser_window(gchar *name)
+static GtkWidget   *create_browser_window(gchar *name, gchar *root_file, gchar *line_num)
 {
     GtkWidget *browser_window;
     GdkPixbuf *browser_window_icon_pixbuf;
@@ -223,7 +233,7 @@ static GtkWidget   *create_browser_window(gchar *name)
 
     // Initialize the TCB
     tcb->browser_table = browser_table;
-    initialize_table(tcb, name);
+    initialize_table(tcb, name, root_file, line_num);
 
 
     /*
@@ -239,39 +249,10 @@ static GtkWidget   *create_browser_window(gchar *name)
      gtk_scale_set_digits(GTK_SCALE(root_hscale), 0);
      */
 
-    browser_bottom_hbox = gtk_hbox_new(FALSE, 0);
-    gtk_widget_set_name(browser_bottom_hbox, "browser_bottom_hbox");
-    gtk_widget_show(browser_bottom_hbox);
-    gtk_box_pack_start(GTK_BOX(browser_vbox), browser_bottom_hbox, FALSE, TRUE, 0);
-
-    root_function_entry_label = gtk_label_new("<span color=\"steelblue\" weight=\"bold\">Root Function</span>");
-    gtk_widget_set_name(root_function_entry_label, "root_function_entry_label");
-    gtk_widget_show(root_function_entry_label);
-    gtk_box_pack_start(GTK_BOX(browser_bottom_hbox), root_function_entry_label, FALSE, FALSE, 0);
-    gtk_label_set_use_markup(GTK_LABEL(root_function_entry_label), TRUE);
-    gtk_misc_set_padding(GTK_MISC(root_function_entry_label), 4, 8);
-
-    root_function_set_button = gtk_button_new_with_mnemonic("Set");
-    gtk_widget_set_name(root_function_set_button, "root button");
-    gtk_widget_show(root_function_set_button);
-    gtk_box_pack_start(GTK_BOX(browser_bottom_hbox), root_function_set_button, FALSE, FALSE, 0);
-
-
-    root_function_entry = gtk_entry_new();
-    gtk_widget_set_name(root_function_entry, "root_function_entry");
-    gtk_widget_show(root_function_entry);
-    gtk_box_pack_start(GTK_BOX(browser_bottom_hbox), root_function_entry, TRUE, TRUE, 0);
-    gtk_entry_set_invisible_char(GTK_ENTRY(root_function_entry), 8226);
-
-    tcb->root_entry = root_function_entry;
-
     g_signal_connect((gpointer) browser_window, "delete_event",
             G_CALLBACK (on_browser_delete_event),
             tcb);
 
-    g_signal_connect((gpointer) root_function_set_button, "clicked",
-            G_CALLBACK (on_root_button_clicked),
-            tcb);
 
     /*
        g_signal_connect((gpointer)root_hscale, "change_value",
@@ -289,9 +270,9 @@ static GtkWidget   *create_browser_window(gchar *name)
 // ========================================================
 //
 
-GtkWidget* BROWSER_init(gchar *name)
+GtkWidget* BROWSER_init(gchar *name, gchar *root_file, gchar *line_num)
 {
-    return( create_browser_window(name) );
+    return( create_browser_window(name, root_file, line_num) );
 }
 
 
@@ -316,25 +297,7 @@ static gboolean on_column_hscale_change_value(GtkRange *range, GtkScrollType scr
     return FALSE;
 }
 
-static gboolean on_root_button_clicked(GtkWidget *widget, gpointer user_data)
-{
-    tcb_t *tcb = user_data;
-    int i;
-    gchar *fname;
 
-    // want to completly reset the table
-    // delete every column, resize the table
-    // then set up the root column
-
-    for (i = 0; i < tcb->num_cols; i++)
-    {
-        delete_column(tcb, i);
-    }
-    fname = (gchar *) gtk_entry_get_text((GtkEntry *)tcb->root_entry);
-    initialize_table(tcb, fname);
-
-    return TRUE;
-}
 
 
 static gboolean on_left_expander_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
@@ -468,7 +431,76 @@ static gboolean on_right_collapser_button_release_event(GtkWidget *widget, GdkEv
     return FALSE;
 }
 
-void initialize_table(tcb_t *tcb, gchar *root_fname)
+static gboolean on_function_button_press(GtkWidget *widget, GdkEventButton *event, result_t  *box)
+{
+    if (event->type == GDK_2BUTTON_PRESS && event->button == 1) // left double click 
+    {
+        if (settings.useEditor)
+        {
+            start_text_editor(box->file_name, box->line_num);
+        }
+        else
+        {
+        FILEVIEW_create(box->file_name, atoi(box->line_num));
+        }
+    }
+    else if (event->type == GDK_BUTTON_PRESS && event->button == 3) // right click
+    {
+        right_click_menu(widget, event, box);
+    }
+}
+
+static void on_reroot(GtkWidget *menuitem, result_t *function_box)
+{
+    GtkWidget *browser;
+    search_results_t *matches;
+    // search for the function and see how many results come up
+    matches = SEARCH_lookup(FIND_DEF, function_box->function_name);
+    
+    if (matches->match_count == 1)
+    {
+        delete_table((tcb_t *) function_box->tcb);
+        initialize_table((tcb_t *)function_box->tcb,
+                         function_box->function_name,
+                         function_box->file_name,
+                         function_box->line_num);
+    }
+
+
+
+    
+    SEARCH_free_results(matches);
+}
+
+static void delete_table(tcb_t *tcb) 
+{
+    int i;
+    for (i = 0; i < tcb->num_cols; i++) {
+        delete_column(tcb, i);
+    }
+}
+
+static void right_click_menu(GtkWidget *widget, GdkEventButton *event, result_t *function_box) 
+{
+    GtkWidget *menu = NULL;
+    GtkWidget *menu_item;
+
+    if ( !menu)
+    {
+        menu = gtk_menu_new();
+
+        menu_item = gtk_menu_item_new_with_label("reroot");
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+        g_signal_connect(menu_item, "activate", (GCallback) on_reroot, function_box);
+    }
+
+    gtk_widget_show_all(menu);
+    gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
+                   (event != NULL) ? event->button : 0,
+                   gdk_event_get_time((GdkEvent*)event));
+}
+
+static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gchar *line_num)
 {
     GtkWidget *header_button;
     GtkWidget *root_function_blue_eventbox;
@@ -493,6 +525,12 @@ void initialize_table(tcb_t *tcb, gchar *root_fname)
         tcb->col_list[3].type = EXPANDER;
         tcb->col_list[4].type = FILLER;
     }
+
+    // put file name and function name into a result_t to pass to the on-click callback
+    tcb->root_entry.function_name = root_fname;
+    tcb->root_entry.file_name = root_file;
+    tcb->root_entry.line_num = line_num;
+    tcb->root_entry.tcb = tcb;
 
     /* Left Expander */
     make_expander_at_position(tcb, 1, 1, LEFT);
@@ -521,7 +559,7 @@ void initialize_table(tcb_t *tcb, gchar *root_fname)
     {   // Initialize the root column entries
         col_list_t *root_col = &(tcb->col_list[2]);
         root_col->header_column_label = header_button;
-        column_list_insert(root_col, root_function_blue_eventbox, 1);
+        column_list_insert_file(root_col, root_function_blue_eventbox, 1, root_file);
     }
 
     // Initialize the right filler column
@@ -538,6 +576,10 @@ void initialize_table(tcb_t *tcb, gchar *root_fname)
     gtk_misc_set_padding(GTK_MISC(root_function_label), 1, 0);
     gtk_label_set_ellipsize (GTK_LABEL (root_function_label), PANGO_ELLIPSIZE_END);
     gtk_label_set_width_chars(GTK_LABEL(root_function_label), strlen(root_fname) + 1);
+
+    g_signal_connect ((gpointer) root_function_blue_eventbox, "button_press_event",
+            G_CALLBACK (on_function_button_press), &(tcb->root_entry)); 
+
 }
 
 static void move_table_widget(GtkWidget *widget, tcb_t *tcb, guint row, guint col)
@@ -567,7 +609,7 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
     int i, add_pos;
     guint row_add_count;
     col_list_t *list;
-    gchar *fname;
+    gchar *fname, *file;
     result_t *results;
     search_results_t *children;
     search_t operation;
@@ -578,13 +620,14 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
     // get the function associated with the expander that was clicked
     // search for the appropriate children for that function and
     // parse them into a usable list
-    fname = get_function(tcb, origin_col, origin_row, direction); 
+    get_function(tcb, origin_col, origin_row, direction, &fname, &file); 
     children = SEARCH_lookup(operation, fname);
     if (children->match_count == 0)
     {
         return; 
     }
     results = parse_results(children);
+    //children->match_count -= results_list_filter_file(&results, file);
     row_add_count = children->match_count - 1; // the first child is on the same line so it is not an added ro
     SEARCH_free_results(children);  //children is unusable after this
 
@@ -727,7 +770,7 @@ static void move_column(tcb_t *tcb, guint source, guint dest) {
         next = curr->next;
         row = curr->row;
         column_list_remove(column, widget);  // this frees the curr node
-        column_list_insert(dest_col, widget, row); 
+        column_list_insert_file(dest_col, widget, row, curr->file); 
         move_table_widget(curr->widget, tcb, curr->row, dest);
         curr = next;
     }
@@ -1041,6 +1084,8 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
     search_results_t *children;
     search_t operation;
 
+      //printf("%s\n", user_data); 
+      //printf("%s\n%s\n\n", box->function_name, box->file_name); 
     offset = direction == RIGHT ? 1 : -1;
     node = function_list;
 
@@ -1064,9 +1109,13 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
         gtk_label_set_width_chars(GTK_LABEL(function_label), strlen(node->function_name) + 1 );
 
         list = &(tcb->col_list[col]);
-        column_list_insert(list, function_event_box, row);
+        column_list_insert_file(list, function_event_box, row, node->file_name);
 
         operation = direction == RIGHT ? FIND_CALLEDBY : FIND_CALLING;
+
+        node->tcb = tcb;
+        g_signal_connect ((gpointer) function_event_box, "button_press_event",
+                          G_CALLBACK (on_function_button_press), node);
 
         children = SEARCH_lookup(operation, node->function_name);
         if (children->match_count > 0) {
@@ -1133,14 +1182,21 @@ static void shift_column_down(tcb_t *tcb, guint col, guint starting_row, guint a
     }
 }
 
-// sorted insert into column list, column list should also be in sorted order
 static void column_list_insert(col_list_t *list, GtkWidget *widget, guint row) {
+    column_list_insert_file(list, widget, row, NULL);
+}
+
+// sorted insert into column list, column list should also be in sorted order
+static void column_list_insert_file(col_list_t *list, GtkWidget *widget, guint row, gchar *file) {
     // create the new node to add
     column_entry_t *new_node = g_malloc( sizeof(column_entry_t) );
     new_node->widget = widget;
     new_node->row = row;
     new_node->next = NULL;
     new_node->prev = NULL;
+    if (file != NULL) {
+        memcpy(new_node->file, file, strlen(file) + 1);
+    }
 
     // check the front
     if (list->column_member_list == NULL) {
@@ -1251,7 +1307,7 @@ static void update_rows(tcb_t *tcb) {
     }
 }
 
-static gchar *get_function(tcb_t *tcb, guint col, guint row, dir_e direction) {
+static void get_function(tcb_t *tcb, guint col, guint row, dir_e direction, gchar **fname, gchar **file) {
     guint offset;
     col_list_t *column;
     column_entry_t *function_node;
@@ -1265,7 +1321,8 @@ static gchar *get_function(tcb_t *tcb, guint col, guint row, dir_e direction) {
     // children is a GList containing only the function label
     children = gtk_container_get_children((GtkContainer *)function_node->widget);
     label = (GtkWidget *) children->data; 
-    return (gchar *)gtk_label_get_text((GtkLabel *) label);
+    *fname = (gchar *)gtk_label_get_text((GtkLabel *) label);
+    *file = function_node->file;
 }
 
 static result_t *parse_results(search_results_t *results) {
@@ -1332,6 +1389,26 @@ static guint results_list_remove_duplicates(result_t *front) {
     return count;
 }
 
+static guint results_list_filter_file(result_t **front_ptr, gchar *file) {
+    guint count = 0;
+    result_t *curr;
+    if (*front_ptr == NULL) return;
+
+    while (*front_ptr != NULL && strcmp((*front_ptr)->file_name, file) != 0) {
+        *front_ptr = (*front_ptr)->next;
+        count++;
+    }
+    curr = *front_ptr;
+    while (curr != NULL && curr->next != NULL) {
+        while (curr->next != NULL && strcmp(curr->next->file_name, file) != 0) {
+            curr->next = curr->next->next;
+            count++;
+        }
+        curr = curr->next;
+    }
+    return count;
+}
+
 static void results_list_sort(result_t *front) {
     result_t *smallest, *curr, *sorted;
     curr = smallest = front;
@@ -1371,5 +1448,3 @@ static void free_results(result_t *front) {
         curr = next;
     }
 }
-
-

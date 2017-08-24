@@ -327,7 +327,7 @@ static void process_query(search_t query_type)
 
 
 
-static void start_text_editor(gchar *filename, gchar *linenum)
+void start_text_editor(gchar *filename, gchar *linenum)
 {
     gchar command[1024];
 
@@ -1213,7 +1213,7 @@ on_open_call_browser(GtkWidget *menuitem, gchar *entry)
     *(entry - 1) = '\0'; // null terminate line num
     function = entry;
 
-    browser_window = BROWSER_init(function);
+    browser_window = BROWSER_init(function, fname, linenum);
     gtk_widget_show(browser_window);
 
 }
