@@ -27,7 +27,6 @@ typedef enum
     RIGHT,
 } dir_e;
 
-
 // linked list node
 // for a list of search results
 typedef struct result
@@ -35,7 +34,7 @@ typedef struct result
     gchar *function_name;
     gchar *file_name;
     gchar *line_num;
-    gchar *buf;
+    gchar *buf;      // buffer to hold result information for parsing
     struct result *next;
     void *tcb;       // a pointer back to tcb so that it can be used to reset the table
 } result_t;
@@ -74,18 +73,14 @@ typedef struct
 typedef struct
 {
     GtkWidget   *browser_table;
-    result_t    root_entry;    // used to store root file name and fname for callback
+    result_t    root_entry;     // used to store root file name and function name for callback
     guint       root_col;       // Table widget column currently containing the root/origin [0] column
     guint       num_cols;       // Total number of columns in the table
     guint       num_rows;       // Total number of rows in the table.
-    guint       left_height;    // Current size of "tallest/first" left column (1st left column is labelled -1)
-    guint       right_height;   // Current size of "tallest/first" right column (1st right column is labelled 1)
+    guint       left_height;    // Current size of "tallest" left column
+    guint       right_height;   // Current size of "tallest" right column
     col_list_t  col_list[NUM_COL_MAX];
 }   tcb_t;
-
-
-static int FUNCTION_NUM = 1;
-
 
 // Widget Table row/column tracking structure definition
 //
@@ -121,14 +116,14 @@ static void        right_click_menu(GtkWidget *widget, GdkEventButton *event, re
 static void        on_reroot(GtkWidget *menuitem, result_t *function_box);
 
 static void         initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gchar *line_num);
-static void         ensure_column_capacity(guint origin_col, tcb_t *tcb, dir_e direction); 
-static void         ensure_row_capacity(guint origin_row, tcb_t *t, guint row_add_count); 
+static void         ensure_column_capacity(tcb_t *tcb, guint origin_col, dir_e direction); 
+static void         ensure_row_capacity(tcb_t *tcb, guint origin_row, guint row_add_count); 
 static void         make_name_column(tcb_t *tcb, guint col, dir_e direction); 
 static void         make_name_column_labeled(tcb_t *tcb, guint col, dir_e direction, guint label); 
 static void         make_expander_column(tcb_t *tcb, guint position, dir_e direction); 
 static void         make_filler_column(tcb_t *tcb, guint position); 
 static void         add_functions_to_column(tcb_t *tcb, result_t *function_list, guint num_results,
-        guint col, guint starting_row, dir_e direction); 
+                                            guint col, guint starting_row, dir_e direction); 
 static void         make_expander_at_position(tcb_t *tcb, guint col, guint row, dir_e direction);
 static void         shift_column_down(tcb_t *tcb, guint col, guint starting_row, guint amount);
 static int          delete_functions_from_column(tcb_t *tcb, guint col, guint starting_row, guint end_row, dir_e direction); 
@@ -175,20 +170,8 @@ static GtkWidget   *create_browser_window(gchar *name, gchar *root_file, gchar *
     GtkWidget *browser_scrolledwindow;
     GtkWidget *browser_viewport;
     GtkWidget *browser_table;
-    GtkWidget *left_horizontal_filler_header_button;
-    GtkWidget *right_horizontal_filler_header_button;
-    GtkWidget *left_expander_eventbox;
-    GtkWidget *right_expander_eventbox;
-    GtkWidget *header_button;
-    GtkWidget *vertical_filler_label;
-    GtkWidget *root_function_blue_eventbox;
     GtkWidget *root_hscale;
-    GtkWidget *browser_bottom_hbox;
-    GtkWidget *root_function_entry_label;
-    GtkWidget *root_function_entry;
-    GtkWidget *root_function_label;
-    GtkWidget *root_function_set_button;
-    gchar     *var_string;
+    gchar *var_string;
     tcb_t     *tcb;
 
     //
@@ -235,9 +218,9 @@ static GtkWidget   *create_browser_window(gchar *name, gchar *root_file, gchar *
     tcb->browser_table = browser_table;
     initialize_table(tcb, name, root_file, line_num);
 
-
+    
     /*
-     * TODO: revisit this, hopefully there is a better way to do this, if not 
+     TODO: revisit this, hopefully there is a better way to do this, if not 
      * then each column needs a slider
      root_hscale = gtk_hscale_new(GTK_ADJUSTMENT(gtk_adjustment_new(10, 4, 40, 1, 0, 0)));
      gtk_widget_set_name(root_hscale, "root_hscale");
@@ -441,7 +424,7 @@ static gboolean on_function_button_press(GtkWidget *widget, GdkEventButton *even
         }
         else
         {
-        FILEVIEW_create(box->file_name, atoi(box->line_num));
+            FILEVIEW_create(box->file_name, atoi(box->line_num));
         }
     }
     else if (event->type == GDK_BUTTON_PRESS && event->button == 3) // right click
@@ -456,19 +439,24 @@ static void on_reroot(GtkWidget *menuitem, result_t *function_box)
     search_results_t *matches;
     // search for the function and see how many results come up
     matches = SEARCH_lookup(FIND_DEF, function_box->function_name);
-    
+
     if (matches->match_count == 1)
     {
         delete_table((tcb_t *) function_box->tcb);
         initialize_table((tcb_t *)function_box->tcb,
-                         function_box->function_name,
-                         function_box->file_name,
-                         function_box->line_num);
+                function_box->function_name,
+                function_box->file_name,
+                function_box->line_num);
+    }
+    else if (matches->match_count > 1)
+    {
+        // serach and let the user chose which function to pick
+        DISPLAY_search_results(FIND_DEF, matches);
     }
 
 
 
-    
+
     SEARCH_free_results(matches);
 }
 
@@ -482,22 +470,18 @@ static void delete_table(tcb_t *tcb)
 
 static void right_click_menu(GtkWidget *widget, GdkEventButton *event, result_t *function_box) 
 {
-    GtkWidget *menu = NULL;
-    GtkWidget *menu_item;
+    GtkWidget *menu, *menu_item;
 
-    if ( !menu)
-    {
-        menu = gtk_menu_new();
+    menu = gtk_menu_new();
 
-        menu_item = gtk_menu_item_new_with_label("reroot");
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-        g_signal_connect(menu_item, "activate", (GCallback) on_reroot, function_box);
-    }
+    menu_item = gtk_menu_item_new_with_label("reroot");
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+    g_signal_connect(menu_item, "activate", (GCallback) on_reroot, function_box);
 
     gtk_widget_show_all(menu);
     gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
-                   (event != NULL) ? event->button : 0,
-                   gdk_event_get_time((GdkEvent*)event));
+            (event != NULL) ? event->button : 0,
+            gdk_event_get_time((GdkEvent*)event));
 }
 
 static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gchar *line_num)
@@ -632,8 +616,8 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
     SEARCH_free_results(children);  //children is unusable after this
 
     // make sure the table has enough room to add functions
-    ensure_row_capacity(origin_row, tcb, row_add_count);
-    ensure_column_capacity(origin_col, tcb, direction);
+    ensure_row_capacity(tcb, origin_row, row_add_count);
+    ensure_column_capacity(tcb, origin_col,  direction);
 
     // update table height 
     if(direction == RIGHT) {
@@ -670,7 +654,7 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
     }
 }
 
-static void ensure_column_capacity(guint origin_col, tcb_t *tcb, dir_e direction) {
+static void ensure_column_capacity(tcb_t *tcb, guint origin_col, dir_e direction) {
     if (direction == RIGHT) {
         if (origin_col == tcb->num_cols - 2) {  // -2 because of filler column and zero based indexing
             // name column and another expander column
@@ -787,7 +771,7 @@ static void move_column(tcb_t *tcb, guint source, guint dest) {
 }
 
 
-static void ensure_row_capacity(guint origin_row, tcb_t *tcb, guint row_add_count) {
+static void ensure_row_capacity(tcb_t *tcb, guint origin_row, guint row_add_count) {
     guint delta = origin_row + row_add_count - tcb->num_rows; 
     // make sure we have two extra rows at the bottom for filler and hscale
     if (delta > 0) {
@@ -1080,12 +1064,10 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
     char *var_string;
     GtkWidget *function_label;
     GtkWidget *function_event_box;
-    result_t *node;
+    result_t *node, *all_matches;
     search_results_t *children;
     search_t operation;
 
-      //printf("%s\n", user_data); 
-      //printf("%s\n%s\n\n", box->function_name, box->file_name); 
     offset = direction == RIGHT ? 1 : -1;
     node = function_list;
 
@@ -1115,13 +1097,16 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
 
         node->tcb = tcb;
         g_signal_connect ((gpointer) function_event_box, "button_press_event",
-                          G_CALLBACK (on_function_button_press), node);
+                G_CALLBACK (on_function_button_press), node);
 
+        // check to see if we actually need to add an expander
+        // only need one if this function calls other functions
         children = SEARCH_lookup(operation, node->function_name);
         if (children->match_count > 0) {
             make_expander_at_position(tcb, col + offset, row, direction);
         }
         SEARCH_free_results(children);
+
         node = node->next;
     }
 
