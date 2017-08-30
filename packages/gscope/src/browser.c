@@ -63,6 +63,7 @@ typedef struct entry
 typedef struct
 {
     GtkWidget       *header_column_label;
+    GtkWidget       *slider;
     guint           header_column_num;      // label number not actual column number in table
     column_entry_t  *column_member_list;    // column member linked list
     column_entry_t  *back;
@@ -123,7 +124,7 @@ static void         make_name_column_labeled(tcb_t *tcb, guint col, dir_e direct
 static void         make_expander_column(tcb_t *tcb, guint position, dir_e direction); 
 static void         make_filler_column(tcb_t *tcb, guint position); 
 static void         add_functions_to_column(tcb_t *tcb, result_t *function_list, guint num_results,
-                                            guint col, guint starting_row, dir_e direction); 
+        guint col, guint starting_row, dir_e direction); 
 static void         make_expander_at_position(tcb_t *tcb, guint col, guint row, dir_e direction);
 static void         shift_column_down(tcb_t *tcb, guint col, guint starting_row, guint amount);
 static int          delete_functions_from_column(tcb_t *tcb, guint col, guint starting_row, guint end_row, dir_e direction); 
@@ -137,6 +138,9 @@ static void         shift_table_left(tcb_t *tcb, guint amount);
 static void         delete_column(tcb_t *tcb, guint col); 
 static void         delete_table(tcb_t *tcb); 
 static void         update_rows(tcb_t *tcb); 
+static void         make_sliders(tcb_t *tcb); 
+static void clear_sliders(tcb_t *tcb); 
+
 
 static void         column_list_insert(col_list_t *list, GtkWidget *widget, guint row);
 static void         column_list_insert_file(col_list_t *list, GtkWidget *widget, guint row, gchar *file);
@@ -170,7 +174,6 @@ static GtkWidget   *create_browser_window(gchar *name, gchar *root_file, gchar *
     GtkWidget *browser_scrolledwindow;
     GtkWidget *browser_viewport;
     GtkWidget *browser_table;
-    GtkWidget *root_hscale;
     gchar *var_string;
     tcb_t     *tcb;
 
@@ -209,7 +212,7 @@ static GtkWidget   *create_browser_window(gchar *name, gchar *root_file, gchar *
     gtk_widget_show(browser_viewport);
     gtk_container_add(GTK_CONTAINER(browser_scrolledwindow), browser_viewport);
 
-    browser_table = gtk_table_new(2, 5, FALSE);
+    browser_table = gtk_table_new(3, 5, FALSE);
     gtk_widget_set_name(browser_table, "browser_table");
     gtk_widget_show(browser_table);
     gtk_container_add(GTK_CONTAINER(browser_viewport), browser_table);
@@ -218,30 +221,10 @@ static GtkWidget   *create_browser_window(gchar *name, gchar *root_file, gchar *
     tcb->browser_table = browser_table;
     initialize_table(tcb, name, root_file, line_num);
 
-    
-    /*
-     TODO: revisit this, hopefully there is a better way to do this, if not 
-     * then each column needs a slider
-     root_hscale = gtk_hscale_new(GTK_ADJUSTMENT(gtk_adjustment_new(10, 4, 40, 1, 0, 0)));
-     gtk_widget_set_name(root_hscale, "root_hscale");
-     gtk_widget_show(root_hscale);
-     gtk_table_attach(GTK_TABLE(browser_table), root_hscale, 2, 3, 3, 4,
-     (GtkAttachOptions)(GTK_FILL),
-     (GtkAttachOptions)(GTK_FILL), 0, 0);
-     gtk_scale_set_draw_value(GTK_SCALE(root_hscale), FALSE);
-     gtk_scale_set_digits(GTK_SCALE(root_hscale), 0);
-     */
-
     g_signal_connect((gpointer) browser_window, "delete_event",
             G_CALLBACK (on_browser_delete_event),
             tcb);
 
-
-    /*
-       g_signal_connect((gpointer)root_hscale, "change_value",
-       G_CALLBACK(on_column_hscale_change_value),
-       root_function_label);
-       */
     return browser_window;
 }
 
@@ -489,6 +472,7 @@ static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gc
     GtkWidget *header_button;
     GtkWidget *root_function_blue_eventbox;
     GtkWidget *root_function_label;
+    GtkWidget *root_hscale;
     gchar *var_string;
     search_results_t *children;
 
@@ -559,10 +543,25 @@ static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gc
     gtk_misc_set_alignment(GTK_MISC(root_function_label), 0, 0.5);
     gtk_misc_set_padding(GTK_MISC(root_function_label), 1, 0);
     gtk_label_set_ellipsize (GTK_LABEL (root_function_label), PANGO_ELLIPSIZE_END);
-    gtk_label_set_width_chars(GTK_LABEL(root_function_label), strlen(root_fname) + 1);
+    gtk_label_set_width_chars(GTK_LABEL(root_function_label), 10);
+
+    root_hscale = gtk_hscale_new(GTK_ADJUSTMENT(gtk_adjustment_new(10, 4, 40, 1, 0, 0)));
+    gtk_widget_set_name(root_hscale, "root_hscale");
+    gtk_widget_show(root_hscale);
+    gtk_table_attach(GTK_TABLE(tcb->browser_table), root_hscale, 2, 3, 2, 3,
+            (GtkAttachOptions)(GTK_FILL),
+            (GtkAttachOptions)(GTK_FILL), 0, 0);
+    gtk_scale_set_draw_value(GTK_SCALE(root_hscale), FALSE);
+    gtk_scale_set_digits(GTK_SCALE(root_hscale), 0);
+
+    tcb->col_list[2].slider = root_hscale;
 
     g_signal_connect ((gpointer) root_function_blue_eventbox, "button_press_event",
             G_CALLBACK (on_function_button_press), &(tcb->root_entry)); 
+
+    g_signal_connect((gpointer)root_hscale, "change_value",
+            G_CALLBACK(on_column_hscale_change_value),
+            root_function_label);
 
 }
 
@@ -598,6 +597,7 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
     search_results_t *children;
     search_t operation;
 
+    clear_sliders(tcb);
     // set the search type depending on which way we are expanding
     operation = direction == RIGHT ? FIND_CALLEDBY : FIND_CALLING;
 
@@ -652,6 +652,10 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
         }
         add_functions_to_column(tcb, results, row_add_count + 1, add_pos, origin_row, LEFT);
     }
+
+    make_sliders(tcb);
+
+    make_sliders(tcb);
 }
 
 static void ensure_column_capacity(tcb_t *tcb, guint origin_col, dir_e direction) {
@@ -806,14 +810,18 @@ static void collapse_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e
             tcb->left_height + 1;
     }
 
+    clear_sliders(tcb);
+
     //delete all children of the collapser and shift up the table
     //the appropriate amount
     delete_children(tcb, origin_col, origin_row, lower_bound, direction);
 
     //check if the table needs to be downsized, if it does it will always
     //be a multiple of 2 rows for name and collapser columns
-    //
     remove_unused_columns(tcb, direction);
+
+    // recreate the sliders to update their position
+    make_sliders(tcb);
 }
 
 // removes every non filler column that contains no elements
@@ -875,6 +883,11 @@ static void delete_column(tcb_t *tcb, guint col) {
 
     if (column->header_column_label != NULL) {
         gtk_widget_destroy(column->header_column_label);
+        column->slider = NULL;
+    }
+    if (column->slider != NULL) {
+        gtk_widget_destroy(column->slider);
+        column->slider = NULL;
     }
     curr = column->column_member_list;
     while (curr != NULL) {
@@ -1088,7 +1101,7 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
         gtk_misc_set_alignment(GTK_MISC(function_label), 0, 0.5);
         gtk_misc_set_padding(GTK_MISC(function_label), 1, 0);
         gtk_label_set_ellipsize (GTK_LABEL (function_label), PANGO_ELLIPSIZE_END);
-        gtk_label_set_width_chars(GTK_LABEL(function_label), strlen(node->function_name) + 1 );
+        gtk_label_set_width_chars(GTK_LABEL(function_label), 10);
 
         list = &(tcb->col_list[col]);
         column_list_insert_file(list, function_event_box, row, node->file_name);
@@ -1431,5 +1444,58 @@ static void free_results(result_t *front) {
         next = curr->next;
         g_free(curr);
         curr = next;
+    }
+}
+
+static void make_sliders(tcb_t *tcb) {
+    GtkWidget *hscale;            
+    guint i;
+    col_list_t *column;
+    GtkWidget *function_box, *label;
+    GList *children;
+
+    for (i = 0; i < tcb->num_cols; i++) {
+       column = &(tcb->col_list[i]); 
+       if (column->type == NAME) {
+           // delete the old slider if it exists
+           if (column->slider != NULL)
+           {
+                gtk_widget_destroy(column->slider);
+           }
+           // create the new one
+           hscale = gtk_hscale_new(GTK_ADJUSTMENT(gtk_adjustment_new(10, 4, 40, 1, 0, 0)));
+           gtk_widget_set_name(hscale, "hscale");
+           gtk_widget_show(hscale);
+           gtk_table_attach(GTK_TABLE(tcb->browser_table), hscale, i, i + 1, tcb->num_rows, tcb->num_rows + 1,
+                   (GtkAttachOptions)(GTK_FILL),
+                   (GtkAttachOptions)(GTK_FILL), 0, 0);
+           gtk_scale_set_draw_value(GTK_SCALE(hscale), FALSE);
+           gtk_scale_set_digits(GTK_SCALE(hscale), 0);
+
+           column->slider = hscale;
+
+           // to set the width, need to grab the first label in the column
+           function_box = column->column_member_list->widget;
+           children = gtk_container_get_children((GtkContainer *) function_box);
+           label = (GtkWidget *) children->data;
+           g_signal_connect((gpointer)hscale, "change_value",
+                            G_CALLBACK(on_column_hscale_change_value),
+                            label);
+       }
+    }
+}
+
+static void clear_sliders(tcb_t *tcb) {
+    guint i;
+    col_list_t *column;
+
+    for (i = 0; i < tcb->num_cols; i++)
+    {
+        column = &(tcb->col_list[i]); 
+        if (column->slider != NULL)
+        {
+            gtk_widget_destroy(column->slider);
+            column->slider = NULL;
+        }
     }
 }
