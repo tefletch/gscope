@@ -139,8 +139,11 @@ static void         delete_column(tcb_t *tcb, guint col);
 static void         delete_table(tcb_t *tcb); 
 static void         update_rows(tcb_t *tcb); 
 static void         make_sliders(tcb_t *tcb); 
-static void clear_sliders(tcb_t *tcb); 
-
+static void         clear_sliders(tcb_t *tcb); 
+static GtkWidget    *make_straight_connector();
+static GtkWidget    *make_three_way_connector(dir_e direction);
+static void         add_connectors(tcb_t *tcb, guint col, guint row, guint count, dir_e direction);
+static GtkWidget    *make_end_connector(dir_e direction);
 
 static void         column_list_insert(col_list_t *list, GtkWidget *widget, guint row);
 static void         column_list_insert_file(col_list_t *list, GtkWidget *widget, guint row, gchar *file);
@@ -426,6 +429,7 @@ static void on_reroot(GtkWidget *menuitem, result_t *function_box)
     if (matches->match_count == 1)
     {
         delete_table((tcb_t *) function_box->tcb);
+        clear_sliders((tcb_t *) function_box->tcb);
         initialize_table((tcb_t *)function_box->tcb,
                 function_box->function_name,
                 function_box->file_name,
@@ -638,6 +642,7 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
             shift_column_down(tcb, i, origin_row, row_add_count);
         }
         add_functions_to_column(tcb, results, row_add_count + 1, origin_col + 1, origin_row, RIGHT);
+        add_connectors(tcb, origin_col, origin_row, row_add_count + 1, RIGHT);
     } else {
         // if this is the furthest left column then origin_col - 1 is not the correct
         // place to add due to columns being shifted right
@@ -931,6 +936,7 @@ static void delete_children(tcb_t *tcb, guint col, guint upper_bound, guint lowe
             height = delete_functions_from_column(tcb, i, upper_bound, lower_bound, RIGHT);        
             lowest = height > lowest ? height : lowest;
         }
+        delete_functions_from_column(tcb, col, upper_bound + 1, lower_bound, RIGHT);
     } else {
         // direction == left
         for (i = 2; i < col; i++) {
@@ -1460,7 +1466,7 @@ static void make_sliders(tcb_t *tcb) {
            // delete the old slider if it exists
            if (column->slider != NULL)
            {
-                gtk_widget_destroy(column->slider);
+               gtk_widget_destroy(column->slider);
            }
            // create the new one
            hscale = gtk_hscale_new(GTK_ADJUSTMENT(gtk_adjustment_new(10, 4, 40, 1, 0, 0)));
@@ -1498,4 +1504,117 @@ static void clear_sliders(tcb_t *tcb) {
             column->slider = NULL;
         }
     }
+}
+
+static void add_connectors(tcb_t *tcb, guint col, guint row, guint count, dir_e direction)
+{
+    guint i, j;
+    col_list_t *column;
+    GtkWidget *connector;
+
+    if (direction == RIGHT)
+    {
+        // add straight connectors to every 
+        // expander column before col
+        for (i = tcb->root_col; i < col; i++)
+        {
+           column = &(tcb->col_list[i]); 
+           if (column->type == EXPANDER)
+           {
+                for (j = row + 1; j  < row + count; j++) 
+                {
+                   connector = make_straight_connector();
+                   gtk_table_attach(GTK_TABLE(tcb->browser_table), connector, i, i + 1, j, j + 1,
+                           (GtkAttachOptions)(GTK_FILL),
+                           (GtkAttachOptions)(GTK_FILL), 0, 0);
+                   column_list_insert(column, connector, j);
+                }
+                /*
+                connector = make_end_connector(RIGHT);
+                gtk_table_attach(GTK_TABLE(tcb->browser_table), connector, i, i + 1, row + count - 1, row + count,
+                        (GtkAttachOptions)(GTK_FILL),
+                        (GtkAttachOptions)(GTK_FILL), 0, 0);
+                column_list_insert(column, connector, j);
+                */
+           }
+        }
+        column = &(tcb->col_list[col]);
+        for (i = row + 1; i < row + count - 1; i++) 
+        {
+            connector = make_three_way_connector(RIGHT);
+            gtk_table_attach(GTK_TABLE(tcb->browser_table), connector, col, col + 1, i, i + 1,
+                    (GtkAttachOptions)(GTK_FILL),
+                    (GtkAttachOptions)(GTK_FILL), 0, 0);
+            column_list_insert(column, connector, i);
+        }
+        
+        connector = make_end_connector(RIGHT);
+        gtk_table_attach(GTK_TABLE(tcb->browser_table), connector, col, col + 1, row + count - 1, row + count,
+                (GtkAttachOptions)(GTK_FILL),
+                (GtkAttachOptions)(GTK_FILL), 0, 0);
+        column_list_insert(column, connector, j);
+        
+    }
+}
+
+static GtkWidget *make_end_connector(dir_e direction)
+{
+    GtkWidget *eventbox;
+    GtkWidget *image;
+
+    eventbox = gtk_event_box_new();
+    gtk_widget_set_name(eventbox, "connector_eventbox");
+    gtk_widget_show(eventbox);
+
+    if (direction == LEFT)
+    {
+        image = create_pixmap(eventbox, "sca_end_branch_left.png");
+    } else 
+    {
+        image = create_pixmap(eventbox, "sca_end_branch_right.png");
+    }
+
+    gtk_widget_show(image);
+    gtk_container_add(GTK_CONTAINER(eventbox), image);
+
+    return eventbox;
+}
+
+static GtkWidget *make_three_way_connector(dir_e direction)
+{
+    GtkWidget *eventbox;
+    GtkWidget *image;
+
+    eventbox = gtk_event_box_new();
+    gtk_widget_set_name(eventbox, "connector_eventbox");
+    gtk_widget_show(eventbox);
+
+    if (direction == LEFT)
+    {
+        image = create_pixmap(eventbox, "sca_mid_branch_left.png");
+    } else 
+    {
+        image = create_pixmap(eventbox, "sca_mid_branch_right.png");
+    }
+
+    gtk_widget_show(image);
+    gtk_container_add(GTK_CONTAINER(eventbox), image);
+
+    return eventbox;
+}
+
+static GtkWidget *make_straight_connector()
+{
+    GtkWidget *eventbox;
+    GtkWidget *image;
+
+    eventbox = gtk_event_box_new();
+    gtk_widget_set_name(eventbox, "connector_eventbox");
+    gtk_widget_show(eventbox);
+    image = create_pixmap(eventbox, "sca_mid_branch_center.png");
+
+    gtk_widget_show(image);
+    gtk_container_add(GTK_CONTAINER(eventbox), image);
+
+    return eventbox;
 }
