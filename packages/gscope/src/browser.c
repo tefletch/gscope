@@ -429,7 +429,6 @@ static void on_reroot(GtkWidget *menuitem, result_t *function_box)
     if (matches->match_count == 1)
     {
         delete_table((tcb_t *) function_box->tcb);
-        clear_sliders((tcb_t *) function_box->tcb);
         initialize_table((tcb_t *)function_box->tcb,
                 function_box->function_name,
                 function_box->file_name,
@@ -450,6 +449,7 @@ static void on_reroot(GtkWidget *menuitem, result_t *function_box)
 static void delete_table(tcb_t *tcb) 
 {
     int i;
+    clear_sliders(tcb);
     for (i = 0; i < tcb->num_cols; i++) {
         delete_column(tcb, i);
     }
@@ -601,7 +601,6 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
     search_results_t *children;
     search_t operation;
 
-    clear_sliders(tcb);
     // set the search type depending on which way we are expanding
     operation = direction == RIGHT ? FIND_CALLEDBY : FIND_CALLING;
 
@@ -614,6 +613,8 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
     {
         return; 
     }
+    clear_sliders(tcb);
+    
     results = parse_results(children);
     //children->match_count -= results_list_filter_file(&results, file);
     row_add_count = children->match_count - 1; // the first child is on the same line so it is not an added ro
@@ -623,13 +624,7 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
     ensure_row_capacity(tcb, origin_row, row_add_count);
     ensure_column_capacity(tcb, origin_col,  direction);
 
-    // update table height 
-    if(direction == RIGHT) {
-        tcb->right_height += row_add_count;
-    } else {
-        tcb->left_height += row_add_count;
-    }
-    update_rows(tcb);
+    
 
     // shift down columns left or right of center depening on direction
     // then add functions
@@ -658,8 +653,15 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
         add_functions_to_column(tcb, results, row_add_count + 1, add_pos, origin_row, LEFT);
     }
 
-    make_sliders(tcb);
 
+    // update table height 
+    if(direction == RIGHT) {
+        tcb->right_height += row_add_count;
+    } else {
+        tcb->left_height += row_add_count;
+    }
+    update_rows(tcb);
+    
     make_sliders(tcb);
 }
 
@@ -929,14 +931,17 @@ static void shift_table_up(tcb_t *tcb, guint upper_bound, guint amount, dir_e di
 
 static void delete_children(tcb_t *tcb, guint col, guint upper_bound, guint lower_bound, dir_e direction) {
     int i, lowest, height, shift;
-    lowest = upper_bound;
+    lowest = upper_bound; // "lowest" row removed, is actually the highest number
 
     if (direction == RIGHT) {
         for (i = tcb->num_cols - 2; i > col; i--) {
             height = delete_functions_from_column(tcb, i, upper_bound, lower_bound, RIGHT);        
             lowest = height > lowest ? height : lowest;
         }
-        delete_functions_from_column(tcb, col, upper_bound + 1, lower_bound, RIGHT);
+        // delete the connectors from the clicked expander column
+        for (i = tcb->root_col + 1; i <= col; i++) {
+            delete_functions_from_column(tcb, i, upper_bound + 1, lower_bound, RIGHT);
+        }
     } else {
         // direction == left
         for (i = 2; i < col; i++) {
@@ -952,23 +957,16 @@ static int delete_functions_from_column(tcb_t *tcb, guint col, guint starting_ro
     int offset = direction == RIGHT ? 1 : -1;
 
     col_list_t *function_list = &(tcb->col_list[col]);
-    col_list_t *expander_list = &(tcb->col_list[col + offset]);
 
     guint lowest = starting_row;  // the "lowest" column removed, so highest col number
     guint i;
     column_entry_t *function, *expander;
     for (i = starting_row; i < end_row; i++) {
         function = column_list_get_row(function_list, i);
-        expander = column_list_get_row(expander_list, i);
-
         if (function != NULL) {
             lowest = function->row > lowest ? function->row : lowest;
             gtk_widget_destroy(function->widget);
             column_list_remove(function_list, function->widget);
-        }
-        if (expander != NULL) {
-            gtk_widget_destroy(expander->widget);
-            column_list_remove(expander_list, expander->widget);
         }
     }
     return lowest;
@@ -1521,21 +1519,17 @@ static void add_connectors(tcb_t *tcb, guint col, guint row, guint count, dir_e 
            column = &(tcb->col_list[i]); 
            if (column->type == EXPANDER)
            {
-                for (j = row + 1; j  < row + count; j++) 
+                if (row < tcb->right_height)
                 {
-                   connector = make_straight_connector();
-                   gtk_table_attach(GTK_TABLE(tcb->browser_table), connector, i, i + 1, j, j + 1,
-                           (GtkAttachOptions)(GTK_FILL),
-                           (GtkAttachOptions)(GTK_FILL), 0, 0);
-                   column_list_insert(column, connector, j);
+                    for (j = row + 1; j  < row + count; j++) 
+                    {
+                        connector = make_straight_connector();
+                        gtk_table_attach(GTK_TABLE(tcb->browser_table), connector, i, i + 1, j, j + 1,
+                                (GtkAttachOptions)(GTK_FILL),
+                                (GtkAttachOptions)(GTK_FILL), 0, 0);
+                        column_list_insert(column, connector, j);
+                    }
                 }
-                /*
-                connector = make_end_connector(RIGHT);
-                gtk_table_attach(GTK_TABLE(tcb->browser_table), connector, i, i + 1, row + count - 1, row + count,
-                        (GtkAttachOptions)(GTK_FILL),
-                        (GtkAttachOptions)(GTK_FILL), 0, 0);
-                column_list_insert(column, connector, j);
-                */
            }
         }
         column = &(tcb->col_list[col]);
@@ -1547,12 +1541,15 @@ static void add_connectors(tcb_t *tcb, guint col, guint row, guint count, dir_e 
                     (GtkAttachOptions)(GTK_FILL), 0, 0);
             column_list_insert(column, connector, i);
         }
-        
-        connector = make_end_connector(RIGHT);
-        gtk_table_attach(GTK_TABLE(tcb->browser_table), connector, col, col + 1, row + count - 1, row + count,
-                (GtkAttachOptions)(GTK_FILL),
-                (GtkAttachOptions)(GTK_FILL), 0, 0);
-        column_list_insert(column, connector, j);
+        // only need to add an end connector if we are adding more than one function
+        if (count > 1)
+        {
+            connector = make_end_connector(RIGHT);
+            gtk_table_attach(GTK_TABLE(tcb->browser_table), connector, col, col + 1, row + count - 1, row + count,
+                    (GtkAttachOptions)(GTK_FILL),
+                    (GtkAttachOptions)(GTK_FILL), 0, 0);
+            column_list_insert(column, connector, row + count - 1);
+        }
         
     }
 }
