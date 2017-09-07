@@ -57,6 +57,7 @@ typedef struct entry
     gchar           file[500];  // to differentiate between multi definition fuctions
     struct entry    *next;
     struct entry    *prev;
+    gboolean        last_entry;  // if the entry is the last function in a block
 } column_entry_t;
 
 
@@ -152,6 +153,7 @@ static gboolean     column_list_is_sorted(col_list_t *list);
 static column_entry_t  *column_list_get_row(col_list_t *list, guint row); 
 static void         column_list_print_rows(col_list_t *list); 
 static guint        column_list_get_next(col_list_t *list, guint row); 
+static gboolean end_of_block(col_list_t *column, guint row);
 
 static void         get_function(tcb_t *tcb, guint col, guint row, dir_e direction, gchar **fname, gchar **file);
 static result_t     *parse_results(search_results_t *results); 
@@ -593,7 +595,7 @@ static void move_table_widget(GtkWidget *widget, tcb_t *tcb, guint row, guint co
    */
 static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e direction)
 {
-    int i, add_pos;
+    int i, add_pos, adjusted_col;
     guint row_add_count;
     col_list_t *list;
     gchar *fname, *file;
@@ -642,6 +644,7 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
         // if this is the furthest left column then origin_col - 1 is not the correct
         // place to add due to columns being shifted right
         add_pos = origin_col == 1 ? 2: origin_col - 1;
+        adjusted_col = origin_col == 1 ? 3 : origin_col;
 
         for (i = tcb->root_col; i > 0; i--) {
             list = &(tcb->col_list[i]);
@@ -651,6 +654,7 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
             shift_column_down(tcb, i, origin_row, row_add_count);
         }
         add_functions_to_column(tcb, results, row_add_count + 1, add_pos, origin_row, LEFT);
+        add_connectors(tcb, adjusted_col, origin_row, row_add_count + 1, LEFT);
     }
 
 
@@ -669,7 +673,6 @@ static void ensure_column_capacity(tcb_t *tcb, guint origin_col, dir_e direction
     if (direction == RIGHT) {
         if (origin_col == tcb->num_cols - 2) {  // -2 because of filler column and zero based indexing
             // name column and another expander column
-            // TODO we conditionally may not need to add the second column for expanders
             gtk_table_resize(GTK_TABLE(tcb->browser_table), tcb->num_rows, tcb->num_cols + 2);
 
             // now we need to update the position of the filler column
@@ -766,6 +769,7 @@ static void move_column(tcb_t *tcb, guint source, guint dest) {
         row = curr->row;
         column_list_remove(column, widget);  // this frees the curr node
         column_list_insert_file(dest_col, widget, row, curr->file); 
+        column_list_get_row(dest_col, row)->last_entry = curr->last_entry;
         move_table_widget(curr->widget, tcb, curr->row, dest);
         curr = next;
     }
@@ -802,19 +806,30 @@ static void ensure_row_capacity(tcb_t *tcb, guint origin_row, guint row_add_coun
 static void collapse_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e direction)
 {
 
-    int offset = direction == RIGHT ? -1 : 1;
+    col_list_t *column;
+    guint next_row;
+    guint i;
+
+    guint offset = direction == RIGHT ? -1 : 1;
+    guint update = 2 * offset;
+    guint lower_bound = direction == RIGHT ?
+                                            tcb->right_height + 1 :
+                                            tcb->left_height + 1;
     //first thing that needs to be done is to recursivly collapse all children
     //to do this we need to know the position of the next element in this column
     //to put a lower bound on what we collpase (don't want to collapse children
     //of other funcitons)
 
-    col_list_t *list = &(tcb->col_list[origin_col + offset]);
-    guint lower_bound = column_list_get_next(list, origin_row);
-    // -1 means there is no lower bound
-    if (lower_bound == -1) {
-        lower_bound = direction == RIGHT ?
-            tcb->right_height + 1:
-            tcb->left_height + 1;
+    //TODO get the lower bound
+    for (i = origin_col + offset; i != tcb->root_col; i += update)
+    {
+        column = &(tcb->col_list[i]); 
+        next_row = column_list_get_next(column, origin_row);
+        if (next_row != -1)
+        {
+            lower_bound = next_row;
+            break;
+        }
     }
 
     clear_sliders(tcb);
@@ -939,14 +954,18 @@ static void delete_children(tcb_t *tcb, guint col, guint upper_bound, guint lowe
             lowest = height > lowest ? height : lowest;
         }
         // delete the connectors from the clicked expander column
-        for (i = tcb->root_col + 1; i <= col; i++) {
+        for (i = tcb->root_col + 1; i <= col; i += 2) {
             delete_functions_from_column(tcb, i, upper_bound + 1, lower_bound, RIGHT);
         }
     } else {
         // direction == left
-        for (i = 2; i < col; i++) {
+        for (i = 1; i < col; i++) {
             height = delete_functions_from_column(tcb, i, upper_bound, lower_bound, LEFT);
             lowest = height > lowest ? height : lowest;
+        }
+        // delete the connectors from the clicked expander column
+        for (i = tcb->root_col - 1; i >= col; i--) {
+            delete_functions_from_column(tcb, i, upper_bound + 1, lower_bound, RIGHT);
         }
     }
     shift = lowest - upper_bound; 
@@ -1073,7 +1092,6 @@ static void make_expander_at_position(tcb_t *tcb, guint col, guint row, dir_e di
 
 }
 
-
 static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint num_results,
         guint col, guint starting_row, dir_e direction) {
     int row, offset;
@@ -1109,7 +1127,14 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
 
         list = &(tcb->col_list[col]);
         column_list_insert_file(list, function_event_box, row, node->file_name);
-
+        
+        if (row == starting_row + num_results - 1) {
+            column_list_get_row(list, row)->last_entry = TRUE;
+        }
+        else
+        {
+            column_list_get_row(list, row)->last_entry = FALSE;
+        }
         operation = direction == RIGHT ? FIND_CALLEDBY : FIND_CALLING;
 
         node->tcb = tcb;
@@ -1126,7 +1151,6 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
 
         node = node->next;
     }
-
 }
 
 static void make_name_column(tcb_t *tcb, guint col, dir_e direction) {
@@ -1135,10 +1159,6 @@ static void make_name_column(tcb_t *tcb, guint col, dir_e direction) {
     make_name_column_labeled(tcb, col, direction, col_num); 
 }
 
-// TODO make this funciton work
-// currently just fills in a single dummy function as a Test value
-// needs to get results for either functions calling or called by
-// probably will accept list of functions as argument 
 static void make_name_column_labeled(tcb_t *tcb, guint col, dir_e direction, guint label) {
     GtkWidget *vertical_filler_label;
     GtkWidget *header_button;
@@ -1240,6 +1260,8 @@ static void column_list_remove(col_list_t *list, GtkWidget *widget) {
         list->column_member_list = list->column_member_list->next;
         if (list->column_member_list == NULL) {
             list->back = NULL;
+        } else {
+            list->column_member_list->prev = NULL;
         }
     } else {
         // find the widget to remove
@@ -1248,6 +1270,7 @@ static void column_list_remove(col_list_t *list, GtkWidget *widget) {
             curr = curr->next;
         }
         if (curr->next != NULL) {
+            // curr->next is the node to be removed
             column_entry_t *temp = curr->next;
             curr->next = curr->next->next;
             if (curr->next == NULL) {
@@ -1261,7 +1284,9 @@ static void column_list_remove(col_list_t *list, GtkWidget *widget) {
 }
 
 static column_entry_t  *column_list_get_row(col_list_t *list, guint row) {
-    column_entry_t *curr = list->column_member_list;
+    column_entry_t *curr;
+    if (list == NULL) return NULL;
+    curr = list->column_member_list;
     while (curr != NULL) {
         if (curr->row == row) {
             return curr;
@@ -1509,18 +1534,27 @@ static void add_connectors(tcb_t *tcb, guint col, guint row, guint count, dir_e 
     guint i, j;
     col_list_t *column;
     GtkWidget *connector;
+    column_entry_t *next;
+    const gchar *prev_name;
+    gboolean is_last_function = FALSE;
+    guint bound = col;
+    guint offset = direction == RIGHT ? -2 : 2;
+
 
     if (direction == RIGHT)
     {
         // add straight connectors to every 
         // expander column before col
-        for (i = tcb->root_col; i < col; i++)
+        for (i = tcb->root_col; i < bound; i++)
         {
-           column = &(tcb->col_list[i]); 
-           if (column->type == EXPANDER)
-           {
-                if (row < tcb->right_height)
+            column = &(tcb->col_list[i]); 
+            if (column->type == EXPANDER)
+            {
+                //check the next column (name) to see if adding connectors
+                //is necessary (might be the last function in a block)
+                if (!end_of_block(&(tcb->col_list[i + 1]), row))
                 {
+                    
                     for (j = row + 1; j  < row + count; j++) 
                     {
                         connector = make_straight_connector();
@@ -1530,28 +1564,54 @@ static void add_connectors(tcb_t *tcb, guint col, guint row, guint count, dir_e 
                         column_list_insert(column, connector, j);
                     }
                 }
-           }
+            }
         }
-        column = &(tcb->col_list[col]);
-        for (i = row + 1; i < row + count - 1; i++) 
+    }        
+
+    else 
+    {
+        // direction == left
+
+        // add vertical connectors to every expander column before col
+        for (i = tcb->root_col; i > bound; i--)
         {
-            connector = make_three_way_connector(RIGHT);
-            gtk_table_attach(GTK_TABLE(tcb->browser_table), connector, col, col + 1, i, i + 1,
-                    (GtkAttachOptions)(GTK_FILL),
-                    (GtkAttachOptions)(GTK_FILL), 0, 0);
-            column_list_insert(column, connector, i);
+            column = &(tcb->col_list[i]);
+            if (column->type == EXPANDER)
+            {
+                if (!end_of_block(&(tcb->col_list[i - 1]), row))
+                {
+                    for (j = row + 1; j < row + count; j++)
+                    {
+                        connector = make_straight_connector();
+                        gtk_table_attach(GTK_TABLE(tcb->browser_table), connector, i, i + 1, j, j + 1,
+                                (GtkAttachOptions)(GTK_FILL),
+                                (GtkAttachOptions)(GTK_FILL), 0, 0);
+                        column_list_insert(column, connector, j);
+                    }
+                }
+            }
         }
-        // only need to add an end connector if we are adding more than one function
-        if (count > 1)
-        {
-            connector = make_end_connector(RIGHT);
-            gtk_table_attach(GTK_TABLE(tcb->browser_table), connector, col, col + 1, row + count - 1, row + count,
-                    (GtkAttachOptions)(GTK_FILL),
-                    (GtkAttachOptions)(GTK_FILL), 0, 0);
-            column_list_insert(column, connector, row + count - 1);
-        }
-        
+
     }
+    column = &(tcb->col_list[col]);
+    for (i = row + 1; i < row + count - 1; i++) 
+    {
+        connector = make_three_way_connector(direction);
+        gtk_table_attach(GTK_TABLE(tcb->browser_table), connector, col, col + 1, i, i + 1,
+                (GtkAttachOptions)(GTK_FILL),
+                (GtkAttachOptions)(GTK_FILL), 0, 0);
+        column_list_insert(column, connector, i);
+    }
+    // only need to add an end connector if we are adding more than one function
+    if (count > 1)
+    {
+        connector = make_end_connector(direction);
+        gtk_table_attach(GTK_TABLE(tcb->browser_table), connector, col, col + 1, row + count - 1, row + count,
+                (GtkAttachOptions)(GTK_FILL),
+                (GtkAttachOptions)(GTK_FILL), 0, 0);
+        column_list_insert(column, connector, row + count - 1);
+    }
+
 }
 
 static GtkWidget *make_end_connector(dir_e direction)
@@ -1560,7 +1620,7 @@ static GtkWidget *make_end_connector(dir_e direction)
     GtkWidget *image;
 
     eventbox = gtk_event_box_new();
-    gtk_widget_set_name(eventbox, "connector_eventbox");
+    gtk_widget_set_name(eventbox, "end_connector");
     gtk_widget_show(eventbox);
 
     if (direction == LEFT)
@@ -1583,7 +1643,7 @@ static GtkWidget *make_three_way_connector(dir_e direction)
     GtkWidget *image;
 
     eventbox = gtk_event_box_new();
-    gtk_widget_set_name(eventbox, "connector_eventbox");
+    gtk_widget_set_name(eventbox, "three_connector");
     gtk_widget_show(eventbox);
 
     if (direction == LEFT)
@@ -1606,7 +1666,7 @@ static GtkWidget *make_straight_connector()
     GtkWidget *image;
 
     eventbox = gtk_event_box_new();
-    gtk_widget_set_name(eventbox, "connector_eventbox");
+    gtk_widget_set_name(eventbox, "stragiht_connector");
     gtk_widget_show(eventbox);
     image = create_pixmap(eventbox, "sca_mid_branch_center.png");
 
@@ -1614,4 +1674,29 @@ static GtkWidget *make_straight_connector()
     gtk_container_add(GTK_CONTAINER(eventbox), image);
 
     return eventbox;
+}
+
+static gboolean end_of_block(col_list_t *column, guint row)
+{
+    column_entry_t *curr;
+    
+    if (column->column_member_list->row > row) {
+        return TRUE;
+    }
+    curr = column->column_member_list;
+    while (curr != NULL) {
+        if (curr->next == NULL || curr->next->row > row)
+        {
+            if (curr->last_entry)
+            {
+                return TRUE;
+            }
+            else
+            {
+                return FALSE;
+            }
+        }
+        curr = curr->next;
+    }
+    return FALSE;
 }
