@@ -153,7 +153,7 @@ static gboolean     column_list_is_sorted(col_list_t *list);
 static column_entry_t  *column_list_get_row(col_list_t *list, guint row); 
 static void         column_list_print_rows(col_list_t *list); 
 static guint        column_list_get_next(col_list_t *list, guint row); 
-static gboolean end_of_block(col_list_t *column, guint row);
+static gboolean     end_of_block(col_list_t *column, guint row);
 
 static void         get_function(tcb_t *tcb, guint col, guint row, dir_e direction, gchar **fname, gchar **file);
 static result_t     *parse_results(search_results_t *results); 
@@ -312,7 +312,6 @@ static gboolean on_left_expander_button_release_event(GtkWidget *widget, GdkEven
     return FALSE;
 }
 
-
 static gboolean on_right_expander_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
     guint       child_count;
@@ -404,6 +403,7 @@ static gboolean on_right_collapser_button_release_event(GtkWidget *widget, GdkEv
 
 static gboolean on_function_button_press(GtkWidget *widget, GdkEventButton *event, result_t  *box)
 {
+    // open text editor at location on left double click, open menu on right click
     if (event->type == GDK_2BUTTON_PRESS && event->button == 1) // left double click 
     {
         if (settings.useEditor)
@@ -430,6 +430,7 @@ static void on_reroot(GtkWidget *menuitem, result_t *function_box)
 
     if (matches->match_count == 1)
     {
+        // only 1 match we can just reset the browser with the appropriate function
         delete_table((tcb_t *) function_box->tcb);
         initialize_table((tcb_t *)function_box->tcb,
                 function_box->function_name,
@@ -442,12 +443,10 @@ static void on_reroot(GtkWidget *menuitem, result_t *function_box)
         DISPLAY_search_results(FIND_DEF, matches);
     }
 
-
-
-
     SEARCH_free_results(matches);
 }
 
+// clear every widget from the table
 static void delete_table(tcb_t *tcb) 
 {
     int i;
@@ -892,6 +891,7 @@ static void remove_unused_columns(tcb_t *tcb, dir_e direction) {
     }
 }
 
+// moves every column to the right of amount, amount spots to the left in the tcb->col_list
 static void shift_table_left(tcb_t *tcb, guint amount) {
     int i;
     for (i = amount + 1; i < tcb->num_cols; i++) {
@@ -899,6 +899,7 @@ static void shift_table_left(tcb_t *tcb, guint amount) {
     }
 }
 
+// removes every widget in a column
 static void delete_column(tcb_t *tcb, guint col) {
     column_entry_t *curr, *next;
     col_list_t *column = &(tcb->col_list[col]);
@@ -912,20 +913,27 @@ static void delete_column(tcb_t *tcb, guint col) {
         column->slider = NULL;
     }
     curr = column->column_member_list;
+
+    // clear the column list
     while (curr != NULL) {
         gtk_widget_destroy(curr->widget);
         next = curr->next;
         g_free(curr);
         curr = next;
     }
+
+    // probably not necessary but it can't hurt
     memset(column, 0, sizeof(col_list_t));
 }
 
+// shifts every widget belowe uper_bound on the direction side of the root column up 
+// by specified amount
 static void shift_table_up(tcb_t *tcb, guint upper_bound, guint amount, dir_e direction) {
     int i;
     col_list_t *list;
     guint left, right;
 
+    // set bounds depending on direction
     left = direction == RIGHT ? tcb->root_col : 1;
     right = direction == RIGHT ? tcb->num_cols : tcb->root_col;
 
@@ -1168,16 +1176,6 @@ static void make_name_column_labeled(tcb_t *tcb, guint col, dir_e direction, gui
     int right_bound = direction == RIGHT ? col + 2 : col + 1;
     column->header_column_num = label;
 
-
-    /*
-       vertical_filler_label = gtk_label_new("");
-       gtk_widget_set_name(vertical_filler_label, "vertical_filler_label");
-       gtk_widget_show(vertical_filler_label);
-       gtk_table_attach(GTK_TABLE(tcb->browser_table), vertical_filler_label, col, col + 1, 2, 3,
-       (GtkAttachOptions)(GTK_FILL),
-       (GtkAttachOptions)(GTK_FILL), 0, 0);
-       */
-
     sprintf(num_str, "%d", label);
     header_button  = gtk_button_new_with_mnemonic(num_str);
     gtk_widget_set_name(header_button, "header_button");
@@ -1318,7 +1316,7 @@ static void column_list_print_rows(col_list_t *list) {
 static guint column_list_get_next(col_list_t *list, guint row) {
     column_entry_t *curr = list->column_member_list;
     while (curr != NULL && curr->next != NULL) {
-        if (curr->row == row) {
+        if (curr->next->row > row) {
             return curr->next->row;
         }
         curr = curr->next;
@@ -1680,11 +1678,13 @@ static gboolean end_of_block(col_list_t *column, guint row)
 {
     column_entry_t *curr;
     
-    if (column->column_member_list->row > row) {
+    if (column->column_member_list->row > row) 
+    {
         return TRUE;
     }
     curr = column->column_member_list;
-    while (curr != NULL) {
+    while (curr != NULL)
+    {
         if (curr->next == NULL || curr->next->row > row)
         {
             if (curr->last_entry)
