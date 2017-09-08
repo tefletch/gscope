@@ -100,7 +100,7 @@ typedef struct
 // Private Function Prototypes
 //============================
 static GtkWidget   *create_browser_window(gchar *name, gchar *root_file, gchar *line_num);
-static GtkWidget   *make_collapser(guint child_count);
+static GtkWidget   *make_collapser();
 static GtkWidget   *make_expander (dir_e direction, gboolean new_expander);
 static void        expand_table(guint origin_y, guint origin_x, tcb_t *tcb, dir_e direction);
 static void        collapse_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e direction);
@@ -108,7 +108,6 @@ static void        move_table_widget(GtkWidget *widget, tcb_t *tcb, guint row, g
 
 static gboolean    on_browser_delete_event(GtkWidget *widget, GdkEvent *event, gpointer user_data);
 static gboolean    on_column_hscale_change_value(GtkRange *range, GtkScrollType scroll, gdouble value, gpointer user_data);
-static gboolean    on_root_button_clicked(GtkWidget *widget, gpointer user_data);
 static gboolean    on_left_expander_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean    on_right_expander_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean    on_left_collapser_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
@@ -122,7 +121,6 @@ static void         ensure_column_capacity(tcb_t *tcb, guint origin_col, dir_e d
 static void         ensure_row_capacity(tcb_t *tcb, guint origin_row, guint row_add_count); 
 static void         make_name_column(tcb_t *tcb, guint col, dir_e direction); 
 static void         make_name_column_labeled(tcb_t *tcb, guint col, dir_e direction, guint label); 
-static void         make_expander_column(tcb_t *tcb, guint position, dir_e direction); 
 static void         make_filler_column(tcb_t *tcb, guint position); 
 static void         add_functions_to_column(tcb_t *tcb, result_t *function_list, guint num_results,
         guint col, guint starting_row, dir_e direction); 
@@ -152,7 +150,7 @@ static void         column_list_remove(col_list_t *list, GtkWidget *widget);
 static gboolean     column_list_is_sorted(col_list_t *list);
 static column_entry_t  *column_list_get_row(col_list_t *list, guint row); 
 static void         column_list_print_rows(col_list_t *list); 
-static guint        column_list_get_next(col_list_t *list, guint row); 
+static int          column_list_get_next(col_list_t *list, guint row); 
 static gboolean     end_of_block(col_list_t *column, guint row);
 
 static void         get_function(tcb_t *tcb, guint col, guint row, dir_e direction, gchar **fname, gchar **file);
@@ -161,7 +159,6 @@ static guint        results_list_remove_duplicates(result_t *front);
 static void         results_list_sort(result_t *front); 
 static void         swap(result_t *a, result_t *b); 
 static guint        results_list_filter_file(result_t **front_ptr, gchar *file);
-static guint        get_children(gchar *function, gchar *file);
 // Local Global Variables
 //=======================
 
@@ -273,7 +270,6 @@ static gboolean on_column_hscale_change_value(GtkRange *range, GtkScrollType scr
 
 static gboolean on_left_expander_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-    guint       child_count;
     GtkWidget   *collapser;
     guint       row, col;
     tcb_t       *tcb = user_data;
@@ -293,7 +289,7 @@ static gboolean on_left_expander_button_release_event(GtkWidget *widget, GdkEven
 
 
     // replace it with a collapser 
-    collapser = make_collapser(child_count);
+    collapser = make_collapser();
     column_list_insert(column_list, collapser, row);
 
     // Revisit: need to figure out table position from "widget" before destroying it.  Cheating for now...
@@ -314,7 +310,6 @@ static gboolean on_left_expander_button_release_event(GtkWidget *widget, GdkEven
 
 static gboolean on_right_expander_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-    guint       child_count;
     GtkWidget   *collapser;
     guint       row, col;
     tcb_t       *tcb = user_data;
@@ -332,7 +327,7 @@ static gboolean on_right_expander_button_release_event(GtkWidget *widget, GdkEve
     gtk_widget_destroy(widget);
 
 
-    collapser = make_collapser(child_count);
+    collapser = make_collapser();
     column_list_insert(list, collapser, row);
 
     // Revisit: need to figure out table position from "widget" before destroying it.  Cheating for now...
@@ -353,9 +348,8 @@ static gboolean on_right_expander_button_release_event(GtkWidget *widget, GdkEve
 
 static gboolean on_left_collapser_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-    GtkWidget   *expander;
     tcb_t       *tcb = user_data;
-    guint       row, col, child_count;
+    guint       row, col;
     col_list_t *list;
 
     // Get the widget's position in the table
@@ -379,9 +373,8 @@ static gboolean on_left_collapser_button_release_event(GtkWidget *widget, GdkEve
 
 static gboolean on_right_collapser_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-    GtkWidget   *expander;
     tcb_t       *tcb = user_data;
-    guint       row, col, child_count;
+    guint       row, col;
     col_list_t *list;
 
     // Get the widget's position in the table
@@ -419,11 +412,11 @@ static gboolean on_function_button_press(GtkWidget *widget, GdkEventButton *even
     {
         right_click_menu(widget, event, box);
     }
+    return FALSE;
 }
 
 static void on_reroot(GtkWidget *menuitem, result_t *function_box)
 {
-    GtkWidget *browser;
     search_results_t *matches;
     // search for the function and see how many results come up
     matches = SEARCH_lookup(FIND_DEF, function_box->function_name);
@@ -479,7 +472,6 @@ static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gc
     GtkWidget *root_function_label;
     GtkWidget *root_hscale;
     gchar *var_string;
-    search_results_t *children;
 
     gtk_table_resize(GTK_TABLE(tcb->browser_table), 2, 5);
 
@@ -806,7 +798,7 @@ static void collapse_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e
 {
 
     col_list_t *column;
-    guint next_row;
+    int next_row;
     guint i;
 
     guint offset = direction == RIGHT ? -1 : 1;
@@ -976,19 +968,21 @@ static void delete_children(tcb_t *tcb, guint col, guint upper_bound, guint lowe
             delete_functions_from_column(tcb, i, upper_bound + 1, lower_bound, RIGHT);
         }
     }
+
     shift = lowest - upper_bound; 
     shift_table_up(tcb, upper_bound, shift, direction);
 }
 
+// remove all functions from col between starting_row (inclusive) and end_row (Exclusive) and return the position
+// of the "lowest" function deleted which is the highest number
 static int delete_functions_from_column(tcb_t *tcb, guint col, guint starting_row, guint end_row, dir_e direction) {
-    int offset = direction == RIGHT ? 1 : -1;
-
     col_list_t *function_list = &(tcb->col_list[col]);
 
     guint lowest = starting_row;  // the "lowest" column removed, so highest col number
     guint i;
-    column_entry_t *function, *expander;
+    column_entry_t *function;
     for (i = starting_row; i < end_row; i++) {
+        // check each row to see if a widget exists and if so remove it
         function = column_list_get_row(function_list, i);
         if (function != NULL) {
             lowest = function->row > lowest ? function->row : lowest;
@@ -1013,7 +1007,7 @@ static void shift_column_up(tcb_t *tcb, guint col, guint starting_row, guint amo
 }
 
 
-static GtkWidget *make_collapser(guint child_count)
+static GtkWidget *make_collapser()
 {
     GtkWidget   *eventbox;
     GtkWidget   *image;
@@ -1022,10 +1016,7 @@ static GtkWidget *make_collapser(guint child_count)
     gtk_widget_set_name(eventbox, "expander_eventbox");
     gtk_widget_show(eventbox);
 
-    if ( child_count > 1 )
-        image = create_pixmap(eventbox, "sca_collapser_multi.png");
-    else
-        image = create_pixmap(eventbox, "sca_collapser_single.png");
+    image = create_pixmap(eventbox, "sca_collapser_multi.png");
 
     gtk_widget_show(image);
     gtk_container_add(GTK_CONTAINER(eventbox), image);
@@ -1095,7 +1086,7 @@ static void make_expander_at_position(tcb_t *tcb, guint col, guint row, dir_e di
     } else {
         g_signal_connect((gpointer)expander_eventbox, "button_release_event",
                 G_CALLBACK(on_left_expander_button_release_event),
-                tcb);  // Revisit: Pass "table" (and possibly table position)
+                tcb);
     }
 
 }
@@ -1107,7 +1098,7 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
     char *var_string;
     GtkWidget *function_label;
     GtkWidget *function_event_box;
-    result_t *node, *all_matches;
+    result_t *node;
     search_results_t *children;
     search_t operation;
 
@@ -1136,6 +1127,7 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
         list = &(tcb->col_list[col]);
         column_list_insert_file(list, function_event_box, row, node->file_name);
         
+        // set the last_row field   
         if (row == starting_row + num_results - 1) {
             column_list_get_row(list, row)->last_entry = TRUE;
         }
@@ -1168,7 +1160,6 @@ static void make_name_column(tcb_t *tcb, guint col, dir_e direction) {
 }
 
 static void make_name_column_labeled(tcb_t *tcb, guint col, dir_e direction, guint label) {
-    GtkWidget *vertical_filler_label;
     GtkWidget *header_button;
     char num_str[3];
     col_list_t *column = &(tcb->col_list[col]);
@@ -1247,6 +1238,8 @@ static void column_list_insert_file(col_list_t *list, GtkWidget *widget, guint r
     }
 }
 
+// remove node containing widget from the list
+// does not delete the widget
 static void column_list_remove(col_list_t *list, GtkWidget *widget) {
 
     if (list->column_member_list == NULL) {
@@ -1281,6 +1274,7 @@ static void column_list_remove(col_list_t *list, GtkWidget *widget) {
     }
 }
 
+// return the node at row or NULL if there is not a node at row
 static column_entry_t  *column_list_get_row(col_list_t *list, guint row) {
     column_entry_t *curr;
     if (list == NULL) return NULL;
@@ -1305,6 +1299,8 @@ static gboolean     column_list_is_sorted(col_list_t *list) {
     return TRUE;
 }
 
+// for debugging purposes, prints the rows in order
+// if order is not sorted then something is broken
 static void column_list_print_rows(col_list_t *list) {
     column_entry_t *curr = list->column_member_list;
     while (curr != NULL) {
@@ -1313,7 +1309,9 @@ static void column_list_print_rows(col_list_t *list) {
     }
 }
 
-static guint column_list_get_next(col_list_t *list, guint row) {
+// returns the row number for the next widget after the given row
+// in this column
+static int column_list_get_next(col_list_t *list, guint row) {
     column_entry_t *curr = list->column_member_list;
     while (curr != NULL && curr->next != NULL) {
         if (curr->next->row > row) {
@@ -1324,6 +1322,7 @@ static guint column_list_get_next(col_list_t *list, guint row) {
     return -1;
 }
 
+// update the height of the tree based on left and right height
 static void update_rows(tcb_t *tcb) {
     if (tcb->left_height >= tcb->right_height) {
         tcb->num_rows = tcb->left_height + 1;
@@ -1332,6 +1331,8 @@ static void update_rows(tcb_t *tcb) {
     }
 }
 
+// given the position of a clicked expander or collapser, fills fname and file
+// with the function name and file name for the corresponding function
 static void get_function(tcb_t *tcb, guint col, guint row, dir_e direction, gchar **fname, gchar **file) {
     guint offset;
     col_list_t *column;
@@ -1350,9 +1351,9 @@ static void get_function(tcb_t *tcb, guint col, guint row, dir_e direction, gcha
     *file = function_node->file;
 }
 
+// parse results into a result_t which can be easily iterated over
 static result_t *parse_results(search_results_t *results) {
     result_t *node, *next_node, *front; 
-    guint i, num_removed;
     gchar *curr;
     gboolean first_space;
     gchar *result_ptr = results->start_ptr;
@@ -1360,10 +1361,11 @@ static result_t *parse_results(search_results_t *results) {
     front = next_node = (result_t *) g_malloc( sizeof(result_t) );
     while (result_ptr != results->end_ptr) {
         node = next_node;
-        node->buf = (gchar *) malloc(1024);
+        node->buf = (gchar *) g_malloc(1024);
         node->file_name = node->buf;
         curr = node->buf;
         first_space = TRUE;
+        // newlines seperate each entry
         while(*result_ptr != '\n') {
             if (*result_ptr == '|') {
                 *curr = '\0';        
@@ -1388,12 +1390,10 @@ static result_t *parse_results(search_results_t *results) {
     }
     node->next = NULL;
 
-    //num_removed = results_list_remove_duplicates(front);
-    //results->match_count -= num_removed; 
-    //results_list_sort(front);
     return front;
 }
 
+// OPTIONAL code to remove duplicate entries from a result list
 static guint results_list_remove_duplicates(result_t *front) {
     result_t *outer_curr, *inner_curr;
     guint count = 0;
@@ -1414,10 +1414,15 @@ static guint results_list_remove_duplicates(result_t *front) {
     return count;
 }
 
+// OPTIONAL code to remover entries from a results list whos files do not match
+// given file
+//
+// works for sorting on the first expansion from root but after that is not really
+// useful given how Gscope treats file_names on FIND_CALLING searches
 static guint results_list_filter_file(result_t **front_ptr, gchar *file) {
     guint count = 0;
     result_t *curr;
-    if (*front_ptr == NULL) return;
+    if (*front_ptr == NULL) return 0;
 
     while (*front_ptr != NULL && strcmp((*front_ptr)->file_name, file) != 0) {
         *front_ptr = (*front_ptr)->next;
@@ -1434,6 +1439,7 @@ static guint results_list_filter_file(result_t **front_ptr, gchar *file) {
     return count;
 }
 
+// OPTIONAL code to alphabetically sort a results list
 static void results_list_sort(result_t *front) {
     result_t *smallest, *curr, *sorted;
     curr = smallest = front;
@@ -1451,6 +1457,7 @@ static void results_list_sort(result_t *front) {
     }
 }
 
+// swap two nodes in a result list
 static void swap(result_t *a, result_t *b) {
     result_t swap;
     result_t *a_next, *b_next;
@@ -1463,17 +1470,8 @@ static void swap(result_t *a, result_t *b) {
     b->next = b_next;
 }
 
-static void free_results(result_t *front) {
-    result_t *curr, *next;
-    curr = front;
-    while (curr != NULL) {
-        g_free(curr->buf);
-        next = curr->next;
-        g_free(curr);
-        curr = next;
-    }
-}
-
+// places a slider at the bottom of each column
+// should be used to update sliders everytime the tree is modified
 static void make_sliders(tcb_t *tcb) {
     GtkWidget *hscale;            
     guint i;
@@ -1512,6 +1510,7 @@ static void make_sliders(tcb_t *tcb) {
     }
 }
 
+// remove all sliders, should be called before calling make_sliders
 static void clear_sliders(tcb_t *tcb) {
     guint i;
     col_list_t *column;
@@ -1527,16 +1526,14 @@ static void clear_sliders(tcb_t *tcb) {
     }
 }
 
+// add connectors, assumes that all functions have been added and the tree has already been
+// expanded for a given expansion
 static void add_connectors(tcb_t *tcb, guint col, guint row, guint count, dir_e direction)
 {
     guint i, j;
     col_list_t *column;
     GtkWidget *connector;
-    column_entry_t *next;
-    const gchar *prev_name;
-    gboolean is_last_function = FALSE;
     guint bound = col;
-    guint offset = direction == RIGHT ? -2 : 2;
 
 
     if (direction == RIGHT)
@@ -1548,8 +1545,6 @@ static void add_connectors(tcb_t *tcb, guint col, guint row, guint count, dir_e 
             column = &(tcb->col_list[i]); 
             if (column->type == EXPANDER)
             {
-                //check the next column (name) to see if adding connectors
-                //is necessary (might be the last function in a block)
                 if (!end_of_block(&(tcb->col_list[i + 1]), row))
                 {
                     
@@ -1592,6 +1587,7 @@ static void add_connectors(tcb_t *tcb, guint col, guint row, guint count, dir_e 
 
     }
     column = &(tcb->col_list[col]);
+    // the newly expanded column needs 3-way connectors for every added function
     for (i = row + 1; i < row + count - 1; i++) 
     {
         connector = make_three_way_connector(direction);
@@ -1674,6 +1670,7 @@ static GtkWidget *make_straight_connector()
     return eventbox;
 }
 
+// determins if the given row contians a function which is the last child in a block of functions
 static gboolean end_of_block(col_list_t *column, guint row)
 {
     column_entry_t *curr;
