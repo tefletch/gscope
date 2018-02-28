@@ -89,7 +89,6 @@ static gboolean scroll_view_cb(gpointer data)
     GtkTextView *view;
     GtkTextBuffer *s_buffer;
     GtkTextMark *mark;
-    gulong draw_handler;
 
     view = GTK_TEXT_VIEW (data);
     s_buffer = gtk_text_view_get_buffer (view);
