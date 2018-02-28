@@ -4,11 +4,14 @@
 
 #include <gtk/gtk.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "support.h"
 #include "utils.h"
 #include "app_config.h"
 #include "search.h"
+#include "display.h"
+#include "fileview.h"
 
 
 // Defines
@@ -99,9 +102,9 @@ typedef struct
 
 // Private Function Prototypes
 //============================
-static GtkWidget   *create_browser_window(gchar *name, gchar *root_file, gchar *line_num);
-static GtkWidget   *make_collapser();
-static GtkWidget   *make_expander (dir_e direction, gboolean new_expander);
+static GtkWidget* create_browser_window(gchar *name, gchar *root_file, gchar *line_num);
+static GtkWidget* make_collapser(void);
+static GtkWidget* make_expander(dir_e direction, gboolean new_expander);
 static void        expand_table(guint origin_y, guint origin_x, tcb_t *tcb, dir_e direction);
 static void        collapse_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e direction);
 static void        move_table_widget(GtkWidget *widget, tcb_t *tcb, guint row, guint col);
@@ -113,62 +116,63 @@ static gboolean    on_right_expander_button_release_event(GtkWidget *widget, Gdk
 static gboolean    on_left_collapser_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean    on_right_collapser_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean    on_function_button_press(GtkWidget *widget, GdkEventButton *event, result_t *user_data);
-static void        right_click_menu(GtkWidget *widget, GdkEventButton *event, result_t *function_box); 
+static void        right_click_menu(GtkWidget *widget, GdkEventButton *event, result_t *function_box);
 static void        on_reroot(GtkWidget *menuitem, result_t *function_box);
 
 static void         initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gchar *line_num);
-static void         ensure_column_capacity(tcb_t *tcb, guint origin_col, dir_e direction); 
-static void         ensure_row_capacity(tcb_t *tcb, guint origin_row, guint row_add_count); 
-static void         make_name_column(tcb_t *tcb, guint col, dir_e direction); 
-static void         make_name_column_labeled(tcb_t *tcb, guint col, dir_e direction, guint label); 
-static void         make_filler_column(tcb_t *tcb, guint position); 
+static void         ensure_column_capacity(tcb_t *tcb, guint origin_col, dir_e direction);
+static void         ensure_row_capacity(tcb_t *tcb, guint origin_row, guint row_add_count);
+static void         make_name_column(tcb_t *tcb, guint col, dir_e direction);
+static void         make_name_column_labeled(tcb_t *tcb, guint col, dir_e direction, guint label);
+static void         make_filler_column(tcb_t *tcb, guint position);
 static void         add_functions_to_column(tcb_t *tcb, result_t *function_list, guint num_results,
-        guint col, guint starting_row, dir_e direction); 
+                                            guint col, guint starting_row, dir_e direction);
 static void         make_expander_at_position(tcb_t *tcb, guint col, guint row, dir_e direction);
 static void         shift_column_down(tcb_t *tcb, guint col, guint starting_row, guint amount);
-static int          delete_functions_from_column(tcb_t *tcb, guint col, guint starting_row, guint end_row, dir_e direction); 
-static void         shift_column_up(tcb_t *tcb, guint col, guint starting_row, guint amount); 
-static void         delete_children(tcb_t *tcb, guint col, guint upper_bound, guint lower_bound, dir_e direction); 
-static void         shift_table_up(tcb_t *tcb, guint upper_bound, guint amount, dir_e direction); 
+static int          delete_functions_from_column(tcb_t *tcb, guint col, guint starting_row, guint end_row, dir_e direction);
+static void         shift_column_up(tcb_t *tcb, guint col, guint starting_row, guint amount);
+static void         delete_children(tcb_t *tcb, guint col, guint upper_bound, guint lower_bound, dir_e direction);
+static void         shift_table_up(tcb_t *tcb, guint upper_bound, guint amount, dir_e direction);
 static void         remove_unused_columns(tcb_t *tcb, dir_e direction);
-static void         shift_table_right(tcb_t *tcb, guint start_col); 
+static void         shift_table_right(tcb_t *tcb, guint start_col);
 static void         move_column(tcb_t *tcb, guint source, guint dest);
-static void         shift_table_left(tcb_t *tcb, guint amount); 
-static void         delete_column(tcb_t *tcb, guint col); 
-static void         delete_table(tcb_t *tcb); 
-static void         update_rows(tcb_t *tcb); 
-static void         make_sliders(tcb_t *tcb); 
-static void         clear_sliders(tcb_t *tcb); 
-static GtkWidget    *make_straight_connector();
-static GtkWidget    *make_three_way_connector(dir_e direction);
+static void         shift_table_left(tcb_t *tcb, guint amount);
+static void         delete_column(tcb_t *tcb, guint col);
+static void         delete_table(tcb_t *tcb);
+static void         update_rows(tcb_t *tcb);
+static void         make_sliders(tcb_t *tcb);
+static void         clear_sliders(tcb_t *tcb);
+static GtkWidget* make_straight_connector(void);
+static GtkWidget* make_three_way_connector(dir_e direction);
 static void         add_connectors(tcb_t *tcb, guint col, guint row, guint count, dir_e direction);
-static GtkWidget    *make_end_connector(dir_e direction);
+static GtkWidget* make_end_connector(dir_e direction);
 
 static void         column_list_insert(col_list_t *list, GtkWidget *widget, guint row);
 static void         column_list_insert_file(col_list_t *list, GtkWidget *widget, guint row, gchar *file);
 static void         column_list_remove(col_list_t *list, GtkWidget *widget);
 static gboolean     column_list_is_sorted(col_list_t *list);
-static column_entry_t  *column_list_get_row(col_list_t *list, guint row); 
-static void         column_list_print_rows(col_list_t *list); 
-static int          column_list_get_next(col_list_t *list, guint row); 
+static column_entry_t* column_list_get_row(col_list_t *list, guint row);
+static int          column_list_get_next(col_list_t *list, guint row);
 static gboolean     end_of_block(col_list_t *column, guint row);
 
 static void         get_function(tcb_t *tcb, guint col, guint row, dir_e direction, gchar **fname, gchar **file);
-static result_t     *parse_results(search_results_t *results); 
-static guint        results_list_remove_duplicates(result_t *front); 
-static void         results_list_sort(result_t *front); 
-static void         swap(result_t *a, result_t *b); 
-static guint        results_list_filter_file(result_t **front_ptr, gchar *file);
+static result_t* parse_results(search_results_t *results);
+//static void         column_list_print_rows(col_list_t *list);
+//static guint        results_list_remove_duplicates(result_t *front);
+//static void         results_list_sort(result_t *front);
+//static void         swap(result_t *a, result_t *b);
+//static guint        results_list_filter_file(result_t **front_ptr, gchar *file);
+
 // Local Global Variables
 //=======================
 
-static GtkWidget    *test_widget;
+//static GtkWidget    *test_widget;
 
 //
 // Private Functions
 // ========================================================
 //
-static GtkWidget   *create_browser_window(gchar *name, gchar *root_file, gchar *line_num)
+static GtkWidget* create_browser_window(gchar *name, gchar *root_file, gchar *line_num)
 {
     GtkWidget *browser_window;
     GdkPixbuf *browser_window_icon_pixbuf;
@@ -183,7 +187,7 @@ static GtkWidget   *create_browser_window(gchar *name, gchar *root_file, gchar *
     // Malloc a Table Control Block (TCB) for this window.  This keeps the table data with the
     // widget and makes this function re-entrant-safe.
     //========================================================================================
-    tcb = g_malloc( sizeof(tcb_t) );
+    tcb = g_malloc(sizeof(tcb_t));
 
     browser_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_widget_set_name(browser_window, "browser_window");
@@ -223,9 +227,9 @@ static GtkWidget   *create_browser_window(gchar *name, gchar *root_file, gchar *
     tcb->browser_table = browser_table;
     initialize_table(tcb, name, root_file, line_num);
 
-    g_signal_connect((gpointer) browser_window, "delete_event",
-            G_CALLBACK (on_browser_delete_event),
-            tcb);
+    g_signal_connect((gpointer)browser_window, "delete_event",
+                     G_CALLBACK(on_browser_delete_event),
+                     tcb);
 
     return browser_window;
 }
@@ -240,7 +244,7 @@ static GtkWidget   *create_browser_window(gchar *name, gchar *root_file, gchar *
 
 GtkWidget* BROWSER_init(gchar *name, gchar *root_file, gchar *line_num)
 {
-    return( create_browser_window(name, root_file, line_num) );
+    return (create_browser_window(name, root_file, line_num));
 }
 
 
@@ -278,9 +282,9 @@ static gboolean on_left_expander_button_release_event(GtkWidget *widget, GdkEven
 
     // Get the widget's position in the table
     gtk_container_child_get(GTK_CONTAINER(tcb->browser_table), widget,
-            "top-attach", &row,
-            "left-attach", &col,
-            NULL);
+                            "top-attach", &row,
+                            "left-attach", &col,
+                            NULL);
 
     // Destroy the selected expander
     column_list = &(tcb->col_list[col]);
@@ -288,18 +292,18 @@ static gboolean on_left_expander_button_release_event(GtkWidget *widget, GdkEven
     gtk_widget_destroy(widget);
 
 
-    // replace it with a collapser 
+    // replace it with a collapser
     collapser = make_collapser();
     column_list_insert(column_list, collapser, row);
 
     // Revisit: need to figure out table position from "widget" before destroying it.  Cheating for now...
     gtk_table_attach(GTK_TABLE(tcb->browser_table), collapser, col, col + 1, row, row + 1,
-            (GtkAttachOptions)(GTK_FILL),
-            (GtkAttachOptions)(GTK_FILL), 0, 0);
+                     (GtkAttachOptions)(GTK_FILL),
+                     (GtkAttachOptions)(GTK_FILL), 0, 0);
 
     g_signal_connect((gpointer)collapser, "button_release_event",
-            G_CALLBACK(on_left_collapser_button_release_event),
-            user_data);
+                     G_CALLBACK(on_left_collapser_button_release_event),
+                     user_data);
 
     // add the relevant functions to the table and grow
     // if necessary
@@ -317,9 +321,9 @@ static gboolean on_right_expander_button_release_event(GtkWidget *widget, GdkEve
 
     // Get the widget's position in the table
     gtk_container_child_get(GTK_CONTAINER(tcb->browser_table), widget,
-            "top-attach", &row,
-            "left-attach", &col,
-            NULL);
+                            "top-attach", &row,
+                            "left-attach", &col,
+                            NULL);
 
     // Destroy the selected expander
     list = &(tcb->col_list[col]);
@@ -332,13 +336,13 @@ static gboolean on_right_expander_button_release_event(GtkWidget *widget, GdkEve
 
     // Revisit: need to figure out table position from "widget" before destroying it.  Cheating for now...
     gtk_table_attach(GTK_TABLE(tcb->browser_table), collapser, col, col + 1, row, row + 1,
-            (GtkAttachOptions)(GTK_FILL),
-            (GtkAttachOptions)(GTK_FILL), 0, 0);
+                     (GtkAttachOptions)(GTK_FILL),
+                     (GtkAttachOptions)(GTK_FILL), 0, 0);
 
 
     g_signal_connect((gpointer)collapser, "button_release_event",
-            G_CALLBACK(on_right_collapser_button_release_event),
-            user_data);
+                     G_CALLBACK(on_right_collapser_button_release_event),
+                     user_data);
 
     expand_table(row, col, tcb, RIGHT);
 
@@ -354,9 +358,9 @@ static gboolean on_left_collapser_button_release_event(GtkWidget *widget, GdkEve
 
     // Get the widget's position in the table
     gtk_container_child_get(GTK_CONTAINER(tcb->browser_table), widget,
-            "top-attach", &row,
-            "left-attach", &col,
-            NULL);
+                            "top-attach", &row,
+                            "left-attach", &col,
+                            NULL);
 
     // Destroy the selected expander
     list = &(tcb->col_list[col]);
@@ -379,9 +383,9 @@ static gboolean on_right_collapser_button_release_event(GtkWidget *widget, GdkEv
 
     // Get the widget's position in the table
     gtk_container_child_get(GTK_CONTAINER(tcb->browser_table), widget,
-            "top-attach", &row,
-            "left-attach", &col,
-            NULL);
+                            "top-attach", &row,
+                            "left-attach", &col,
+                            NULL);
 
     // Destroy the selected expander
     list = &(tcb->col_list[col]);
@@ -397,11 +401,11 @@ static gboolean on_right_collapser_button_release_event(GtkWidget *widget, GdkEv
 static gboolean on_function_button_press(GtkWidget *widget, GdkEventButton *event, result_t  *box)
 {
     // open text editor at location on left double click, open menu on right click
-    if (event->type == GDK_2BUTTON_PRESS && event->button == 1) // left double click 
+    if (event->type == GDK_2BUTTON_PRESS && event->button == 1) // left double click
     {
         if (settings.useEditor)
         {
-            start_text_editor(box->file_name, box->line_num);
+            my_start_text_editor(box->file_name, box->line_num);
         }
         else
         {
@@ -424,11 +428,11 @@ static void on_reroot(GtkWidget *menuitem, result_t *function_box)
     if (matches->match_count == 1)
     {
         // only 1 match we can just reset the browser with the appropriate function
-        delete_table((tcb_t *) function_box->tcb);
+        delete_table((tcb_t *)function_box->tcb);
         initialize_table((tcb_t *)function_box->tcb,
-                function_box->function_name,
-                function_box->file_name,
-                function_box->line_num);
+                         function_box->function_name,
+                         function_box->file_name,
+                         function_box->line_num);
     }
     else if (matches->match_count > 1)
     {
@@ -440,29 +444,30 @@ static void on_reroot(GtkWidget *menuitem, result_t *function_box)
 }
 
 // clear every widget from the table
-static void delete_table(tcb_t *tcb) 
+static void delete_table(tcb_t *tcb)
 {
     int i;
     clear_sliders(tcb);
-    for (i = 0; i < tcb->num_cols; i++) {
+    for (i = 0; i < tcb->num_cols; i++)
+    {
         delete_column(tcb, i);
     }
 }
 
-static void right_click_menu(GtkWidget *widget, GdkEventButton *event, result_t *function_box) 
+static void right_click_menu(GtkWidget *widget, GdkEventButton *event, result_t *function_box)
 {
-    GtkWidget *menu, *menu_item;
+    GtkWidget * menu,*menu_item;
 
     menu = gtk_menu_new();
 
     menu_item = gtk_menu_item_new_with_label("reroot");
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-    g_signal_connect(menu_item, "activate", (GCallback) on_reroot, function_box);
+    g_signal_connect(menu_item, "activate", (GCallback)on_reroot, function_box);
 
     gtk_widget_show_all(menu);
     gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
-            (event != NULL) ? event->button : 0,
-            gdk_event_get_time((GdkEvent*)event));
+                   (event != NULL) ? event->button : 0,
+                   gdk_event_get_time((GdkEvent *)event));
 }
 
 static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gchar *line_num)
@@ -507,8 +512,8 @@ static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gc
     gtk_widget_set_name(header_button, "header_button");
     gtk_widget_show(header_button);
     gtk_table_attach(GTK_TABLE(tcb->browser_table), header_button, 1, 4, 0, 1,
-            (GtkAttachOptions)(GTK_FILL),
-            (GtkAttachOptions)(0), 0, 0);
+                     (GtkAttachOptions)(GTK_FILL),
+                     (GtkAttachOptions)(0), 0, 0);
     gtk_widget_set_can_focus(header_button, FALSE);
     gtk_button_set_focus_on_click(GTK_BUTTON(header_button), FALSE);
 
@@ -516,8 +521,8 @@ static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gc
     gtk_widget_set_name(root_function_blue_eventbox, "blue_eventbox");
     gtk_widget_show(root_function_blue_eventbox);
     gtk_table_attach(GTK_TABLE(tcb->browser_table), root_function_blue_eventbox, 2, 3, 1, 2,
-            (GtkAttachOptions)(GTK_FILL),
-            (GtkAttachOptions)(GTK_FILL), 0, 0);
+                     (GtkAttachOptions)(GTK_FILL),
+                     (GtkAttachOptions)(GTK_FILL), 0, 0);
 
     // Initialize the left filler column
     make_filler_column(tcb, 0);
@@ -539,26 +544,26 @@ static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gc
     gtk_label_set_use_markup(GTK_LABEL(root_function_label), TRUE);
     gtk_misc_set_alignment(GTK_MISC(root_function_label), 0, 0.5);
     gtk_misc_set_padding(GTK_MISC(root_function_label), 1, 0);
-    gtk_label_set_ellipsize (GTK_LABEL (root_function_label), PANGO_ELLIPSIZE_END);
+    gtk_label_set_ellipsize(GTK_LABEL(root_function_label), PANGO_ELLIPSIZE_END);
     gtk_label_set_width_chars(GTK_LABEL(root_function_label), 10);
 
     root_hscale = gtk_hscale_new(GTK_ADJUSTMENT(gtk_adjustment_new(10, 4, 40, 1, 0, 0)));
     gtk_widget_set_name(root_hscale, "root_hscale");
     gtk_widget_show(root_hscale);
     gtk_table_attach(GTK_TABLE(tcb->browser_table), root_hscale, 2, 3, 2, 3,
-            (GtkAttachOptions)(GTK_FILL),
-            (GtkAttachOptions)(GTK_FILL), 0, 0);
+                     (GtkAttachOptions)(GTK_FILL),
+                     (GtkAttachOptions)(GTK_FILL), 0, 0);
     gtk_scale_set_draw_value(GTK_SCALE(root_hscale), FALSE);
     gtk_scale_set_digits(GTK_SCALE(root_hscale), 0);
 
     tcb->col_list[2].slider = root_hscale;
 
-    g_signal_connect ((gpointer) root_function_blue_eventbox, "button_press_event",
-            G_CALLBACK (on_function_button_press), &(tcb->root_entry)); 
+    g_signal_connect((gpointer)root_function_blue_eventbox, "button_press_event",
+                     G_CALLBACK(on_function_button_press), &(tcb->root_entry));
 
     g_signal_connect((gpointer)root_hscale, "change_value",
-            G_CALLBACK(on_column_hscale_change_value),
-            root_function_label);
+                     G_CALLBACK(on_column_hscale_change_value),
+                     root_function_label);
 
 }
 
@@ -569,8 +574,8 @@ static void move_table_widget(GtkWidget *widget, tcb_t *tcb, guint row, guint co
     gtk_container_remove(GTK_CONTAINER(tcb->browser_table), widget);
 
     gtk_table_attach(GTK_TABLE(tcb->browser_table), widget, col, col + 1, row, row + 1,
-            (GtkAttachOptions)(GTK_FILL),
-            (GtkAttachOptions)(GTK_FILL), 0, 0);
+                     (GtkAttachOptions)(GTK_FILL),
+                     (GtkAttachOptions)(GTK_FILL), 0, 0);
 
     g_object_unref((gpointer)widget);  // Create a temporary reference to prevent the widget from being destroyed.
 
@@ -589,7 +594,7 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
     int i, add_pos, adjusted_col;
     guint row_add_count;
     col_list_t *list;
-    gchar *fname, *file;
+    gchar * fname,*file;
     result_t *results;
     search_results_t *children;
     search_t operation;
@@ -600,14 +605,14 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
     // get the function associated with the expander that was clicked
     // search for the appropriate children for that function and
     // parse them into a usable list
-    get_function(tcb, origin_col, origin_row, direction, &fname, &file); 
+    get_function(tcb, origin_col, origin_row, direction, &fname, &file);
     children = SEARCH_lookup(operation, fname);
     if (children->match_count == 0)
     {
-        return; 
+        return;
     }
     clear_sliders(tcb);
-    
+
     results = parse_results(children);
     //children->match_count -= results_list_filter_file(&results, file);
     row_add_count = children->match_count - 1; // the first child is on the same line so it is not an added ro
@@ -617,29 +622,36 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
     ensure_row_capacity(tcb, origin_row, row_add_count);
     ensure_column_capacity(tcb, origin_col,  direction);
 
-    
+
 
     // shift down columns left or right of center depening on direction
     // then add functions
-    if (direction == RIGHT) {
-        for (i = tcb->root_col; i < tcb->num_cols; i++) {
+    if (direction == RIGHT)
+    {
+        for (i = tcb->root_col; i < tcb->num_cols; i++)
+        {
             list = &(tcb->col_list[i]);
-            if (!column_list_is_sorted(list)) {
+            if (!column_list_is_sorted(list))
+            {
                 printf("ERROR COLUMN %d OUT OF ORDER:\n\n", i);
             }
             shift_column_down(tcb, i, origin_row, row_add_count);
         }
         add_functions_to_column(tcb, results, row_add_count + 1, origin_col + 1, origin_row, RIGHT);
         add_connectors(tcb, origin_col, origin_row, row_add_count + 1, RIGHT);
-    } else {
+    }
+    else
+    {
         // if this is the furthest left column then origin_col - 1 is not the correct
         // place to add due to columns being shifted right
-        add_pos = origin_col == 1 ? 2: origin_col - 1;
+        add_pos = origin_col == 1 ? 2 : origin_col - 1;
         adjusted_col = origin_col == 1 ? 3 : origin_col;
 
-        for (i = tcb->root_col; i > 0; i--) {
+        for (i = tcb->root_col; i > 0; i--)
+        {
             list = &(tcb->col_list[i]);
-            if (!column_list_is_sorted(list)) {
+            if (!column_list_is_sorted(list))
+            {
                 printf("ERROR COLUMN %d OUT OF ORDER:\n\n", i);
             }
             shift_column_down(tcb, i, origin_row, row_add_count);
@@ -649,20 +661,26 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
     }
 
 
-    // update table height 
-    if(direction == RIGHT) {
+    // update table height
+    if (direction == RIGHT)
+    {
         tcb->right_height += row_add_count;
-    } else {
+    }
+    else
+    {
         tcb->left_height += row_add_count;
     }
     update_rows(tcb);
-    
+
     make_sliders(tcb);
 }
 
-static void ensure_column_capacity(tcb_t *tcb, guint origin_col, dir_e direction) {
-    if (direction == RIGHT) {
-        if (origin_col == tcb->num_cols - 2) {  // -2 because of filler column and zero based indexing
+static void ensure_column_capacity(tcb_t *tcb, guint origin_col, dir_e direction)
+{
+    if (direction == RIGHT)
+    {
+        if (origin_col == tcb->num_cols - 2)  // -2 because of filler column and zero based indexing
+        {
             // name column and another expander column
             gtk_table_resize(GTK_TABLE(tcb->browser_table), tcb->num_rows, tcb->num_cols + 2);
 
@@ -679,9 +697,12 @@ static void ensure_column_capacity(tcb_t *tcb, guint origin_col, dir_e direction
 
             make_name_column(tcb, origin_col + 1, RIGHT);
         }
-    } else {
+    }
+    else
+    {
         // direction == LEFT
-        if (origin_col == 1) {
+        if (origin_col == 1)
+        {
             // need to expand the table to the left
             // which means that every column from 1-num_cols
             // needs to be shifted 2 to the right
@@ -694,10 +715,12 @@ static void ensure_column_capacity(tcb_t *tcb, guint origin_col, dir_e direction
 // moves every column right of start_col (inclusive) 2
 // columns to the right leaving 2 empty columns
 // in position start_col and start_col + 1
-static void shift_table_right(tcb_t *tcb, guint start_col) {
+static void shift_table_right(tcb_t *tcb, guint start_col)
+{
     int i;
     gtk_table_resize(GTK_TABLE(tcb->browser_table), tcb->num_rows, tcb->num_cols + 2);
-    for (i = tcb->num_cols - 1; i >= start_col; i--) {
+    for (i = tcb->num_cols - 1; i >= start_col; i--)
+    {
         move_column(tcb, i, i + 2);
     }
     //leaves rows 1 and two empty, 1 is an expander column, 2 is a name column
@@ -710,11 +733,12 @@ static void shift_table_right(tcb_t *tcb, guint start_col) {
 // all column elements in dest will be deleted
 // and elements in source will be deleted after moving
 // leaveing source empty
-static void move_column(tcb_t *tcb, guint source, guint dest) {
-    col_list_t *column, *dest_col;
-    column_entry_t *curr, *next;
+static void move_column(tcb_t *tcb, guint source, guint dest)
+{
+    col_list_t * column,*dest_col;
+    column_entry_t * curr,*next;
     dir_e direction;
-    GtkWidget *header_button, *widget;
+    GtkWidget * header_button,*widget;
     guint row;
 
     // get the lists that are being modified
@@ -723,43 +747,50 @@ static void move_column(tcb_t *tcb, guint source, guint dest) {
 
     // delete the destination column, we don't need to keep anything
     delete_column(tcb, dest);
-    if (column->type == NAME) {
-        if (source == tcb->root_col) {
+    if (column->type == NAME)
+    {
+        if (source == tcb->root_col)
+        {
             // the root column is a speical case since it has
             // a wider header
             header_button = gtk_button_new_with_mnemonic("0");
             gtk_widget_set_name(header_button, "header_button");
             gtk_widget_show(header_button);
             gtk_table_attach(GTK_TABLE(tcb->browser_table), header_button, dest - 1, dest + 2, 0, 1,
-                    (GtkAttachOptions)(GTK_FILL),
-                    (GtkAttachOptions)(0), 0, 0);
+                             (GtkAttachOptions)(GTK_FILL),
+                             (GtkAttachOptions)(0), 0, 0);
             gtk_widget_set_can_focus(header_button, FALSE);
             gtk_button_set_focus_on_click(GTK_BUTTON(header_button), FALSE);
 
             tcb->col_list[dest].header_column_label = header_button;
             tcb->col_list[dest].type = NAME;
-        } else {
-            direction = source > tcb->root_col ? RIGHT : LEFT; 
+        }
+        else
+        {
+            direction = source > tcb->root_col ? RIGHT : LEFT;
             // we always want to keep the header_number so it doesn't get recauculated and change
             make_name_column_labeled(tcb, dest, direction, column->header_column_num);
         }
     }
 
-    if (column->type == FILLER) {
+    if (column->type == FILLER)
+    {
         make_filler_column(tcb, dest);
     }
-    if (column->type == EXPANDER) {
+    if (column->type == EXPANDER)
+    {
         tcb->col_list[dest].type = EXPANDER;
     }
 
     // copy each widget one by one
     curr = column->column_member_list;
-    while (curr != NULL) {
+    while (curr != NULL)
+    {
         widget = curr->widget;
         next = curr->next;
         row = curr->row;
         column_list_remove(column, widget);  // this frees the curr node
-        column_list_insert_file(dest_col, widget, row, curr->file); 
+        column_list_insert_file(dest_col, widget, row, curr->file);
         column_list_get_row(dest_col, row)->last_entry = curr->last_entry;
         move_table_widget(curr->widget, tcb, curr->row, dest);
         curr = next;
@@ -769,18 +800,21 @@ static void move_column(tcb_t *tcb, guint source, guint dest) {
     delete_column(tcb, source);
 
     // TODO not sure if this is necessary, revist
-    if (column->type == NAME && source != tcb->root_col) {
-        direction = source > tcb->root_col ? RIGHT : LEFT; 
+    if (column->type == NAME && source != tcb->root_col)
+    {
+        direction = source > tcb->root_col ? RIGHT : LEFT;
         make_name_column(tcb, dest, direction);
     }
 
 }
 
 
-static void ensure_row_capacity(tcb_t *tcb, guint origin_row, guint row_add_count) {
-    guint delta = origin_row + row_add_count - tcb->num_rows; 
+static void ensure_row_capacity(tcb_t *tcb, guint origin_row, guint row_add_count)
+{
+    guint delta = origin_row + row_add_count - tcb->num_rows;
     // make sure we have two extra rows at the bottom for filler and hscale
-    if (delta > 0) {
+    if (delta > 0)
+    {
         // add enough rows
         gtk_table_resize(GTK_TABLE(tcb->browser_table), tcb->num_rows + delta, tcb->num_cols);
     }
@@ -804,8 +838,8 @@ static void collapse_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e
     guint offset = direction == RIGHT ? -1 : 1;
     guint update = 2 * offset;
     guint lower_bound = direction == RIGHT ?
-                                            tcb->right_height + 1 :
-                                            tcb->left_height + 1;
+       tcb->right_height + 1 :
+       tcb->left_height + 1;
     //first thing that needs to be done is to recursivly collapse all children
     //to do this we need to know the position of the next element in this column
     //to put a lower bound on what we collpase (don't want to collapse children
@@ -814,7 +848,7 @@ static void collapse_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e
     //TODO get the lower bound
     for (i = origin_col + offset; i != tcb->root_col; i += update)
     {
-        column = &(tcb->col_list[i]); 
+        column = &(tcb->col_list[i]);
         next_row = column_list_get_next(column, origin_row);
         if (next_row != -1)
         {
@@ -840,17 +874,21 @@ static void collapse_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e
 // removes every non filler column that contains no elements
 // that is direction (left or right) of the root column
 // and appropriatly shifts columns and resizes the table as necessary
-static void remove_unused_columns(tcb_t *tcb, dir_e direction) {
+static void remove_unused_columns(tcb_t *tcb, dir_e direction)
+{
     int i;
     int count = 0; // number of columns that are removed
     col_list_t *column;
 
-    if (direction == RIGHT) {
+    if (direction == RIGHT)
+    {
         delete_column(tcb, tcb->num_cols - 1);  // always delete the right filler column
-        for (i = tcb->num_cols - 3; i > tcb->root_col; i -= 2) {      // num_cols - 3 is furthest right name column 
+        for (i = tcb->num_cols - 3; i > tcb->root_col; i -= 2)      // num_cols - 3 is furthest right name column
+        {
             column = &(tcb->col_list[i]);
-            if (column->column_member_list == NULL) {
-                // destory the name column and its expander column 
+            if (column->column_member_list == NULL)
+            {
+                // destory the name column and its expander column
                 delete_column(tcb, i);
                 delete_column(tcb, i + 1);
                 count += 2;
@@ -859,55 +897,67 @@ static void remove_unused_columns(tcb_t *tcb, dir_e direction) {
         gtk_table_resize(GTK_TABLE(tcb->browser_table), tcb->num_rows, tcb->num_cols - count);
         tcb->num_cols -= count;
         make_filler_column(tcb, tcb->num_cols - 1);  // remake the right filler column
-    } else {
+    }
+    else
+    {
         // direction is left
 
         // count the number of columns to be removed
         // only count name columns, expander columns may be correctly
         // empty
-        for (i = 2; i < tcb->root_col; i +=2) {    // 2 is furthest left name column
+        for (i = 2; i < tcb->root_col; i += 2)    // 2 is furthest left name column
+        {
             col_list_t *column = &(tcb->col_list[i]);
-            if (column->column_member_list == NULL) {
+            if (column->column_member_list == NULL)
+            {
                 count += 2;
             }
         }
-        if (count > 0) {
+        if (count > 0)
+        {
             shift_table_left(tcb, count);
-            for (i = tcb->num_cols - count; i < tcb->num_cols; i++) {
+            for (i = tcb->num_cols - count; i < tcb->num_cols; i++)
+            {
                 delete_column(tcb, i);
             }
             gtk_table_resize(GTK_TABLE(tcb->browser_table), tcb->num_rows, tcb->num_cols - count);
-            tcb->num_cols -= count; 
+            tcb->num_cols -= count;
             tcb->root_col -= count;
         }
     }
 }
 
 // moves every column to the right of amount, amount spots to the left in the tcb->col_list
-static void shift_table_left(tcb_t *tcb, guint amount) {
+static void shift_table_left(tcb_t *tcb, guint amount)
+{
     int i;
-    for (i = amount + 1; i < tcb->num_cols; i++) {
+    for (i = amount + 1; i < tcb->num_cols; i++)
+    {
         move_column(tcb, i, i - amount);
     }
 }
 
 // removes every widget in a column
-static void delete_column(tcb_t *tcb, guint col) {
-    column_entry_t *curr, *next;
+static void delete_column(tcb_t *tcb, guint col)
+{
+    column_entry_t * curr,*next;
     col_list_t *column = &(tcb->col_list[col]);
 
-    if (column->header_column_label != NULL) {
+    if (column->header_column_label != NULL)
+    {
         gtk_widget_destroy(column->header_column_label);
-        column->slider = NULL;
+        column->header_column_label = NULL;
     }
-    if (column->slider != NULL) {
+    if (column->slider != NULL)
+    {
         gtk_widget_destroy(column->slider);
         column->slider = NULL;
     }
     curr = column->column_member_list;
 
     // clear the column list
-    while (curr != NULL) {
+    while (curr != NULL)
+    {
         gtk_widget_destroy(curr->widget);
         next = curr->next;
         g_free(curr);
@@ -918,9 +968,10 @@ static void delete_column(tcb_t *tcb, guint col) {
     memset(column, 0, sizeof(col_list_t));
 }
 
-// shifts every widget belowe uper_bound on the direction side of the root column up 
+// shifts every widget belowe uper_bound on the direction side of the root column up
 // by specified amount
-static void shift_table_up(tcb_t *tcb, guint upper_bound, guint amount, dir_e direction) {
+static void shift_table_up(tcb_t *tcb, guint upper_bound, guint amount, dir_e direction)
+{
     int i;
     col_list_t *list;
     guint left, right;
@@ -929,62 +980,78 @@ static void shift_table_up(tcb_t *tcb, guint upper_bound, guint amount, dir_e di
     left = direction == RIGHT ? tcb->root_col : 1;
     right = direction == RIGHT ? tcb->num_cols : tcb->root_col;
 
-    for (i = left; i < right; i++) {
+    for (i = left; i < right; i++)
+    {
         list = &(tcb->col_list[i]);
-        shift_column_up(tcb, i, upper_bound, amount); 
-        if (!column_list_is_sorted(list)) {
+        shift_column_up(tcb, i, upper_bound, amount);
+        if (!column_list_is_sorted(list))
+        {
             printf("ERROR COLUMN %d OUT OF ORDER:\n\n", i);
         }
     }
-    if (direction == RIGHT) {
+    if (direction == RIGHT)
+    {
         tcb->right_height -= amount;
-    } else {
+    }
+    else
+    {
         tcb->left_height -= amount;
     }
     update_rows(tcb);
 }
 
-static void delete_children(tcb_t *tcb, guint col, guint upper_bound, guint lower_bound, dir_e direction) {
+static void delete_children(tcb_t *tcb, guint col, guint upper_bound, guint lower_bound, dir_e direction)
+{
     int i, lowest, height, shift;
     lowest = upper_bound; // "lowest" row removed, is actually the highest number
 
-    if (direction == RIGHT) {
-        for (i = tcb->num_cols - 2; i > col; i--) {
-            height = delete_functions_from_column(tcb, i, upper_bound, lower_bound, RIGHT);        
+    if (direction == RIGHT)
+    {
+        for (i = tcb->num_cols - 2; i > col; i--)
+        {
+            height = delete_functions_from_column(tcb, i, upper_bound, lower_bound, RIGHT);
             lowest = height > lowest ? height : lowest;
         }
         // delete the connectors from the clicked expander column
-        for (i = tcb->root_col + 1; i <= col; i += 2) {
+        for (i = tcb->root_col + 1; i <= col; i += 2)
+        {
             delete_functions_from_column(tcb, i, upper_bound + 1, lower_bound, RIGHT);
         }
-    } else {
+    }
+    else
+    {
         // direction == left
-        for (i = 1; i < col; i++) {
+        for (i = 1; i < col; i++)
+        {
             height = delete_functions_from_column(tcb, i, upper_bound, lower_bound, LEFT);
             lowest = height > lowest ? height : lowest;
         }
         // delete the connectors from the clicked expander column
-        for (i = tcb->root_col - 1; i >= col; i--) {
+        for (i = tcb->root_col - 1; i >= col; i--)
+        {
             delete_functions_from_column(tcb, i, upper_bound + 1, lower_bound, RIGHT);
         }
     }
 
-    shift = lowest - upper_bound; 
+    shift = lowest - upper_bound;
     shift_table_up(tcb, upper_bound, shift, direction);
 }
 
 // remove all functions from col between starting_row (inclusive) and end_row (Exclusive) and return the position
 // of the "lowest" function deleted which is the highest number
-static int delete_functions_from_column(tcb_t *tcb, guint col, guint starting_row, guint end_row, dir_e direction) {
+static int delete_functions_from_column(tcb_t *tcb, guint col, guint starting_row, guint end_row, dir_e direction)
+{
     col_list_t *function_list = &(tcb->col_list[col]);
 
     guint lowest = starting_row;  // the "lowest" column removed, so highest col number
     guint i;
     column_entry_t *function;
-    for (i = starting_row; i < end_row; i++) {
+    for (i = starting_row; i < end_row; i++)
+    {
         // check each row to see if a widget exists and if so remove it
         function = column_list_get_row(function_list, i);
-        if (function != NULL) {
+        if (function != NULL)
+        {
             lowest = function->row > lowest ? function->row : lowest;
             gtk_widget_destroy(function->widget);
             column_list_remove(function_list, function->widget);
@@ -993,12 +1060,15 @@ static int delete_functions_from_column(tcb_t *tcb, guint col, guint starting_ro
     return lowest;
 }
 
-static void shift_column_up(tcb_t *tcb, guint col, guint starting_row, guint amount) {
+static void shift_column_up(tcb_t *tcb, guint col, guint starting_row, guint amount)
+{
     col_list_t *elements = &(tcb->col_list[col]);
 
     column_entry_t *node = elements->column_member_list;
-    while (node != NULL) {
-        if (node->row > starting_row + amount) {
+    while (node != NULL)
+    {
+        if (node->row > starting_row + amount)
+        {
             move_table_widget(node->widget, tcb, node->row - amount, col);
             node->row -= amount;
         }
@@ -1007,7 +1077,7 @@ static void shift_column_up(tcb_t *tcb, guint col, guint starting_row, guint amo
 }
 
 
-static GtkWidget *make_collapser()
+static GtkWidget* make_collapser()
 {
     GtkWidget   *eventbox;
     GtkWidget   *image;
@@ -1021,11 +1091,11 @@ static GtkWidget *make_collapser()
     gtk_widget_show(image);
     gtk_container_add(GTK_CONTAINER(eventbox), image);
 
-    return(eventbox);
+    return (eventbox);
 }
 
 
-static GtkWidget *make_expander (dir_e direction, gboolean new_expander)
+static GtkWidget* make_expander(dir_e direction, gboolean new_expander)
 {
     GtkWidget   *eventbox;
     GtkWidget   *image;
@@ -1034,10 +1104,11 @@ static GtkWidget *make_expander (dir_e direction, gboolean new_expander)
     gtk_widget_set_name(eventbox, "expander_eventbox");
     gtk_widget_show(eventbox);
 
-    if ( direction == LEFT )
+    if (direction == LEFT)
     {
         image = create_pixmap(eventbox, "sca_expander_left.png");
-    } else
+    }
+    else
     {
         image = create_pixmap(eventbox, "sca_expander_right.png");
     }
@@ -1045,54 +1116,60 @@ static GtkWidget *make_expander (dir_e direction, gboolean new_expander)
     gtk_widget_show(image);
     gtk_container_add(GTK_CONTAINER(eventbox), image);
 
-    return(eventbox);
+    return (eventbox);
 }
 
-static void make_filler_column(tcb_t *tcb, guint position) {
+static void make_filler_column(tcb_t *tcb, guint position)
+{
     GtkWidget *horizontal_filler_header_button = gtk_button_new_with_mnemonic("");
     gtk_widget_set_name(horizontal_filler_header_button, "horizontal_filler_header_button");
     gtk_widget_show(horizontal_filler_header_button);
     gtk_table_attach(GTK_TABLE(tcb->browser_table), horizontal_filler_header_button, position, position + 1, 0, 1,
-            (GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
-            (GtkAttachOptions)(0), 0, 0);
+                     (GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
+                     (GtkAttachOptions)(0), 0, 0);
     gtk_widget_set_can_focus(horizontal_filler_header_button, FALSE);
     gtk_button_set_focus_on_click(GTK_BUTTON(horizontal_filler_header_button), FALSE);
 
     tcb->col_list[position].type = FILLER;
     tcb->col_list[position].header_column_label = horizontal_filler_header_button;
-    tcb->col_list[position].header_column_num = position; 
-    tcb->col_list[position].column_member_list = NULL; 
+    tcb->col_list[position].header_column_num = position;
+    tcb->col_list[position].column_member_list = NULL;
 }
 
-static void make_expander_at_position(tcb_t *tcb, guint col, guint row, dir_e direction) {
+static void make_expander_at_position(tcb_t *tcb, guint col, guint row, dir_e direction)
+{
     col_list_t *list;
 
     GtkWidget *expander_eventbox = make_expander(direction, TRUE);
     gtk_widget_set_name(expander_eventbox, "expander_eventbox");
     gtk_widget_show(expander_eventbox);
     gtk_table_attach(GTK_TABLE(tcb->browser_table), expander_eventbox, col, col + 1, row, row + 1,
-            (GtkAttachOptions)(GTK_FILL),
-            (GtkAttachOptions)(GTK_FILL), 0, 0);
+                     (GtkAttachOptions)(GTK_FILL),
+                     (GtkAttachOptions)(GTK_FILL), 0, 0);
 
     list = &(tcb->col_list[col]);
     column_list_insert(list, expander_eventbox, row);
 
     tcb->col_list[col].type = EXPANDER;
 
-    if (direction == RIGHT) {
+    if (direction == RIGHT)
+    {
         g_signal_connect((gpointer)expander_eventbox, "button_release_event",
-                G_CALLBACK(on_right_expander_button_release_event),
-                tcb);
-    } else {
+                         G_CALLBACK(on_right_expander_button_release_event),
+                         tcb);
+    }
+    else
+    {
         g_signal_connect((gpointer)expander_eventbox, "button_release_event",
-                G_CALLBACK(on_left_expander_button_release_event),
-                tcb);
+                         G_CALLBACK(on_left_expander_button_release_event),
+                         tcb);
     }
 
 }
 
 static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint num_results,
-        guint col, guint starting_row, dir_e direction) {
+                                    guint col, guint starting_row, dir_e direction)
+{
     int row, offset;
     col_list_t *list;
     char *var_string;
@@ -1105,13 +1182,14 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
     offset = direction == RIGHT ? 1 : -1;
     node = function_list;
 
-    for ( row = starting_row; row < starting_row + num_results; row++) {
+    for (row = starting_row; row < starting_row + num_results; row++)
+    {
         function_event_box = gtk_event_box_new();
         gtk_widget_set_name(function_event_box, "event_box");
         gtk_widget_show(function_event_box);
         gtk_table_attach(GTK_TABLE(tcb->browser_table), function_event_box, col, col + 1, row, row + 1,
-                (GtkAttachOptions)(GTK_FILL),
-                (GtkAttachOptions)(GTK_FILL), 0, 0);
+                         (GtkAttachOptions)(GTK_FILL),
+                         (GtkAttachOptions)(GTK_FILL), 0, 0);
         my_asprintf(&var_string, "<span color=\"darkred\">%s</span>", node->function_name);
         function_label = gtk_label_new(var_string);
         g_free(var_string);
@@ -1121,14 +1199,15 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
         gtk_label_set_use_markup(GTK_LABEL(function_label), TRUE);
         gtk_misc_set_alignment(GTK_MISC(function_label), 0, 0.5);
         gtk_misc_set_padding(GTK_MISC(function_label), 1, 0);
-        gtk_label_set_ellipsize (GTK_LABEL (function_label), PANGO_ELLIPSIZE_END);
+        gtk_label_set_ellipsize(GTK_LABEL(function_label), PANGO_ELLIPSIZE_END);
         gtk_label_set_width_chars(GTK_LABEL(function_label), 10);
 
         list = &(tcb->col_list[col]);
         column_list_insert_file(list, function_event_box, row, node->file_name);
-        
-        // set the last_row field   
-        if (row == starting_row + num_results - 1) {
+
+        // set the last_row field
+        if (row == starting_row + num_results - 1)
+        {
             column_list_get_row(list, row)->last_entry = TRUE;
         }
         else
@@ -1138,13 +1217,14 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
         operation = direction == RIGHT ? FIND_CALLEDBY : FIND_CALLING;
 
         node->tcb = tcb;
-        g_signal_connect ((gpointer) function_event_box, "button_press_event",
-                G_CALLBACK (on_function_button_press), node);
+        g_signal_connect((gpointer)function_event_box, "button_press_event",
+                         G_CALLBACK(on_function_button_press), node);
 
         // check to see if we actually need to add an expander
         // only need one if this function calls other functions
         children = SEARCH_lookup(operation, node->function_name);
-        if (children->match_count > 0) {
+        if (children->match_count > 0)
+        {
             make_expander_at_position(tcb, col + offset, row, direction);
         }
         SEARCH_free_results(children);
@@ -1153,13 +1233,15 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
     }
 }
 
-static void make_name_column(tcb_t *tcb, guint col, dir_e direction) {
-    guint prev_col = direction == RIGHT ? -1 : 1; 
+static void make_name_column(tcb_t *tcb, guint col, dir_e direction)
+{
+    guint prev_col = direction == RIGHT ? -1 : 1;
     guint col_num = tcb->col_list[col + 2 * prev_col].header_column_num - prev_col;
-    make_name_column_labeled(tcb, col, direction, col_num); 
+    make_name_column_labeled(tcb, col, direction, col_num);
 }
 
-static void make_name_column_labeled(tcb_t *tcb, guint col, dir_e direction, guint label) {
+static void make_name_column_labeled(tcb_t *tcb, guint col, dir_e direction, guint label)
+{
     GtkWidget *header_button;
     char num_str[3];
     col_list_t *column = &(tcb->col_list[col]);
@@ -1172,8 +1254,8 @@ static void make_name_column_labeled(tcb_t *tcb, guint col, dir_e direction, gui
     gtk_widget_set_name(header_button, "header_button");
     gtk_widget_show(header_button);
     gtk_table_attach(GTK_TABLE(tcb->browser_table), header_button, left_bound, right_bound, 0, 1,
-            (GtkAttachOptions)(GTK_FILL),
-            (GtkAttachOptions)(0), 0, 0);
+                     (GtkAttachOptions)(GTK_FILL),
+                     (GtkAttachOptions)(0), 0, 0);
     gtk_widget_set_can_focus(header_button, FALSE);
     gtk_button_set_focus_on_click(GTK_BUTTON(header_button), FALSE);
 
@@ -1181,58 +1263,71 @@ static void make_name_column_labeled(tcb_t *tcb, guint col, dir_e direction, gui
     column->header_column_label = header_button;
 }
 
-static void shift_column_down(tcb_t *tcb, guint col, guint starting_row, guint amount) {
+static void shift_column_down(tcb_t *tcb, guint col, guint starting_row, guint amount)
+{
     col_list_t elements = tcb->col_list[col];
 
-    // traverse linked list from the back shifting every element down by amount 
+    // traverse linked list from the back shifting every element down by amount
     column_entry_t *node = elements.back;
-    while (node != NULL && node->row > starting_row) {
+    while (node != NULL && node->row > starting_row)
+    {
         move_table_widget(node->widget, tcb, node->row + amount, col);
         node->row += amount;
         node = node->prev;
     }
 }
 
-static void column_list_insert(col_list_t *list, GtkWidget *widget, guint row) {
+static void column_list_insert(col_list_t *list, GtkWidget *widget, guint row)
+{
     column_list_insert_file(list, widget, row, NULL);
 }
 
 // sorted insert into column list, column list should also be in sorted order
-static void column_list_insert_file(col_list_t *list, GtkWidget *widget, guint row, gchar *file) {
+static void column_list_insert_file(col_list_t *list, GtkWidget *widget, guint row, gchar *file)
+{
     // create the new node to add
-    column_entry_t *new_node = g_malloc( sizeof(column_entry_t) );
+    column_entry_t *new_node = g_malloc(sizeof(column_entry_t));
     new_node->widget = widget;
     new_node->row = row;
     new_node->next = NULL;
     new_node->prev = NULL;
-    if (file != NULL) {
+    if (file != NULL)
+    {
         memcpy(new_node->file, file, strlen(file) + 1);
     }
 
     // check the front
-    if (list->column_member_list == NULL) {
+    if (list->column_member_list == NULL)
+    {
         list->column_member_list = new_node;
         list->back = new_node;
-    } else if (list->column_member_list->row > row) {
+    }
+    else if (list->column_member_list->row > row)
+    {
         // insert at the front
 
         new_node->next = list->column_member_list;
         list->column_member_list->prev = new_node;
         list->column_member_list = new_node;
-    } else {
+    }
+    else
+    {
         // we need to find where to add;
 
         column_entry_t *curr = list->column_member_list;
-        while (curr->next != NULL && curr->next->row < row) {
+        while (curr->next != NULL && curr->next->row < row)
+        {
             curr = curr->next;
         }
         new_node->next = curr->next;
-        if (curr->next != NULL) {
+        if (curr->next != NULL)
+        {
             curr->next->prev = new_node;
         }
         curr->next = new_node;
         new_node->prev = curr;
-        if (new_node->next == NULL) {
+        if (new_node->next == NULL)
+        {
             list->back = new_node;
         }
     }
@@ -1240,33 +1335,46 @@ static void column_list_insert_file(col_list_t *list, GtkWidget *widget, guint r
 
 // remove node containing widget from the list
 // does not delete the widget
-static void column_list_remove(col_list_t *list, GtkWidget *widget) {
+static void column_list_remove(col_list_t *list, GtkWidget *widget)
+{
 
-    if (list->column_member_list == NULL) {
+    if (list->column_member_list == NULL)
+    {
         return;
     }
 
     // check the front
-    if (list->column_member_list->widget == widget) {
+    if (list->column_member_list->widget == widget)
+    {
         list->column_member_list = list->column_member_list->next;
-        if (list->column_member_list == NULL) {
+        if (list->column_member_list == NULL)
+        {
             list->back = NULL;
-        } else {
+        }
+        else
+        {
             list->column_member_list->prev = NULL;
         }
-    } else {
+    }
+    else
+    {
         // find the widget to remove
         column_entry_t *curr = list->column_member_list;
-        while (curr->next != NULL && curr->next->widget != widget) {
+        while (curr->next != NULL && curr->next->widget != widget)
+        {
             curr = curr->next;
         }
-        if (curr->next != NULL) {
+        if (curr->next != NULL)
+        {
             // curr->next is the node to be removed
             column_entry_t *temp = curr->next;
             curr->next = curr->next->next;
-            if (curr->next == NULL) {
+            if (curr->next == NULL)
+            {
                 list->back = curr;
-            } else {
+            }
+            else
+            {
                 curr->next->prev = curr;
             }
             g_free(temp);
@@ -1275,12 +1383,16 @@ static void column_list_remove(col_list_t *list, GtkWidget *widget) {
 }
 
 // return the node at row or NULL if there is not a node at row
-static column_entry_t  *column_list_get_row(col_list_t *list, guint row) {
+static column_entry_t* column_list_get_row(col_list_t *list, guint row)
+{
     column_entry_t *curr;
-    if (list == NULL) return NULL;
+    if (list == NULL)
+        return NULL;
     curr = list->column_member_list;
-    while (curr != NULL) {
-        if (curr->row == row) {
+    while (curr != NULL)
+    {
+        if (curr->row == row)
+        {
             return curr;
         }
         curr = curr->next;
@@ -1288,10 +1400,13 @@ static column_entry_t  *column_list_get_row(col_list_t *list, guint row) {
     return NULL;
 }
 
-static gboolean     column_list_is_sorted(col_list_t *list) {
+static gboolean     column_list_is_sorted(col_list_t *list)
+{
     column_entry_t *curr = list->column_member_list;
-    while (curr != NULL && curr->next != NULL) {
-        if (curr->row >= curr->next->row) {
+    while (curr != NULL && curr->next != NULL)
+    {
+        if (curr->row >= curr->next->row)
+        {
             return FALSE;
         }
         curr = curr->next;
@@ -1299,22 +1414,29 @@ static gboolean     column_list_is_sorted(col_list_t *list) {
     return TRUE;
 }
 
+#if 0
 // for debugging purposes, prints the rows in order
 // if order is not sorted then something is broken
-static void column_list_print_rows(col_list_t *list) {
+static void column_list_print_rows(col_list_t *list)
+{
     column_entry_t *curr = list->column_member_list;
-    while (curr != NULL) {
+    while (curr != NULL)
+    {
         printf("row: %d\n", curr->row);
         curr = curr->next;
     }
 }
+#endif
 
 // returns the row number for the next widget after the given row
 // in this column
-static int column_list_get_next(col_list_t *list, guint row) {
+static int column_list_get_next(col_list_t *list, guint row)
+{
     column_entry_t *curr = list->column_member_list;
-    while (curr != NULL && curr->next != NULL) {
-        if (curr->next->row > row) {
+    while (curr != NULL && curr->next != NULL)
+    {
+        if (curr->next->row > row)
+        {
             return curr->next->row;
         }
         curr = curr->next;
@@ -1323,17 +1445,22 @@ static int column_list_get_next(col_list_t *list, guint row) {
 }
 
 // update the height of the tree based on left and right height
-static void update_rows(tcb_t *tcb) {
-    if (tcb->left_height >= tcb->right_height) {
+static void update_rows(tcb_t *tcb)
+{
+    if (tcb->left_height >= tcb->right_height)
+    {
         tcb->num_rows = tcb->left_height + 1;
-    } else {
+    }
+    else
+    {
         tcb->num_rows = tcb->right_height + 1;
     }
 }
 
 // given the position of a clicked expander or collapser, fills fname and file
 // with the function name and file name for the corresponding function
-static void get_function(tcb_t *tcb, guint col, guint row, dir_e direction, gchar **fname, gchar **file) {
+static void get_function(tcb_t *tcb, guint col, guint row, dir_e direction, gchar **fname, gchar **file)
+{
     guint offset;
     col_list_t *column;
     column_entry_t *function_node;
@@ -1346,45 +1473,55 @@ static void get_function(tcb_t *tcb, guint col, guint row, dir_e direction, gcha
     function_node = column_list_get_row(column, row);
     // children is a GList containing only the function label
     children = gtk_container_get_children((GtkContainer *)function_node->widget);
-    label = (GtkWidget *) children->data; 
-    *fname = (gchar *)gtk_label_get_text((GtkLabel *) label);
+    label = (GtkWidget *)children->data;
+    *fname = (gchar *)gtk_label_get_text((GtkLabel *)label);
     *file = function_node->file;
 }
 
 // parse results into a result_t which can be easily iterated over
-static result_t *parse_results(search_results_t *results) {
-    result_t *node, *next_node, *front; 
+static result_t* parse_results(search_results_t *results)
+{
+    result_t * node,*next_node,*front;
     gchar *curr;
     gboolean first_space;
     gchar *result_ptr = results->start_ptr;
 
-    front = next_node = (result_t *) g_malloc( sizeof(result_t) );
-    while (result_ptr != results->end_ptr) {
+    front = next_node = (result_t *)g_malloc(sizeof(result_t));
+    while (result_ptr != results->end_ptr)
+    {
         node = next_node;
-        node->buf = (gchar *) g_malloc(1024);
+        node->buf = (gchar *)g_malloc(1024);
         node->file_name = node->buf;
         curr = node->buf;
         first_space = TRUE;
         // newlines seperate each entry
-        while(*result_ptr != '\n') {
-            if (*result_ptr == '|') {
-                *curr = '\0';        
-                node->function_name = curr + 1;
-            } else if (*result_ptr == ' ') {
+        while (*result_ptr != '\n')
+        {
+            if (*result_ptr == '|')
+            {
                 *curr = '\0';
-                if (first_space) {
+                node->function_name = curr + 1;
+            }
+            else if (*result_ptr == ' ')
+            {
+                *curr = '\0';
+                if (first_space)
+                {
                     node->line_num = curr + 1;
                     first_space = FALSE;
                 }
-            } else {
+            }
+            else
+            {
                 *curr = *result_ptr;
             }
             result_ptr++;
             curr++;
         }
         result_ptr++;
-        if (result_ptr != results->end_ptr) {
-            next_node = (result_t *) g_malloc( sizeof(result_t) );
+        if (result_ptr != results->end_ptr)
+        {
+            next_node = (result_t *)g_malloc(sizeof(result_t));
             node->next = next_node;
         }
     }
@@ -1394,16 +1531,21 @@ static result_t *parse_results(search_results_t *results) {
 }
 
 // OPTIONAL code to remove duplicate entries from a result list
-static guint results_list_remove_duplicates(result_t *front) {
+#if 0
+static guint results_list_remove_duplicates(result_t *front)
+{
     result_t *outer_curr, *inner_curr;
     guint count = 0;
 
     outer_curr = front;
 
-    while(outer_curr != NULL && outer_curr->next != NULL) {
+    while(outer_curr != NULL && outer_curr->next != NULL)
+    {
         inner_curr = outer_curr;
-        while(inner_curr != NULL && inner_curr->next != NULL) {
-            while (strcmp(inner_curr->next->function_name, outer_curr->function_name) == 0) {
+        while(inner_curr != NULL && inner_curr->next != NULL)
+        {
+            while (strcmp(inner_curr->next->function_name, outer_curr->function_name) == 0)
+            {
                 inner_curr->next = inner_curr->next->next;
                 count++;
             }
@@ -1413,24 +1555,30 @@ static guint results_list_remove_duplicates(result_t *front) {
     }
     return count;
 }
+#endif
 
 // OPTIONAL code to remover entries from a results list whos files do not match
 // given file
 //
 // works for sorting on the first expansion from root but after that is not really
 // useful given how Gscope treats file_names on FIND_CALLING searches
-static guint results_list_filter_file(result_t **front_ptr, gchar *file) {
+#if 0
+static guint results_list_filter_file(result_t **front_ptr, gchar *file)
+{
     guint count = 0;
     result_t *curr;
     if (*front_ptr == NULL) return 0;
 
-    while (*front_ptr != NULL && strcmp((*front_ptr)->file_name, file) != 0) {
+    while (*front_ptr != NULL && strcmp((*front_ptr)->file_name, file) != 0)
+    {
         *front_ptr = (*front_ptr)->next;
         count++;
     }
     curr = *front_ptr;
-    while (curr != NULL && curr->next != NULL) {
-        while (curr->next != NULL && strcmp(curr->next->file_name, file) != 0) {
+    while (curr != NULL && curr->next != NULL)
+    {
+        while (curr->next != NULL && strcmp(curr->next->file_name, file) != 0)
+        {
             curr->next = curr->next->next;
             count++;
         }
@@ -1438,16 +1586,22 @@ static guint results_list_filter_file(result_t **front_ptr, gchar *file) {
     }
     return count;
 }
+#endif
 
 // OPTIONAL code to alphabetically sort a results list
-static void results_list_sort(result_t *front) {
+#if 0
+static void results_list_sort(result_t *front)
+{
     result_t *smallest, *curr, *sorted;
     curr = smallest = front;
     sorted = front;
-    while (sorted != NULL && sorted->next != NULL) {
+    while (sorted != NULL && sorted->next != NULL)
+    {
         curr = smallest = sorted;
-        while (curr->next != NULL) {
-            if (strcmp(curr->function_name, smallest->function_name) < 0) {
+        while (curr->next != NULL)
+        {
+            if (strcmp(curr->function_name, smallest->function_name) < 0)
+            {
                 smallest = curr;
             }
             curr = curr->next;
@@ -1456,9 +1610,12 @@ static void results_list_sort(result_t *front) {
         sorted = sorted->next;
     }
 }
+#endif
 
+#if 0
 // swap two nodes in a result list
-static void swap(result_t *a, result_t *b) {
+static void swap(result_t *a, result_t *b)
+{
     result_t swap;
     result_t *a_next, *b_next;
     a_next = a->next;
@@ -1469,55 +1626,60 @@ static void swap(result_t *a, result_t *b) {
     *b = swap;
     b->next = b_next;
 }
+#endif
 
 // places a slider at the bottom of each column
 // should be used to update sliders everytime the tree is modified
-static void make_sliders(tcb_t *tcb) {
-    GtkWidget *hscale;            
+static void make_sliders(tcb_t *tcb)
+{
+    GtkWidget *hscale;
     guint i;
     col_list_t *column;
-    GtkWidget *function_box, *label;
+    GtkWidget * function_box,*label;
     GList *children;
 
-    for (i = 0; i < tcb->num_cols; i++) {
-       column = &(tcb->col_list[i]); 
-       if (column->type == NAME) {
-           // delete the old slider if it exists
-           if (column->slider != NULL)
-           {
-               gtk_widget_destroy(column->slider);
-           }
-           // create the new one
-           hscale = gtk_hscale_new(GTK_ADJUSTMENT(gtk_adjustment_new(10, 4, 40, 1, 0, 0)));
-           gtk_widget_set_name(hscale, "hscale");
-           gtk_widget_show(hscale);
-           gtk_table_attach(GTK_TABLE(tcb->browser_table), hscale, i, i + 1, tcb->num_rows, tcb->num_rows + 1,
-                   (GtkAttachOptions)(GTK_FILL),
-                   (GtkAttachOptions)(GTK_FILL), 0, 0);
-           gtk_scale_set_draw_value(GTK_SCALE(hscale), FALSE);
-           gtk_scale_set_digits(GTK_SCALE(hscale), 0);
+    for (i = 0; i < tcb->num_cols; i++)
+    {
+        column = &(tcb->col_list[i]);
+        if (column->type == NAME)
+        {
+            // delete the old slider if it exists
+            if (column->slider != NULL)
+            {
+                gtk_widget_destroy(column->slider);
+            }
+            // create the new one
+            hscale = gtk_hscale_new(GTK_ADJUSTMENT(gtk_adjustment_new(10, 4, 40, 1, 0, 0)));
+            gtk_widget_set_name(hscale, "hscale");
+            gtk_widget_show(hscale);
+            gtk_table_attach(GTK_TABLE(tcb->browser_table), hscale, i, i + 1, tcb->num_rows, tcb->num_rows + 1,
+                             (GtkAttachOptions)(GTK_FILL),
+                             (GtkAttachOptions)(GTK_FILL), 0, 0);
+            gtk_scale_set_draw_value(GTK_SCALE(hscale), FALSE);
+            gtk_scale_set_digits(GTK_SCALE(hscale), 0);
 
-           column->slider = hscale;
+            column->slider = hscale;
 
-           // to set the width, need to grab the first label in the column
-           function_box = column->column_member_list->widget;
-           children = gtk_container_get_children((GtkContainer *) function_box);
-           label = (GtkWidget *) children->data;
-           g_signal_connect((gpointer)hscale, "change_value",
-                            G_CALLBACK(on_column_hscale_change_value),
-                            label);
-       }
+            // to set the width, need to grab the first label in the column
+            function_box = column->column_member_list->widget;
+            children = gtk_container_get_children((GtkContainer *)function_box);
+            label = (GtkWidget *)children->data;
+            g_signal_connect((gpointer)hscale, "change_value",
+                             G_CALLBACK(on_column_hscale_change_value),
+                             label);
+        }
     }
 }
 
 // remove all sliders, should be called before calling make_sliders
-static void clear_sliders(tcb_t *tcb) {
+static void clear_sliders(tcb_t *tcb)
+{
     guint i;
     col_list_t *column;
 
     for (i = 0; i < tcb->num_cols; i++)
     {
-        column = &(tcb->col_list[i]); 
+        column = &(tcb->col_list[i]);
         if (column->slider != NULL)
         {
             gtk_widget_destroy(column->slider);
@@ -1538,30 +1700,30 @@ static void add_connectors(tcb_t *tcb, guint col, guint row, guint count, dir_e 
 
     if (direction == RIGHT)
     {
-        // add straight connectors to every 
+        // add straight connectors to every
         // expander column before col
         for (i = tcb->root_col; i < bound; i++)
         {
-            column = &(tcb->col_list[i]); 
+            column = &(tcb->col_list[i]);
             if (column->type == EXPANDER)
             {
                 if (!end_of_block(&(tcb->col_list[i + 1]), row))
                 {
-                    
-                    for (j = row + 1; j  < row + count; j++) 
+
+                    for (j = row + 1; j  < row + count; j++)
                     {
                         connector = make_straight_connector();
                         gtk_table_attach(GTK_TABLE(tcb->browser_table), connector, i, i + 1, j, j + 1,
-                                (GtkAttachOptions)(GTK_FILL),
-                                (GtkAttachOptions)(GTK_FILL), 0, 0);
+                                         (GtkAttachOptions)(GTK_FILL),
+                                         (GtkAttachOptions)(GTK_FILL), 0, 0);
                         column_list_insert(column, connector, j);
                     }
                 }
             }
         }
-    }        
+    }
 
-    else 
+    else
     {
         // direction == left
 
@@ -1577,8 +1739,8 @@ static void add_connectors(tcb_t *tcb, guint col, guint row, guint count, dir_e 
                     {
                         connector = make_straight_connector();
                         gtk_table_attach(GTK_TABLE(tcb->browser_table), connector, i, i + 1, j, j + 1,
-                                (GtkAttachOptions)(GTK_FILL),
-                                (GtkAttachOptions)(GTK_FILL), 0, 0);
+                                         (GtkAttachOptions)(GTK_FILL),
+                                         (GtkAttachOptions)(GTK_FILL), 0, 0);
                         column_list_insert(column, connector, j);
                     }
                 }
@@ -1588,12 +1750,12 @@ static void add_connectors(tcb_t *tcb, guint col, guint row, guint count, dir_e 
     }
     column = &(tcb->col_list[col]);
     // the newly expanded column needs 3-way connectors for every added function
-    for (i = row + 1; i < row + count - 1; i++) 
+    for (i = row + 1; i < row + count - 1; i++)
     {
         connector = make_three_way_connector(direction);
         gtk_table_attach(GTK_TABLE(tcb->browser_table), connector, col, col + 1, i, i + 1,
-                (GtkAttachOptions)(GTK_FILL),
-                (GtkAttachOptions)(GTK_FILL), 0, 0);
+                         (GtkAttachOptions)(GTK_FILL),
+                         (GtkAttachOptions)(GTK_FILL), 0, 0);
         column_list_insert(column, connector, i);
     }
     // only need to add an end connector if we are adding more than one function
@@ -1601,14 +1763,14 @@ static void add_connectors(tcb_t *tcb, guint col, guint row, guint count, dir_e 
     {
         connector = make_end_connector(direction);
         gtk_table_attach(GTK_TABLE(tcb->browser_table), connector, col, col + 1, row + count - 1, row + count,
-                (GtkAttachOptions)(GTK_FILL),
-                (GtkAttachOptions)(GTK_FILL), 0, 0);
+                         (GtkAttachOptions)(GTK_FILL),
+                         (GtkAttachOptions)(GTK_FILL), 0, 0);
         column_list_insert(column, connector, row + count - 1);
     }
 
 }
 
-static GtkWidget *make_end_connector(dir_e direction)
+static GtkWidget* make_end_connector(dir_e direction)
 {
     GtkWidget *eventbox;
     GtkWidget *image;
@@ -1620,7 +1782,8 @@ static GtkWidget *make_end_connector(dir_e direction)
     if (direction == LEFT)
     {
         image = create_pixmap(eventbox, "sca_end_branch_left.png");
-    } else 
+    }
+    else
     {
         image = create_pixmap(eventbox, "sca_end_branch_right.png");
     }
@@ -1631,7 +1794,7 @@ static GtkWidget *make_end_connector(dir_e direction)
     return eventbox;
 }
 
-static GtkWidget *make_three_way_connector(dir_e direction)
+static GtkWidget* make_three_way_connector(dir_e direction)
 {
     GtkWidget *eventbox;
     GtkWidget *image;
@@ -1643,7 +1806,8 @@ static GtkWidget *make_three_way_connector(dir_e direction)
     if (direction == LEFT)
     {
         image = create_pixmap(eventbox, "sca_mid_branch_left.png");
-    } else 
+    }
+    else
     {
         image = create_pixmap(eventbox, "sca_mid_branch_right.png");
     }
@@ -1654,7 +1818,7 @@ static GtkWidget *make_three_way_connector(dir_e direction)
     return eventbox;
 }
 
-static GtkWidget *make_straight_connector()
+static GtkWidget* make_straight_connector()
 {
     GtkWidget *eventbox;
     GtkWidget *image;
@@ -1674,8 +1838,8 @@ static GtkWidget *make_straight_connector()
 static gboolean end_of_block(col_list_t *column, guint row)
 {
     column_entry_t *curr;
-    
-    if (column->column_member_list->row > row) 
+
+    if (column->column_member_list->row > row)
     {
         return TRUE;
     }

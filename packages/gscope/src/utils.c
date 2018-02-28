@@ -13,6 +13,7 @@
 #include <sys/wait.h>
 
 #include "utils.h"
+#include "app_config.h"
 
 
 //----------------------- File-Private Globals ------------------------
@@ -320,6 +321,34 @@ pid_t my_system(gchar *application)
     // Only the parent process gets here
     return(pid); 
 }
+
+
+void my_start_text_editor(gchar *filename, gchar *linenum)
+{
+    gchar command[1024];
+
+    if ( strcmp(my_basename(settings.fileEditor), "vs") == 0 )          // Visual Slick Edit
+    {
+        sprintf(command, "%s \"%s\" -#\"goto-line %s\" -#\"goto-col 1\" &", settings.fileEditor, filename, linenum);
+    }
+    else if ( strcmp(my_basename(settings.fileEditor), "code")         == 0 ||  // Microsoft VS Code
+              strcmp(my_basename(settings.fileEditor), "sublime_text") == 0 ||  // Sublime (fullname)
+              strcmp(my_basename(settings.fileEditor), "subl")         == 0 )   // Sublime (shortname)
+    {
+        sprintf(command, "%s -g %s:%s &", settings.fileEditor, filename, linenum);
+    }
+    else if ( strcmp(my_basename(settings.fileEditor), "atom") == 0 )   // Atom text editor
+    {
+        sprintf(command, "%s %s:%s &", settings.fileEditor, filename, linenum);
+    }
+    else            // Classic UNIX text editors (that use <editor> +<line-number> <file-name>)
+    {
+        sprintf(command, "%s +%s \"%s\" &", settings.fileEditor, linenum, filename);
+    }
+    if ( system(command) < 0 )
+        fprintf(stderr, "Failed to spawn text editor\n");   // Note the failure and just carry on.
+}
+
 
 
 // Handle 'bad' return values from asprint() as a fatal error.

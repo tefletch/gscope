@@ -326,35 +326,6 @@ static void process_query(search_t query_type)
 }
 
 
-
-void start_text_editor(gchar *filename, gchar *linenum)
-{
-    gchar command[1024];
-
-    if ( strcmp(my_basename(settings.fileEditor), "vs") == 0 )          // Visual Slick Edit
-    {
-        sprintf(command, "%s \"%s\" -#\"goto-line %s\" -#\"goto-col 1\" &", settings.fileEditor, filename, linenum);
-    }
-    else if ( strcmp(my_basename(settings.fileEditor), "code")         == 0 ||  // Microsoft VS Code
-              strcmp(my_basename(settings.fileEditor), "sublime_text") == 0 ||  // Sublime (fullname)
-              strcmp(my_basename(settings.fileEditor), "subl")         == 0 )   // Sublime (shortname)
-    {
-        sprintf(command, "%s -g %s:%s &", settings.fileEditor, filename, linenum);
-    }
-    else if ( strcmp(my_basename(settings.fileEditor), "atom") == 0 )   // Atom text editor
-    {
-        sprintf(command, "%s %s:%s &", settings.fileEditor, filename, linenum);
-    }
-    else            // Classic UNIX text editors (that use <editor> +<line-number> <file-name>)
-    {
-        sprintf(command, "%s +%s \"%s\" &", settings.fileEditor, linenum, filename);
-    }
-    if ( system(command) < 0 )
-        fprintf(stderr, "Failed to spawn text editor\n");   // Note the failure and just carry on.
-}
-
-
-
 //
 //------------------------------ Callback Functions ----------------------------
 //
@@ -1161,7 +1132,7 @@ on_treeview1_row_activated             (GtkTreeView     *treeview,
         {
             if (settings.useEditor)
             {
-                start_text_editor(filename,linenum);
+                my_start_text_editor(filename,linenum);
             }
             else
             {
@@ -1348,7 +1319,7 @@ on_treeview1_button_press_event        (GtkWidget       *widget,
                         {
                             if (settings.useEditor)
                             {
-                                start_text_editor(filename,linenum);
+                                my_start_text_editor(filename,linenum);
                             }
                             else
                             {
@@ -1430,7 +1401,7 @@ on_fileview_start_editor_activate(GtkMenuItem *menuitem, gpointer user_data)
 
     // Get the current line number from the ViewWindow structure
     my_asprintf(&line_str,"%d", windowPtr->line);
-    start_text_editor(windowPtr->filename, line_str);
+    my_start_text_editor(windowPtr->filename, line_str);
     g_free(line_str);
 
     gtk_widget_destroy(GTK_WIDGET(windowPtr->topWidget));
