@@ -22,7 +22,6 @@
 "Welcome to the <span color=\"blue\" weight=\"bold\">Open Source</span> version of Gscope.\n" \
 "This application is provided to the open source community\n" \
 "courtesy of Hewlett Packard Inc.\n\n"
-#endif
 
 // Version 2.12 special announcement
 #define VERSION_ANNOUNCE \
@@ -31,3 +30,12 @@
 "       - code                 [Microsoft VS Code]\n" \
 "       - subl(lime_text)  [Sublime text editor]\n" \
 "       - atom                 [Atom text editor]\n\n"
+#endif
+
+// Version 2.14 special announcement
+#define VERSION_ANNOUNCE \
+"<span color=\"blue\" weight=\"bold\">New Feature Introduction:\n\n</span>" \
+"G-Scope now provides <span weight=\"bold\">Static Function Call Analysis</span>. \n\n" \
+"To access static call analysis, right-click on any search result\n" \
+"record and select \"Static Call Analysis\".\n\n"
+
