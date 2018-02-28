@@ -19,6 +19,6 @@ unchanged.
 Recommended Stable Versions
 ===========================
 
-Gscope  Version 2.6
+Gscope  Version 2.12
 
-Gscope3 Version 3.6
+Gscope3 Version 3.12

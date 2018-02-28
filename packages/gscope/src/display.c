@@ -997,6 +997,9 @@ static void update_list_store(search_results_t *results)
         field_terminator = '\n';
         while ( (*work_ptr != field_terminator) && (count < sizeof(source_text)) )
         {
+            if ((unsigned char) *work_ptr > 0x7f)
+                *work_ptr = '?';    // Eliminate non-ASCII chars from source text.
+
             source_text[count++] = *work_ptr;
             work_ptr++;
         }

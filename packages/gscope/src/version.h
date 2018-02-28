@@ -16,10 +16,18 @@
 "    1) Open-terminal (in containing folder)\n"\
 "    2) Open-file-manager (in containing folder)\n"\
 "    3) Quickview (Open file with built-in file viewer).\n\n"
-#endif
+
 // Version 2.1, 2.2 special announcement
 #define VERSION_ANNOUNCE \
 "Welcome to the <span color=\"blue\" weight=\"bold\">Open Source</span> version of Gscope.\n" \
 "This application is provided to the open source community\n" \
 "courtesy of Hewlett Packard Inc.\n\n"
+#endif
 
+// Version 2.12 special announcement
+#define VERSION_ANNOUNCE \
+"<span color=\"blue\" weight=\"bold\">New Feature Introduction:\n</span>" \
+"G-Scope has added built-in support for several popular text editors: \n" \
+"       - code                 [Microsoft VS Code]\n" \
+"       - subl(lime_text)  [Sublime text editor]\n" \
+"       - atom                 [Atom text editor]\n\n"

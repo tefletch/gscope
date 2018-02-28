@@ -39,6 +39,7 @@
 #define     MAX_SUFFIX      60     /* Support up to a 60 character file suffix */
 #define     SVN_META_DIR    ".svn"
 #define     GIT_META_DIR    ".git"
+#define     MAX_FTW_CACHE   20     /* Tree walk performance value: max tree depth cache size.  This is not a tree size/depth limit */
 
 
 //#define   DIRSEPS " ,:"   /* directory list separators */
@@ -892,7 +893,7 @@ static void _make_src_file_list()
 
 static gboolean issrcfile(const char *file)
 {
-    char    pattern[MAX_SUFFIX + 3] = "";
+    char    pattern[(MAX_SUFFIX * 2) + 3] = "";
     char    *pat_ptr;
     const char    *s;
     int     i, pattern_len;
@@ -906,6 +907,7 @@ static gboolean issrcfile(const char *file)
         if (pattern_len > MAX_SUFFIX)
         {
             /* if the suffix pattern is longer than MAX_SUFFIX (gasp!), truncate it */
+            fprintf(stderr,"-----\nWarning: Suffix pattern:\n    [%s]\ntruncated to %d characters\n-----\n", file, MAX_SUFFIX);
             pattern_len = MAX_SUFFIX;
         }
         *pat_ptr++ = settings.suffixDelim;
@@ -925,11 +927,17 @@ static gboolean issrcfile(const char *file)
             return(FALSE);         /* suffix present, no match */
     }
 
-    /* no suffix - "typeless" file */
+    /* no suffix - "typeless" file - these names can get rather long so allow twice as many chars before truncating */
     
     s = &(file[0]);
     pat_ptr = &(pattern[0]);
     pattern_len = strlen(file);
+    if (pattern_len > MAX_SUFFIX * 2)
+    {
+        /* if the typeless file pattern is longer than (MAX_SUFFIX * 2), truncate it */
+        fprintf(stderr,"-----\nWarning: Typeless filename pattern:\n    [%s]\ntruncated to %d characters\n-----\n", file, MAX_SUFFIX * 2);
+        pattern_len = MAX_SUFFIX * 2;
+    }
     *pat_ptr++ = settings.typelessDelim;
     for (i=0; i < pattern_len; i++)
     {
@@ -952,9 +960,6 @@ static gboolean issrcfile(const char *file)
 
 /* Walk the directory tree rooted at "." <current-dir> */
 
-// **** WARNING:  The Green Hills version of ftw() on Linux is buggy [misses entire sub-directories]
-//                Do not expect comprehensive source file detection when testing under Multi.
-//
 // Revisit:  ftw() will eventually be obsolete.  Need to migrate our 'Tree Walker' to either nftw() or fts().
 //           As of mid 2015 - fts() seems to be the more favored approach.
 
@@ -967,7 +972,7 @@ static void find_srcfiles_in_tree(gchar *src_dir)
     fprintf(stderr,"Unexpected chdir() error in dir.c:  Dir = %s\n", src_dir); /* Should never happen */
 
     /* walk the tree & build source file list */
-    if ( ftw(".", list, 1) < 0 )
+    if ( ftw(".", list, MAX_FTW_CACHE) < 0 )
     {
         char *message;
 
@@ -992,6 +997,20 @@ static void find_srcfiles_in_tree(gchar *src_dir)
 static int list(const char *name, const struct stat *status, int type) 
 {
     char *base_name;
+
+    #if 0  // Track the maximum tree depth
+    static unsigned int max_count = 0;
+    int count = 0;
+    char *ptr = (char *) name;
+
+    while (*ptr) if (*ptr++ == '/') ++count;
+
+    if (count > max_count)
+    {
+        max_count = count;
+        printf("New Max Depth: %d \n", max_count);
+    }
+    #endif
 
     if(type == FTW_NS)     /* non stat-able file */
     {

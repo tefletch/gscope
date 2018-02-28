@@ -331,11 +331,21 @@ void start_text_editor(gchar *filename, gchar *linenum)
 {
     gchar command[1024];
 
-    if ( strcmp(my_basename(settings.fileEditor), "vs") == 0 )
+    if ( strcmp(my_basename(settings.fileEditor), "vs") == 0 )          // Visual Slick Edit
     {
         sprintf(command, "%s \"%s\" -#\"goto-line %s\" -#\"goto-col 1\" &", settings.fileEditor, filename, linenum);
     }
-    else
+    else if ( strcmp(my_basename(settings.fileEditor), "code")         == 0 ||  // Microsoft VS Code
+              strcmp(my_basename(settings.fileEditor), "sublime_text") == 0 ||  // Sublime (fullname)
+              strcmp(my_basename(settings.fileEditor), "subl")         == 0 )   // Sublime (shortname)
+    {
+        sprintf(command, "%s -g %s:%s &", settings.fileEditor, filename, linenum);
+    }
+    else if ( strcmp(my_basename(settings.fileEditor), "atom") == 0 )   // Atom text editor
+    {
+        sprintf(command, "%s %s:%s &", settings.fileEditor, filename, linenum);
+    }
+    else            // Classic UNIX text editors (that use <editor> +<line-number> <file-name>)
     {
         sprintf(command, "%s +%s \"%s\" &", settings.fileEditor, linenum, filename);
     }
