@@ -387,6 +387,7 @@ static search_result_t find_all_functions()
 
             case FCNDEF:
             case CLASSDEF:
+                read_ptr++; /* Skip the type-marker */
                 get_string(function, &read_ptr);
 
                 /* output the file, function and source line */
