@@ -84,11 +84,11 @@
 #define     MAX_OVERRIDE_PATH_SIZE  255
 
 #ifdef GTK3_BUILD   // GTK3 (gscope.css)
-#define     CURRENT_CONFIG_VERSION   "001"
+#define     CURRENT_CONFIG_VERSION   "003"
 #define     CONFIG_VERSION_TAG       "/*Version="
 
 #else               // GTK2 (gtkrc)
-#define     CURRENT_CONFIG_VERSION   "003"
+#define     CURRENT_CONFIG_VERSION   "004"
 #define     CONFIG_VERSION_TAG       "#!Version="
 #endif
 
@@ -1171,7 +1171,7 @@ static gboolean create_gtk_config_file(const char *filename)
 
 gchar *template =
 {
-"/*Version=001 */"
+"/*Version=003 */"
 "\n"
 "\n/*"
 "\nDocumentation for styling GTK+ using CSS is kind of scattered.  The following"
@@ -1301,6 +1301,19 @@ gchar *template =
 "\n"
 "\n/*---------------------------------*/"
 "\n"
+"\n#blue_eventbox"
+"\n{"
+"\n    background-image: url('/sirius/tools/gscope/share/gscope/pixmaps/blue-box-background.png');"
+"\n}"
+"\n"
+"\n#header_button,"
+"\n#horizontal_filler_header_button"
+"\n{"
+"\n    background-image: none;"
+"\n    background-color: steelblue;"
+"\n    color: white;"
+"\n}"
+"\n"
 "\n#clear_query_button"
 "\n{"
 "\n    padding: 0px;"
@@ -1348,7 +1361,7 @@ static gboolean create_gtk_config_file(const char *filename)
 
 gchar *template =
 {
-"#!Version=003"
+"#!Version=004"
 "\n# This is ""the initial gtkrc template file created automatically by Gscope."
 "\n# Edit this file to make your own GTK customizations. If you would like" 
 "\n# gscope to create a fresh template just delete/rename this file and run gscope."
@@ -1528,6 +1541,36 @@ gchar *template =
 "\n}"
 "\n"
 "\n"
+"\nstyle \"blue-background\""
+"\n{"
+"\n  bg_pixmap[NORMAL] = \"blue-box-background.png\""
+"\n}"
+"\n"
+"\nstyle \"grey-background\""
+"\n{"
+"\n  bg[NORMAL]      = \"lightgrey\""
+"\n}"
+"\n"
+"\nstyle \"pink-background\""
+"\n{"
+"\n  bg[NORMAL]      = \"lightpink\""
+"\n}"
+"\n"
+"\nstyle \"dblue-background\""
+"\n{"
+"\n  bg[NORMAL]      = \"steelblue\""
+"\n  bg[PRELIGHT]    = \"steelblue\""
+"\n  bg[ACTIVE]      = \"steelblue\""
+"\n  bg[SELECTED]    = \"lightsteelblue\""
+"\n"
+"\n  fg[NORMAL]      = \"white\""
+"\n  fg[ACTIVE]      = \"white\""
+"\n  fg[PRELIGHT]    = \"white\""
+"\n  fg[SELECTED]    = \"yellow\""
+"\n}"
+"\n"
+"\n"
+"\n"
 "\nwidget  \"*find_c_identifier_button*\"        style \"blue-button\""
 "\nwidget  \"*find_definition_of_button*\"       style \"blue-button\""
 "\n"
@@ -1539,6 +1582,15 @@ gchar *template =
 "\n"
 "\nwidget  \"*find_files_button*\"               style \"orange-button\""
 "\nwidget  \"*find_files_including_button*\"     style \"orange-button\""
+"\n"
+"\nwidget \"*blue_eventbox*\"                    style \"blue-background\""
+"\nwidget \"*grey_eventbox*\"                    style \"grey-background\""
+"\nwidget \"*pink_eventbox*\"                    style \"pink-background\""
+"\nwidget \"*dblue_eventbox*\"                   style \"dblue-background\""
+"\n"
+"\nwidget \"*hscale*\"                           style \"dblue-background\""
+"\n"
+"\nwidget \"*header_button*\"                    style \"dblue-background\""
 };
 
     return( create_template_file(filename, template) );
