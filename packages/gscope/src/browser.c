@@ -538,6 +538,12 @@ static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gc
     my_asprintf(&var_string, "<span color=\"darkred\">%s</span>", root_fname);
     root_function_label = gtk_label_new(var_string);
     g_free(var_string);
+
+    // Place File and Line information into the tooltip for the label.
+    my_asprintf(&var_string, "%s : %s", tcb->root_entry.file_name, tcb->root_entry.line_num);
+    gtk_widget_set_tooltip_text(root_function_label, var_string); 
+    g_free(var_string);
+
     gtk_widget_set_name(root_function_label, "root_function_label");
     gtk_widget_show(root_function_label);
     gtk_container_add(GTK_CONTAINER(root_function_blue_eventbox), root_function_label);
@@ -1185,14 +1191,22 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
     for (row = starting_row; row < starting_row + num_results; row++)
     {
         function_event_box = gtk_event_box_new();
-        gtk_widget_set_name(function_event_box, "event_box");
+        gtk_widget_set_name(function_event_box, "blue_eventbox");
         gtk_widget_show(function_event_box);
         gtk_table_attach(GTK_TABLE(tcb->browser_table), function_event_box, col, col + 1, row, row + 1,
                          (GtkAttachOptions)(GTK_FILL),
                          (GtkAttachOptions)(GTK_FILL), 0, 0);
-        my_asprintf(&var_string, "<span color=\"darkred\">%s</span>", node->function_name);
+        //my_asprintf(&var_string, "<span color=\"darkred\">%s</span>", node->function_name);
+        my_asprintf(&var_string, "%s", node->function_name);
         function_label = gtk_label_new(var_string);
         g_free(var_string);
+
+        // Place File and Line information into the tooltip for the label.
+        my_asprintf(&var_string, "%s : %s", node->file_name, node->line_num);
+        gtk_widget_set_tooltip_text(function_label, var_string); 
+        g_free(var_string);
+
+
         gtk_widget_set_name(function_label, "function_label");
         gtk_widget_show(function_label);
         gtk_container_add(GTK_CONTAINER(function_event_box), function_label);
