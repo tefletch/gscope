@@ -102,18 +102,18 @@ typedef struct
 // Private Function Prototypes
 //============================
 static GtkWidget*   create_browser_window(gchar *name, gchar *root_file, gchar *line_num);
-static GtkWidget*   make_collapser(void);
-static GtkWidget*   make_expander(dir_e direction, gboolean new_expander);
 static void         expand_table(guint origin_y, guint origin_x, tcb_t *tcb, dir_e direction);
 static void         collapse_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e direction);
 static void         move_table_widget(GtkWidget *widget, tcb_t *tcb, guint row, guint col);
 static void         create_header_button_with_adjuster(tcb_t *tcb, guint col, gint label);
 static void         create_dummy_adjuster(tcb_t *tcb, guint col, guint row);
 
+static void         make_expander_at_position(tcb_t *tcb, guint col, guint row, dir_e direction);
+static void         make_collapser_at_position(tcb_t *tcb, guint col, guint row, dir_e direction);
 static gboolean     on_browser_delete_event(GtkWidget *widget, GdkEvent *event, gpointer user_data);
 static gboolean     on_left_expander_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean     on_right_expander_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
-static gboolean      on_left_collapser_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
+static gboolean     on_left_collapser_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean     on_right_collapser_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean     on_function_button_press(GtkWidget *widget, GdkEventButton *event, result_t *user_data);
 static void         right_click_menu(GtkWidget *widget, GdkEventButton *event, result_t *function_box);
@@ -305,11 +305,8 @@ static gboolean on_browser_delete_event(GtkWidget *widget, GdkEvent *event, gpoi
 //********************************************************************************************** 
 static gboolean on_left_expander_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-    GtkWidget   *collapser;
-    guint       row, col;
-    tcb_t       *tcb = user_data;
-    col_list_t *column_list;
-
+    tcb_t   *tcb = user_data;
+    guint   row, col;
 
     // Get the expander widget's position in the table
     gtk_container_child_get(GTK_CONTAINER(tcb->browser_table), widget,
@@ -318,28 +315,12 @@ static gboolean on_left_expander_button_release_event(GtkWidget *widget, GdkEven
                             NULL);
 
     // Remove the selected expander widget from the [col] column list
-    column_list = &(tcb->col_list[col]);
-    column_list_remove(column_list, widget);
+    column_list_remove(&(tcb->col_list[col]), widget);
+
     // Destroy the selected expander widget
     gtk_widget_destroy(widget);
 
-    // Create a new collapser widget
-    collapser = make_collapser();
-    // Add the new collapser widget to the [col] column list [at row]
-    column_list_insert(column_list, collapser, row);
-
-    // Attach new collapser widget to the table at the location previously occupied by the expander widget [row, col]
-    gtk_table_attach(GTK_TABLE(tcb->browser_table), collapser, col, col + 1, row, row + 1,
-                     (GtkAttachOptions)(GTK_FILL),
-                     (GtkAttachOptions)(GTK_FILL), 0, 0);
-
-    g_signal_connect((gpointer)collapser, "button_release_event",
-                     G_CALLBACK(on_left_collapser_button_release_event),
-                     user_data);
-
-    // Expand the table and add the relevant functions
-    expand_table(row, col, tcb, LEFT);
-
+    make_collapser_at_position((tcb_t *) user_data, col, row, LEFT);
     return FALSE;
 }
 
@@ -349,38 +330,22 @@ static gboolean on_left_expander_button_release_event(GtkWidget *widget, GdkEven
 //********************************************************************************************** 
 static gboolean on_right_expander_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-    GtkWidget   *collapser;
-    guint       row, col;
-    tcb_t       *tcb = user_data;
-    col_list_t *list;
+    tcb_t   *tcb = user_data;
+    guint   row, col;
 
-    // Get the widget's position in the table
+    // Get the expander widget's position in the table
     gtk_container_child_get(GTK_CONTAINER(tcb->browser_table), widget,
                             "top-attach", &row,
                             "left-attach", &col,
                             NULL);
 
-    // Destroy the selected expander
-    list = &(tcb->col_list[col]);
-    column_list_remove(list, widget);
+    // Remove the selected expander widget from the [col] column list
+    column_list_remove(&(tcb->col_list[col]), widget);
+
+    // Destroy the selected expander widget
     gtk_widget_destroy(widget);
 
-
-    collapser = make_collapser();
-    column_list_insert(list, collapser, row);
-
-    // Revisit: need to figure out table position from "widget" before destroying it.  Cheating for now...
-    gtk_table_attach(GTK_TABLE(tcb->browser_table), collapser, col, col + 1, row, row + 1,
-                     (GtkAttachOptions)(GTK_FILL),
-                     (GtkAttachOptions)(GTK_FILL), 0, 0);
-
-
-    g_signal_connect((gpointer)collapser, "button_release_event",
-                     G_CALLBACK(on_right_collapser_button_release_event),
-                     user_data);
-
-    expand_table(row, col, tcb, RIGHT);
-
+    make_collapser_at_position((tcb_t *) user_data, col, row, RIGHT);
     return FALSE;
 }
 
@@ -390,10 +355,10 @@ static gboolean on_right_expander_button_release_event(GtkWidget *widget, GdkEve
 //********************************************************************************************** 
 static gboolean on_left_collapser_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-    tcb_t       *tcb = user_data;
-    guint       row, col;
+    tcb_t   *tcb = user_data;
+    guint   row, col;
 
-    // Get the widget's position in the table
+    // Get the collapser widget's position in the table
     gtk_container_child_get(GTK_CONTAINER(tcb->browser_table), widget,
                             "top-attach", &row,
                             "left-attach", &col,
@@ -405,11 +370,7 @@ static gboolean on_left_collapser_button_release_event(GtkWidget *widget, GdkEve
     // Destroy the selected collapser widget
     gtk_widget_destroy(widget);
 
-    // Replace the removed/destroyed collapser with an expander widget
-    make_expander_at_position(tcb, col, row, LEFT);
-
-    collapse_table(row, col, tcb, LEFT);
-
+    make_expander_at_position((tcb_t *) user_data, col, row, LEFT);
     return FALSE;
 }
 
@@ -419,24 +380,22 @@ static gboolean on_left_collapser_button_release_event(GtkWidget *widget, GdkEve
 //********************************************************************************************** 
 static gboolean on_right_collapser_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-    tcb_t       *tcb = user_data;
-    guint       row, col;
-    col_list_t *list;
+    tcb_t   *tcb = user_data;
+    guint   row, col;
 
-    // Get the widget's position in the table
+    // Get the collapser widget's position in the table
     gtk_container_child_get(GTK_CONTAINER(tcb->browser_table), widget,
                             "top-attach", &row,
                             "left-attach", &col,
                             NULL);
 
-    // Destroy the selected expander
-    list = &(tcb->col_list[col]);
-    column_list_remove(list, widget);
+    // Remove the selected collapser widget pointer from the column [col] member list
+    column_list_remove(&(tcb->col_list[col]), widget);
+
+    // Destroy the selected collapser widget
     gtk_widget_destroy(widget);
 
-    make_expander_at_position(tcb, col, row, RIGHT);
-
-    collapse_table(row, col, tcb, RIGHT);
+    make_expander_at_position((tcb_t *) user_data, col, row, RIGHT);
     return FALSE;
 }
 
@@ -565,6 +524,96 @@ gboolean on_adjuster_eventbox_motion_notify_event(GtkWidget *widget, GdkEventMot
     gtk_widget_size_allocate(header_button, &allocation);
 
     return FALSE;
+}
+
+
+//********************************************************************************************** 
+// make_collapser_at_position
+//********************************************************************************************** 
+static void make_collapser_at_position(tcb_t *tcb, guint col, guint row, dir_e direction)
+{
+    GtkWidget   *collapser;
+    GtkWidget   *image;
+
+    // Create a new collapser widget
+    collapser = gtk_event_box_new();
+    gtk_widget_set_name(collapser, "expander_eventbox");
+    gtk_widget_show(collapser);
+    image = create_pixmap(collapser, "sca_collapser_multi.png");
+    gtk_widget_show(image);
+    gtk_container_add(GTK_CONTAINER(collapser), image);
+
+    // Attach new collapser widget to the table at the location previously occupied by the expander widget [row, col]
+    gtk_table_attach(GTK_TABLE(tcb->browser_table), collapser, col, col + 1, row, row + 1,
+                     (GtkAttachOptions)(GTK_FILL),
+                     (GtkAttachOptions)(GTK_FILL), 0, 0);
+    column_list_insert(&(tcb->col_list[col]), collapser, row);
+
+    tcb->col_list[col].type = EXPANDER;
+
+    if ( direction == RIGHT )
+    {
+        g_signal_connect((gpointer)collapser, "button_release_event",
+                         G_CALLBACK(on_right_collapser_button_release_event),
+                         tcb);
+
+        // Expand the table and add the relevant functions
+        expand_table(row, col, tcb, RIGHT);
+    }
+    else    // direction == LEFT
+    {
+        g_signal_connect((gpointer)collapser, "button_release_event",
+                         G_CALLBACK(on_left_collapser_button_release_event),
+                         tcb);
+
+        // Expand the table and add the relevant functions
+        expand_table(row, col, tcb, LEFT);
+    }
+
+}
+
+
+//**********************************************************************************************
+// make_expander_at_position
+//********************************************************************************************** 
+static void make_expander_at_position(tcb_t *tcb, guint col, guint row, dir_e direction)
+{
+    GtkWidget   *expander;
+    GtkWidget   *image;
+
+    expander = gtk_event_box_new();
+    gtk_widget_set_name(expander, "expander_eventbox");
+    gtk_widget_show(expander);
+
+    if (direction == LEFT)
+        image = create_pixmap(expander, "sca_expander_left.png");
+    else
+        image = create_pixmap(expander, "sca_expander_right.png");
+    gtk_widget_show(image);
+    gtk_container_add(GTK_CONTAINER(expander), image);
+   
+    // Add the new expander widget to the [col] column list [at row]
+    gtk_table_attach(GTK_TABLE(tcb->browser_table), expander, col, col + 1, row, row + 1,
+                     (GtkAttachOptions)(GTK_FILL),
+                     (GtkAttachOptions)(GTK_FILL), 0, 0);
+    column_list_insert(&(tcb->col_list[col]), expander, row);
+
+    tcb->col_list[col].type = EXPANDER;
+
+    if (direction == RIGHT)
+    {
+        g_signal_connect((gpointer)expander, "button_release_event",
+                         G_CALLBACK(on_right_expander_button_release_event),
+                         tcb);
+        collapse_table(row, col, tcb, RIGHT);
+    }
+    else
+    {
+        g_signal_connect((gpointer)expander, "button_release_event",
+                         G_CALLBACK(on_left_expander_button_release_event),
+                         tcb);
+        collapse_table(row, col, tcb, LEFT);
+    }
 }
 
 
@@ -1319,55 +1368,6 @@ static void shift_column_up(tcb_t *tcb, guint col, guint starting_row, guint amo
 }
 
 
-//**********************************************************************************************
-//  make_collapser
-//********************************************************************************************** 
-static GtkWidget* make_collapser()
-{
-    GtkWidget   *eventbox;
-    GtkWidget   *image;
-
-    eventbox = gtk_event_box_new();
-    gtk_widget_set_name(eventbox, "expander_eventbox");
-    gtk_widget_show(eventbox);
-
-    image = create_pixmap(eventbox, "sca_collapser_multi.png");
-
-    gtk_widget_show(image);
-    gtk_container_add(GTK_CONTAINER(eventbox), image);
-
-    return (eventbox);
-}
-
-
-//**********************************************************************************************
-//  make_expander
-//********************************************************************************************** 
-static GtkWidget* make_expander(dir_e direction, gboolean new_expander)
-{
-    GtkWidget   *eventbox;
-    GtkWidget   *image;
-
-    eventbox = gtk_event_box_new();
-    gtk_widget_set_name(eventbox, "expander_eventbox");
-    gtk_widget_show(eventbox);
-
-    if (direction == LEFT)
-    {
-        image = create_pixmap(eventbox, "sca_expander_left.png");
-    }
-    else
-    {
-        image = create_pixmap(eventbox, "sca_expander_right.png");
-    }
-
-    gtk_widget_show(image);
-    gtk_container_add(GTK_CONTAINER(eventbox), image);
-
-    return (eventbox);
-}
-
-
 //********************************************************************************************** 
 // make_filler_column
 //********************************************************************************************** 
@@ -1386,37 +1386,6 @@ static void make_filler_column(tcb_t *tcb, guint position)
     column_list_insert(&(tcb->col_list[position]), button, 0);
 
     tcb->col_list[position].type = FILLER;
-}
-
-
-//**********************************************************************************************
-// make_expander_at_position
-//********************************************************************************************** 
-static void make_expander_at_position(tcb_t *tcb, guint col, guint row, dir_e direction)
-{
-    GtkWidget *expander_eventbox = make_expander(direction, TRUE);
-    gtk_widget_set_name(expander_eventbox, "expander_eventbox");
-    gtk_widget_show(expander_eventbox);
-    gtk_table_attach(GTK_TABLE(tcb->browser_table), expander_eventbox, col, col + 1, row, row + 1,
-                     (GtkAttachOptions)(GTK_FILL),
-                     (GtkAttachOptions)(GTK_FILL), 0, 0);
-    column_list_insert(&(tcb->col_list[col]), expander_eventbox, row);
-
-    tcb->col_list[col].type = EXPANDER;
-
-    if (direction == RIGHT)
-    {
-        g_signal_connect((gpointer)expander_eventbox, "button_release_event",
-                         G_CALLBACK(on_right_expander_button_release_event),
-                         tcb);
-    }
-    else
-    {
-        g_signal_connect((gpointer)expander_eventbox, "button_release_event",
-                         G_CALLBACK(on_left_expander_button_release_event),
-                         tcb);
-    }
-
 }
 
 
