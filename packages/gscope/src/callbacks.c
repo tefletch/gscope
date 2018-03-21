@@ -100,6 +100,9 @@ static GtkWidget    *output_file_chooser_dialog = NULL;
 static GtkWidget    *save_results_file_chooser_dialog = NULL;
 static GtkWidget    *browser_window = NULL;
 
+//---Public Globals (Try to keep this section empty)----
+
+
 
 //---------------------------------------------------------------------------
 // process_query (query_type)
@@ -363,7 +366,6 @@ void CALLBACKS_init(GtkWidget *main)
     save_results_file_chooser_dialog = create_save_results_file_chooser_dialog();
 
 #endif
-
 }
 
 
@@ -1156,6 +1158,12 @@ void on_open_call_browser(GtkWidget *menuitem, gchar *entry)
     gchar *linenum;
     gchar *function;
     gchar *esc_markup;
+    static gboolean initialized = FALSE;
+
+    if ( !initialized )
+    {
+       initialized = BROWSER_init();
+    }
 
     fname = entry;
 
@@ -1168,7 +1176,7 @@ void on_open_call_browser(GtkWidget *menuitem, gchar *entry)
     function = entry;
 
     esc_markup = g_markup_escape_text(function, -1);    // Needed when function = "<global>".
-    browser_window = BROWSER_init(esc_markup, fname, linenum);
+    browser_window = BROWSER_create(esc_markup, fname, linenum);
     g_free(esc_markup);
 
     gtk_widget_show(browser_window);

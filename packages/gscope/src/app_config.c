@@ -84,11 +84,11 @@
 #define     MAX_OVERRIDE_PATH_SIZE  255
 
 #ifdef GTK3_BUILD   // GTK3 (gscope.css)
-#define     CURRENT_CONFIG_VERSION   "003"
+#define     CURRENT_CONFIG_VERSION   "004"
 #define     CONFIG_VERSION_TAG       "/*Version="
 
 #else               // GTK2 (gtkrc)
-#define     CURRENT_CONFIG_VERSION   "004"
+#define     CURRENT_CONFIG_VERSION   "005"
 #define     CONFIG_VERSION_TAG       "#!Version="
 #endif
 
@@ -1171,7 +1171,7 @@ static gboolean create_gtk_config_file(const char *filename)
 
 gchar *template =
 {
-"/*Version=003 */"
+"/*Version=004 */"
 "\n"
 "\n/*"
 "\nDocumentation for styling GTK+ using CSS is kind of scattered.  The following"
@@ -1307,7 +1307,8 @@ gchar *template =
 "\n}"
 "\n"
 "\n#header_button,"
-"\n#horizontal_filler_header_button"
+"\n#horizontal_filler_header_button,"
+"\n#adjuster_eventbox"
 "\n{"
 "\n    background-image: none;"
 "\n    background-color: steelblue;"
@@ -1361,7 +1362,7 @@ static gboolean create_gtk_config_file(const char *filename)
 
 gchar *template =
 {
-"#!Version=004"
+"#!Version=005"
 "\n# This is ""the initial gtkrc template file created automatically by Gscope."
 "\n# Edit this file to make your own GTK customizations. If you would like" 
 "\n# gscope to create a fresh template just delete/rename this file and run gscope."
@@ -1591,6 +1592,7 @@ gchar *template =
 "\nwidget \"*hscale*\"                           style \"dblue-background\""
 "\n"
 "\nwidget \"*header_button*\"                    style \"dblue-background\""
+"\nwidget \"*adjuster_eventbox*\"                style \"dblue-background\""
 };
 
     return( create_template_file(filename, template) );

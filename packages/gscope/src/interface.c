@@ -3774,766 +3774,606 @@ create_save_results_file_chooser_dialog (void)
 }
 
 GtkWidget*
-create_browser_window_template (void)
-{
-  GtkWidget *browser_window_template;
-  GdkPixbuf *browser_window_template_icon_pixbuf;
-  GtkWidget *browser_vbox;
-  GtkWidget *browser_scrolledwindow;
-  GtkWidget *browser_viewport;
-  GtkWidget *browser_table;
-  GtkWidget *left_horizontal_filler_header_button;
-  GtkWidget *right_horizontal_filler_header_button;
-  GtkWidget *left_root_expander_eventbox;
-  GtkWidget *left_root_expander_image;
-  GtkWidget *right_root_expander_eventbox;
-  GtkWidget *right_root_expander_image;
-  GtkWidget *header_button;
-  GtkWidget *vertical_filler_label;
-  GtkWidget *root_function_blue_eventbox;
-  GtkWidget *root_function_label;
-  GtkWidget *root_hscale;
-  GtkWidget *browser_bottom_hbox;
-  GtkWidget *root_function_entry_label;
-  GtkWidget *root_function_entry;
-
-  browser_window_template = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_widget_set_name (browser_window_template, "browser_window_template");
-  gtk_widget_set_size_request (browser_window_template, 250, 100);
-  gtk_window_set_title (GTK_WINDOW (browser_window_template), "Static Call Browser (insert-function-name-here)");
-  gtk_window_set_destroy_with_parent (GTK_WINDOW (browser_window_template), TRUE);
-  browser_window_template_icon_pixbuf = create_pixbuf ("icon-search.png");
-  if (browser_window_template_icon_pixbuf)
-    {
-      gtk_window_set_icon (GTK_WINDOW (browser_window_template), browser_window_template_icon_pixbuf);
-      gdk_pixbuf_unref (browser_window_template_icon_pixbuf);
-    }
-
-  browser_vbox = gtk_vbox_new (FALSE, 0);
-  gtk_widget_set_name (browser_vbox, "browser_vbox");
-  gtk_widget_show (browser_vbox);
-  gtk_container_add (GTK_CONTAINER (browser_window_template), browser_vbox);
-
-  browser_scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
-  gtk_widget_set_name (browser_scrolledwindow, "browser_scrolledwindow");
-  gtk_widget_show (browser_scrolledwindow);
-  gtk_box_pack_start (GTK_BOX (browser_vbox), browser_scrolledwindow, TRUE, TRUE, 0);
-
-  browser_viewport = gtk_viewport_new (NULL, NULL);
-  gtk_widget_set_name (browser_viewport, "browser_viewport");
-  gtk_widget_show (browser_viewport);
-  gtk_container_add (GTK_CONTAINER (browser_scrolledwindow), browser_viewport);
-
-  browser_table = gtk_table_new (4, 5, FALSE);
-  gtk_widget_set_name (browser_table, "browser_table");
-  gtk_widget_show (browser_table);
-  gtk_container_add (GTK_CONTAINER (browser_viewport), browser_table);
-
-  left_horizontal_filler_header_button = gtk_button_new_with_mnemonic ("");
-  gtk_widget_set_name (left_horizontal_filler_header_button, "left_horizontal_filler_header_button");
-  gtk_widget_show (left_horizontal_filler_header_button);
-  gtk_table_attach (GTK_TABLE (browser_table), left_horizontal_filler_header_button, 0, 1, 0, 1,
-                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-  GTK_WIDGET_UNSET_FLAGS (left_horizontal_filler_header_button, GTK_CAN_FOCUS);
-  gtk_button_set_focus_on_click (GTK_BUTTON (left_horizontal_filler_header_button), FALSE);
-
-  right_horizontal_filler_header_button = gtk_button_new_with_mnemonic ("");
-  gtk_widget_set_name (right_horizontal_filler_header_button, "right_horizontal_filler_header_button");
-  gtk_widget_show (right_horizontal_filler_header_button);
-  gtk_table_attach (GTK_TABLE (browser_table), right_horizontal_filler_header_button, 4, 5, 0, 1,
-                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-  GTK_WIDGET_UNSET_FLAGS (right_horizontal_filler_header_button, GTK_CAN_FOCUS);
-  gtk_button_set_focus_on_click (GTK_BUTTON (right_horizontal_filler_header_button), FALSE);
-
-  left_root_expander_eventbox = gtk_event_box_new ();
-  gtk_widget_set_name (left_root_expander_eventbox, "left_root_expander_eventbox");
-  gtk_widget_show (left_root_expander_eventbox);
-  gtk_table_attach (GTK_TABLE (browser_table), left_root_expander_eventbox, 1, 2, 1, 2,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_FILL), 0, 0);
-
-  left_root_expander_image = create_pixmap (browser_window_template, "sca_expander_left.png");
-  gtk_widget_set_name (left_root_expander_image, "left_root_expander_image");
-  gtk_widget_show (left_root_expander_image);
-  gtk_container_add (GTK_CONTAINER (left_root_expander_eventbox), left_root_expander_image);
-
-  right_root_expander_eventbox = gtk_event_box_new ();
-  gtk_widget_set_name (right_root_expander_eventbox, "right_root_expander_eventbox");
-  gtk_widget_show (right_root_expander_eventbox);
-  gtk_table_attach (GTK_TABLE (browser_table), right_root_expander_eventbox, 3, 4, 1, 2,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_FILL), 0, 0);
-
-  right_root_expander_image = create_pixmap (browser_window_template, "sca_expander_right.png");
-  gtk_widget_set_name (right_root_expander_image, "right_root_expander_image");
-  gtk_widget_show (right_root_expander_image);
-  gtk_container_add (GTK_CONTAINER (right_root_expander_eventbox), right_root_expander_image);
-
-  header_button = gtk_button_new_with_mnemonic ("0");
-  gtk_widget_set_name (header_button, "header_button");
-  gtk_widget_show (header_button);
-  gtk_table_attach (GTK_TABLE (browser_table), header_button, 1, 4, 0, 1,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (0), 0, 0);
-  GTK_WIDGET_UNSET_FLAGS (header_button, GTK_CAN_FOCUS);
-  gtk_button_set_focus_on_click (GTK_BUTTON (header_button), FALSE);
-
-  vertical_filler_label = gtk_label_new ("");
-  gtk_widget_set_name (vertical_filler_label, "vertical_filler_label");
-  gtk_widget_show (vertical_filler_label);
-  gtk_table_attach (GTK_TABLE (browser_table), vertical_filler_label, 2, 3, 2, 3,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_EXPAND), 0, 0);
-
-  root_function_blue_eventbox = gtk_event_box_new ();
-  gtk_widget_set_name (root_function_blue_eventbox, "root_function_blue_eventbox");
-  gtk_widget_show (root_function_blue_eventbox);
-  gtk_table_attach (GTK_TABLE (browser_table), root_function_blue_eventbox, 2, 3, 1, 2,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_FILL), 0, 0);
-
-  root_function_label = gtk_label_new ("<span color=\"darkred\">insert-function-name-here</span>");
-  gtk_widget_set_name (root_function_label, "root_function_label");
-  gtk_widget_show (root_function_label);
-  gtk_container_add (GTK_CONTAINER (root_function_blue_eventbox), root_function_label);
-  gtk_label_set_use_markup (GTK_LABEL (root_function_label), TRUE);
-  gtk_misc_set_alignment (GTK_MISC (root_function_label), 0, 0.5);
-  gtk_misc_set_padding (GTK_MISC (root_function_label), 1, 0);
-  gtk_label_set_ellipsize (GTK_LABEL (root_function_label), PANGO_ELLIPSIZE_END);
-  gtk_label_set_width_chars (GTK_LABEL (root_function_label), 10);
-
-  root_hscale = gtk_hscale_new (GTK_ADJUSTMENT (gtk_adjustment_new (4, 4, 40, 1, 0, 0)));
-  gtk_widget_set_name (root_hscale, "root_hscale");
-  gtk_widget_show (root_hscale);
-  gtk_table_attach (GTK_TABLE (browser_table), root_hscale, 2, 3, 3, 4,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_FILL), 0, 0);
-  gtk_scale_set_draw_value (GTK_SCALE (root_hscale), FALSE);
-  gtk_scale_set_digits (GTK_SCALE (root_hscale), 0);
-
-  browser_bottom_hbox = gtk_hbox_new (FALSE, 0);
-  gtk_widget_set_name (browser_bottom_hbox, "browser_bottom_hbox");
-  gtk_widget_show (browser_bottom_hbox);
-  gtk_box_pack_start (GTK_BOX (browser_vbox), browser_bottom_hbox, FALSE, TRUE, 0);
-
-  root_function_entry_label = gtk_label_new ("<span color=\"steelblue\" weight=\"bold\">Root Function</span>");
-  gtk_widget_set_name (root_function_entry_label, "root_function_entry_label");
-  gtk_widget_show (root_function_entry_label);
-  gtk_box_pack_start (GTK_BOX (browser_bottom_hbox), root_function_entry_label, FALSE, FALSE, 0);
-  gtk_label_set_use_markup (GTK_LABEL (root_function_entry_label), TRUE);
-  gtk_misc_set_padding (GTK_MISC (root_function_entry_label), 4, 8);
-
-  root_function_entry = gtk_entry_new ();
-  gtk_widget_set_name (root_function_entry, "root_function_entry");
-  gtk_widget_show (root_function_entry);
-  gtk_box_pack_start (GTK_BOX (browser_bottom_hbox), root_function_entry, TRUE, TRUE, 0);
-  gtk_entry_set_invisible_char (GTK_ENTRY (root_function_entry), 8226);
-
-  /* Store pointers to all widgets, for use by lookup_widget(). */
-  GLADE_HOOKUP_OBJECT_NO_REF (browser_window_template, browser_window_template, "browser_window_template");
-  GLADE_HOOKUP_OBJECT (browser_window_template, browser_vbox, "browser_vbox");
-  GLADE_HOOKUP_OBJECT (browser_window_template, browser_scrolledwindow, "browser_scrolledwindow");
-  GLADE_HOOKUP_OBJECT (browser_window_template, browser_viewport, "browser_viewport");
-  GLADE_HOOKUP_OBJECT (browser_window_template, browser_table, "browser_table");
-  GLADE_HOOKUP_OBJECT (browser_window_template, left_horizontal_filler_header_button, "left_horizontal_filler_header_button");
-  GLADE_HOOKUP_OBJECT (browser_window_template, right_horizontal_filler_header_button, "right_horizontal_filler_header_button");
-  GLADE_HOOKUP_OBJECT (browser_window_template, left_root_expander_eventbox, "left_root_expander_eventbox");
-  GLADE_HOOKUP_OBJECT (browser_window_template, left_root_expander_image, "left_root_expander_image");
-  GLADE_HOOKUP_OBJECT (browser_window_template, right_root_expander_eventbox, "right_root_expander_eventbox");
-  GLADE_HOOKUP_OBJECT (browser_window_template, right_root_expander_image, "right_root_expander_image");
-  GLADE_HOOKUP_OBJECT (browser_window_template, header_button, "header_button");
-  GLADE_HOOKUP_OBJECT (browser_window_template, vertical_filler_label, "vertical_filler_label");
-  GLADE_HOOKUP_OBJECT (browser_window_template, root_function_blue_eventbox, "root_function_blue_eventbox");
-  GLADE_HOOKUP_OBJECT (browser_window_template, root_function_label, "root_function_label");
-  GLADE_HOOKUP_OBJECT (browser_window_template, root_hscale, "root_hscale");
-  GLADE_HOOKUP_OBJECT (browser_window_template, browser_bottom_hbox, "browser_bottom_hbox");
-  GLADE_HOOKUP_OBJECT (browser_window_template, root_function_entry_label, "root_function_entry_label");
-  GLADE_HOOKUP_OBJECT (browser_window_template, root_function_entry, "root_function_entry");
-
-  return browser_window_template;
-}
-
-GtkWidget*
 create_sample_browser_window (void)
 {
   GtkWidget *sample_browser_window;
-  GdkPixbuf *sample_browser_window_icon_pixbuf;
-  GtkWidget *scrolledwindow5;
-  GtkWidget *viewport3;
-  GtkWidget *table4;
-  GtkWidget *header_button18;
-  GtkWidget *header_button19;
-  GtkWidget *label144;
-  GtkWidget *image580;
-  GtkWidget *image579;
-  GtkWidget *image578;
-  GtkWidget *image577;
-  GtkWidget *eventbox32;
-  GtkWidget *image565;
-  GtkWidget *blue_eventbox31;
-  GtkWidget *label132;
-  GtkWidget *grey_eventbox29;
-  GtkWidget *label131;
-  GtkWidget *eventbox33;
-  GtkWidget *image567;
-  GtkWidget *image566;
-  GtkWidget *label143;
-  GtkWidget *expander_eventbox47;
-  GtkWidget *image576;
-  GtkWidget *blue_eventbox41;
-  GtkWidget *label138;
-  GtkWidget *blue_eventbox43;
-  GtkWidget *label141;
-  GtkWidget *blue_eventbox64;
-  GtkWidget *label148;
-  GtkWidget *image572;
-  GtkWidget *image573;
-  GtkWidget *eventbox42;
-  GtkWidget *image571;
-  GtkWidget *eventbox44;
-  GtkWidget *image574;
-  GtkWidget *eventbox46;
-  GtkWidget *image575;
-  GtkWidget *blue_eventbox35;
-  GtkWidget *label135;
-  GtkWidget *blue_eventbox37;
-  GtkWidget *label136;
-  GtkWidget *blue_eventbox39;
-  GtkWidget *label137;
-  GtkWidget *eventbox60;
-  GtkWidget *image568;
-  GtkWidget *eventbox38;
-  GtkWidget *image569;
-  GtkWidget *eventbox40;
-  GtkWidget *image570;
-  GtkWidget *grey_eventbox63;
-  GtkWidget *label147;
-  GtkWidget *header_button24;
-  GtkWidget *header_button16;
-  GtkWidget *header_button15;
-  GtkWidget *header_button14;
-  GtkWidget *header_button17;
-  GtkWidget *hscale5;
-  GtkWidget *hscale6;
-  GtkWidget *hscale7;
-  GtkWidget *hscale10;
-  GtkWidget *hscale8;
+  GtkWidget *scrolledwindow6;
+  GtkWidget *viewport4;
+  GtkWidget *table5;
+  GtkWidget *button7;
+  GtkWidget *button8;
+  GtkWidget *label149;
+  GtkWidget *image582;
+  GtkWidget *image583;
+  GtkWidget *image584;
+  GtkWidget *image585;
+  GtkWidget *eventbox61;
+  GtkWidget *image586;
+  GtkWidget *eventbox62;
+  GtkWidget *label150;
+  GtkWidget *eventbox63;
+  GtkWidget *label151;
+  GtkWidget *eventbox64;
+  GtkWidget *image587;
+  GtkWidget *image588;
+  GtkWidget *first_label;
+  GtkWidget *eventbox65;
+  GtkWidget *image589;
+  GtkWidget *eventbox66;
+  GtkWidget *label153;
+  GtkWidget *eventbox67;
+  GtkWidget *label154;
+  GtkWidget *eventbox68;
+  GtkWidget *label155;
+  GtkWidget *image590;
+  GtkWidget *image591;
+  GtkWidget *eventbox69;
+  GtkWidget *image592;
+  GtkWidget *eventbox70;
+  GtkWidget *image593;
+  GtkWidget *eventbox71;
+  GtkWidget *image594;
+  GtkWidget *eventbox72;
+  GtkWidget *label156;
+  GtkWidget *eventbox73;
+  GtkWidget *label157;
+  GtkWidget *eventbox74;
+  GtkWidget *label158;
+  GtkWidget *eventbox75;
+  GtkWidget *image595;
+  GtkWidget *eventbox76;
+  GtkWidget *image596;
+  GtkWidget *eventbox77;
+  GtkWidget *image597;
+  GtkWidget *eventbox78;
+  GtkWidget *label159;
+  GtkWidget *hscale11;
+  GtkWidget *hscale12;
+  GtkWidget *hscale13;
+  GtkWidget *hscale14;
+  GtkWidget *hscale15;
+  GtkWidget *button13;
+  GtkWidget *button12;
+  GtkWidget *button11;
+  GtkWidget *button10;
+  GtkWidget *button9;
+  GtkWidget *resize_eventbox;
+  GtkWidget *resize_col_image;
+  GtkWidget *eventbox79;
 
   sample_browser_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_widget_set_name (sample_browser_window, "sample_browser_window");
-  gtk_widget_set_size_request (sample_browser_window, 600, 200);
-  gtk_window_set_title (GTK_WINDOW (sample_browser_window), "Static Call Browser (root_function)");
-  sample_browser_window_icon_pixbuf = create_pixbuf ("icon-search.png");
-  if (sample_browser_window_icon_pixbuf)
-    {
-      gtk_window_set_icon (GTK_WINDOW (sample_browser_window), sample_browser_window_icon_pixbuf);
-      gdk_pixbuf_unref (sample_browser_window_icon_pixbuf);
-    }
+  gtk_widget_set_size_request (sample_browser_window, 500, 250);
+  gtk_window_set_title (GTK_WINDOW (sample_browser_window), "Experimental Browser");
 
-  scrolledwindow5 = gtk_scrolled_window_new (NULL, NULL);
-  gtk_widget_set_name (scrolledwindow5, "scrolledwindow5");
-  gtk_widget_show (scrolledwindow5);
-  gtk_container_add (GTK_CONTAINER (sample_browser_window), scrolledwindow5);
+  scrolledwindow6 = gtk_scrolled_window_new (NULL, NULL);
+  gtk_widget_set_name (scrolledwindow6, "scrolledwindow6");
+  gtk_widget_show (scrolledwindow6);
+  gtk_container_add (GTK_CONTAINER (sample_browser_window), scrolledwindow6);
 
-  viewport3 = gtk_viewport_new (NULL, NULL);
-  gtk_widget_set_name (viewport3, "viewport3");
-  gtk_widget_show (viewport3);
-  gtk_container_add (GTK_CONTAINER (scrolledwindow5), viewport3);
+  viewport4 = gtk_viewport_new (NULL, NULL);
+  gtk_widget_set_name (viewport4, "viewport4");
+  gtk_widget_show (viewport4);
+  gtk_container_add (GTK_CONTAINER (scrolledwindow6), viewport4);
 
-  table4 = gtk_table_new (8, 13, FALSE);
-  gtk_widget_set_name (table4, "table4");
-  gtk_widget_show (table4);
-  gtk_container_add (GTK_CONTAINER (viewport3), table4);
+  table5 = gtk_table_new (8, 13, FALSE);
+  gtk_widget_set_name (table5, "table5");
+  gtk_widget_show (table5);
+  gtk_container_add (GTK_CONTAINER (viewport4), table5);
 
-  header_button18 = gtk_button_new_with_mnemonic ("");
-  gtk_widget_set_name (header_button18, "header_button18");
-  gtk_widget_show (header_button18);
-  gtk_table_attach (GTK_TABLE (table4), header_button18, 0, 1, 0, 1,
+  button7 = gtk_button_new_with_mnemonic ("");
+  gtk_widget_set_name (button7, "button7");
+  gtk_widget_show (button7);
+  gtk_table_attach (GTK_TABLE (table5), button7, 0, 1, 0, 1,
                     (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
                     (GtkAttachOptions) (0), 0, 0);
-  GTK_WIDGET_UNSET_FLAGS (header_button18, GTK_CAN_FOCUS);
+  GTK_WIDGET_UNSET_FLAGS (button7, GTK_CAN_FOCUS);
 
-  header_button19 = gtk_button_new_with_mnemonic ("");
-  gtk_widget_set_name (header_button19, "header_button19");
-  gtk_widget_show (header_button19);
-  gtk_table_attach (GTK_TABLE (table4), header_button19, 12, 13, 0, 1,
+  button8 = gtk_button_new_with_mnemonic ("");
+  gtk_widget_set_name (button8, "button8");
+  gtk_widget_show (button8);
+  gtk_table_attach (GTK_TABLE (table5), button8, 12, 13, 0, 1,
                     (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
                     (GtkAttachOptions) (0), 0, 0);
-  GTK_WIDGET_UNSET_FLAGS (header_button19, GTK_CAN_FOCUS);
+  GTK_WIDGET_UNSET_FLAGS (button8, GTK_CAN_FOCUS);
 
-  label144 = gtk_label_new ("");
-  gtk_widget_set_name (label144, "label144");
-  gtk_widget_show (label144);
-  gtk_table_attach (GTK_TABLE (table4), label144, 4, 5, 6, 7,
+  label149 = gtk_label_new ("");
+  gtk_widget_set_name (label149, "label149");
+  gtk_widget_show (label149);
+  gtk_table_attach (GTK_TABLE (table5), label149, 4, 5, 6, 7,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_EXPAND), 0, 0);
 
-  image580 = create_pixmap (sample_browser_window, "sca_end_branch_right.png");
-  gtk_widget_set_name (image580, "image580");
-  gtk_widget_show (image580);
-  gtk_table_attach (GTK_TABLE (table4), image580, 5, 6, 5, 6,
+  image582 = create_pixmap (sample_browser_window, "sca_end_branch_right.png");
+  gtk_widget_set_name (image582, "image582");
+  gtk_widget_show (image582);
+  gtk_table_attach (GTK_TABLE (table5), image582, 5, 6, 5, 6,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  image579 = create_pixmap (sample_browser_window, "sca_mid_branch_right.png");
-  gtk_widget_set_name (image579, "image579");
-  gtk_widget_show (image579);
-  gtk_table_attach (GTK_TABLE (table4), image579, 5, 6, 4, 5,
+  image583 = create_pixmap (sample_browser_window, "sca_mid_branch_right.png");
+  gtk_widget_set_name (image583, "image583");
+  gtk_widget_show (image583);
+  gtk_table_attach (GTK_TABLE (table5), image583, 5, 6, 4, 5,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  image578 = create_pixmap (sample_browser_window, "sca_mid_branch_center.png");
-  gtk_widget_set_name (image578, "image578");
-  gtk_widget_show (image578);
-  gtk_table_attach (GTK_TABLE (table4), image578, 5, 6, 3, 4,
+  image584 = create_pixmap (sample_browser_window, "sca_mid_branch_center.png");
+  gtk_widget_set_name (image584, "image584");
+  gtk_widget_show (image584);
+  gtk_table_attach (GTK_TABLE (table5), image584, 5, 6, 3, 4,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  image577 = create_pixmap (sample_browser_window, "sca_mid_branch_center.png");
-  gtk_widget_set_name (image577, "image577");
-  gtk_widget_show (image577);
-  gtk_table_attach (GTK_TABLE (table4), image577, 5, 6, 2, 3,
+  image585 = create_pixmap (sample_browser_window, "sca_mid_branch_center.png");
+  gtk_widget_set_name (image585, "image585");
+  gtk_widget_show (image585);
+  gtk_table_attach (GTK_TABLE (table5), image585, 5, 6, 2, 3,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  eventbox32 = gtk_event_box_new ();
-  gtk_widget_set_name (eventbox32, "eventbox32");
-  gtk_widget_show (eventbox32);
-  gtk_table_attach (GTK_TABLE (table4), eventbox32, 1, 2, 1, 2,
+  eventbox61 = gtk_event_box_new ();
+  gtk_widget_set_name (eventbox61, "eventbox61");
+  gtk_widget_show (eventbox61);
+  gtk_table_attach (GTK_TABLE (table5), eventbox61, 1, 2, 1, 2,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  image565 = create_pixmap (sample_browser_window, "sca_expander_left.png");
-  gtk_widget_set_name (image565, "image565");
-  gtk_widget_show (image565);
-  gtk_container_add (GTK_CONTAINER (eventbox32), image565);
+  image586 = create_pixmap (sample_browser_window, "sca_expander_left.png");
+  gtk_widget_set_name (image586, "image586");
+  gtk_widget_show (image586);
+  gtk_container_add (GTK_CONTAINER (eventbox61), image586);
 
-  blue_eventbox31 = gtk_event_box_new ();
-  gtk_widget_set_name (blue_eventbox31, "blue_eventbox31");
-  gtk_widget_show (blue_eventbox31);
-  gtk_table_attach (GTK_TABLE (table4), blue_eventbox31, 2, 3, 1, 2,
+  eventbox62 = gtk_event_box_new ();
+  gtk_widget_set_name (eventbox62, "eventbox62");
+  gtk_widget_show (eventbox62);
+  gtk_table_attach (GTK_TABLE (table5), eventbox62, 2, 3, 1, 2,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  label132 = gtk_label_new ("sub 0a");
-  gtk_widget_set_name (label132, "label132");
-  gtk_widget_show (label132);
-  gtk_container_add (GTK_CONTAINER (blue_eventbox31), label132);
-  gtk_label_set_use_markup (GTK_LABEL (label132), TRUE);
-  gtk_misc_set_alignment (GTK_MISC (label132), 0, 0.5);
-  gtk_misc_set_padding (GTK_MISC (label132), 1, 0);
-  gtk_label_set_width_chars (GTK_LABEL (label132), 6);
+  label150 = gtk_label_new ("sub 0a");
+  gtk_widget_set_name (label150, "label150");
+  gtk_widget_show (label150);
+  gtk_container_add (GTK_CONTAINER (eventbox62), label150);
+  gtk_label_set_use_markup (GTK_LABEL (label150), TRUE);
+  gtk_misc_set_alignment (GTK_MISC (label150), 0, 0.5);
+  gtk_misc_set_padding (GTK_MISC (label150), 1, 0);
+  gtk_label_set_width_chars (GTK_LABEL (label150), 6);
 
-  grey_eventbox29 = gtk_event_box_new ();
-  gtk_widget_set_name (grey_eventbox29, "grey_eventbox29");
-  gtk_widget_show (grey_eventbox29);
-  gtk_table_attach (GTK_TABLE (table4), grey_eventbox29, 2, 3, 2, 3,
+  eventbox63 = gtk_event_box_new ();
+  gtk_widget_set_name (eventbox63, "eventbox63");
+  gtk_widget_show (eventbox63);
+  gtk_table_attach (GTK_TABLE (table5), eventbox63, 2, 3, 2, 3,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  label131 = gtk_label_new ("sub 0b");
-  gtk_widget_set_name (label131, "label131");
-  gtk_widget_show (label131);
-  gtk_container_add (GTK_CONTAINER (grey_eventbox29), label131);
-  gtk_label_set_use_markup (GTK_LABEL (label131), TRUE);
-  gtk_misc_set_alignment (GTK_MISC (label131), 0, 0.5);
-  gtk_misc_set_padding (GTK_MISC (label131), 1, 0);
-  gtk_label_set_width_chars (GTK_LABEL (label131), 6);
+  label151 = gtk_label_new ("sub 0b");
+  gtk_widget_set_name (label151, "label151");
+  gtk_widget_show (label151);
+  gtk_container_add (GTK_CONTAINER (eventbox63), label151);
+  gtk_label_set_use_markup (GTK_LABEL (label151), TRUE);
+  gtk_misc_set_alignment (GTK_MISC (label151), 0, 0.5);
+  gtk_misc_set_padding (GTK_MISC (label151), 1, 0);
+  gtk_label_set_width_chars (GTK_LABEL (label151), 6);
 
-  eventbox33 = gtk_event_box_new ();
-  gtk_widget_set_name (eventbox33, "eventbox33");
-  gtk_widget_show (eventbox33);
-  gtk_table_attach (GTK_TABLE (table4), eventbox33, 3, 4, 1, 2,
+  eventbox64 = gtk_event_box_new ();
+  gtk_widget_set_name (eventbox64, "eventbox64");
+  gtk_widget_show (eventbox64);
+  gtk_table_attach (GTK_TABLE (table5), eventbox64, 3, 4, 1, 2,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  image567 = create_pixmap (sample_browser_window, "sca_collapser_multi.png");
-  gtk_widget_set_name (image567, "image567");
-  gtk_widget_show (image567);
-  gtk_container_add (GTK_CONTAINER (eventbox33), image567);
+  image587 = create_pixmap (sample_browser_window, "sca_collapser_multi.png");
+  gtk_widget_set_name (image587, "image587");
+  gtk_widget_show (image587);
+  gtk_container_add (GTK_CONTAINER (eventbox64), image587);
 
-  image566 = create_pixmap (sample_browser_window, "sca_end_branch_left.png");
-  gtk_widget_set_name (image566, "image566");
-  gtk_widget_show (image566);
-  gtk_table_attach (GTK_TABLE (table4), image566, 3, 4, 2, 3,
+  image588 = create_pixmap (sample_browser_window, "sca_end_branch_left.png");
+  gtk_widget_set_name (image588, "image588");
+  gtk_widget_show (image588);
+  gtk_table_attach (GTK_TABLE (table5), image588, 3, 4, 2, 3,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  label143 = gtk_label_new ("<span color=\"darkred\">root_function</span>");
-  gtk_widget_set_name (label143, "label143");
-  gtk_widget_show (label143);
-  gtk_table_attach (GTK_TABLE (table4), label143, 4, 5, 1, 2,
+  first_label = gtk_label_new ("<span color=\"darkred\">root_function</span>");
+  gtk_widget_set_name (first_label, "first_label");
+  gtk_widget_show (first_label);
+  gtk_table_attach (GTK_TABLE (table5), first_label, 4, 5, 1, 2,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (0), 0, 0);
-  gtk_label_set_use_markup (GTK_LABEL (label143), TRUE);
-  gtk_misc_set_alignment (GTK_MISC (label143), 0, 0.5);
-  gtk_misc_set_padding (GTK_MISC (label143), 1, 0);
-  gtk_label_set_width_chars (GTK_LABEL (label143), 10);
+  gtk_label_set_use_markup (GTK_LABEL (first_label), TRUE);
+  gtk_misc_set_alignment (GTK_MISC (first_label), 0, 0.5);
+  gtk_misc_set_padding (GTK_MISC (first_label), 1, 0);
+  gtk_label_set_ellipsize (GTK_LABEL (first_label), PANGO_ELLIPSIZE_END);
+  gtk_label_set_width_chars (GTK_LABEL (first_label), 0);
 
-  expander_eventbox47 = gtk_event_box_new ();
-  gtk_widget_set_name (expander_eventbox47, "expander_eventbox47");
-  gtk_widget_show (expander_eventbox47);
-  gtk_table_attach (GTK_TABLE (table4), expander_eventbox47, 5, 6, 1, 2,
+  eventbox65 = gtk_event_box_new ();
+  gtk_widget_set_name (eventbox65, "eventbox65");
+  gtk_widget_show (eventbox65);
+  gtk_table_attach (GTK_TABLE (table5), eventbox65, 5, 6, 1, 2,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  image576 = create_pixmap (sample_browser_window, "sca_collapser_multi.png");
-  gtk_widget_set_name (image576, "image576");
-  gtk_widget_show (image576);
-  gtk_container_add (GTK_CONTAINER (expander_eventbox47), image576);
+  image589 = create_pixmap (sample_browser_window, "sca_collapser_multi.png");
+  gtk_widget_set_name (image589, "image589");
+  gtk_widget_show (image589);
+  gtk_container_add (GTK_CONTAINER (eventbox65), image589);
 
-  blue_eventbox41 = gtk_event_box_new ();
-  gtk_widget_set_name (blue_eventbox41, "blue_eventbox41");
-  gtk_widget_show (blue_eventbox41);
-  gtk_table_attach (GTK_TABLE (table4), blue_eventbox41, 6, 7, 1, 2,
+  eventbox66 = gtk_event_box_new ();
+  gtk_widget_set_name (eventbox66, "eventbox66");
+  gtk_widget_show (eventbox66);
+  gtk_table_attach (GTK_TABLE (table5), eventbox66, 6, 7, 1, 2,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  label138 = gtk_label_new ("sub1");
-  gtk_widget_set_name (label138, "label138");
-  gtk_widget_show (label138);
-  gtk_container_add (GTK_CONTAINER (blue_eventbox41), label138);
-  gtk_label_set_use_markup (GTK_LABEL (label138), TRUE);
-  gtk_misc_set_alignment (GTK_MISC (label138), 0, 0.5);
-  gtk_misc_set_padding (GTK_MISC (label138), 1, 0);
-  gtk_label_set_width_chars (GTK_LABEL (label138), 10);
+  label153 = gtk_label_new ("sub1");
+  gtk_widget_set_name (label153, "label153");
+  gtk_widget_show (label153);
+  gtk_container_add (GTK_CONTAINER (eventbox66), label153);
+  gtk_label_set_use_markup (GTK_LABEL (label153), TRUE);
+  gtk_misc_set_alignment (GTK_MISC (label153), 0, 0.5);
+  gtk_misc_set_padding (GTK_MISC (label153), 1, 0);
+  gtk_label_set_width_chars (GTK_LABEL (label153), 10);
 
-  blue_eventbox43 = gtk_event_box_new ();
-  gtk_widget_set_name (blue_eventbox43, "blue_eventbox43");
-  gtk_widget_show (blue_eventbox43);
-  gtk_table_attach (GTK_TABLE (table4), blue_eventbox43, 6, 7, 4, 5,
+  eventbox67 = gtk_event_box_new ();
+  gtk_widget_set_name (eventbox67, "eventbox67");
+  gtk_widget_show (eventbox67);
+  gtk_table_attach (GTK_TABLE (table5), eventbox67, 6, 7, 4, 5,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  label141 = gtk_label_new ("sub 2");
-  gtk_widget_set_name (label141, "label141");
-  gtk_widget_show (label141);
-  gtk_container_add (GTK_CONTAINER (blue_eventbox43), label141);
-  gtk_label_set_use_markup (GTK_LABEL (label141), TRUE);
-  gtk_misc_set_alignment (GTK_MISC (label141), 0, 0.5);
-  gtk_misc_set_padding (GTK_MISC (label141), 1, 0);
-  gtk_label_set_width_chars (GTK_LABEL (label141), 1);
+  label154 = gtk_label_new ("sub 2");
+  gtk_widget_set_name (label154, "label154");
+  gtk_widget_show (label154);
+  gtk_container_add (GTK_CONTAINER (eventbox67), label154);
+  gtk_label_set_use_markup (GTK_LABEL (label154), TRUE);
+  gtk_misc_set_alignment (GTK_MISC (label154), 0, 0.5);
+  gtk_misc_set_padding (GTK_MISC (label154), 1, 0);
+  gtk_label_set_width_chars (GTK_LABEL (label154), 1);
 
-  blue_eventbox64 = gtk_event_box_new ();
-  gtk_widget_set_name (blue_eventbox64, "blue_eventbox64");
-  gtk_widget_show (blue_eventbox64);
-  gtk_table_attach (GTK_TABLE (table4), blue_eventbox64, 6, 7, 5, 6,
+  eventbox68 = gtk_event_box_new ();
+  gtk_widget_set_name (eventbox68, "eventbox68");
+  gtk_widget_show (eventbox68);
+  gtk_table_attach (GTK_TABLE (table5), eventbox68, 6, 7, 5, 6,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  label148 = gtk_label_new ("sub3_is_long");
-  gtk_widget_set_name (label148, "label148");
-  gtk_widget_show (label148);
-  gtk_container_add (GTK_CONTAINER (blue_eventbox64), label148);
-  gtk_label_set_use_markup (GTK_LABEL (label148), TRUE);
-  gtk_misc_set_alignment (GTK_MISC (label148), 0, 0.5);
-  gtk_misc_set_padding (GTK_MISC (label148), 1, 0);
-  gtk_label_set_width_chars (GTK_LABEL (label148), 1);
+  label155 = gtk_label_new ("sub3_is_long");
+  gtk_widget_set_name (label155, "label155");
+  gtk_widget_show (label155);
+  gtk_container_add (GTK_CONTAINER (eventbox68), label155);
+  gtk_label_set_use_markup (GTK_LABEL (label155), TRUE);
+  gtk_misc_set_alignment (GTK_MISC (label155), 0, 0.5);
+  gtk_misc_set_padding (GTK_MISC (label155), 1, 0);
+  gtk_label_set_width_chars (GTK_LABEL (label155), 1);
 
-  image572 = create_pixmap (sample_browser_window, "sca_mid_branch_right.png");
-  gtk_widget_set_name (image572, "image572");
-  gtk_widget_show (image572);
-  gtk_table_attach (GTK_TABLE (table4), image572, 7, 8, 2, 3,
+  image590 = create_pixmap (sample_browser_window, "sca_mid_branch_right.png");
+  gtk_widget_set_name (image590, "image590");
+  gtk_widget_show (image590);
+  gtk_table_attach (GTK_TABLE (table5), image590, 7, 8, 2, 3,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  image573 = create_pixmap (sample_browser_window, "sca_end_branch_right.png");
-  gtk_widget_set_name (image573, "image573");
-  gtk_widget_show (image573);
-  gtk_table_attach (GTK_TABLE (table4), image573, 7, 8, 3, 4,
+  image591 = create_pixmap (sample_browser_window, "sca_end_branch_right.png");
+  gtk_widget_set_name (image591, "image591");
+  gtk_widget_show (image591);
+  gtk_table_attach (GTK_TABLE (table5), image591, 7, 8, 3, 4,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  eventbox42 = gtk_event_box_new ();
-  gtk_widget_set_name (eventbox42, "eventbox42");
-  gtk_widget_show (eventbox42);
-  gtk_table_attach (GTK_TABLE (table4), eventbox42, 7, 8, 1, 2,
+  eventbox69 = gtk_event_box_new ();
+  gtk_widget_set_name (eventbox69, "eventbox69");
+  gtk_widget_show (eventbox69);
+  gtk_table_attach (GTK_TABLE (table5), eventbox69, 7, 8, 1, 2,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  image571 = create_pixmap (sample_browser_window, "sca_collapser_multi.png");
-  gtk_widget_set_name (image571, "image571");
-  gtk_widget_show (image571);
-  gtk_container_add (GTK_CONTAINER (eventbox42), image571);
+  image592 = create_pixmap (sample_browser_window, "sca_collapser_multi.png");
+  gtk_widget_set_name (image592, "image592");
+  gtk_widget_show (image592);
+  gtk_container_add (GTK_CONTAINER (eventbox69), image592);
 
-  eventbox44 = gtk_event_box_new ();
-  gtk_widget_set_name (eventbox44, "eventbox44");
-  gtk_widget_show (eventbox44);
-  gtk_table_attach (GTK_TABLE (table4), eventbox44, 7, 8, 4, 5,
+  eventbox70 = gtk_event_box_new ();
+  gtk_widget_set_name (eventbox70, "eventbox70");
+  gtk_widget_show (eventbox70);
+  gtk_table_attach (GTK_TABLE (table5), eventbox70, 7, 8, 4, 5,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  image574 = create_pixmap (sample_browser_window, "sca_expander_right.png");
-  gtk_widget_set_name (image574, "image574");
-  gtk_widget_show (image574);
-  gtk_container_add (GTK_CONTAINER (eventbox44), image574);
+  image593 = create_pixmap (sample_browser_window, "sca_expander_right.png");
+  gtk_widget_set_name (image593, "image593");
+  gtk_widget_show (image593);
+  gtk_container_add (GTK_CONTAINER (eventbox70), image593);
 
-  eventbox46 = gtk_event_box_new ();
-  gtk_widget_set_name (eventbox46, "eventbox46");
-  gtk_widget_show (eventbox46);
-  gtk_table_attach (GTK_TABLE (table4), eventbox46, 7, 8, 5, 6,
+  eventbox71 = gtk_event_box_new ();
+  gtk_widget_set_name (eventbox71, "eventbox71");
+  gtk_widget_show (eventbox71);
+  gtk_table_attach (GTK_TABLE (table5), eventbox71, 7, 8, 5, 6,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  image575 = create_pixmap (sample_browser_window, "sca_expander_right.png");
-  gtk_widget_set_name (image575, "image575");
-  gtk_widget_show (image575);
-  gtk_container_add (GTK_CONTAINER (eventbox46), image575);
+  image594 = create_pixmap (sample_browser_window, "sca_expander_right.png");
+  gtk_widget_set_name (image594, "image594");
+  gtk_widget_show (image594);
+  gtk_container_add (GTK_CONTAINER (eventbox71), image594);
 
-  blue_eventbox35 = gtk_event_box_new ();
-  gtk_widget_set_name (blue_eventbox35, "blue_eventbox35");
-  gtk_widget_show (blue_eventbox35);
-  gtk_table_attach (GTK_TABLE (table4), blue_eventbox35, 8, 9, 1, 2,
+  eventbox72 = gtk_event_box_new ();
+  gtk_widget_set_name (eventbox72, "eventbox72");
+  gtk_widget_show (eventbox72);
+  gtk_table_attach (GTK_TABLE (table5), eventbox72, 8, 9, 1, 2,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  label135 = gtk_label_new ("sub 1a");
-  gtk_widget_set_name (label135, "label135");
-  gtk_widget_show (label135);
-  gtk_container_add (GTK_CONTAINER (blue_eventbox35), label135);
-  gtk_label_set_use_markup (GTK_LABEL (label135), TRUE);
-  gtk_misc_set_alignment (GTK_MISC (label135), 0, 0.5);
-  gtk_misc_set_padding (GTK_MISC (label135), 1, 0);
-  gtk_label_set_width_chars (GTK_LABEL (label135), 6);
+  label156 = gtk_label_new ("sub 1a");
+  gtk_widget_set_name (label156, "label156");
+  gtk_widget_show (label156);
+  gtk_container_add (GTK_CONTAINER (eventbox72), label156);
+  gtk_label_set_use_markup (GTK_LABEL (label156), TRUE);
+  gtk_misc_set_alignment (GTK_MISC (label156), 0, 0.5);
+  gtk_misc_set_padding (GTK_MISC (label156), 1, 0);
+  gtk_label_set_width_chars (GTK_LABEL (label156), 6);
 
-  blue_eventbox37 = gtk_event_box_new ();
-  gtk_widget_set_name (blue_eventbox37, "blue_eventbox37");
-  gtk_widget_show (blue_eventbox37);
-  gtk_table_attach (GTK_TABLE (table4), blue_eventbox37, 8, 9, 2, 3,
+  eventbox73 = gtk_event_box_new ();
+  gtk_widget_set_name (eventbox73, "eventbox73");
+  gtk_widget_show (eventbox73);
+  gtk_table_attach (GTK_TABLE (table5), eventbox73, 8, 9, 2, 3,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  label136 = gtk_label_new ("sub 1b");
-  gtk_widget_set_name (label136, "label136");
-  gtk_widget_show (label136);
-  gtk_container_add (GTK_CONTAINER (blue_eventbox37), label136);
-  gtk_label_set_use_markup (GTK_LABEL (label136), TRUE);
-  gtk_misc_set_alignment (GTK_MISC (label136), 0, 0.5);
-  gtk_misc_set_padding (GTK_MISC (label136), 1, 0);
-  gtk_label_set_width_chars (GTK_LABEL (label136), 6);
+  label157 = gtk_label_new ("sub 1b");
+  gtk_widget_set_name (label157, "label157");
+  gtk_widget_show (label157);
+  gtk_container_add (GTK_CONTAINER (eventbox73), label157);
+  gtk_label_set_use_markup (GTK_LABEL (label157), TRUE);
+  gtk_misc_set_alignment (GTK_MISC (label157), 0, 0.5);
+  gtk_misc_set_padding (GTK_MISC (label157), 1, 0);
+  gtk_label_set_width_chars (GTK_LABEL (label157), 6);
 
-  blue_eventbox39 = gtk_event_box_new ();
-  gtk_widget_set_name (blue_eventbox39, "blue_eventbox39");
-  gtk_widget_show (blue_eventbox39);
-  gtk_table_attach (GTK_TABLE (table4), blue_eventbox39, 8, 9, 3, 4,
+  eventbox74 = gtk_event_box_new ();
+  gtk_widget_set_name (eventbox74, "eventbox74");
+  gtk_widget_show (eventbox74);
+  gtk_table_attach (GTK_TABLE (table5), eventbox74, 8, 9, 3, 4,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  label137 = gtk_label_new ("sub 1c");
-  gtk_widget_set_name (label137, "label137");
-  gtk_widget_show (label137);
-  gtk_container_add (GTK_CONTAINER (blue_eventbox39), label137);
-  gtk_label_set_use_markup (GTK_LABEL (label137), TRUE);
-  gtk_misc_set_alignment (GTK_MISC (label137), 0, 0.5);
-  gtk_misc_set_padding (GTK_MISC (label137), 1, 0);
-  gtk_label_set_width_chars (GTK_LABEL (label137), 6);
+  label158 = gtk_label_new ("sub 1c");
+  gtk_widget_set_name (label158, "label158");
+  gtk_widget_show (label158);
+  gtk_container_add (GTK_CONTAINER (eventbox74), label158);
+  gtk_label_set_use_markup (GTK_LABEL (label158), TRUE);
+  gtk_misc_set_alignment (GTK_MISC (label158), 0, 0.5);
+  gtk_misc_set_padding (GTK_MISC (label158), 1, 0);
+  gtk_label_set_width_chars (GTK_LABEL (label158), 6);
 
-  eventbox60 = gtk_event_box_new ();
-  gtk_widget_set_name (eventbox60, "eventbox60");
-  gtk_widget_show (eventbox60);
-  gtk_table_attach (GTK_TABLE (table4), eventbox60, 9, 10, 1, 2,
+  eventbox75 = gtk_event_box_new ();
+  gtk_widget_set_name (eventbox75, "eventbox75");
+  gtk_widget_show (eventbox75);
+  gtk_table_attach (GTK_TABLE (table5), eventbox75, 9, 10, 1, 2,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  image568 = create_pixmap (sample_browser_window, "sca_expander_right.png");
-  gtk_widget_set_name (image568, "image568");
-  gtk_widget_show (image568);
-  gtk_container_add (GTK_CONTAINER (eventbox60), image568);
+  image595 = create_pixmap (sample_browser_window, "sca_expander_right.png");
+  gtk_widget_set_name (image595, "image595");
+  gtk_widget_show (image595);
+  gtk_container_add (GTK_CONTAINER (eventbox75), image595);
 
-  eventbox38 = gtk_event_box_new ();
-  gtk_widget_set_name (eventbox38, "eventbox38");
-  gtk_widget_show (eventbox38);
-  gtk_table_attach (GTK_TABLE (table4), eventbox38, 9, 10, 2, 3,
+  eventbox76 = gtk_event_box_new ();
+  gtk_widget_set_name (eventbox76, "eventbox76");
+  gtk_widget_show (eventbox76);
+  gtk_table_attach (GTK_TABLE (table5), eventbox76, 9, 10, 2, 3,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  image569 = create_pixmap (sample_browser_window, "sca_expander_right.png");
-  gtk_widget_set_name (image569, "image569");
-  gtk_widget_show (image569);
-  gtk_container_add (GTK_CONTAINER (eventbox38), image569);
+  image596 = create_pixmap (sample_browser_window, "sca_expander_right.png");
+  gtk_widget_set_name (image596, "image596");
+  gtk_widget_show (image596);
+  gtk_container_add (GTK_CONTAINER (eventbox76), image596);
 
-  eventbox40 = gtk_event_box_new ();
-  gtk_widget_set_name (eventbox40, "eventbox40");
-  gtk_widget_show (eventbox40);
-  gtk_table_attach (GTK_TABLE (table4), eventbox40, 9, 10, 3, 4,
+  eventbox77 = gtk_event_box_new ();
+  gtk_widget_set_name (eventbox77, "eventbox77");
+  gtk_widget_show (eventbox77);
+  gtk_table_attach (GTK_TABLE (table5), eventbox77, 9, 10, 3, 4,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  image570 = create_pixmap (sample_browser_window, "sca_collapser_single.png");
-  gtk_widget_set_name (image570, "image570");
-  gtk_widget_show (image570);
-  gtk_container_add (GTK_CONTAINER (eventbox40), image570);
+  image597 = create_pixmap (sample_browser_window, "sca_collapser_single.png");
+  gtk_widget_set_name (image597, "image597");
+  gtk_widget_show (image597);
+  gtk_container_add (GTK_CONTAINER (eventbox77), image597);
 
-  grey_eventbox63 = gtk_event_box_new ();
-  gtk_widget_set_name (grey_eventbox63, "grey_eventbox63");
-  gtk_widget_show (grey_eventbox63);
-  gtk_table_attach (GTK_TABLE (table4), grey_eventbox63, 10, 11, 3, 4,
+  eventbox78 = gtk_event_box_new ();
+  gtk_widget_set_name (eventbox78, "eventbox78");
+  gtk_widget_show (eventbox78);
+  gtk_table_attach (GTK_TABLE (table5), eventbox78, 10, 11, 3, 4,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
 
-  label147 = gtk_label_new ("sub 1c0");
-  gtk_widget_set_name (label147, "label147");
-  gtk_widget_show (label147);
-  gtk_container_add (GTK_CONTAINER (grey_eventbox63), label147);
-  gtk_label_set_use_markup (GTK_LABEL (label147), TRUE);
-  gtk_misc_set_alignment (GTK_MISC (label147), 0, 0.5);
-  gtk_misc_set_padding (GTK_MISC (label147), 1, 0);
-  gtk_label_set_width_chars (GTK_LABEL (label147), 6);
+  label159 = gtk_label_new ("sub 1c0");
+  gtk_widget_set_name (label159, "label159");
+  gtk_widget_show (label159);
+  gtk_container_add (GTK_CONTAINER (eventbox78), label159);
+  gtk_label_set_use_markup (GTK_LABEL (label159), TRUE);
+  gtk_misc_set_alignment (GTK_MISC (label159), 0, 0.5);
+  gtk_misc_set_padding (GTK_MISC (label159), 1, 0);
+  gtk_label_set_width_chars (GTK_LABEL (label159), 6);
 
-  header_button24 = gtk_button_new_with_mnemonic ("+3");
-  gtk_widget_set_name (header_button24, "header_button24");
-  gtk_widget_show (header_button24);
-  gtk_table_attach (GTK_TABLE (table4), header_button24, 10, 12, 0, 1,
+  hscale11 = gtk_hscale_new (GTK_ADJUSTMENT (gtk_adjustment_new (5.22034, 4, 40, 1, 0, 0)));
+  gtk_widget_set_name (hscale11, "hscale11");
+  gtk_widget_show (hscale11);
+  gtk_table_attach (GTK_TABLE (table5), hscale11, 4, 5, 7, 8,
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (GTK_FILL), 0, 0);
+  gtk_scale_set_draw_value (GTK_SCALE (hscale11), FALSE);
+  gtk_scale_set_digits (GTK_SCALE (hscale11), 0);
+
+  hscale12 = gtk_hscale_new (GTK_ADJUSTMENT (gtk_adjustment_new (12.5424, 4, 40, 1, 0, 0)));
+  gtk_widget_set_name (hscale12, "hscale12");
+  gtk_widget_show (hscale12);
+  gtk_table_attach (GTK_TABLE (table5), hscale12, 6, 7, 7, 8,
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (GTK_FILL), 0, 0);
+  gtk_scale_set_draw_value (GTK_SCALE (hscale12), FALSE);
+  gtk_scale_set_digits (GTK_SCALE (hscale12), 0);
+
+  hscale13 = gtk_hscale_new (GTK_ADJUSTMENT (gtk_adjustment_new (30.6667, 4, 40, 1, 0, 0)));
+  gtk_widget_set_name (hscale13, "hscale13");
+  gtk_widget_show (hscale13);
+  gtk_table_attach (GTK_TABLE (table5), hscale13, 8, 9, 7, 8,
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (GTK_FILL), 0, 0);
+  gtk_scale_set_draw_value (GTK_SCALE (hscale13), FALSE);
+  gtk_scale_set_digits (GTK_SCALE (hscale13), 0);
+
+  hscale14 = gtk_hscale_new (GTK_ADJUSTMENT (gtk_adjustment_new (12, 4, 40, 1, 0, 0)));
+  gtk_widget_set_name (hscale14, "hscale14");
+  gtk_widget_show (hscale14);
+  gtk_table_attach (GTK_TABLE (table5), hscale14, 10, 11, 7, 8,
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (GTK_FILL), 0, 0);
+  gtk_scale_set_draw_value (GTK_SCALE (hscale14), FALSE);
+  gtk_scale_set_digits (GTK_SCALE (hscale14), 0);
+
+  hscale15 = gtk_hscale_new (GTK_ADJUSTMENT (gtk_adjustment_new (12, 4, 40, 1, 0, 0)));
+  gtk_widget_set_name (hscale15, "hscale15");
+  gtk_widget_show (hscale15);
+  gtk_table_attach (GTK_TABLE (table5), hscale15, 2, 3, 7, 8,
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (GTK_FILL), 0, 0);
+  gtk_scale_set_draw_value (GTK_SCALE (hscale15), FALSE);
+  gtk_scale_set_digits (GTK_SCALE (hscale15), 0);
+
+  button13 = gtk_button_new_with_mnemonic ("-1");
+  gtk_widget_set_name (button13, "button13");
+  gtk_widget_show (button13);
+  gtk_table_attach (GTK_TABLE (table5), button13, 2, 3, 0, 1,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (0), 0, 0);
-  GTK_WIDGET_UNSET_FLAGS (header_button24, GTK_CAN_FOCUS);
-  gtk_button_set_focus_on_click (GTK_BUTTON (header_button24), FALSE);
+  GTK_WIDGET_UNSET_FLAGS (button13, GTK_CAN_FOCUS);
+  gtk_button_set_focus_on_click (GTK_BUTTON (button13), FALSE);
 
-  header_button16 = gtk_button_new_with_mnemonic ("+2");
-  gtk_widget_set_name (header_button16, "header_button16");
-  gtk_widget_show (header_button16);
-  gtk_table_attach (GTK_TABLE (table4), header_button16, 8, 10, 0, 1,
+  button12 = gtk_button_new_with_mnemonic ("0");
+  gtk_widget_set_name (button12, "button12");
+  gtk_widget_show (button12);
+  gtk_table_attach (GTK_TABLE (table5), button12, 4, 5, 0, 1,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (0), 0, 0);
-  GTK_WIDGET_UNSET_FLAGS (header_button16, GTK_CAN_FOCUS);
-  gtk_button_set_focus_on_click (GTK_BUTTON (header_button16), FALSE);
+  gtk_widget_set_size_request (button12, 70, -1);
+  GTK_WIDGET_UNSET_FLAGS (button12, GTK_CAN_FOCUS);
+  gtk_button_set_focus_on_click (GTK_BUTTON (button12), FALSE);
 
-  header_button15 = gtk_button_new_with_mnemonic ("+1");
-  gtk_widget_set_name (header_button15, "header_button15");
-  gtk_widget_show (header_button15);
-  gtk_table_attach (GTK_TABLE (table4), header_button15, 6, 8, 0, 1,
+  button11 = gtk_button_new_with_mnemonic ("+1");
+  gtk_widget_set_name (button11, "button11");
+  gtk_widget_show (button11);
+  gtk_table_attach (GTK_TABLE (table5), button11, 6, 7, 0, 1,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (0), 0, 0);
-  GTK_WIDGET_UNSET_FLAGS (header_button15, GTK_CAN_FOCUS);
-  gtk_button_set_focus_on_click (GTK_BUTTON (header_button15), FALSE);
+  GTK_WIDGET_UNSET_FLAGS (button11, GTK_CAN_FOCUS);
+  gtk_button_set_focus_on_click (GTK_BUTTON (button11), FALSE);
 
-  header_button14 = gtk_button_new_with_mnemonic ("0");
-  gtk_widget_set_name (header_button14, "header_button14");
-  gtk_widget_show (header_button14);
-  gtk_table_attach (GTK_TABLE (table4), header_button14, 3, 6, 0, 1,
+  button10 = gtk_button_new_with_mnemonic ("+2");
+  gtk_widget_set_name (button10, "button10");
+  gtk_widget_show (button10);
+  gtk_table_attach (GTK_TABLE (table5), button10, 8, 9, 0, 1,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (0), 0, 0);
-  GTK_WIDGET_UNSET_FLAGS (header_button14, GTK_CAN_FOCUS);
-  gtk_button_set_focus_on_click (GTK_BUTTON (header_button14), FALSE);
+  GTK_WIDGET_UNSET_FLAGS (button10, GTK_CAN_FOCUS);
+  gtk_button_set_focus_on_click (GTK_BUTTON (button10), FALSE);
 
-  header_button17 = gtk_button_new_with_mnemonic ("-1");
-  gtk_widget_set_name (header_button17, "header_button17");
-  gtk_widget_show (header_button17);
-  gtk_table_attach (GTK_TABLE (table4), header_button17, 1, 3, 0, 1,
+  button9 = gtk_button_new_with_mnemonic ("+3");
+  gtk_widget_set_name (button9, "button9");
+  gtk_widget_show (button9);
+  gtk_table_attach (GTK_TABLE (table5), button9, 10, 11, 0, 1,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (0), 0, 0);
-  GTK_WIDGET_UNSET_FLAGS (header_button17, GTK_CAN_FOCUS);
-  gtk_button_set_focus_on_click (GTK_BUTTON (header_button17), FALSE);
+  GTK_WIDGET_UNSET_FLAGS (button9, GTK_CAN_FOCUS);
+  gtk_button_set_focus_on_click (GTK_BUTTON (button9), FALSE);
 
-  hscale5 = gtk_hscale_new (GTK_ADJUSTMENT (gtk_adjustment_new (5.22034, 4, 40, 1, 0, 0)));
-  gtk_widget_set_name (hscale5, "hscale5");
-  gtk_widget_show (hscale5);
-  gtk_table_attach (GTK_TABLE (table4), hscale5, 4, 5, 7, 8,
+  resize_eventbox = gtk_event_box_new ();
+  gtk_widget_set_name (resize_eventbox, "resize_eventbox");
+  gtk_widget_show (resize_eventbox);
+  gtk_table_attach (GTK_TABLE (table5), resize_eventbox, 5, 6, 0, 1,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
-  gtk_scale_set_draw_value (GTK_SCALE (hscale5), FALSE);
-  gtk_scale_set_digits (GTK_SCALE (hscale5), 0);
 
-  hscale6 = gtk_hscale_new (GTK_ADJUSTMENT (gtk_adjustment_new (12.5424, 4, 40, 1, 0, 0)));
-  gtk_widget_set_name (hscale6, "hscale6");
-  gtk_widget_show (hscale6);
-  gtk_table_attach (GTK_TABLE (table4), hscale6, 6, 7, 7, 8,
+  resize_col_image = create_pixmap (sample_browser_window, "sca_mid_branch_center.png");
+  gtk_widget_set_name (resize_col_image, "resize_col_image");
+  gtk_widget_show (resize_col_image);
+  gtk_container_add (GTK_CONTAINER (resize_eventbox), resize_col_image);
+  gtk_widget_set_size_request (resize_col_image, 8, -1);
+  GTK_WIDGET_SET_FLAGS (resize_col_image, GTK_CAN_FOCUS);
+
+  eventbox79 = gtk_event_box_new ();
+  gtk_widget_set_name (eventbox79, "eventbox79");
+  gtk_widget_show (eventbox79);
+  gtk_table_attach (GTK_TABLE (table5), eventbox79, 8, 9, 6, 7,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
-  gtk_scale_set_draw_value (GTK_SCALE (hscale6), FALSE);
-  gtk_scale_set_digits (GTK_SCALE (hscale6), 0);
-
-  hscale7 = gtk_hscale_new (GTK_ADJUSTMENT (gtk_adjustment_new (30.6667, 4, 40, 1, 0, 0)));
-  gtk_widget_set_name (hscale7, "hscale7");
-  gtk_widget_show (hscale7);
-  gtk_table_attach (GTK_TABLE (table4), hscale7, 8, 9, 7, 8,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_FILL), 0, 0);
-  gtk_scale_set_draw_value (GTK_SCALE (hscale7), FALSE);
-  gtk_scale_set_digits (GTK_SCALE (hscale7), 0);
-
-  hscale10 = gtk_hscale_new (GTK_ADJUSTMENT (gtk_adjustment_new (12, 4, 40, 1, 0, 0)));
-  gtk_widget_set_name (hscale10, "hscale10");
-  gtk_widget_show (hscale10);
-  gtk_table_attach (GTK_TABLE (table4), hscale10, 10, 11, 7, 8,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_FILL), 0, 0);
-  gtk_scale_set_draw_value (GTK_SCALE (hscale10), FALSE);
-  gtk_scale_set_digits (GTK_SCALE (hscale10), 0);
-
-  hscale8 = gtk_hscale_new (GTK_ADJUSTMENT (gtk_adjustment_new (12, 4, 40, 1, 0, 0)));
-  gtk_widget_set_name (hscale8, "hscale8");
-  gtk_widget_show (hscale8);
-  gtk_table_attach (GTK_TABLE (table4), hscale8, 2, 3, 7, 8,
-                    (GtkAttachOptions) (GTK_FILL),
-                    (GtkAttachOptions) (GTK_FILL), 0, 0);
-  gtk_scale_set_draw_value (GTK_SCALE (hscale8), FALSE);
-  gtk_scale_set_digits (GTK_SCALE (hscale8), 0);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
   GLADE_HOOKUP_OBJECT_NO_REF (sample_browser_window, sample_browser_window, "sample_browser_window");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, scrolledwindow5, "scrolledwindow5");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, viewport3, "viewport3");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, table4, "table4");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, header_button18, "header_button18");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, header_button19, "header_button19");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, label144, "label144");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, image580, "image580");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, image579, "image579");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, image578, "image578");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, image577, "image577");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox32, "eventbox32");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, image565, "image565");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, blue_eventbox31, "blue_eventbox31");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, label132, "label132");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, grey_eventbox29, "grey_eventbox29");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, label131, "label131");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox33, "eventbox33");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, image567, "image567");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, image566, "image566");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, label143, "label143");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, expander_eventbox47, "expander_eventbox47");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, image576, "image576");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, blue_eventbox41, "blue_eventbox41");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, label138, "label138");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, blue_eventbox43, "blue_eventbox43");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, label141, "label141");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, blue_eventbox64, "blue_eventbox64");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, label148, "label148");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, image572, "image572");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, image573, "image573");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox42, "eventbox42");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, image571, "image571");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox44, "eventbox44");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, image574, "image574");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox46, "eventbox46");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, image575, "image575");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, blue_eventbox35, "blue_eventbox35");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, label135, "label135");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, blue_eventbox37, "blue_eventbox37");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, label136, "label136");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, blue_eventbox39, "blue_eventbox39");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, label137, "label137");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox60, "eventbox60");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, image568, "image568");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox38, "eventbox38");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, image569, "image569");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox40, "eventbox40");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, image570, "image570");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, grey_eventbox63, "grey_eventbox63");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, label147, "label147");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, header_button24, "header_button24");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, header_button16, "header_button16");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, header_button15, "header_button15");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, header_button14, "header_button14");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, header_button17, "header_button17");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, hscale5, "hscale5");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, hscale6, "hscale6");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, hscale7, "hscale7");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, hscale10, "hscale10");
-  GLADE_HOOKUP_OBJECT (sample_browser_window, hscale8, "hscale8");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, scrolledwindow6, "scrolledwindow6");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, viewport4, "viewport4");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, table5, "table5");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, button7, "button7");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, button8, "button8");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, label149, "label149");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, image582, "image582");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, image583, "image583");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, image584, "image584");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, image585, "image585");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox61, "eventbox61");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, image586, "image586");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox62, "eventbox62");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, label150, "label150");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox63, "eventbox63");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, label151, "label151");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox64, "eventbox64");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, image587, "image587");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, image588, "image588");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, first_label, "first_label");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox65, "eventbox65");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, image589, "image589");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox66, "eventbox66");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, label153, "label153");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox67, "eventbox67");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, label154, "label154");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox68, "eventbox68");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, label155, "label155");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, image590, "image590");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, image591, "image591");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox69, "eventbox69");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, image592, "image592");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox70, "eventbox70");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, image593, "image593");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox71, "eventbox71");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, image594, "image594");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox72, "eventbox72");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, label156, "label156");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox73, "eventbox73");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, label157, "label157");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox74, "eventbox74");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, label158, "label158");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox75, "eventbox75");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, image595, "image595");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox76, "eventbox76");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, image596, "image596");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox77, "eventbox77");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, image597, "image597");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox78, "eventbox78");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, label159, "label159");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, hscale11, "hscale11");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, hscale12, "hscale12");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, hscale13, "hscale13");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, hscale14, "hscale14");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, hscale15, "hscale15");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, button13, "button13");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, button12, "button12");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, button11, "button11");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, button10, "button10");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, button9, "button9");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, resize_eventbox, "resize_eventbox");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, resize_col_image, "resize_col_image");
+  GLADE_HOOKUP_OBJECT (sample_browser_window, eventbox79, "eventbox79");
 
   return sample_browser_window;
 }
