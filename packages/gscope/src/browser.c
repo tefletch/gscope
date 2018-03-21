@@ -108,6 +108,7 @@ static void         move_table_widget(GtkWidget *widget, tcb_t *tcb, guint row, 
 static void         create_header_button_with_adjuster(tcb_t *tcb, guint col, gint label);
 static void         create_dummy_adjuster(tcb_t *tcb, guint col, guint row);
 
+static void         extend_table_right(tcb_t *tcb, guint col);
 static void         make_expander_at_position(tcb_t *tcb, guint col, guint row, dir_e direction);
 static void         make_collapser_at_position(tcb_t *tcb, guint col, guint row, dir_e direction);
 static gboolean     on_browser_delete_event(GtkWidget *widget, GdkEvent *event, gpointer user_data);
@@ -966,26 +967,47 @@ static void ensure_column_capacity(tcb_t *tcb, guint origin_col, dir_e direction
 {
     if (direction == RIGHT)
     {
+        // If we are expanding at the extreme right column, we need to expand the
+        // table to the left by growing the GTK table by two columns.  No existing
+        // colunm data needs to be shifted.
         if (origin_col == tcb->num_cols - 2)  // -2 because of filler column and zero based indexing
         {
-            // Add a new Name column and Expander column to the far-right side of the table.
-            gtk_table_resize(GTK_TABLE(tcb->browser_table), tcb->num_rows, tcb->num_cols + 2);
-            tcb->num_cols += 2;
-
-            // Update the column type of the newly added columns (NAME and EXPANDER)
-            tcb->col_list[origin_col + 1].type = NAME;
-            tcb->col_list[origin_col + 2].type = EXPANDER;
-
-            // Don't destroy/add widgets.  Existing widgets will be relocated by shift_table_left?/right?() function
+            extend_table_right(tcb, origin_col);
         }
     }
     else    // direction == LEFT
     {
-            // Need to expand the table to the left.  This means every column
-            // starting at (num_cols - 1) needs to be shifted 2 positions to the right
-
-            shift_table_right(tcb, origin_col);
+        // If we are expanding at the extreme left column, we need to expand the
+        // table to the left by growing the GTK table by two columns and shifting every 
+        // existing column within the GTK table two positions to the right.
+        if (origin_col == 1)  // if we are expanding at the extreme left column, we need to
+        {
+                shift_table_right(tcb, origin_col);
+        }
     }
+}
+
+
+
+//**********************************************************************************************
+// extend_table_right
+//********************************************************************************************** 
+static void extend_table_right(tcb_t *tcb, guint col)
+{
+    guint   i;
+    gint header_num;
+
+    gtk_table_resize(GTK_TABLE(tcb->browser_table), tcb->num_rows, tcb->num_cols + 2);
+
+    for (i = tcb->num_cols -1; i > col; i--)
+    {
+        move_column(tcb, i, i + 2);
+    }
+
+    header_num = (gint) ((col + 1) - tcb->root_col) / 2;
+    create_header_button_with_adjuster(tcb, col + 1, header_num);
+
+    tcb->num_cols += 2;
 }
 
 
@@ -998,7 +1020,7 @@ static void ensure_column_capacity(tcb_t *tcb, guint origin_col, dir_e direction
 //********************************************************************************************** 
 static void shift_table_right(tcb_t *tcb, guint start_col)
 {
-    gint i;
+    guint i;
     gint header_num;
     guint adjusted_col = start_col;
 
