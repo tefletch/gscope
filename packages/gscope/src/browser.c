@@ -152,7 +152,6 @@ static GtkWidget*   make_end_connector(dir_e direction);
 static void         column_list_insert(col_list_t *list, GtkWidget *widget, guint row);
 static void         column_list_insert_file(col_list_t *list, GtkWidget *widget, guint row, gchar *file);
 static void         column_list_remove(col_list_t *list, GtkWidget *widget);
-static gboolean     column_list_is_sorted(col_list_t *list);
 static column_entry_t* column_list_get_row(col_list_t *list, guint row);
 static int          column_list_get_next(col_list_t *list, guint row);
 static gboolean     end_of_block(col_list_t *column, guint row);
@@ -164,7 +163,7 @@ static result_t*    parse_results(search_results_t *results);
 //static void         results_list_sort(result_t *front);
 //static void         swap(result_t *a, result_t *b);
 //static guint        results_list_filter_file(result_t **front_ptr, gchar *file);
-
+//static gboolean     column_list_is_sorted(col_list_t *list);
 
 //---------------- Private Globals ----------------------------------
 
@@ -323,6 +322,7 @@ static gboolean on_left_expander_button_release_event(GtkWidget *widget, GdkEven
     gtk_widget_destroy(widget);
 
     make_collapser_at_position((tcb_t *) user_data, col, row, LEFT);
+
     return FALSE;
 }
 
@@ -347,7 +347,8 @@ static gboolean on_right_expander_button_release_event(GtkWidget *widget, GdkEve
     // Destroy the selected expander widget
     gtk_widget_destroy(widget);
 
-    make_collapser_at_position((tcb_t *) user_data, col, row, RIGHT);
+    make_collapser_at_position(tcb, col, row, RIGHT);
+
     return FALSE;
 }
 
@@ -372,7 +373,9 @@ static gboolean on_left_collapser_button_release_event(GtkWidget *widget, GdkEve
     // Destroy the selected collapser widget
     gtk_widget_destroy(widget);
 
-    make_expander_at_position((tcb_t *) user_data, col, row, LEFT);
+    make_expander_at_position(tcb, col, row, LEFT);
+    collapse_table(row, col, tcb, LEFT);
+
     return FALSE;
 }
 
@@ -551,7 +554,7 @@ static void make_collapser_at_position(tcb_t *tcb, guint col, guint row, dir_e d
                      (GtkAttachOptions)(GTK_FILL), 0, 0);
     column_list_insert(&(tcb->col_list[col]), collapser, row);
 
-    tcb->col_list[col].type = EXPANDER;
+    tcb->col_list[col].type = EXPANDER;     // Yes, this is correct, a collapser is an EXPANDER-class item
 
     if ( direction == RIGHT )
     {
@@ -606,14 +609,12 @@ static void make_expander_at_position(tcb_t *tcb, guint col, guint row, dir_e di
         g_signal_connect((gpointer)expander, "button_release_event",
                          G_CALLBACK(on_right_expander_button_release_event),
                          tcb);
-        collapse_table(row, col, tcb, RIGHT);
     }
     else
     {
         g_signal_connect((gpointer)expander, "button_release_event",
                          G_CALLBACK(on_left_expander_button_release_event),
                          tcb);
-        collapse_table(row, col, tcb, LEFT);
     }
 }
 
@@ -876,7 +877,6 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
 {
     int i, add_pos, adjusted_col;
     guint row_add_count;
-    col_list_t *list;
     gchar * fname,*file;
     result_t *results;
     search_results_t *children;
@@ -910,11 +910,6 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
     {
         for (i = tcb->root_col; i < tcb->num_cols; i++)
         {
-            list = &(tcb->col_list[i]);
-            if (!column_list_is_sorted(list))
-            {
-                printf("ERROR COLUMN %d OUT OF ORDER:\n\n", i);
-            }
             shift_column_down(tcb, i, origin_row, row_add_count);
         }
         add_functions_to_column(tcb, results, row_add_count + 1, origin_col + 1, origin_row, RIGHT);
@@ -999,7 +994,7 @@ static void extend_table_right(tcb_t *tcb, guint col)
 
     gtk_table_resize(GTK_TABLE(tcb->browser_table), tcb->num_rows, tcb->num_cols + 2);
 
-    for (i = tcb->num_cols -1; i > col; i--)
+    for (i = tcb->num_cols - 1; i > col; i--)
     {
         move_column(tcb, i, i + 2);
     }
@@ -1260,9 +1255,7 @@ static void remove_unused_columns(tcb_t *tcb, dir_e direction)
                 {
                     // There is a single entry in the column list (The column header).
                     // In this scenario, there are no functions listed in this column.
-
                     delete_header_button_with_adjuster(tcb, name_col);
-
                     shrink_count += 2;
                 }
                 else
@@ -1741,6 +1734,7 @@ static column_entry_t* column_list_get_row(col_list_t *list, guint row)
     return NULL;
 }
 
+#if 0
 static gboolean     column_list_is_sorted(col_list_t *list)
 {
     column_entry_t *curr = list->member_list_head;
@@ -1755,7 +1749,6 @@ static gboolean     column_list_is_sorted(col_list_t *list)
     return TRUE;
 }
 
-#if 0
 // for debugging purposes, prints the rows in order
 // if order is not sorted then something is broken
 static void column_list_print_rows(col_list_t *list)
@@ -2140,7 +2133,7 @@ static GtkWidget* make_straight_connector()
     GtkWidget *image;
 
     eventbox = gtk_event_box_new();
-    gtk_widget_set_name(eventbox, "stragiht_connector");
+    gtk_widget_set_name(eventbox, "straight_connector");
     gtk_widget_show(eventbox);
     image = create_pixmap(eventbox, "sca_mid_branch_center.png");
 
@@ -2154,7 +2147,7 @@ static GtkWidget* make_straight_connector()
 //**********************************************************************************************
 // end_of_block
 // 
-// Determine if the given row contians a function which is the last child in a block 
+// Determine if the given row contains a function which is the last child in a block 
 // of functions
 //**********************************************************************************************
 static gboolean end_of_block(col_list_t *column, guint row)
