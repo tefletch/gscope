@@ -106,6 +106,7 @@ static void         expand_table(guint origin_y, guint origin_x, tcb_t *tcb, dir
 static void         collapse_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e direction);
 static void         move_table_widget(GtkWidget *widget, tcb_t *tcb, guint row, guint col);
 static void         create_header_button_with_adjuster(tcb_t *tcb, guint col, gint label);
+static void         delete_header_button_with_adjuster(tcb_t *tcb, guint col);
 static void         create_dummy_adjuster(tcb_t *tcb, guint col, guint row);
 
 static void         extend_table_right(tcb_t *tcb, guint col);
@@ -132,7 +133,7 @@ static void         add_functions_to_column(tcb_t *tcb, result_t *function_list,
                                             guint col, guint starting_row, dir_e direction);
 static void         make_expander_at_position(tcb_t *tcb, guint col, guint row, dir_e direction);
 static void         shift_column_down(tcb_t *tcb, guint col, guint starting_row, guint amount);
-static int          delete_functions_from_column(tcb_t *tcb, guint col, guint starting_row, guint end_row, dir_e direction);
+static guint        delete_items_from_column(tcb_t *tcb, guint col, guint starting_row, guint end_row);
 static void         shift_column_up(tcb_t *tcb, guint col, guint starting_row, guint amount);
 static void         delete_children(tcb_t *tcb, guint col, guint upper_bound, guint lower_bound, dir_e direction);
 static void         shift_table_up(tcb_t *tcb, guint upper_bound, guint amount, dir_e direction);
@@ -570,7 +571,6 @@ static void make_collapser_at_position(tcb_t *tcb, guint col, guint row, dir_e d
         // Expand the table and add the relevant functions
         expand_table(row, col, tcb, LEFT);
     }
-
 }
 
 
@@ -1122,28 +1122,40 @@ static void ensure_row_capacity(tcb_t *tcb, guint origin_row, guint row_add_coun
 //********************************************************************************************** 
 static void collapse_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e direction)
 {
+    gint    next_row;
+    guint   i;
+    guint   lower_bound;
 
-    col_list_t *column;
-    int next_row;
-    guint i;
+    // Recursivly collapse all children.  To do this we need to know the position
+    // of the next element in this column in order to put a lower bound on what we 
+    // collpase (don't want to collapse children of other funcitons)
 
-    gint offset = (direction == RIGHT ? -1 : 1);
-    gint update = 2 * offset;
-    guint lower_bound = (direction == RIGHT ? tcb->right_height + 1 : tcb->left_height + 1);
-
-    //first thing that needs to be done is to recursivly collapse all children
-    //to do this we need to know the position of the next element in this column
-    //to put a lower bound on what we collpase (don't want to collapse children
-    //of other funcitons)
-
-    for (i = origin_col + offset; i != tcb->root_col; i += update)
+    if (direction == RIGHT)
     {
-        column = &(tcb->col_list[i]);
-        next_row = column_list_get_next(column, origin_row);
-        if (next_row != -1)
+        lower_bound = tcb->right_height + 1;
+
+        for (i = origin_col - 1; i != tcb->root_col; i -= 2)
         {
-            lower_bound = next_row;
-            break;
+            next_row = column_list_get_next(&(tcb->col_list[i]), origin_row);
+            if (next_row != -1)
+            {
+                lower_bound = next_row;
+                break;
+            }
+        }
+    }
+    else    // direction == LEFT
+    {
+        lower_bound = tcb->left_height + 1;
+
+        for (i = origin_col + 1; i != tcb->root_col; i += 2)
+        {
+            next_row = column_list_get_next(&(tcb->col_list[i]), origin_row);
+            if (next_row != -1)
+            {
+                lower_bound = next_row;
+                break;
+            }
         }
     }
 
@@ -1158,6 +1170,35 @@ static void collapse_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e
 
 
 //**********************************************************************************************
+// delete_header_button_with_adjuster
+// 
+// Delete and destroy the header_button and adjuster accociated with the specified column.
+// 
+// Note: This function should never be called on a non-empty [other than the header entry]
+//       column.
+//**********************************************************************************************
+static void delete_header_button_with_adjuster(tcb_t *tcb, guint col)
+{
+    col_list_t      *col_list;
+    guint           col_iter;
+
+    for (col_iter = col; col_iter < col + 2; col_iter += 2)
+    {
+        col_list = &(tcb->col_list[col_iter]);
+
+        // Delete the obsolete header widget
+        gtk_widget_destroy(col_list->member_list_head->widget);
+        column_list_remove(col_list, col_list->member_list_head->widget);
+
+        // Delete the obsolete adjuster widget [on RHS of header]
+        col_list = &(tcb->col_list[col_iter + 1]);
+        gtk_widget_destroy(col_list->member_list_head->widget);
+        column_list_remove(col_list, col_list->member_list_head->widget);
+    }
+}
+
+
+//**********************************************************************************************
 // remove_unused_columns
 // 
 // Remove every non-filler column that contains no elements that is direction (left or right)
@@ -1166,52 +1207,86 @@ static void collapse_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e
 static void remove_unused_columns(tcb_t *tcb, dir_e direction)
 {
     int i;
-    int count = 0; // number of columns that are removed
+    guint name_col;
     col_list_t *column;
+    int shrink_count = 0; // number of columns removed
 
     if (direction == RIGHT)
     {
         delete_column(tcb, tcb->num_cols - 1);  // always delete the right filler column
-        for (i = tcb->num_cols - 3; i > tcb->root_col; i -= 2)      // num_cols - 3 is furthest right name column
+        for (name_col = tcb->num_cols - 3; name_col > tcb->root_col; name_col -= 2) // num_cols - 3 is furthest right name column
         {
-            column = &(tcb->col_list[i]);
-            if (column->member_list_head == NULL)
+            column = &(tcb->col_list[name_col]);
+            if (column->member_list_head != NULL)   // There should always be at least on entry in the column list
             {
-                // destory the name column and its expander column
-                delete_column(tcb, i);
-                delete_column(tcb, i + 1);
-                count += 2;
-            }
-        }
-        gtk_table_resize(GTK_TABLE(tcb->browser_table), tcb->num_rows, tcb->num_cols - count);
-        tcb->num_cols -= count;
-        make_filler_column(tcb, tcb->num_cols - 1);  // remake the right filler column
-    }
-    else
-    {
-        // direction is left
+                if ( column->member_list_head == column->member_list_tail )
+                {
+                    // There is a single entry in the column list (The column header).
+                    // In this scenario, there are no functions listed in this column.
 
-        // count the number of columns to be removed
-        // only count name columns, expander columns may be correctly
-        // empty
-        for (i = 2; i < tcb->root_col; i += 2)    // 2 is furthest left name column
-        {
-            col_list_t *column = &(tcb->col_list[i]);
-            if (column->member_list_head == NULL)
-            {
-                count += 2;
+                    delete_header_button_with_adjuster(tcb, name_col);
+
+                    shrink_count += 2;
+                }
+                else
+                {
+                    break;  // Non-empty NAME column encountered.
+                }
             }
         }
-        if (count > 0)
+
+        if ( shrink_count > 0 )
         {
-            shift_table_left(tcb, count);
-            for (i = tcb->num_cols - count; i < tcb->num_cols; i++)
+            move_column(tcb, tcb->num_cols - 1, tcb->num_cols - 1 - shrink_count);  // Move the Right Filler column
+            gtk_table_resize(GTK_TABLE(tcb->browser_table), tcb->num_rows, tcb->num_cols - shrink_count);
+            tcb->num_cols -= shrink_count;
+        }
+    }
+    else    // direction == LEFT
+    {
+        // Starting with the lefmost NAME column (2), delete any NAME column, and
+        // associated EXPANDER column if the NAME column is empty.
+        // 
+        // Once a non-empty NAME column, or the root-column is encountered
+        // stop deleting columns.  Keep a count of deleted columns for the
+        // subsequent table shift.
+
+        for (name_col = 2; name_col < tcb->root_col; name_col += 2)
+        {
+            column = &(tcb->col_list[name_col]);
+            if ( column->member_list_head != NULL )     // There should always be at least one entry in the column list
+            {
+                if ( column->member_list_head == column->member_list_tail )
+                {
+                    // There is a single entry in the column list (The column header).
+                    // In this scenario, there are no functions listed in this column.
+
+                    delete_header_button_with_adjuster(tcb, name_col);
+
+                    shrink_count += 2;
+                }
+                else
+                {
+                    break;  // Non-empty NAME column encountered.
+                }
+            }
+        }
+        
+        if ( shrink_count > 0 )
+        {
+            // Move the dummy adjuster from row[0], col[1] to row[0] col[shrink_count +1]
+            move_table_widget (  tcb->col_list[1].member_list_head->widget, tcb, 0, shrink_count + 1);
+            column_list_insert(&(tcb->col_list[shrink_count + 1]), tcb->col_list[1].member_list_head->widget, 0);
+            column_list_remove(&(tcb->col_list[1]), tcb->col_list[shrink_count + 1].member_list_head->widget);
+
+            shift_table_left(tcb, shrink_count);
+            for (i = tcb->num_cols - shrink_count; i < tcb->num_cols; i++)
             {
                 delete_column(tcb, i);
             }
-            gtk_table_resize(GTK_TABLE(tcb->browser_table), tcb->num_rows, tcb->num_cols - count);
-            tcb->num_cols -= count;
-            tcb->root_col -= count;
+            gtk_table_resize(GTK_TABLE(tcb->browser_table), tcb->num_rows, tcb->num_cols - shrink_count);
+            tcb->num_cols -= shrink_count;
+            tcb->root_col -= shrink_count;
         }
     }
 }
@@ -1246,9 +1321,6 @@ static void delete_column(tcb_t *tcb, guint col)
     column = &(tcb->col_list[col]);
     curr   = column->member_list_head;
 
-    if (curr)
-        printf("Notice: found a widget to delete in 'delete_column'\n");
-
     // clear the column list
     while (curr != NULL)
     {
@@ -1264,6 +1336,29 @@ static void delete_column(tcb_t *tcb, guint col)
 }
 
 
+//********************************************************************************************** 
+// shift_column_up
+//********************************************************************************************** 
+static void shift_column_up(tcb_t *tcb, guint col, guint starting_row, guint amount)
+{
+    column_entry_t  *node;
+    col_list_t      *column;
+
+    column = &(tcb->col_list[col]);
+    node = column->member_list_head;
+
+    while (node != NULL)
+    {
+        if (node->row > starting_row + amount)
+        {
+            move_table_widget(node->widget, tcb, node->row - amount, col);
+            node->row -= amount;
+        }
+        node = node->next;
+    }
+}
+
+
 //**********************************************************************************************
 // shift_table_up
 //  
@@ -1273,7 +1368,6 @@ static void delete_column(tcb_t *tcb, guint col)
 static void shift_table_up(tcb_t *tcb, guint upper_bound, guint amount, dir_e direction)
 {
     int i;
-    col_list_t *list;
     guint left, right;
 
     // set bounds depending on direction
@@ -1282,12 +1376,7 @@ static void shift_table_up(tcb_t *tcb, guint upper_bound, guint amount, dir_e di
 
     for (i = left; i < right; i++)
     {
-        list = &(tcb->col_list[i]);
         shift_column_up(tcb, i, upper_bound, amount);
-        if (!column_list_is_sorted(list))
-        {
-            printf("ERROR COLUMN %d OUT OF ORDER:\n\n", i);
-        }
     }
     if (direction == RIGHT)
     {
@@ -1304,89 +1393,71 @@ static void shift_table_up(tcb_t *tcb, guint upper_bound, guint amount, dir_e di
 //**********************************************************************************************
 //  delete_children
 //********************************************************************************************** 
-static void delete_children(tcb_t *tcb, guint col, guint upper_bound, guint lower_bound, dir_e direction)
+static void delete_children(tcb_t *tcb, guint col, guint upper_row_bound, guint lower_row_bound, dir_e direction)
 {
-    int i, lowest, height, shift;
-    lowest = upper_bound; // "lowest" row removed, is actually the highest number
+    guint col_iter;
+    guint height;     
+    gint lowest_row;
+    gint shift;
+
+    lowest_row = upper_row_bound; // "lowest" row removed, is actually the highest number
 
     if (direction == RIGHT)
     {
-        for (i = tcb->num_cols - 2; i > col; i--)
+        for (col_iter = tcb->num_cols - 2; col_iter > col; col_iter--)
         {
-            height = delete_functions_from_column(tcb, i, upper_bound, lower_bound, RIGHT);
-            lowest = height > lowest ? height : lowest;
+            height = delete_items_from_column(tcb, col_iter, upper_row_bound, lower_row_bound);
+            lowest_row = height > lowest_row ? height : lowest_row;
         }
         // delete the connectors from the clicked expander column
-        for (i = tcb->root_col + 1; i <= col; i += 2)
+        for (col_iter = tcb->root_col + 1; col_iter <= col; col_iter += 2)
         {
-            delete_functions_from_column(tcb, i, upper_bound + 1, lower_bound, RIGHT);
+            delete_items_from_column(tcb, col_iter, upper_row_bound + 1, lower_row_bound);
         }
     }
-    else
+    else    // direction == LEFT
     {
-        // direction == left
-        for (i = 1; i < col; i++)
+        for (col_iter = 1; col_iter < col; col_iter++)
         {
-            height = delete_functions_from_column(tcb, i, upper_bound, lower_bound, LEFT);
-            lowest = height > lowest ? height : lowest;
+            height = delete_items_from_column(tcb, col_iter, upper_row_bound, lower_row_bound);
+            lowest_row = height > lowest_row ? height : lowest_row;
         }
         // delete the connectors from the clicked expander column
-        for (i = tcb->root_col - 1; i >= col; i--)
+        for (col_iter = tcb->root_col - 1; col_iter >= col; col_iter--)
         {
-            delete_functions_from_column(tcb, i, upper_bound + 1, lower_bound, RIGHT);
+            delete_items_from_column(tcb, col_iter, upper_row_bound + 1, lower_row_bound);
         }
     }
 
-    shift = lowest - upper_bound;
-    shift_table_up(tcb, upper_bound, shift, direction);
+    shift = lowest_row - upper_row_bound;
+    shift_table_up(tcb, upper_row_bound, shift, direction);
 }
 
 
 //**********************************************************************************************
-// delete_functions_from_column
+// delete_items_from_column
 // 
-// Remove all functions from col between starting_row (inclusive) and end_row (Exclusive) and 
-// return the position of the "lowest" function deleted (which is the highest number)
+// Remove all items from col between starting_row (inclusive) and end_row (Exclusive) and 
+// return the position of the "lowest" item deleted (which is the highest number)
 //********************************************************************************************** 
-static int delete_functions_from_column(tcb_t *tcb, guint col, guint starting_row, guint end_row, dir_e direction)
+static guint delete_items_from_column(tcb_t *tcb, guint col, guint starting_row, guint end_row)
 {
-    col_list_t *function_list = &(tcb->col_list[col]);
+    guint row_iter;
+    column_entry_t *item;
+    guint lowest = starting_row;  // the "lowest" row removed, so highest col number
 
-    guint lowest = starting_row;  // the "lowest" column removed, so highest col number
-    guint i;
-    column_entry_t *function;
-    for (i = starting_row; i < end_row; i++)
+    for (row_iter = starting_row; row_iter < end_row; row_iter++)
     {
         // check each row to see if a widget exists and if so remove it
-        function = column_list_get_row(function_list, i);
-        if (function != NULL)
+        item = column_list_get_row(&(tcb->col_list[col]), row_iter);
+        if (item != NULL)
         {
-            lowest = function->row > lowest ? function->row : lowest;
-            gtk_widget_destroy(function->widget);
-            column_list_remove(function_list, function->widget);
+            lowest = item->row > lowest ? item->row : lowest;
+            gtk_widget_destroy(item->widget);
+            column_list_remove(&(tcb->col_list[col]), item->widget);
         }
     }
     return lowest;
-}
-
-
-//********************************************************************************************** 
-// shift_column_up
-//********************************************************************************************** 
-static void shift_column_up(tcb_t *tcb, guint col, guint starting_row, guint amount)
-{
-    col_list_t *elements = &(tcb->col_list[col]);
-
-    column_entry_t *node = elements->member_list_head;
-    while (node != NULL)
-    {
-        if (node->row > starting_row + amount)
-        {
-            move_table_widget(node->widget, tcb, node->row - amount, col);
-            node->row -= amount;
-        }
-        node = node->next;
-    }
 }
 
 
