@@ -401,6 +401,8 @@ static gboolean on_right_collapser_button_release_event(GtkWidget *widget, GdkEv
     gtk_widget_destroy(widget);
 
     make_expander_at_position((tcb_t *) user_data, col, row, RIGHT);
+    collapse_table(row, col, tcb, RIGHT);
+
     return FALSE;
 }
 
@@ -1208,8 +1210,14 @@ static void remove_unused_columns(tcb_t *tcb, dir_e direction)
 
     if (direction == RIGHT)
     {
-        delete_column(tcb, tcb->num_cols - 1);  // always delete the right filler column
-        for (name_col = tcb->num_cols - 3; name_col > tcb->root_col; name_col -= 2) // num_cols - 3 is furthest right name column
+        // Starting with the right-most NAME column (num-cols - 3), delete any NAME column
+        // and associated EXPANDER column (only if the NAME column is empty).
+        // 
+        // Once a non-empty NAME column, or the root-column is encountered
+        // stop deleting columns.  Keep a count of deleted columns for the
+        // subsequent table shift.
+
+        for (name_col = tcb->num_cols - 3; name_col > tcb->root_col; name_col -= 2)
         {
             column = &(tcb->col_list[name_col]);
             if (column->member_list_head != NULL)   // There should always be at least on entry in the column list
@@ -1218,9 +1226,7 @@ static void remove_unused_columns(tcb_t *tcb, dir_e direction)
                 {
                     // There is a single entry in the column list (The column header).
                     // In this scenario, there are no functions listed in this column.
-
                     delete_header_button_with_adjuster(tcb, name_col);
-
                     shrink_count += 2;
                 }
                 else
@@ -1239,8 +1245,8 @@ static void remove_unused_columns(tcb_t *tcb, dir_e direction)
     }
     else    // direction == LEFT
     {
-        // Starting with the lefmost NAME column (2), delete any NAME column, and
-        // associated EXPANDER column if the NAME column is empty.
+        // Starting with the left-most NAME column (2), delete any NAME column, and
+        // associated EXPANDER column (only if the NAME column is empty).
         // 
         // Once a non-empty NAME column, or the root-column is encountered
         // stop deleting columns.  Keep a count of deleted columns for the
