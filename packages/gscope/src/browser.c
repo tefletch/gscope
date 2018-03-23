@@ -176,81 +176,9 @@ static gint         initial_x_offset = 0;
 
 
 
-//
-// ============================= Private Functions ===========================
-//
-
-
-//********************************************************************************************** 
-// create_browser_window
-//********************************************************************************************** 
-static GtkWidget* create_browser_window(gchar *name, gchar *root_file, gchar *line_num)
-{
-    GtkWidget *browser_window;
-    GdkPixbuf *browser_window_icon_pixbuf;
-    GtkWidget *browser_vbox;
-    GtkWidget *browser_scrolledwindow;
-    GtkWidget *browser_viewport;
-    GtkWidget *browser_table;
-    gchar *var_string;
-    tcb_t     *tcb;
-
-    // Malloc a Table Control Block (TCB) for this window.  This keeps the table data with the
-    // widget and makes this function re-entrant-safe.
-
-    tcb = g_malloc(sizeof(tcb_t));
-
-    browser_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_widget_set_name(browser_window, "browser_window");
-    gtk_widget_set_size_request(browser_window, 250, 130);
-    my_asprintf(&var_string, "Static Call Browser (%s)", name);
-    gtk_window_set_title(GTK_WINDOW(browser_window), var_string);
-    g_free(var_string);
-    gtk_window_set_destroy_with_parent(GTK_WINDOW(browser_window), TRUE);
-    browser_window_icon_pixbuf = create_pixbuf("icon-search.png");
-    if (browser_window_icon_pixbuf)
-    {
-        gtk_window_set_icon(GTK_WINDOW(browser_window), browser_window_icon_pixbuf);
-        gdk_pixbuf_unref(browser_window_icon_pixbuf);
-    }
-
-    browser_vbox = gtk_vbox_new(FALSE, 0);
-    gtk_widget_set_name(browser_vbox, "browser_vbox");
-    gtk_widget_show(browser_vbox);
-    gtk_container_add(GTK_CONTAINER(browser_window), browser_vbox);
-
-    browser_scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
-    gtk_widget_set_name(browser_scrolledwindow, "browser_scrolledwindow");
-    gtk_widget_show(browser_scrolledwindow);
-    gtk_box_pack_start(GTK_BOX(browser_vbox), browser_scrolledwindow, TRUE, TRUE, 0);
-
-    browser_viewport = gtk_viewport_new(NULL, NULL);
-    gtk_widget_set_name(browser_viewport, "browser_viewport");
-    gtk_widget_show(browser_viewport);
-    gtk_container_add(GTK_CONTAINER(browser_scrolledwindow), browser_viewport);
-
-    browser_table = gtk_table_new(3, 5, FALSE);
-    gtk_widget_set_name(browser_table, "browser_table");
-    gtk_widget_show(browser_table);
-    gtk_container_add(GTK_CONTAINER(browser_viewport), browser_table);
-
-    // Initialize the TCB
-    tcb->browser_table = browser_table;
-    initialize_table(tcb, name, root_file, line_num);
-
-    g_signal_connect((gpointer)browser_window, "delete_event",
-                     G_CALLBACK(on_browser_delete_event),
-                     tcb);
-
-    return browser_window;
-}
-
-
-
-
-//
-// ================================ Public Functions ===================================
-//
+//=============================================================================================
+//                               --- Public Functions ---                         
+//=============================================================================================
 
 
 //**********************************************************************************************
@@ -284,9 +212,17 @@ GtkWidget* BROWSER_create(gchar *name, gchar *root_file, gchar *line_num)
 }
 
 
-//
-// ========== Private Callbacks for "Static Call Browser" functionality ================
-//
+//=============================================================================================
+//                               --- Private Functions ---                         
+// 
+// All the functions defined past this point are private to this component
+//.
+//=============================================================================================
+
+
+
+// Private Widget Callback Functions
+//=============================================================================================
 
 
 //********************************************************************************************** 
@@ -531,6 +467,76 @@ gboolean on_adjuster_eventbox_motion_notify_event(GtkWidget *widget, GdkEventMot
     gtk_widget_size_allocate(header_button, &allocation);
 
     return FALSE;
+}
+
+
+
+// Private Functions (General)
+//=============================================================================================
+
+
+//********************************************************************************************** 
+// create_browser_window
+//********************************************************************************************** 
+static GtkWidget* create_browser_window(gchar *name, gchar *root_file, gchar *line_num)
+{
+    GtkWidget *browser_window;
+    GdkPixbuf *browser_window_icon_pixbuf;
+    GtkWidget *browser_vbox;
+    GtkWidget *browser_scrolledwindow;
+    GtkWidget *browser_viewport;
+    GtkWidget *browser_table;
+    gchar *var_string;
+    tcb_t     *tcb;
+
+    // Malloc a Table Control Block (TCB) for this window.  This keeps the table data with the
+    // widget and makes this function re-entrant-safe.
+
+    tcb = g_malloc(sizeof(tcb_t));
+
+    browser_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_widget_set_name(browser_window, "browser_window");
+    gtk_widget_set_size_request(browser_window, 250, 130);
+    my_asprintf(&var_string, "Static Call Browser (%s)", name);
+    gtk_window_set_title(GTK_WINDOW(browser_window), var_string);
+    g_free(var_string);
+    gtk_window_set_destroy_with_parent(GTK_WINDOW(browser_window), TRUE);
+    browser_window_icon_pixbuf = create_pixbuf("icon-search.png");
+    if (browser_window_icon_pixbuf)
+    {
+        gtk_window_set_icon(GTK_WINDOW(browser_window), browser_window_icon_pixbuf);
+        gdk_pixbuf_unref(browser_window_icon_pixbuf);
+    }
+
+    browser_vbox = gtk_vbox_new(FALSE, 0);
+    gtk_widget_set_name(browser_vbox, "browser_vbox");
+    gtk_widget_show(browser_vbox);
+    gtk_container_add(GTK_CONTAINER(browser_window), browser_vbox);
+
+    browser_scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
+    gtk_widget_set_name(browser_scrolledwindow, "browser_scrolledwindow");
+    gtk_widget_show(browser_scrolledwindow);
+    gtk_box_pack_start(GTK_BOX(browser_vbox), browser_scrolledwindow, TRUE, TRUE, 0);
+
+    browser_viewport = gtk_viewport_new(NULL, NULL);
+    gtk_widget_set_name(browser_viewport, "browser_viewport");
+    gtk_widget_show(browser_viewport);
+    gtk_container_add(GTK_CONTAINER(browser_scrolledwindow), browser_viewport);
+
+    browser_table = gtk_table_new(3, 5, FALSE);
+    gtk_widget_set_name(browser_table, "browser_table");
+    gtk_widget_show(browser_table);
+    gtk_container_add(GTK_CONTAINER(browser_viewport), browser_table);
+
+    // Initialize the TCB
+    tcb->browser_table = browser_table;
+    initialize_table(tcb, name, root_file, line_num);
+
+    g_signal_connect((gpointer)browser_window, "delete_event",
+                     G_CALLBACK(on_browser_delete_event),
+                     tcb);
+
+    return browser_window;
 }
 
 
