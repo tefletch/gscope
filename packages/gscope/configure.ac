@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([gscope], [2.14])
+AC_INIT([gscope], [2.16])
 AC_CONFIG_SRCDIR([gscope.glade])
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADER(config.h)

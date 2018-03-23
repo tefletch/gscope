@@ -32,7 +32,7 @@
 "       - atom                 [Atom text editor]\n\n"
 #endif
 
-// Version 2.14 special announcement
+// Version 2.14, 2.16 special announcement
 #define VERSION_ANNOUNCE \
 "<span color=\"blue\" weight=\"bold\">New Feature Introduction:\n\n</span>" \
 "G-Scope now provides <span weight=\"bold\">Static Function Call Analysis</span>. \n\n" \
