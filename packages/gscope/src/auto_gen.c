@@ -60,7 +60,7 @@ static int          autogen_max_src_files = 400;    //Max number of proto files 
 
 static file_info_t  *file_info_list;                //Holds file info for all proto files. Look at file_info_t structure.
 static int          nfile_info;                     //Number of file_info structures in the struct list;
-static unsigned int num_proto_files;
+static proto_compile_stats_t pc_stats;              //Proto Buffer Header auto-gen compiler statistics
 
 struct      timeval autogen_time_start, autogen_time_stop; //For timing of the autogen functions
 
@@ -69,7 +69,7 @@ struct      timeval autogen_time_start, autogen_time_stop; //For timing of the a
 //===============================================================
 
 static void     _mkdir_all(const char *dir);
-static void     _protobuf_csrc(const char *filename, char *data_dir);
+static gboolean _protobuf_csrc(const char *filename, char *data_dir);
 static gboolean _is_protobuf_file(const char *filename);
 static void     _remove_old_symlinks(char *data_dir);
 static void     _do_garbage_collection(void);
@@ -223,7 +223,7 @@ void AUTOGEN_init(char *data_dir)
         exit(EXIT_FAILURE);
     }
 
-    num_proto_files = 0;
+    pc_stats.num_proto_files = 0;
 
     /*** Loop through all the files in the BUILD directory ***/
     /* If "force rebuild" is checked, unlink all symlinks. Else, repopulate file_info_list with current files */
@@ -231,7 +231,7 @@ void AUTOGEN_init(char *data_dir)
     {
         if (_is_protobuf_file(ent->d_name))
         {
-            num_proto_files++;
+            pc_stats.num_proto_files++;
 
             sprintf(file_path, "%s/%s/%s", data_dir, GSCOPE_BLD_DIR, ent->d_name);
             real_path = realpath(file_path, NULL); 
@@ -305,6 +305,9 @@ void AUTOGEN_run(char *data_dir)
 
     no_compile_flag = FALSE;    
     src_file_index = 0;
+    pc_stats.proto_build_success = 0;
+    pc_stats.proto_build_failed = 0;
+    pc_stats.num_proto_changed = 0;
 
     /* Remove symlinks to files deleted by users in between sessions */
     _remove_old_symlinks(data_dir);
@@ -350,7 +353,12 @@ void AUTOGEN_run(char *data_dir)
         // If the proto file is newer than the cross reference
         if (difftime(statstruct.st_mtime, compile_time) > 0 || no_compile_flag || settings.updateAll)
         {
-             _protobuf_csrc(file_path_buf, data_dir);
+            pc_stats.num_proto_changed++;
+
+            if ( _protobuf_csrc(file_path_buf, data_dir) )
+                pc_stats.proto_build_success++;
+            else
+                pc_stats.proto_build_failed++;
         }       
         src_file_index++;
     }
@@ -413,7 +421,7 @@ void AUTOGEN_addproto(char* name)
     /*** If a valid symlink does not already exist, we need to add the new file ***/
     /******************************************************************************/
 
-    num_proto_files++;
+    pc_stats.num_proto_files++;
 
     if (nfile_info == autogen_max_src_files)    // If the file-info storage area is full, grow the table.
     {
@@ -523,9 +531,9 @@ unsigned int AUTOGEN_get_cache_count(char *cache_path)
 }
 
 
-unsigned int AUTOGEN_get_file_count(void)
+proto_compile_stats_t *AUTOGEN_get_file_count(void)
 {
-    return(num_proto_files);
+    return(&pc_stats);
 }
 
 //===============================================================
@@ -533,8 +541,8 @@ unsigned int AUTOGEN_get_file_count(void)
 //===============================================================
 
 /**
- * Checks if each symlink's target still exists, and removes the symlink if the target was deleted
- * since the last session
+ * Checks if each symlink's target still exists, and removes the
+ * symlink if the target was deleted since the last session
  */
 static void _remove_old_symlinks(char *data_dir)
 {
@@ -566,7 +574,7 @@ static void _remove_old_symlinks(char *data_dir)
  * Will compile the proto file and place the output in the specified 
  * outputPath directory.
  */
-static void _protobuf_csrc (const char *full_filename, char *data_dir)
+static gboolean _protobuf_csrc (const char *full_filename, char *data_dir)
 {
     int     system_res;     //Result of system call to protoc-c
     FILE    *file_ptr;
@@ -574,6 +582,7 @@ static void _protobuf_csrc (const char *full_filename, char *data_dir)
     char    *dirname_ptr;
     char    *proto_ptr;     // Used to remove ".proto" from file name
     char    *realpath_ptr;  //Holds the target path of the symlink
+    gboolean retval = TRUE;
 
     char    output_dir  [PATHLEN + sizeof(GSCOPE_GEN_DIR) + PATHLEN + 10];  // +10 for literal chars and null-terminator
     char    symlink_buf [PATHLEN + sizeof(GSCOPE_BLD_DIR) + PATHLEN + 10];
@@ -625,6 +634,8 @@ static void _protobuf_csrc (const char *full_filename, char *data_dir)
     {
         char    errfile_buf [PATHLEN * 3];
 
+        retval = FALSE;
+
         /*** Write error message to compilation output file ***/
         sprintf(errfile_buf, "%s/%s", output_dir, my_basename(realpath_ptr));
 
@@ -669,6 +680,8 @@ static void _protobuf_csrc (const char *full_filename, char *data_dir)
     }
     
     free(realpath_ptr);
+
+    return(retval);
 }
 
 

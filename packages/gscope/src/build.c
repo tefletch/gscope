@@ -301,7 +301,14 @@ void BUILD_initDatabase()
     /* Show (optional) autogen stats */
     if (settings.autoGenEnable)
     {
-        sprintf(working_buf, "Auto generated meta-source (%s) file count: %d\n", settings.autoGenSuffix, AUTOGEN_get_file_count());
+        proto_compile_stats_t *stats_ptr =  AUTOGEN_get_file_count();
+
+        sprintf(working_buf, "Updated auto-generated header files from %d New,\n%d Re-used (%s) files (%d Succeeded, %d Failed).\n",
+                stats_ptr->num_proto_changed,
+                stats_ptr->num_proto_files,
+                settings.autoGenSuffix,
+                stats_ptr->proto_build_success,
+                stats_ptr->proto_build_failed);
         strcat(build_stats_msg, working_buf);
     }
 
