@@ -606,7 +606,7 @@ static void _protobuf_csrc (const char *full_filename, char *data_dir)
 
 
     // Construct the complete protoc-c command string to be run.  Redirect error output to /dev/null
-    sprintf(command_buf, "%s --c_out=%s -I=%s/%s:%s %s &>> /dev/null", 
+    sprintf(command_buf, "%s --c_out=%s -I=%s/%s:%s %s > /dev/null 2>&1", 
                           settings.autoGenCmd, 
                           output_dir,
                           data_dir,

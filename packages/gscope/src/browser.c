@@ -518,6 +518,7 @@ static GtkWidget* create_browser_window(gchar *name, gchar *root_file, gchar *li
     gtk_widget_show(browser_scrolledwindow);
     gtk_box_pack_start(GTK_BOX(browser_vbox), browser_scrolledwindow, TRUE, TRUE, 0);
 
+    /* Add the scrollable call-tree table */
     browser_viewport = gtk_viewport_new(NULL, NULL);
     gtk_widget_set_name(browser_viewport, "browser_viewport");
     gtk_widget_show(browser_viewport);
@@ -535,6 +536,9 @@ static GtkWidget* create_browser_window(gchar *name, gchar *root_file, gchar *li
     g_signal_connect((gpointer)browser_window, "delete_event",
                      G_CALLBACK(on_browser_delete_event),
                      tcb);
+
+    /* Add the non-scrollable table header */
+
 
     return browser_window;
 }
