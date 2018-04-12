@@ -40,23 +40,19 @@ create_gscope_main (void)
   GtkWidget *menuitem1;
   GtkWidget *menuitem1_menu;
   GtkWidget *imagemenuitem1;
-  GtkWidget *image523;
-  GtkWidget *imagemenuitem2;
-  GtkWidget *image524;
-  GtkWidget *imagemenuitem3;
-  GtkWidget *image525;
+  GtkWidget *image832;
   GtkWidget *separator2;
   GtkWidget *imagemenuitem13;
-  GtkWidget *image526;
+  GtkWidget *image833;
   GtkWidget *separatormenuitem1;
   GtkWidget *imagemenuitem6;
-  GtkWidget *image527;
+  GtkWidget *image834;
   GtkWidget *imagemenuitem4;
-  GtkWidget *image528;
+  GtkWidget *image835;
   GtkWidget *imagemenuitem5;
-  GtkWidget *image529;
+  GtkWidget *image836;
   GtkWidget *imagemenuitem7;
-  GtkWidget *image530;
+  GtkWidget *image837;
   GtkWidget *separator3;
   GtkWidget *imagemenuitem8;
   GtkWidget *menuitem2;
@@ -68,24 +64,32 @@ create_gscope_main (void)
   GtkWidget *smartquery_checkmenuitem;
   GtkWidget *separator1;
   GtkWidget *imagemenuitem9;
-  GtkWidget *image531;
+  GtkWidget *image838;
+  GtkWidget *menuitem4;
+  GtkWidget *menuitem4_menu;
+  GtkWidget *imagemenuitem3;
+  GtkWidget *image839;
+  GtkWidget *imagemenuitem2;
+  GtkWidget *image840;
+  GtkWidget *imagemenuitem20;
+  GtkWidget *image841;
   GtkWidget *menuitem3;
   GtkWidget *menuitem3_menu;
   GtkWidget *imagemenuitem10;
-  GtkWidget *image532;
+  GtkWidget *image842;
   GtkWidget *imagemenuitem11;
-  GtkWidget *image533;
+  GtkWidget *image843;
   GtkWidget *imagemenuitem14;
-  GtkWidget *image534;
+  GtkWidget *image844;
   GtkWidget *imagemenuitem14_menu;
   GtkWidget *imagemenuitem15;
-  GtkWidget *image535;
+  GtkWidget *image845;
   GtkWidget *imagemenuitem16;
-  GtkWidget *image536;
+  GtkWidget *image846;
   GtkWidget *imagemenuitem17;
-  GtkWidget *image537;
+  GtkWidget *image847;
   GtkWidget *imagemenuitem18;
-  GtkWidget *image538;
+  GtkWidget *image848;
   GtkWidget *imagemenuitem12;
   GtkWidget *label1;
   GtkWidget *search_button_frame;
@@ -191,30 +195,10 @@ create_gscope_main (void)
   gtk_widget_show (imagemenuitem1);
   gtk_container_add (GTK_CONTAINER (menuitem1_menu), imagemenuitem1);
 
-  image523 = gtk_image_new_from_stock ("gtk-refresh", GTK_ICON_SIZE_MENU);
-  gtk_widget_set_name (image523, "image523");
-  gtk_widget_show (image523);
-  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem1), image523);
-
-  imagemenuitem2 = gtk_image_menu_item_new_with_mnemonic ("List all _functions");
-  gtk_widget_set_name (imagemenuitem2, "imagemenuitem2");
-  gtk_widget_show (imagemenuitem2);
-  gtk_container_add (GTK_CONTAINER (menuitem1_menu), imagemenuitem2);
-
-  image524 = gtk_image_new_from_stock ("gtk-index", GTK_ICON_SIZE_MENU);
-  gtk_widget_set_name (image524, "image524");
-  gtk_widget_show (image524);
-  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem2), image524);
-
-  imagemenuitem3 = gtk_image_menu_item_new_with_mnemonic ("S_ession Statistics");
-  gtk_widget_set_name (imagemenuitem3, "imagemenuitem3");
-  gtk_widget_show (imagemenuitem3);
-  gtk_container_add (GTK_CONTAINER (menuitem1_menu), imagemenuitem3);
-
-  image525 = gtk_image_new_from_stock ("gtk-info", GTK_ICON_SIZE_MENU);
-  gtk_widget_set_name (image525, "image525");
-  gtk_widget_show (image525);
-  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem3), image525);
+  image832 = gtk_image_new_from_stock ("gtk-refresh", GTK_ICON_SIZE_MENU);
+  gtk_widget_set_name (image832, "image832");
+  gtk_widget_show (image832);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem1), image832);
 
   separator2 = gtk_separator_menu_item_new ();
   gtk_widget_set_name (separator2, "separator2");
@@ -227,10 +211,10 @@ create_gscope_main (void)
   gtk_widget_show (imagemenuitem13);
   gtk_container_add (GTK_CONTAINER (menuitem1_menu), imagemenuitem13);
 
-  image526 = gtk_image_new_from_stock ("gtk-save-as", GTK_ICON_SIZE_MENU);
-  gtk_widget_set_name (image526, "image526");
-  gtk_widget_show (image526);
-  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem13), image526);
+  image833 = gtk_image_new_from_stock ("gtk-save-as", GTK_ICON_SIZE_MENU);
+  gtk_widget_set_name (image833, "image833");
+  gtk_widget_show (image833);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem13), image833);
 
   separatormenuitem1 = gtk_separator_menu_item_new ();
   gtk_widget_set_name (separatormenuitem1, "separatormenuitem1");
@@ -243,40 +227,40 @@ create_gscope_main (void)
   gtk_widget_show (imagemenuitem6);
   gtk_container_add (GTK_CONTAINER (menuitem1_menu), imagemenuitem6);
 
-  image527 = gtk_image_new_from_stock ("gtk-clear", GTK_ICON_SIZE_MENU);
-  gtk_widget_set_name (image527, "image527");
-  gtk_widget_show (image527);
-  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem6), image527);
+  image834 = gtk_image_new_from_stock ("gtk-clear", GTK_ICON_SIZE_MENU);
+  gtk_widget_set_name (image834, "image834");
+  gtk_widget_show (image834);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem6), image834);
 
   imagemenuitem4 = gtk_image_menu_item_new_with_mnemonic ("_Save Query Snapshot");
   gtk_widget_set_name (imagemenuitem4, "imagemenuitem4");
   gtk_widget_show (imagemenuitem4);
   gtk_container_add (GTK_CONTAINER (menuitem1_menu), imagemenuitem4);
 
-  image528 = gtk_image_new_from_stock ("gtk-save-as", GTK_ICON_SIZE_MENU);
-  gtk_widget_set_name (image528, "image528");
-  gtk_widget_show (image528);
-  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem4), image528);
+  image835 = gtk_image_new_from_stock ("gtk-save-as", GTK_ICON_SIZE_MENU);
+  gtk_widget_set_name (image835, "image835");
+  gtk_widget_show (image835);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem4), image835);
 
   imagemenuitem5 = gtk_image_menu_item_new_with_mnemonic ("_Load Query Snapshot");
   gtk_widget_set_name (imagemenuitem5, "imagemenuitem5");
   gtk_widget_show (imagemenuitem5);
   gtk_container_add (GTK_CONTAINER (menuitem1_menu), imagemenuitem5);
 
-  image529 = gtk_image_new_from_stock ("gtk-open", GTK_ICON_SIZE_MENU);
-  gtk_widget_set_name (image529, "image529");
-  gtk_widget_show (image529);
-  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem5), image529);
+  image836 = gtk_image_new_from_stock ("gtk-open", GTK_ICON_SIZE_MENU);
+  gtk_widget_set_name (image836, "image836");
+  gtk_widget_show (image836);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem5), image836);
 
   imagemenuitem7 = gtk_image_menu_item_new_with_mnemonic ("_Delete Query Snapshot");
   gtk_widget_set_name (imagemenuitem7, "imagemenuitem7");
   gtk_widget_show (imagemenuitem7);
   gtk_container_add (GTK_CONTAINER (menuitem1_menu), imagemenuitem7);
 
-  image530 = gtk_image_new_from_stock ("gtk-delete", GTK_ICON_SIZE_MENU);
-  gtk_widget_set_name (image530, "image530");
-  gtk_widget_show (image530);
-  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem7), image530);
+  image837 = gtk_image_new_from_stock ("gtk-delete", GTK_ICON_SIZE_MENU);
+  gtk_widget_set_name (image837, "image837");
+  gtk_widget_show (image837);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem7), image837);
 
   separator3 = gtk_separator_menu_item_new ();
   gtk_widget_set_name (separator3, "separator3");
@@ -335,10 +319,49 @@ create_gscope_main (void)
   gtk_widget_show (imagemenuitem9);
   gtk_container_add (GTK_CONTAINER (menuitem2_menu), imagemenuitem9);
 
-  image531 = gtk_image_new_from_stock ("gtk-preferences", GTK_ICON_SIZE_MENU);
-  gtk_widget_set_name (image531, "image531");
-  gtk_widget_show (image531);
-  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem9), image531);
+  image838 = gtk_image_new_from_stock ("gtk-preferences", GTK_ICON_SIZE_MENU);
+  gtk_widget_set_name (image838, "image838");
+  gtk_widget_show (image838);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem9), image838);
+
+  menuitem4 = gtk_menu_item_new_with_mnemonic ("_View");
+  gtk_widget_set_name (menuitem4, "menuitem4");
+  gtk_widget_show (menuitem4);
+  gtk_container_add (GTK_CONTAINER (menubar1), menuitem4);
+
+  menuitem4_menu = gtk_menu_new ();
+  gtk_widget_set_name (menuitem4_menu, "menuitem4_menu");
+  gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem4), menuitem4_menu);
+
+  imagemenuitem3 = gtk_image_menu_item_new_with_mnemonic ("S_ession Statistics");
+  gtk_widget_set_name (imagemenuitem3, "imagemenuitem3");
+  gtk_widget_show (imagemenuitem3);
+  gtk_container_add (GTK_CONTAINER (menuitem4_menu), imagemenuitem3);
+
+  image839 = gtk_image_new_from_stock ("gtk-info", GTK_ICON_SIZE_MENU);
+  gtk_widget_set_name (image839, "image839");
+  gtk_widget_show (image839);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem3), image839);
+
+  imagemenuitem2 = gtk_image_menu_item_new_with_mnemonic ("List all _Functions");
+  gtk_widget_set_name (imagemenuitem2, "imagemenuitem2");
+  gtk_widget_show (imagemenuitem2);
+  gtk_container_add (GTK_CONTAINER (menuitem4_menu), imagemenuitem2);
+
+  image840 = gtk_image_new_from_stock ("gtk-index", GTK_ICON_SIZE_MENU);
+  gtk_widget_set_name (image840, "image840");
+  gtk_widget_show (image840);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem2), image840);
+
+  imagemenuitem20 = gtk_image_menu_item_new_with_mnemonic ("_AutoGen Errors");
+  gtk_widget_set_name (imagemenuitem20, "imagemenuitem20");
+  gtk_widget_show (imagemenuitem20);
+  gtk_container_add (GTK_CONTAINER (menuitem4_menu), imagemenuitem20);
+
+  image841 = gtk_image_new_from_stock ("gtk-dialog-warning", GTK_ICON_SIZE_MENU);
+  gtk_widget_set_name (image841, "image841");
+  gtk_widget_show (image841);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem20), image841);
 
   menuitem3 = gtk_menu_item_new_with_mnemonic ("_Help");
   gtk_widget_set_name (menuitem3, "menuitem3");
@@ -354,30 +377,30 @@ create_gscope_main (void)
   gtk_widget_show (imagemenuitem10);
   gtk_container_add (GTK_CONTAINER (menuitem3_menu), imagemenuitem10);
 
-  image532 = gtk_image_new_from_stock ("gtk-help", GTK_ICON_SIZE_MENU);
-  gtk_widget_set_name (image532, "image532");
-  gtk_widget_show (image532);
-  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem10), image532);
+  image842 = gtk_image_new_from_stock ("gtk-help", GTK_ICON_SIZE_MENU);
+  gtk_widget_set_name (image842, "image842");
+  gtk_widget_show (image842);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem10), image842);
 
   imagemenuitem11 = gtk_image_menu_item_new_with_mnemonic ("_Setup");
   gtk_widget_set_name (imagemenuitem11, "imagemenuitem11");
   gtk_widget_show (imagemenuitem11);
   gtk_container_add (GTK_CONTAINER (menuitem3_menu), imagemenuitem11);
 
-  image533 = gtk_image_new_from_stock ("gtk-help", GTK_ICON_SIZE_MENU);
-  gtk_widget_set_name (image533, "image533");
-  gtk_widget_show (image533);
-  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem11), image533);
+  image843 = gtk_image_new_from_stock ("gtk-help", GTK_ICON_SIZE_MENU);
+  gtk_widget_set_name (image843, "image843");
+  gtk_widget_show (image843);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem11), image843);
 
   imagemenuitem14 = gtk_image_menu_item_new_with_mnemonic ("Gscope Wiki");
   gtk_widget_set_name (imagemenuitem14, "imagemenuitem14");
   gtk_widget_show (imagemenuitem14);
   gtk_container_add (GTK_CONTAINER (menuitem3_menu), imagemenuitem14);
 
-  image534 = create_pixmap (gscope_main, "wiki-icon.png");
-  gtk_widget_set_name (image534, "image534");
-  gtk_widget_show (image534);
-  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem14), image534);
+  image844 = create_pixmap (gscope_main, "wiki-icon.png");
+  gtk_widget_set_name (image844, "image844");
+  gtk_widget_show (image844);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem14), image844);
 
   imagemenuitem14_menu = gtk_menu_new ();
   gtk_widget_set_name (imagemenuitem14_menu, "imagemenuitem14_menu");
@@ -388,40 +411,40 @@ create_gscope_main (void)
   gtk_widget_show (imagemenuitem15);
   gtk_container_add (GTK_CONTAINER (imagemenuitem14_menu), imagemenuitem15);
 
-  image535 = gtk_image_new_from_stock ("gtk-info", GTK_ICON_SIZE_MENU);
-  gtk_widget_set_name (image535, "image535");
-  gtk_widget_show (image535);
-  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem15), image535);
+  image845 = gtk_image_new_from_stock ("gtk-info", GTK_ICON_SIZE_MENU);
+  gtk_widget_set_name (image845, "image845");
+  gtk_widget_show (image845);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem15), image845);
 
   imagemenuitem16 = gtk_image_menu_item_new_with_mnemonic ("Usage");
   gtk_widget_set_name (imagemenuitem16, "imagemenuitem16");
   gtk_widget_show (imagemenuitem16);
   gtk_container_add (GTK_CONTAINER (imagemenuitem14_menu), imagemenuitem16);
 
-  image536 = gtk_image_new_from_stock ("gtk-info", GTK_ICON_SIZE_MENU);
-  gtk_widget_set_name (image536, "image536");
-  gtk_widget_show (image536);
-  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem16), image536);
+  image846 = gtk_image_new_from_stock ("gtk-info", GTK_ICON_SIZE_MENU);
+  gtk_widget_set_name (image846, "image846");
+  gtk_widget_show (image846);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem16), image846);
 
   imagemenuitem17 = gtk_image_menu_item_new_with_mnemonic ("Configure");
   gtk_widget_set_name (imagemenuitem17, "imagemenuitem17");
   gtk_widget_show (imagemenuitem17);
   gtk_container_add (GTK_CONTAINER (imagemenuitem14_menu), imagemenuitem17);
 
-  image537 = gtk_image_new_from_stock ("gtk-info", GTK_ICON_SIZE_MENU);
-  gtk_widget_set_name (image537, "image537");
-  gtk_widget_show (image537);
-  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem17), image537);
+  image847 = gtk_image_new_from_stock ("gtk-info", GTK_ICON_SIZE_MENU);
+  gtk_widget_set_name (image847, "image847");
+  gtk_widget_show (image847);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem17), image847);
 
   imagemenuitem18 = gtk_image_menu_item_new_with_mnemonic ("Release Notes");
   gtk_widget_set_name (imagemenuitem18, "imagemenuitem18");
   gtk_widget_show (imagemenuitem18);
   gtk_container_add (GTK_CONTAINER (imagemenuitem14_menu), imagemenuitem18);
 
-  image538 = gtk_image_new_from_stock ("gtk-about", GTK_ICON_SIZE_MENU);
-  gtk_widget_set_name (image538, "image538");
-  gtk_widget_show (image538);
-  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem18), image538);
+  image848 = gtk_image_new_from_stock ("gtk-about", GTK_ICON_SIZE_MENU);
+  gtk_widget_set_name (image848, "image848");
+  gtk_widget_show (image848);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (imagemenuitem18), image848);
 
   imagemenuitem12 = gtk_image_menu_item_new_from_stock ("gtk-about", accel_group);
   gtk_widget_set_name (imagemenuitem12, "imagemenuitem12");
@@ -733,12 +756,6 @@ create_gscope_main (void)
   g_signal_connect ((gpointer) imagemenuitem1, "activate",
                     G_CALLBACK (on_rebuild_database1_activate),
                     NULL);
-  g_signal_connect ((gpointer) imagemenuitem2, "activate",
-                    G_CALLBACK (on_list_all_functions1_activate),
-                    NULL);
-  g_signal_connect ((gpointer) imagemenuitem3, "activate",
-                    G_CALLBACK (on_session_statistics_activate),
-                    NULL);
   g_signal_connect ((gpointer) imagemenuitem13, "activate",
                     G_CALLBACK (on_save_results_activate),
                     NULL);
@@ -774,6 +791,15 @@ create_gscope_main (void)
                     NULL);
   g_signal_connect ((gpointer) imagemenuitem9, "activate",
                     G_CALLBACK (on_preferences_activate),
+                    NULL);
+  g_signal_connect ((gpointer) imagemenuitem3, "activate",
+                    G_CALLBACK (on_session_statistics_activate),
+                    NULL);
+  g_signal_connect ((gpointer) imagemenuitem2, "activate",
+                    G_CALLBACK (on_list_all_functions1_activate),
+                    NULL);
+  g_signal_connect ((gpointer) imagemenuitem20, "activate",
+                    G_CALLBACK (on_list_autogen_errors_activate),
                     NULL);
   g_signal_connect ((gpointer) imagemenuitem10, "activate",
                     G_CALLBACK (on_usage1_activate),
@@ -856,23 +882,19 @@ create_gscope_main (void)
   GLADE_HOOKUP_OBJECT (gscope_main, menuitem1, "menuitem1");
   GLADE_HOOKUP_OBJECT (gscope_main, menuitem1_menu, "menuitem1_menu");
   GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem1, "imagemenuitem1");
-  GLADE_HOOKUP_OBJECT (gscope_main, image523, "image523");
-  GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem2, "imagemenuitem2");
-  GLADE_HOOKUP_OBJECT (gscope_main, image524, "image524");
-  GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem3, "imagemenuitem3");
-  GLADE_HOOKUP_OBJECT (gscope_main, image525, "image525");
+  GLADE_HOOKUP_OBJECT (gscope_main, image832, "image832");
   GLADE_HOOKUP_OBJECT (gscope_main, separator2, "separator2");
   GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem13, "imagemenuitem13");
-  GLADE_HOOKUP_OBJECT (gscope_main, image526, "image526");
+  GLADE_HOOKUP_OBJECT (gscope_main, image833, "image833");
   GLADE_HOOKUP_OBJECT (gscope_main, separatormenuitem1, "separatormenuitem1");
   GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem6, "imagemenuitem6");
-  GLADE_HOOKUP_OBJECT (gscope_main, image527, "image527");
+  GLADE_HOOKUP_OBJECT (gscope_main, image834, "image834");
   GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem4, "imagemenuitem4");
-  GLADE_HOOKUP_OBJECT (gscope_main, image528, "image528");
+  GLADE_HOOKUP_OBJECT (gscope_main, image835, "image835");
   GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem5, "imagemenuitem5");
-  GLADE_HOOKUP_OBJECT (gscope_main, image529, "image529");
+  GLADE_HOOKUP_OBJECT (gscope_main, image836, "image836");
   GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem7, "imagemenuitem7");
-  GLADE_HOOKUP_OBJECT (gscope_main, image530, "image530");
+  GLADE_HOOKUP_OBJECT (gscope_main, image837, "image837");
   GLADE_HOOKUP_OBJECT (gscope_main, separator3, "separator3");
   GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem8, "imagemenuitem8");
   GLADE_HOOKUP_OBJECT (gscope_main, menuitem2, "menuitem2");
@@ -884,24 +906,32 @@ create_gscope_main (void)
   GLADE_HOOKUP_OBJECT (gscope_main, smartquery_checkmenuitem, "smartquery_checkmenuitem");
   GLADE_HOOKUP_OBJECT (gscope_main, separator1, "separator1");
   GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem9, "imagemenuitem9");
-  GLADE_HOOKUP_OBJECT (gscope_main, image531, "image531");
+  GLADE_HOOKUP_OBJECT (gscope_main, image838, "image838");
+  GLADE_HOOKUP_OBJECT (gscope_main, menuitem4, "menuitem4");
+  GLADE_HOOKUP_OBJECT (gscope_main, menuitem4_menu, "menuitem4_menu");
+  GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem3, "imagemenuitem3");
+  GLADE_HOOKUP_OBJECT (gscope_main, image839, "image839");
+  GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem2, "imagemenuitem2");
+  GLADE_HOOKUP_OBJECT (gscope_main, image840, "image840");
+  GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem20, "imagemenuitem20");
+  GLADE_HOOKUP_OBJECT (gscope_main, image841, "image841");
   GLADE_HOOKUP_OBJECT (gscope_main, menuitem3, "menuitem3");
   GLADE_HOOKUP_OBJECT (gscope_main, menuitem3_menu, "menuitem3_menu");
   GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem10, "imagemenuitem10");
-  GLADE_HOOKUP_OBJECT (gscope_main, image532, "image532");
+  GLADE_HOOKUP_OBJECT (gscope_main, image842, "image842");
   GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem11, "imagemenuitem11");
-  GLADE_HOOKUP_OBJECT (gscope_main, image533, "image533");
+  GLADE_HOOKUP_OBJECT (gscope_main, image843, "image843");
   GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem14, "imagemenuitem14");
-  GLADE_HOOKUP_OBJECT (gscope_main, image534, "image534");
+  GLADE_HOOKUP_OBJECT (gscope_main, image844, "image844");
   GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem14_menu, "imagemenuitem14_menu");
   GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem15, "imagemenuitem15");
-  GLADE_HOOKUP_OBJECT (gscope_main, image535, "image535");
+  GLADE_HOOKUP_OBJECT (gscope_main, image845, "image845");
   GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem16, "imagemenuitem16");
-  GLADE_HOOKUP_OBJECT (gscope_main, image536, "image536");
+  GLADE_HOOKUP_OBJECT (gscope_main, image846, "image846");
   GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem17, "imagemenuitem17");
-  GLADE_HOOKUP_OBJECT (gscope_main, image537, "image537");
+  GLADE_HOOKUP_OBJECT (gscope_main, image847, "image847");
   GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem18, "imagemenuitem18");
-  GLADE_HOOKUP_OBJECT (gscope_main, image538, "image538");
+  GLADE_HOOKUP_OBJECT (gscope_main, image848, "image848");
   GLADE_HOOKUP_OBJECT (gscope_main, imagemenuitem12, "imagemenuitem12");
   GLADE_HOOKUP_OBJECT (gscope_main, label1, "label1");
   GLADE_HOOKUP_OBJECT (gscope_main, search_button_frame, "search_button_frame");
@@ -1234,6 +1264,7 @@ create_gscope_preferences (void)
   gtk_widget_set_name (prefs_notebook, "prefs_notebook");
   gtk_widget_show (prefs_notebook);
   gtk_box_pack_start (GTK_BOX (dialog_vbox1), prefs_notebook, TRUE, TRUE, 0);
+  gtk_notebook_set_tab_pos (GTK_NOTEBOOK (prefs_notebook), GTK_POS_LEFT);
 
   vbox6 = gtk_vbox_new (FALSE, 0);
   gtk_widget_set_name (vbox6, "vbox6");
@@ -1526,7 +1557,7 @@ create_gscope_preferences (void)
   gtk_notebook_set_tab_label (GTK_NOTEBOOK (prefs_notebook), gtk_notebook_get_nth_page (GTK_NOTEBOOK (prefs_notebook), 0), label7);
   gtk_label_set_use_markup (GTK_LABEL (label7), TRUE);
   gtk_label_set_justify (GTK_LABEL (label7), GTK_JUSTIFY_CENTER);
-  gtk_misc_set_padding (GTK_MISC (label7), 6, 0);
+  gtk_misc_set_padding (GTK_MISC (label7), 15, 0);
 
   vbox7 = gtk_vbox_new (FALSE, 0);
   gtk_widget_set_name (vbox7, "vbox7");

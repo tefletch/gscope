@@ -2,6 +2,9 @@
 #define GSCOPE_GEN_DIR  ".gscope_gen"
 #define GSCOPE_BLD_DIR  ".gscope_bld"
 
+// defines
+#define     AUTOGEN_ERR_PATTERN     "/* AutoGen Error in compiling .c file */"
+
 // auto_gen public type definitions
 
 typedef struct

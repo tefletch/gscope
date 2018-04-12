@@ -21,6 +21,7 @@
 #include "build.h"
 #include "app_config.h"
 #include "browser.h"
+#include "auto_gen.h"
 
 
 #ifndef GTK3_BUILD
@@ -117,9 +118,9 @@ static void process_query(search_t query_type)
 #define MAX_COMPARISON          256
     gchar *pattern;
 
-    static gchar *button_label[9];
-    static gchar *button_active_label[8];
-    static GtkWidget *buttons[8];
+    static gchar *button_label[NUM_FIND_TYPES];
+    static gchar *button_active_label[NUM_FIND_TYPES];
+    static GtkWidget *buttons[NUM_FIND_TYPES];
     static GtkWidget *query_entry;
     static GtkWidget *cancel_button;
     static GtkWidget *progress_bar;
@@ -199,6 +200,7 @@ static void process_query(search_t query_type)
 
 
         // Virtual button(s)
+        button_label[FIND_AUTOGEN_ERRORS] = "AutoGen Errors";
         button_label[FIND_ALL_FUNCTIONS] = "Find All Functions";
 
         query_entry   = lookup_widget(GTK_WIDGET(gscope_main), "query_entry");
@@ -230,7 +232,14 @@ static void process_query(search_t query_type)
         pattern = strdup(gtk_entry_get_text(GTK_ENTRY(query_entry)));
     }
     else
-        pattern = strdup(" ");  // Dummy search pattern for "virtual button"
+    {
+        if ( query_type == FIND_AUTOGEN_ERRORS )   // fixed "virtual" button pattern
+        {
+            pattern = strdup(AUTOGEN_ERR_PATTERN);
+        }
+        else    // no-pattern "virtual" button
+            pattern = strdup(" ");  // Dummy search pattern
+    }
 
 
     if (*pattern == '\0')
@@ -418,6 +427,18 @@ void on_list_all_functions1_activate(GtkMenuItem     *menuitem,
     {
         search_button_lockout = TRUE;
         process_query(FIND_ALL_FUNCTIONS);
+        search_button_lockout = FALSE;
+    }
+}
+
+
+
+void on_list_autogen_errors_activate(GtkMenuItem *menuitem, gpointer user_data)
+{
+    if ( !search_button_lockout )
+    {
+        search_button_lockout = TRUE;
+        process_query(FIND_AUTOGEN_ERRORS);
         search_button_lockout = FALSE;
     }
 }
@@ -3103,6 +3124,7 @@ void on_autogen_enable_checkbutton1_toggled(GtkToggleButton *togglebutton, gpoin
     // These items will be "composite enabled across multiple enables" if/when more than one autogen meta-source type is supported.
     gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cache_path_entry"),     settings.autoGenEnable);
     gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cache_location_label"), settings.autoGenEnable);
+    gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_main),        "imagemenuitem20"),              settings.autoGenEnable);
 
     {
         gchar       active_path[PATHLEN * 2];
@@ -3425,3 +3447,4 @@ gboolean on_file_manager_app_entry_focus_out_event(GtkWidget       *widget,
 
     return FALSE;
 }
+

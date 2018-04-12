@@ -184,6 +184,9 @@ void DISPLAY_init(GtkWidget *main)
         gtk_widget_set_tooltip_text (sms_button, "Source Search Mode: [Non-Recursive]");
     }
 
+    // ===== Initialize optional sensitivity Menu Items =====
+    gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_main), "imagemenuitem20"), settings.autoGenEnable);
+
     #ifndef GTK3_BUILD
     // ======== Initialize ImageMenuItem Icon Display Behavior ========
     DISPLAY_always_show_image(settings.menuIcons);
@@ -298,6 +301,7 @@ void DISPLAY_search_results(search_t button, search_results_t *results)
         case FIND_REGEXP:
         case FIND_INCLUDING:
         case FIND_ALL_FUNCTIONS:
+        case FIND_AUTOGEN_ERRORS:
             configure_columns(FILE_LN_TXT_COL_MASK);
             update_list_store(results);
             line_number_info_avail = TRUE;

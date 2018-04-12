@@ -649,7 +649,7 @@ static gboolean _protobuf_csrc (const char *full_filename, char *data_dir)
             file_ptr = fopen(errfile_buf, "w");
             if (file_ptr != NULL)
             {
-                fprintf(file_ptr, "/* Error in compiling .c file */\n");
+                fprintf(file_ptr, AUTOGEN_ERR_PATTERN "\n");
                 fclose(file_ptr);
             }
             else
@@ -663,7 +663,7 @@ static gboolean _protobuf_csrc (const char *full_filename, char *data_dir)
             file_ptr = fopen(errfile_buf, "w");
             if (file_ptr != NULL)
             {
-                fprintf(file_ptr, "/* Error in compiling .h file */\n");
+                fprintf(file_ptr, "/* AutoGen Error in compiling .h file */\n");
                 fclose(file_ptr);
             }
             else

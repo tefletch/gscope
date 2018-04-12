@@ -37,7 +37,6 @@
 #define     TMPDIR                  "/tmp"
 #define     MAX_SYMBOL_SIZE         1024
 
-
 //===============================================================
 //       Local Type Definitions
 //===============================================================
@@ -339,7 +338,6 @@ static search_result_t find_def(char *pattern)
 
     return(NOERROR);
 }
-
 
 
 /* find all function definitions */
@@ -1618,6 +1616,10 @@ search_results_t *SEARCH_lookup(search_t search_operation, gchar *pattern)
 
         case FIND_INCLUDING:
             result = find_include(pattern);
+        break;
+
+        case FIND_AUTOGEN_ERRORS:
+            result = find_string(pattern);
         break;
 
         case FIND_ALL_FUNCTIONS:

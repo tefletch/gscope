@@ -651,3 +651,7 @@ on_file_manager_app_entry_focus_out_event
                                         (GtkWidget       *widget,
                                         GdkEventFocus   *event,
                                         gpointer         user_data);
+
+void
+on_list_autogen_errors_activate        (GtkMenuItem     *menuitem,
+                                        gpointer         user_data);

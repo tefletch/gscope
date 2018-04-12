@@ -303,7 +303,7 @@ void BUILD_initDatabase()
     {
         proto_compile_stats_t *stats_ptr =  AUTOGEN_get_file_count();
 
-        sprintf(working_buf, "Updated auto-generated header files from %d New,\n%d Re-used (%s) files (%d Succeeded, %d Failed).\n",
+        sprintf(working_buf, "Updated auto-generated header files for %d of %d\ndetected (%s) files (%d Succeeded, %d Failed).\n",
                 stats_ptr->num_proto_changed,
                 stats_ptr->num_proto_files,
                 settings.autoGenSuffix,

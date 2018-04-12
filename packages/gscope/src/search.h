@@ -7,9 +7,14 @@ typedef enum  {
     FIND_STRING,
     FIND_REGEXP,
     FIND_FILE,
-    FIND_INCLUDING,
+    FIND_INCLUDING,     /* FIND_INCLUDING must always be the last visible button item */
+
+    /* Everyting below this line is a Virtual button item - virtual button order is not important */
+    FIND_AUTOGEN_ERRORS,
     FIND_ALL_FUNCTIONS,
-    FIND_NULL
+    FIND_NULL,
+
+    NUM_FIND_TYPES      /* Keep this item last */
 } search_t;
 
 
