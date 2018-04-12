@@ -19,7 +19,6 @@
 "       - code                 [Microsoft VS Code]\n" \
 "       - subl(lime_text)  [Sublime text editor]\n" \
 "       - atom                 [Atom text editor]\n\n"
-#endif
 
 // Version 2.14 2.16 special announcement
 #define VERSION_ANNOUNCE \
@@ -27,4 +26,8 @@
 "G-Scope now provides <span weight=\"bold\">Static Function Call Analysis</span>. \n\n" \
 "To access static call analysis, right-click on any search result\n" \
 "record and select \"Static Call Analysis\".\n\n"
+#endif
+
+// Version 2.18
+#define VERSION_ANNOUNCE    ""
 
