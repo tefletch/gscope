@@ -1303,7 +1303,7 @@ gchar *template =
 "\n"
 "\n#blue_eventbox"
 "\n{"
-"\n    background-image: url('/sirius/tools/gscope/share/gscope/pixmaps/blue-box-background.png');"
+"\n    background-image: url('" PACKAGE_DATA_DIR "/" PACKAGE "/pixmaps/blue-box-background.png');"
 "\n}"
 "\n"
 "\n#header_button,"
