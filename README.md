@@ -21,4 +21,4 @@ Recommended Stable Versions
 
 Gscope  Version 2.18
 
-Gscope3 Version 3.18
+Gscope3 Version 3.16 (3.18 has a critical configuration error do not use.  For now, use 3.16 or build from the tip of Master)
