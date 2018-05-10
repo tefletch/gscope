@@ -332,6 +332,7 @@ void my_start_text_editor(gchar *filename, gchar *linenum)
         sprintf(command, "%s \"%s\" -#\"goto-line %s\" -#\"goto-col 1\" &", settings.fileEditor, filename, linenum);
     }
     else if ( strcmp(my_basename(settings.fileEditor), "code")         == 0 ||  // Microsoft VS Code
+              strncmp(my_basename(settings.fileEditor), "code-", 5)    == 0 ||  // Microsoft VS Code (OSS or Insiders builds)
               strcmp(my_basename(settings.fileEditor), "sublime_text") == 0 ||  // Sublime (fullname)
               strcmp(my_basename(settings.fileEditor), "subl")         == 0 )   // Sublime (shortname)
     {
@@ -340,6 +341,11 @@ void my_start_text_editor(gchar *filename, gchar *linenum)
     else if ( strcmp(my_basename(settings.fileEditor), "atom") == 0 )   // Atom text editor
     {
         sprintf(command, "%s %s:%s &", settings.fileEditor, filename, linenum);
+    }
+    else if ( strcmp(my_basename(settings.fileEditor), "kwrite") == 0 ||    // KDE Writer
+              strcmp(my_basename(settings.fileEditor), "kate")   == 0 )     // KDE Advanced Text Editor
+    {
+        sprintf(command, "%s %s --line %s &", settings.fileEditor, filename, linenum);
     }
     else            // Classic UNIX text editors (that use <editor> +<line-number> <file-name>)
     {
