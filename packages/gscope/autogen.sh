@@ -28,6 +28,14 @@ fi
   DIE=1
 }
 
+(pkg-config --version) < /dev/null > /dev/null 2>&1 || {
+  echo
+  echo "**Error**: You must have \`pkg-config' installed."
+  echo "Download the appropriate package for your distribution,"
+  echo "or get the source tarball at ftp://ftp.gnu.org/pub/gnu/"
+  DIE=1
+}
+
 (grep "^AC_PROG_INTLTOOL" $srcdir/configure.ac >/dev/null) && {
   (intltoolize --version) < /dev/null > /dev/null 2>&1 || {
     echo 
