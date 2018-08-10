@@ -32,7 +32,7 @@ fi
   echo
   echo "**Error**: You must have \`pkg-config' installed."
   echo "Download the appropriate package for your distribution,"
-  echo "or get the source tarball at ftp://ftp.gnu.org/pub/gnu/"
+  echo "or get the source tarball at https://pkg-config.freedesktop.org/releases/"
   DIE=1
 }
 
