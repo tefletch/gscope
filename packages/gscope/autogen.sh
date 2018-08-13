@@ -41,7 +41,7 @@ fi
     echo 
     echo "**Error**: You must have \`intltool' installed."
     echo "You can get it from:"
-    echo "  ftp://ftp.gnome.org/pub/GNOME/"
+    echo "  https://launchpad.net/intltool/+download"
     DIE=1
   }
 }
@@ -51,7 +51,7 @@ fi
     echo
     echo "**Error**: You must have \`xml-i18n-toolize' installed."
     echo "You can get it from:"
-    echo "  ftp://ftp.gnome.org/pub/GNOME/"
+    echo "  https://download.gnome.org/sources/"
     DIE=1
   }
 }
@@ -70,7 +70,7 @@ fi
   (glib-gettextize --version) < /dev/null > /dev/null 2>&1 || {
     echo
     echo "**Error**: You must have \`glib' installed."
-    echo "You can get it from: ftp://ftp.gtk.org/pub/gtk"
+    echo "You can get it from: https://developer.gnome.org/glib/"
     DIE=1
   }
 }
