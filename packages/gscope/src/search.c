@@ -52,7 +52,6 @@ typedef enum    {       /* Search result codes */
 //       Public Global Variables
 //===============================================================
 
-FILE     *refsfound;
 
 
 //===============================================================
@@ -67,6 +66,7 @@ static char         temp2[PATHLEN + 1];     /* temporary file name */
 static FILE         *nonglobalrefs;
 static gboolean     cancel_search = FALSE;  /* UI hook to abort a lengthy search */
 static gboolean     cref_status   = TRUE;   /* Cross reference up-to-date status */
+static FILE         *refsfound;
 
 //===============================================================
 //      Local Functions
@@ -1789,6 +1789,17 @@ void SEARCH_cleanup()
     }
 }
 
+
+
+void SEARCH_cleanup_prev()
+{
+    /* Close results of previous searches */
+    if (refsfound != NULL)
+    {
+        fclose(refsfound);
+        refsfound = NULL;
+    }
+}
 
 
 

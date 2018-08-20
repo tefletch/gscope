@@ -59,9 +59,9 @@ void                SEARCH_check_cref     (void);
 void                SEARCH_set_cref_status(gboolean status);
 gboolean            SEARCH_get_cref_status(void);
 void                SEARCH_free_results   (search_results_t *results);
+void                SEARCH_cleanup_prev   (void);
 
 //===============================================================
 //      Public Global Variables
 //===============================================================
 
-extern FILE     *refsfound;    /* references found file */

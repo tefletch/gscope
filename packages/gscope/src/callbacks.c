@@ -398,11 +398,7 @@ void on_rebuild_database1_activate(GtkMenuItem     *menuitem,
         BUILD_initDatabase();               /* Rebuild the cross-reference */
 
         /* Close results of previous searches */
-        if (refsfound != NULL)
-        {
-            fclose(refsfound);
-            refsfound = NULL;
-        }
+        SEARCH_cleanup_prev();
 
         /*
          * Reset the record of the last query so that the next query will not
