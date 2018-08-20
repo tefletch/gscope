@@ -1738,39 +1738,6 @@ search_results_t *SEARCH_lookup(search_t search_operation, gchar *pattern)
 }
 
 
-
-uint32_t get_results_count(count_method_t method)
-{
-    static uint32_t reference_count = 0;
-    int    ch;
-
-    if ( method == COUNT_SET )
-    {
-        // Just count the newlines in the results file and save that value.
-        while ( !feof(refsfound))
-        {
-            ch = fgetc(refsfound);
-            if (ch == '\n')
-            {
-                reference_count++;
-            }
-        }
-        rewind(refsfound);
-
-        return(reference_count);
-    }
-
-    if ( method == COUNT_GET )
-    {
-        return(reference_count);
-    }
-
-    fprintf(stderr, "Error in SEARCH_results_count: Should never reach here: Notify tool maintainer.\n");
-    return(0);
-}
-
-
-
 void SEARCH_cancel()
 {
     cancel_search = TRUE;
