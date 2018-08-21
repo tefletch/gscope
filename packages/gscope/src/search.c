@@ -61,6 +61,7 @@ typedef enum    {       /* Search result codes */
 static char         *cref_file_buf = NULL;  /* Buffer the holds the entire cross reference database */
 static char         global[] = "<global>";  /* dummy global function name */
 static uint32_t     starttime;              /* start time for progress messages */
+static uint32_t     imatch_count;           /* Intermediate match count */
 static char         temp1[PATHLEN + 1];     /* temporary file name */
 static char         temp2[PATHLEN + 1];     /* temporary file name */
 static FILE         *nonglobalrefs;
@@ -75,7 +76,7 @@ static void             putline  (FILE *output, char **src_ptr);
 static void             putref   (char *file, char *func, char **src_ptr);
 static gboolean         putsource(FILE *output, char **src_ptr);
 
-static void             progress      (char *format, uint32_t n1, uint32_t n2);
+static void             progress      (uint32_t n1, uint32_t n2);
 static void             initprogress  (void);
 static search_result_t  find_regexp   (char *pattern);
 static search_result_t  find_string   (char *pattern);
@@ -172,7 +173,7 @@ static search_result_t find_symbol(char *pattern)
                         continue;
                     }
                     fcount++;
-                    progress("Searched %d of %d files", fcount, nsrcfiles);
+                    progress(fcount, nsrcfiles);
                     /* FALLTHROUGH */
 
                 case FCNEND:        /* function end */
@@ -301,7 +302,7 @@ static search_result_t find_def(char *pattern)
                     continue;
                 }
                 fcount++;
-                progress("Searched %ld of %ld files", fcount, nsrcfiles);
+                progress(fcount, nsrcfiles);
             break;
 
             case DEFINE:        /* could be a macro */
@@ -376,7 +377,7 @@ static search_result_t find_all_functions()
                     continue;
                 }
                 fcount++;
-                progress("Searched %ld of %ld files", fcount, nsrcfiles);
+                progress(fcount, nsrcfiles);
                 /* FALLTHROUGH */
 
             case FCNEND:        /* function end */
@@ -460,7 +461,7 @@ static search_result_t find_called_by(char *pattern)
                         continue;
                     }
                     fcount++;
-                    progress("Searched %ld of %ld files", fcount, nsrcfiles);
+                    progress(fcount, nsrcfiles);
                 break;
 
                 case FCNDEF:
@@ -578,7 +579,7 @@ static search_result_t find_calling(char *pattern)
                     continue;
                 }
                 fcount++;
-                progress("Searched %ld of %ld files", fcount, nsrcfiles);
+                progress(fcount, nsrcfiles);
                 (void) strcpy(function, global);
             break;
 
@@ -681,7 +682,7 @@ static search_result_t find_string(char *pattern)
     for (i = 0; i < nsrcfiles; ++i)
     {
         file = DIR_src_files[i];
-        progress("%ld of %ld files searched", i, nsrcfiles);
+        progress(i, nsrcfiles);
 
         match_file(file, regex_ptr, "%s|<unknown> %ld %s\n");
 
@@ -718,7 +719,7 @@ static search_result_t find_regexp(char *pattern)
     for (i = 0; i < nsrcfiles; ++i)
     {
         file = DIR_src_files[i];
-        progress("%ld of %ld files searched", i, nsrcfiles);
+        progress(i, nsrcfiles);
 
         match_file(file, regex_ptr, "%s|<unknown> %ld %s\n");
 
@@ -739,6 +740,7 @@ static search_result_t find_regexp(char *pattern)
 static search_result_t find_file(char *pattern)
 {
     uint32_t    i;
+    uint32_t    searchcount = 0;
     regex_t     regex_ptr;
     char        *s;
 
@@ -757,6 +759,7 @@ static search_result_t find_file(char *pattern)
         if (regexec (&regex_ptr, s, (size_t)0, NULL, 0) == 0)
         {
             fprintf(refsfound, "%s|<unknown> 1 <unknown>\n", DIR_src_files[i]);
+            imatch_count++;
         }
 
         if (cancel_search)
@@ -764,6 +767,9 @@ static search_result_t find_file(char *pattern)
             cancel_search = FALSE;
             break;
         }
+
+        searchcount++;
+        progress(searchcount, nsrcfiles);
     }
 
     regfree(&regex_ptr);    /* Avoid memory leak, free memory allocated to the pattern buffer by regcomp() compiling process */
@@ -816,7 +822,7 @@ static search_result_t find_include(char *pattern)
                     continue;
                 }
                 searchcount++;
-                progress("Searched %ld of %ld files", searchcount, nsrcfiles);
+                progress(searchcount, nsrcfiles);
             break;
 
             case INCLUDE:
@@ -906,6 +912,8 @@ static gboolean match_bytes(char **src_ptr, char *cpattern)
 static void putref(char *file, char *func, char **src)
 {
     FILE    *output;
+
+    imatch_count++;
 
     if (strcmp(func, global) == 0)
     {
@@ -1067,22 +1075,25 @@ static void get_string(char *dest, char **src)
 static void initprogress()
 {
     starttime = time((time_t *) NULL);
+    imatch_count = 0;
 }
 
 
 
-/* display the progress every three seconds */
-static void progress(char *format, uint32_t n1, uint32_t n2)
+/* Periodically display the search progress */
+static void progress(uint32_t n1, uint32_t n2)
 {
     uint32_t    now;
     char        *msg;
+
+    static char format[] = "Searched %ld of %ld files [%ld matches]";
 
     /* Update every 1 second */
     now = time((time_t *) NULL);
     if ( (now - starttime) >= 1 )
     {
         starttime = now;
-        my_asprintf(&msg, format, n1, n2);
+        my_asprintf(&msg, format, n1, n2, imatch_count);
         DISPLAY_status(msg);
         DISPLAY_update_progress_bar(n1, n2);
         g_free(msg);
@@ -1297,6 +1308,7 @@ void match_file(char *infile_name, regex_t regex_ptr, char *format)
             if ( regexec (&regex_ptr, string_ptr, (size_t)0, NULL, 0) == 0 )
             {
                 fprintf(refsfound, format, infile_name, linenum, string_ptr);
+                imatch_count++;
             }
 
             string_ptr = work_ptr;  // Advance to the next string.
@@ -1722,8 +1734,12 @@ search_results_t *SEARCH_lookup(search_t search_operation, gchar *pattern)
         g_free(esc_pattern);
         g_free(msg);
     }
-    else    // We have some results - count the newlines to determine match_count
+    else    // We have some results: update results.match_count
+
+    #if 1   // Revisit: Delete this block once confidence is hight that match_count & imatch count never diverge
     {
+        // count the newlines to determine match_count
+
         gchar *work_ptr;
 
         work_ptr = results.start_ptr;
@@ -1732,7 +1748,19 @@ search_results_t *SEARCH_lookup(search_t search_operation, gchar *pattern)
         {
             if (*work_ptr++ == '\n') results.match_count++;
         }
+
+        if (results.match_count != imatch_count )
+        {
+            // Out of an abundance of caution, leave this check in for a cycle, just to make sure
+            // these values never diverge.
+            printf("Assertion Failure: match_count != imatch_count");
+            printf("Test: struct %d, global %d\n", results.match_count, imatch_count);
+            exit(EXIT_FAILURE);
+        }
     }
+    #else
+        results.match_count = imatch_count;
+    #endif
 
     return( &results );
 }
