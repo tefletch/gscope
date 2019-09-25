@@ -1,5 +1,5 @@
 //***************************************************************************
-// 
+//
 // app_config.c - Initialize the application settings
 //
 // Settings Managment Architecture/Rules
@@ -8,7 +8,7 @@
 // 1. All settings have a hard-coded (built-in) default [base] value.
 //
 // 2. Some settings are 'persistent' across sessions, others are not.
-// 
+//
 // 3. Non-persistent settings use the hard-coded (built-in) default value,
 //    or they are constructed during the application initialization process.
 //
@@ -26,18 +26,18 @@
 //
 // Rules of Persistence.
 // =====================
-// 
-// 1. All persistent settings are stored in an application-specific plain 
+//
+// 1. All persistent settings are stored in an application-specific plain
 //    text configuration file(s) using the GLib Key-value file parser utility
 //    format.
-// 
+//
 // 2. The name and or location of the configuration file(s) is application
 //    defined.
-// 
-// 3. If no application configuration file is found at the designated 
+//
+// 3. If no application configuration file is found at the designated
 //    location(s), a new, fully populated configuration file is created
 //    at the application-specific location.
-// 
+//
 // 4. Configuration file content evolution/mutation:  If a newer version
 //    of an application adds new persistent configuration values, the
 //    hard-coded defaults for those new values are stored in the
@@ -45,10 +45,10 @@
 //    in the configuration file is obsoleted by the new application
 //    version, the old, obsolete value is ignored.  The user's prior
 //    persistent settings that are still viable are always preserved.
-// 
+//
 // 5. End users can "factory reset" their configuration by deleting
 //    the configuration file and re-staring the application.
-// 
+//
 //***************************************************************************
 
 
@@ -159,6 +159,7 @@ settings_t settings = {
     /*.histFile           =*/histFileDef,
     /*.terminalApp        =*/terminalAppDef,
     /*.fileManager        =*/fileManagerDef,
+    /*.geometry           =*/geometryDef,
     /*.trackedVersion     =*/trackedVersionDef,
     /*.smartQuery         =*/TRUE
 };
@@ -204,12 +205,12 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
     gchar       gtk_config_file[256] = {0};
     gchar       app_home[256] = {0};
     gboolean    new_version_detected = FALSE;
-    
+
     char        *home;
-    
+
     home = getenv("HOME");
 
-    if (home == NULL) 
+    if (home == NULL)
     {
         fprintf(stderr,"\nWarning: The $HOME environment variable is not defined\n"
                 "G-scope cannot read or write configuration files\n\n");
@@ -240,7 +241,7 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
             strncpy(app_config_file, app_home, 235);
             strncat(app_config_file, "gscoperc", 20);       /* Use the default config file */
         }
-        
+
         strncpy(settings.rcFile, app_config_file, MAX_STRING_ARG_SIZE);
     }
     else   // use settings.rcFile as-is
@@ -253,7 +254,7 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
     // if the $HOME/.gscope directory doesn't exist, create it
     if ( !g_file_test(app_home, G_FILE_TEST_IS_DIR) )
     {
-        if ( g_mkdir(app_home,0755) ) 
+        if ( g_mkdir(app_home,0755) )
         {
             fprintf(stderr, "\nError:  Unable to create configuration directory: %s\n"
                             "Fix the problem and try again.\nStartup aborted.\n\n", app_home);
@@ -286,7 +287,7 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
                 MsgDialog = gtk_message_dialog_new_with_markup (
                         GTK_WINDOW (gscope_splash),
                         GTK_DIALOG_DESTROY_WITH_PARENT,
-                        GTK_MESSAGE_WARNING, 
+                        GTK_MESSAGE_WARNING,
                         GTK_BUTTONS_CLOSE,
                         "Unable to create default G-Scope configuration file:\n"
                         "%s.\n\n"
@@ -296,9 +297,9 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
                 gtk_dialog_run (GTK_DIALOG (MsgDialog));
                 gtk_widget_destroy (GTK_WIDGET (MsgDialog));
             }
-            else        // not in GUI mode                        
+            else        // not in GUI mode
             {
-                fprintf(stderr, 
+                fprintf(stderr,
                         "Unable to create default G-Scope configuration file:\n"
                         "%s.\n\n"
                         "Starting program using factory defaults.\n"
@@ -317,11 +318,11 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
         if ( (g_file_test(gtk_config_file, G_FILE_TEST_EXISTS)) && (gtk_config_version_check(gtk_config_file, CURRENT_CONFIG_VERSION)) )
         {
             // We found a pre-existing application gtkrc (or gscope.css)
-            // file.  Make sure the 'pixmap_path' is correct for this 
+            // file.  Make sure the 'pixmap_path' is correct for this
             // gscope instance.
             // ==============================================
             pixmap_path_fixup(gtk_config_file, PACKAGE_DATA_DIR "/" PACKAGE "/pixmaps", gscope_splash);
-            
+
             // process the config file
             //=======================
             gtk_config_parse(gtk_config_file);
@@ -337,10 +338,10 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
                 MsgDialog = gtk_message_dialog_new_with_markup (
                         GTK_WINDOW (gscope_splash),
                         GTK_DIALOG_DESTROY_WITH_PARENT,
-                        GTK_MESSAGE_WARNING, 
+                        GTK_MESSAGE_WARNING,
                         GTK_BUTTONS_CLOSE,
                         "Unable to create default G-Scope button theme\ntemplate file: %s.\n\n"
-                        "It may not be pretty, but\nG-Scope will still work.", 
+                        "It may not be pretty, but\nG-Scope will still work.",
                         gtk_config_file);
 
                 gtk_dialog_run (GTK_DIALOG (MsgDialog));
@@ -351,7 +352,7 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
                 MsgDialog = gtk_message_dialog_new_with_markup (
                         GTK_WINDOW (gscope_splash),
                         GTK_DIALOG_DESTROY_WITH_PARENT,
-                        GTK_MESSAGE_INFO, 
+                        GTK_MESSAGE_INFO,
                         GTK_BUTTONS_CLOSE,
                         "<span weight=\"bold\" size=\"large\">Updating obsolete (or missing)\n"
                         "G-Scope button theme.</span>\n\n"
@@ -500,8 +501,8 @@ void  APP_CONFIG_set_string(const gchar *key, const gchar *value)
 }
 
 
-//********************************************************************************************** 
-// APP_CONFIG_valid_list 
+//**********************************************************************************************
+// APP_CONFIG_valid_list
 //
 // Function:  Validate a pattern matching list according to the following criteria:
 //    If the list length is <= MAX_LIST_SIZE characters long, and
@@ -510,7 +511,7 @@ void  APP_CONFIG_set_string(const gchar *key, const gchar *value)
 //
 // If the list passes the validation, set *delim_char equal to the derived delimiter value and
 // return TRUE.
-//      
+//
 // If the list fails validation, print a critical error message using list_name+error and return
 // FALSE.
 //**********************************************************************************************
@@ -549,7 +550,7 @@ gboolean APP_CONFIG_valid_list(const char *list_name, char *list_ptr, char *deli
 
 
 
-//=================================== 
+//===================================
 // Private Functions
 //===================================
 
@@ -691,7 +692,7 @@ static void pixmap_path_fixup(char *filename, char *path, GtkWidget *parent)
                     // compare in-file pixmap_path with "path" parameter
                     if ( !path_ok )
                     {
-                        char *new_filename; 
+                        char *new_filename;
 
                         // Preserve possible end-user customization
                         my_asprintf(&new_filename, "%s.sav", filename);
@@ -703,7 +704,7 @@ static void pixmap_path_fixup(char *filename, char *path, GtkWidget *parent)
                         MsgDialog = gtk_message_dialog_new_with_markup (
                                 GTK_WINDOW (parent),
                                 GTK_DIALOG_DESTROY_WITH_PARENT,
-                                GTK_MESSAGE_INFO, 
+                                GTK_MESSAGE_INFO,
                                 GTK_BUTTONS_CLOSE,
                                 "<span weight=\"bold\" size=\"large\">Fixed bad pixmap_path in G-Scope button theme.</span>\n\n"
                                 "If you had customizations in <span weight=\"bold\">%s</span> you will need to merge them back"
@@ -745,7 +746,7 @@ static void rewrite_config_file(void)
 
     if (config_file)
     {
-        fwrite(config_data, 1, length, config_file); 
+        fwrite(config_data, 1, length, config_file);
         fclose(config_file);
     }
     else
@@ -768,8 +769,8 @@ static void parse_app_config(const char *filename)
     gchar *tmp_ptr;
 
     key_file = g_key_file_new();
-    
-    if ( !g_key_file_load_from_file( key_file, filename, G_KEY_FILE_KEEP_COMMENTS, &error) ) 
+
+    if ( !g_key_file_load_from_file( key_file, filename, G_KEY_FILE_KEEP_COMMENTS, &error) )
     {
         fprintf(stderr,"\nWarning:  Unable to parse config file: %s\n", filename);
         fprintf(stderr,"Error:  %s\n\n", error->message);
@@ -923,7 +924,7 @@ static void parse_app_config(const char *filename)
     // *** autoGenPath ***  (not available via command line argument)
     tmp_ptr = g_key_file_get_string(key_file, "Defaults", "autoGenPath", NULL);
     if (tmp_ptr)
-    {   
+    {
         if ( strlen(tmp_ptr) > 0 )  // a non-null string is required for this setting
         {
             if ( g_strlcpy(settings.autoGenPath, tmp_ptr, MAX_STRING_ARG_SIZE) >= MAX_STRING_ARG_SIZE )
@@ -936,7 +937,7 @@ static void parse_app_config(const char *filename)
         }
         g_free(tmp_ptr);
     }
-    
+
 
     // *** autoGenSuffix ***  (not available via command line argument)
     tmp_ptr = g_key_file_get_string(key_file, "Defaults", "autoGenSuffix", NULL);
@@ -946,7 +947,7 @@ static void parse_app_config(const char *filename)
             string_trunc_warn("settings.autoGenSuffix");
         g_free(tmp_ptr);
     }
-    
+
 
     // *** autoGenCmd ***  (not available via command line argument)
     tmp_ptr = g_key_file_get_string(key_file, "Defaults", "autoGenCmd", NULL);
@@ -956,7 +957,7 @@ static void parse_app_config(const char *filename)
             string_trunc_warn("settings.autoGenCmd");
         g_free(tmp_ptr);
     }
-    
+
 
     // *** autoGenRoot ***  (not available via command line argument)
     tmp_ptr = g_key_file_get_string(key_file, "Defaults", "autoGenRoot", NULL);
@@ -966,7 +967,7 @@ static void parse_app_config(const char *filename)
             string_trunc_warn("settings.atoGenRoot");
         g_free(tmp_ptr);
     }
-    
+
 
     // *** autoGenId ***  (not available via command line argument)
     tmp_ptr = g_key_file_get_string(key_file, "Defaults", "autoGenId", NULL);
@@ -976,7 +977,7 @@ static void parse_app_config(const char *filename)
             string_trunc_warn("settings.autoGenId");
         g_free(tmp_ptr);
     }
-    
+
 
     // *** autoGenThresh ***
     settings.autoGenThresh = g_key_file_get_integer(key_file, "Defaults", "autoGenThresh", &error);
@@ -994,7 +995,7 @@ static void parse_app_config(const char *filename)
             string_trunc_warn("settings.terminalApp");
         g_free(tmp_ptr);
     }
-    
+
 
     // *** fileManager ***  (not available via command line argument)
     tmp_ptr = g_key_file_get_string(key_file, "Defaults", "fileManager", NULL);
@@ -1004,7 +1005,7 @@ static void parse_app_config(const char *filename)
             string_trunc_warn("settings.fileManager");
         g_free(tmp_ptr);
     }
-    
+
 
     // The remaining items can be overridden by the command line
     //----------------------------------------------------------
@@ -1054,7 +1055,7 @@ static void parse_app_config(const char *filename)
             error = NULL;
         }
     }
-   
+
     // *** recurseDir ***
     if (!settings.recurseDir)
     {
@@ -1123,7 +1124,7 @@ static void parse_app_config(const char *filename)
             exit(EXIT_FAILURE);
         }
     }
-    
+
     // *** srcDir ***    (no default, watch out for NULLs)
     if ( strcmp(settings.srcDir, srcDirDef) == 0 )
     {
@@ -1136,7 +1137,7 @@ static void parse_app_config(const char *filename)
             g_free(tmp_ptr);
         }
     }
-    
+
 
     // Initialize the transient settings to match configured (start-up) settings.
     sticky_settings.ignoreCase  = settings.ignoreCase;
@@ -1364,7 +1365,7 @@ gchar *template =
 {
 "#!Version=005"
 "\n# This is ""the initial gtkrc template file created automatically by Gscope."
-"\n# Edit this file to make your own GTK customizations. If you would like" 
+"\n# Edit this file to make your own GTK customizations. If you would like"
 "\n# gscope to create a fresh template just delete/rename this file and run gscope."
 "\n"
 "\n"

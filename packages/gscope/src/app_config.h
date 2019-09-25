@@ -49,9 +49,9 @@
 #define ignoredDelimDef    0
 #define histFileDef        ""
 #define terminalAppDef     "gnome-terminal --working-directory=%s"
-#define fileManagerDef     "nautilus %s" 
+#define fileManagerDef     "nautilus %s"
 #define trackedVersionDef  1000
-
+#define geometryDef        ""
 
 //===============================================================
 // typedefs
@@ -105,6 +105,7 @@ typedef struct
       gchar     histFile[MAX_STRING_ARG_SIZE];
       gchar     terminalApp[MAX_STRING_ARG_SIZE];
       gchar     fileManager[MAX_STRING_ARG_SIZE];
+      gchar     geometry[MAX_STRING_ARG_SIZE];
       // Non-command-argument [integer] settings
       gint      trackedVersion;
       // Non "sticky" settings [Not configurable from command line or config file]

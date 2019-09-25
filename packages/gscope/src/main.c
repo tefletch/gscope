@@ -38,11 +38,12 @@ int main(int argc, char *argv[])
     static gchar *includeDir = NULL;
     static gchar *rcFile = NULL;
     static gchar *srcDir = NULL;
+    static gchar *geometry = NULL;
 
 #define G_OPTION_FLAG_NONE 0
 
     GOptionEntry options[] = {
-        { 
+        {
             "refOnly", 'b', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, &settings.refOnly,
             "Build the cross-reference only.  (No GUI)", NULL
         },
@@ -57,6 +58,10 @@ int main(int argc, char *argv[])
         {
             "refFile", 'f', G_OPTION_FLAG_NONE, G_OPTION_ARG_FILENAME, &refFile,
             "Use the filename specified as the cross reference [output] file name instead of 'cscope_db.out`", "FILE"
+        },
+        {
+            "geometry", 'g', G_OPTION_FLAG_NONE, G_OPTION_ARG_STRING, &geometry,
+            "Override the default window geometry [Width x Heigth] in pixels", "WxH"
         },
         {
             "nameFile", 'i', G_OPTION_FLAG_NONE, G_OPTION_ARG_FILENAME, &nameFile,
@@ -130,6 +135,8 @@ int main(int argc, char *argv[])
     {strncpy(settings.rcFile,     rcFile,     MAX_STRING_ARG_SIZE); settings.rcFile[MAX_STRING_ARG_SIZE - 1] = 0; g_free(rcFile);     }
     if (srcDir)
     {strncpy(settings.srcDir,     srcDir,     MAX_STRING_ARG_SIZE); settings.srcDir[MAX_STRING_ARG_SIZE - 1] = 0; g_free(srcDir);     }
+    if (geometry)
+    {strncpy(settings.geometry,   geometry,   MAX_STRING_ARG_SIZE); settings.geometry[MAX_STRING_ARG_SIZE - 1] = 0; g_free(geometry); }
 
     //Process the arguments that don't require GUI functionality
 
@@ -182,6 +189,16 @@ int main(int argc, char *argv[])
 
         /* Save references to top-level interface object(s) */
         gscope_main  = create_gscope_main();
+
+        if (settings.geometry[0])
+        {
+            char *e_ptr;
+            gint width, height;
+
+            width  = strtol(settings.geometry, &e_ptr, 10);
+            height = strtol(e_ptr + 1, NULL, 10);
+            gtk_window_resize(GTK_WINDOW(gscope_main), width, height);
+        }
 
         /* Perform initial configuration for all application callbacks */
         CALLBACKS_init(gscope_main);
