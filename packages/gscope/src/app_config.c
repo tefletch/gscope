@@ -84,7 +84,7 @@
 #define     MAX_OVERRIDE_PATH_SIZE  255
 
 #ifdef GTK3_BUILD   // GTK3 (gscope.css)
-#define     CURRENT_CONFIG_VERSION   "004"
+#define     CURRENT_CONFIG_VERSION   "005"
 #define     CONFIG_VERSION_TAG       "/*Version="
 
 #else               // GTK2 (gtkrc)
@@ -1172,7 +1172,7 @@ static gboolean create_gtk_config_file(const char *filename)
 
 gchar *template =
 {
-"/*Version=004 */"
+"/*Version=005 */"
 "\n"
 "\n/*"
 "\nDocumentation for styling GTK+ using CSS is kind of scattered.  The following"
