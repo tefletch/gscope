@@ -1345,7 +1345,7 @@ gchar *template =
 "\ncolor:#fff;"
 "\n}"
 "\n"
-"\nGtkTreeView row:selected:focused"
+"\nGtkTreeView row:selected:focus"
 "\n{"
 "\nbackground-color:steelblue;"
 "\ncolor:#fff;"
