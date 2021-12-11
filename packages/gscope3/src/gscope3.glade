@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.18.3 -->
+<!-- Generated with glade 3.22.1 -->
 <interface>
-  <requires lib="gtk+" version="3.6"/>
+  <requires lib="gtk+" version="3.20"/>
   <!-- interface-local-resource-path pixmaps -->
   <object class="GtkAccelGroup" id="accelgroup1"/>
   <object class="GtkWindow" id="gscope_splash">
@@ -12,6 +12,9 @@
     <property name="skip_pager_hint">True</property>
     <property name="focus_on_map">False</property>
     <property name="gravity">center</property>
+    <child>
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox" id="box18">
         <property name="visible">True</property>
@@ -106,7 +109,6 @@
   <object class="GtkImage" id="image23">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="xalign">0.55000001192092896</property>
     <property name="stock">gtk-about</property>
   </object>
   <object class="GtkImage" id="image24">
@@ -174,6 +176,9 @@
     <property name="icon">../share/gscope/pixmaps/icon-search.png</property>
     <signal name="delete-event" handler="on_window1_delete_event" swapped="no"/>
     <signal name="destroy" handler="on_window1_destroy" swapped="no"/>
+    <child>
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox" id="vbox1">
         <property name="visible">True</property>
@@ -593,181 +598,140 @@
                         <property name="margin_bottom">5</property>
                         <property name="label_xalign">0</property>
                         <child>
-                          <object class="GtkBox" id="hbox4">
+                          <object class="GtkGrid" id="search_button_grid">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="column_homogeneous">True</property>
                             <child>
-                              <object class="GtkButtonBox" id="vbuttonbox1">
+                              <object class="GtkButton" id="find_c_identifier_button">
+                                <property name="label" translatable="yes">Find C Identifier</property>
+                                <property name="name">find_c_identifier_button</property>
+                                <property name="width_request">140</property>
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="orientation">vertical</property>
-                                <property name="layout_style">start</property>
-                                <child>
-                                  <object class="GtkButton" id="find_c_identifier_button">
-                                    <property name="label" translatable="yes">Find C Identifier</property>
-                                    <property name="name">find_c_identifier_button</property>
-                                    <property name="width_request">170</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="can_default">True</property>
-                                    <property name="has_default">True</property>
-                                    <property name="receives_default">True</property>
-                                    <property name="border_width">4</property>
-                                    <property name="focus_on_click">False</property>
-                                    <signal name="clicked" handler="on_find_c_identifier_button_clicked" swapped="no"/>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
-                                    <property name="position">0</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkButton" id="find_definition_of_button">
-                                    <property name="label" translatable="yes">Find definition of</property>
-                                    <property name="name">find_definition_of_button</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="can_default">True</property>
-                                    <property name="receives_default">True</property>
-                                    <property name="border_width">4</property>
-                                    <property name="focus_on_click">False</property>
-                                    <signal name="clicked" handler="on_find_definition_of_button_clicked" swapped="no"/>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkButton" id="find_functions_called_by_button">
-                                    <property name="label" translatable="yes">Find functions called by</property>
-                                    <property name="name">find_functions_called_by_button</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="can_default">True</property>
-                                    <property name="receives_default">True</property>
-                                    <property name="valign">center</property>
-                                    <property name="border_width">4</property>
-                                    <property name="focus_on_click">False</property>
-                                    <signal name="clicked" handler="on_find_functions_called_by_button_clicked" swapped="no"/>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
-                                    <property name="position">2</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkButton" id="find_functions_calling_button">
-                                    <property name="label" translatable="yes">Find functions calling</property>
-                                    <property name="name">find_functions_calling_button</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="can_default">True</property>
-                                    <property name="receives_default">True</property>
-                                    <property name="border_width">4</property>
-                                    <property name="focus_on_click">False</property>
-                                    <signal name="clicked" handler="on_find_functions_calling_button_clicked" swapped="no"/>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
-                                    <property name="position">3</property>
-                                  </packing>
-                                </child>
+                                <property name="can_focus">True</property>
+                                <property name="focus_on_click">False</property>
+                                <property name="can_default">True</property>
+                                <property name="has_default">True</property>
+                                <property name="receives_default">True</property>
+                                <signal name="clicked" handler="on_find_c_identifier_button_clicked" swapped="no"/>
                               </object>
                               <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">False</property>
-                                <property name="position">0</property>
+                                <property name="left_attach">0</property>
+                                <property name="top_attach">0</property>
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkButtonBox" id="vbuttonbox2">
+                              <object class="GtkButton" id="find_definition_of_button">
+                                <property name="label" translatable="yes">Find definition of</property>
+                                <property name="name">find_definition_of_button</property>
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="orientation">vertical</property>
-                                <property name="layout_style">start</property>
-                                <child>
-                                  <object class="GtkButton" id="find_text_string_button">
-                                    <property name="label" translatable="yes">Find text string</property>
-                                    <property name="name">find_text_string_button</property>
-                                    <property name="width_request">170</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="can_default">True</property>
-                                    <property name="receives_default">True</property>
-                                    <property name="border_width">4</property>
-                                    <property name="focus_on_click">False</property>
-                                    <signal name="clicked" handler="on_find_text_string_button_clicked" swapped="no"/>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
-                                    <property name="position">0</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkButton" id="find_egrep_pattern_button">
-                                    <property name="label" translatable="yes">Find egrep pattern</property>
-                                    <property name="name">find_egrep_pattern_button</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="can_default">True</property>
-                                    <property name="receives_default">True</property>
-                                    <property name="border_width">4</property>
-                                    <property name="focus_on_click">False</property>
-                                    <signal name="clicked" handler="on_find_egrep_pattern_button_clicked" swapped="no"/>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkButton" id="find_files_button">
-                                    <property name="label" translatable="yes">Find Files</property>
-                                    <property name="name">find_files_button</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="can_default">True</property>
-                                    <property name="receives_default">True</property>
-                                    <property name="border_width">4</property>
-                                    <property name="focus_on_click">False</property>
-                                    <signal name="clicked" handler="on_find_files_button_clicked" swapped="no"/>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
-                                    <property name="position">2</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkButton" id="find_files_including_button">
-                                    <property name="label" translatable="yes">Find files including</property>
-                                    <property name="name">find_files_including_button</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="can_default">True</property>
-                                    <property name="receives_default">True</property>
-                                    <property name="border_width">4</property>
-                                    <property name="focus_on_click">False</property>
-                                    <signal name="clicked" handler="on_find_files_including_button_clicked" swapped="no"/>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
-                                    <property name="position">3</property>
-                                  </packing>
-                                </child>
+                                <property name="can_focus">True</property>
+                                <property name="focus_on_click">False</property>
+                                <property name="can_default">True</property>
+                                <property name="receives_default">True</property>
+                                <signal name="clicked" handler="on_find_definition_of_button_clicked" swapped="no"/>
                               </object>
                               <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">False</property>
-                                <property name="position">1</property>
+                                <property name="left_attach">0</property>
+                                <property name="top_attach">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="find_functions_called_by_button">
+                                <property name="label" translatable="yes">Find functions called by</property>
+                                <property name="name">find_functions_called_by_button</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="focus_on_click">False</property>
+                                <property name="can_default">True</property>
+                                <property name="receives_default">True</property>
+                                <property name="valign">center</property>
+                                <signal name="clicked" handler="on_find_functions_called_by_button_clicked" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="left_attach">0</property>
+                                <property name="top_attach">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="find_functions_calling_button">
+                                <property name="label" translatable="yes">Find functions calling</property>
+                                <property name="name">find_functions_calling_button</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="focus_on_click">False</property>
+                                <property name="can_default">True</property>
+                                <property name="receives_default">True</property>
+                                <signal name="clicked" handler="on_find_functions_calling_button_clicked" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="left_attach">0</property>
+                                <property name="top_attach">3</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="find_text_string_button">
+                                <property name="label" translatable="yes">Find text string</property>
+                                <property name="name">find_text_string_button</property>
+                                <property name="width_request">140</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="focus_on_click">False</property>
+                                <property name="can_default">True</property>
+                                <property name="receives_default">True</property>
+                                <signal name="clicked" handler="on_find_text_string_button_clicked" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="top_attach">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="find_egrep_pattern_button">
+                                <property name="label" translatable="yes">Find egrep pattern</property>
+                                <property name="name">find_egrep_pattern_button</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="focus_on_click">False</property>
+                                <property name="can_default">True</property>
+                                <property name="receives_default">True</property>
+                                <signal name="clicked" handler="on_find_egrep_pattern_button_clicked" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="top_attach">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="find_files_button">
+                                <property name="label" translatable="yes">Find Files</property>
+                                <property name="name">find_files_button</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="focus_on_click">False</property>
+                                <property name="can_default">True</property>
+                                <property name="receives_default">True</property>
+                                <signal name="clicked" handler="on_find_files_button_clicked" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="top_attach">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="find_files_including_button">
+                                <property name="label" translatable="yes">Find files including</property>
+                                <property name="name">find_files_including_button</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="focus_on_click">False</property>
+                                <property name="can_default">True</property>
+                                <property name="receives_default">True</property>
+                                <signal name="clicked" handler="on_find_files_including_button_clicked" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="top_attach">3</property>
                               </packing>
                             </child>
                           </object>
@@ -876,11 +840,11 @@
                             <property name="height_request">28</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
+                            <property name="focus_on_click">False</property>
                             <property name="receives_default">False</property>
                             <property name="tooltip_text" translatable="yes">Clear Query Entry</property>
                             <property name="valign">baseline</property>
                             <property name="margin_bottom">8</property>
-                            <property name="focus_on_click">False</property>
                             <signal name="clicked" handler="on_clear_query_button_clicked" swapped="no"/>
                             <child>
                               <object class="GtkImage" id="image17">
@@ -934,7 +898,7 @@
                       <object class="GtkLabel" id="status_label">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="xpad">8</property>
+                        <property name="margin_left">8</property>
                         <property name="label" translatable="yes">Status:</property>
                         <property name="use_markup">True</property>
                         <property name="selectable">True</property>
@@ -1016,9 +980,9 @@
               <object class="GtkButton" id="session_info_button">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="focus_on_click">False</property>
                 <property name="receives_default">True</property>
                 <property name="relief">none</property>
-                <property name="focus_on_click">False</property>
                 <signal name="clicked" handler="on_session_info_button_clicked" swapped="no"/>
                 <child>
                   <object class="GtkImage" id="session_info_button_image">
@@ -1039,9 +1003,9 @@
               <object class="GtkButton" id="cref_update_button">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="focus_on_click">False</property>
                 <property name="receives_default">True</property>
                 <property name="relief">none</property>
-                <property name="focus_on_click">False</property>
                 <signal name="clicked" handler="on_cref_update_button_clicked" swapped="no"/>
                 <child>
                   <placeholder/>
@@ -1095,10 +1059,10 @@
                     <property name="visible">True</property>
                     <property name="sensitive">False</property>
                     <property name="can_focus">True</property>
+                    <property name="focus_on_click">False</property>
                     <property name="receives_default">True</property>
                     <property name="margin_left">5</property>
                     <property name="use_stock">True</property>
-                    <property name="focus_on_click">False</property>
                     <signal name="clicked" handler="on_cancel_button_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -1197,6 +1161,9 @@ Build: 25-Oct-2015</property>
     <property name="logo">../share/gscope/pixmaps/gscope_globe3.png</property>
     <signal name="delete-event" handler="on_aboutdialog1_delete_event" swapped="no"/>
     <signal name="response" handler="on_aboutdialog1_response" swapped="no"/>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="aboutdialog-vbox1">
         <property name="can_focus">False</property>
@@ -1230,6 +1197,9 @@ Build: 25-Oct-2015</property>
     <property name="transient_for">gscope_main</property>
     <signal name="delete-event" handler="on_open_file_chooser_dialog_delete_event" swapped="no"/>
     <signal name="response" handler="on_open_file_chooser_dialog_response" swapped="no"/>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="filechooserdialog-vbox6">
         <property name="visible">True</property>
@@ -1299,6 +1269,9 @@ Build: 25-Oct-2015</property>
     <property name="transient_for">gscope_main</property>
     <signal name="delete-event" handler="on_output_file_chooser_dialog_delete_event" swapped="no"/>
     <signal name="response" handler="on_output_file_chooser_dialog_response" swapped="no"/>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="filechooserdialog-vbox">
         <property name="visible">True</property>
@@ -1369,6 +1342,9 @@ Build: 25-Oct-2015</property>
     <property name="transient_for">gscope_main</property>
     <signal name="delete-event" handler="on_quit_confirm_dialog_delete_event" swapped="no"/>
     <signal name="response" handler="on_quit_confirm_dialog_response" swapped="no"/>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox9">
         <property name="visible">True</property>
@@ -1422,10 +1398,10 @@ Build: 25-Oct-2015</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkImage" id="image167">
+              <object class="GtkImage">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="yalign">0</property>
+                <property name="valign">start</property>
                 <property name="icon_name">gtk-dialog-question</property>
                 <property name="icon_size">6</property>
               </object>
@@ -1444,12 +1420,12 @@ Build: 25-Oct-2015</property>
                   <object class="GtkLabel" id="confirm_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="ypad">14</property>
                     <property name="label" translatable="yes">You are about to exit GScope.  Are you sure you want to continue?</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
+                    <property name="padding">14</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
@@ -1459,8 +1435,8 @@ Build: 25-Oct-2015</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
+                    <property name="halign">start</property>
                     <property name="use_underline">True</property>
-                    <property name="xalign">0</property>
                     <property name="active">True</property>
                     <property name="draw_indicator">True</property>
                     <signal name="toggled" handler="on_confirm_exit_checkbutton_toggled" swapped="no"/>
@@ -1510,6 +1486,9 @@ Build: 25-Oct-2015</property>
     <property name="use_preview_label">False</property>
     <signal name="delete-event" handler="on_save_results_file_chooser_dialog_delete_event" swapped="no"/>
     <signal name="response" handler="on_save_results_file_chooser_dialog_response" swapped="no"/>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="filechooserdialog-vbox8">
         <property name="visible">True</property>
@@ -1526,9 +1505,9 @@ Build: 25-Oct-2015</property>
                 <property name="label">gtk-cancel</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="focus_on_click">False</property>
                 <property name="receives_default">False</property>
                 <property name="use_stock">True</property>
-                <property name="focus_on_click">False</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1541,9 +1520,9 @@ Build: 25-Oct-2015</property>
                 <property name="label">Save as _HTML</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="focus_on_click">False</property>
                 <property name="receives_default">False</property>
                 <property name="use_underline">True</property>
-                <property name="focus_on_click">False</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1556,9 +1535,9 @@ Build: 25-Oct-2015</property>
                 <property name="label" translatable="yes">Save as _Text</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="focus_on_click">False</property>
                 <property name="receives_default">False</property>
                 <property name="use_underline">True</property>
-                <property name="focus_on_click">False</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1571,9 +1550,9 @@ Build: 25-Oct-2015</property>
                 <property name="label" translatable="yes">Save as C_SV</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="focus_on_click">False</property>
                 <property name="receives_default">False</property>
                 <property name="use_underline">True</property>
-                <property name="focus_on_click">False</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1609,6 +1588,9 @@ Build: 25-Oct-2015</property>
     <property name="type_hint">dialog</property>
     <property name="transient_for">gscope_main</property>
     <signal name="delete-event" handler="on_stats_dialog_delete_event" swapped="no"/>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox11">
         <property name="visible">True</property>
@@ -1979,7 +1961,7 @@ Build: 25-Oct-2015</property>
                       <object class="GtkLabel" id="label27">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="ypad">8</property>
+                        <property name="margin_bottom">8</property>
                         <property name="label" translatable="yes">&lt;span size="large" weight="bold"&gt;Source File Lexical Analysis Statistics&lt;/span&gt;</property>
                         <property name="use_markup">True</property>
                         <property name="xalign">0</property>
@@ -1999,7 +1981,8 @@ Build: 25-Oct-2015</property>
                             <property name="width_request">180</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="xpad">10</property>
+                            <property name="margin_left">5</property>
+                            <property name="margin_right">5</property>
                             <property name="label" translatable="yes">&lt;span size="large" weight="bold"&gt;Include Files&lt;/span&gt;</property>
                             <property name="use_markup">True</property>
                             <property name="xalign">0</property>
@@ -2027,7 +2010,8 @@ Build: 25-Oct-2015</property>
                             <property name="width_request">180</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="xpad">10</property>
+                            <property name="margin_left">5</property>
+                            <property name="margin_right">5</property>
                             <property name="label" translatable="yes">&lt;span size="large" weight="bold"&gt;Function Calls&lt;/span&gt;</property>
                             <property name="use_markup">True</property>
                             <property name="xalign">0</property>
@@ -2055,7 +2039,8 @@ Build: 25-Oct-2015</property>
                             <property name="width_request">180</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="xpad">10</property>
+                            <property name="margin_left">5</property>
+                            <property name="margin_right">5</property>
                             <property name="label" translatable="yes">&lt;span size="large" weight="bold"&gt;Function Definitions&lt;/span&gt;</property>
                             <property name="use_markup">True</property>
                             <property name="xalign">0</property>
@@ -2083,7 +2068,7 @@ Build: 25-Oct-2015</property>
                             <property name="width_request">180</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="xpad">10</property>
+                            <property name="margin_left">5</property>
                             <property name="label" translatable="yes">&lt;span size="large" weight="bold"&gt;Identifiers&lt;/span&gt;</property>
                             <property name="use_markup">True</property>
                             <property name="xalign">0</property>
@@ -2111,7 +2096,8 @@ Build: 25-Oct-2015</property>
                             <property name="width_request">180</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="xpad">10</property>
+                            <property name="margin_left">5</property>
+                            <property name="margin_right">5</property>
                             <property name="label" translatable="yes">&lt;span size="large" weight="bold"&gt;Definitions&lt;/span&gt;</property>
                             <property name="use_markup">True</property>
                             <property name="xalign">0</property>
@@ -2139,7 +2125,8 @@ Build: 25-Oct-2015</property>
                             <property name="width_request">180</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="xpad">10</property>
+                            <property name="margin_left">5</property>
+                            <property name="margin_right">5</property>
                             <property name="label" translatable="yes">&lt;span size="large" weight="bold"&gt;C++ Class Definitions&lt;/span&gt;</property>
                             <property name="use_markup">True</property>
                             <property name="xalign">0</property>
@@ -2166,7 +2153,8 @@ Build: 25-Oct-2015</property>
                           <object class="GtkLabel" id="label30">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="xpad">10</property>
+                            <property name="margin_left">5</property>
+                            <property name="margin_right">5</property>
                             <property name="label" translatable="yes">(Enums+Globals+Members+Structures+Typdefs+Unions+Classes+#defines+Functions)</property>
                             <property name="xalign">0</property>
                           </object>
@@ -2179,7 +2167,8 @@ Build: 25-Oct-2015</property>
                           <object class="GtkLabel" id="label31">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="xpad">10</property>
+                            <property name="margin_left">5</property>
+                            <property name="margin_right">5</property>
                             <property name="label" translatable="yes">(#defines+Functions)</property>
                             <property name="xalign">0</property>
                           </object>
@@ -2238,6 +2227,9 @@ Build: 25-Oct-2015</property>
     <property name="transient_for">gscope_main</property>
     <property name="has_resize_grip">True</property>
     <signal name="delete-event" handler="on_gscope_preferences_delete_event" swapped="no"/>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox1">
         <property name="visible">True</property>
@@ -2307,7 +2299,7 @@ Build: 25-Oct-2015</property>
                       <object class="GtkImage" id="image18">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="xpad">15</property>
+                        <property name="margin_left">8</property>
                         <property name="stock">gtk-find</property>
                         <property name="icon_size">6</property>
                       </object>
@@ -2339,8 +2331,8 @@ Build: 25-Oct-2015</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
                         <property name="tooltip_text" translatable="yes">Leave search text in query field after search completes</property>
+                        <property name="halign">start</property>
                         <property name="image">image26</property>
-                        <property name="xalign">0</property>
                         <property name="always_show_image">True</property>
                         <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="on_retain_text_checkbutton_toggled" swapped="no"/>
@@ -2358,9 +2350,9 @@ Build: 25-Oct-2015</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
                         <property name="tooltip_text" translatable="yes">Leave search text in query field only if the search has failed.  Allow correction of typos.</property>
+                        <property name="halign">start</property>
                         <property name="margin_left">30</property>
                         <property name="image">retain_text_failed_search_image</property>
-                        <property name="xalign">0</property>
                         <property name="always_show_image">True</property>
                         <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="on_retain_text_failed_search_checkbutton_toggled" swapped="no"/>
@@ -2378,8 +2370,8 @@ Build: 25-Oct-2015</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
                         <property name="tooltip_text" translatable="yes">Perform all searches in case-insensitive mode</property>
+                        <property name="halign">start</property>
                         <property name="image">image27</property>
-                        <property name="xalign">0</property>
                         <property name="always_show_image">True</property>
                         <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="on_ignore_case_checkbutton_toggled" swapped="no"/>
@@ -2421,7 +2413,7 @@ Build: 25-Oct-2015</property>
                       <object class="GtkImage" id="image21">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="xpad">15</property>
+                        <property name="margin_left">8</property>
                         <property name="stock">gtk-file</property>
                         <property name="icon_size">6</property>
                       </object>
@@ -2452,7 +2444,7 @@ Build: 25-Oct-2015</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
                         <property name="tooltip_text" translatable="yes">Use G-scope's built-in [Readonly] file viewer</property>
-                        <property name="xalign">0</property>
+                        <property name="halign">start</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="on_use_viewer_radiobutton_toggled" swapped="no"/>
@@ -2471,8 +2463,8 @@ Build: 25-Oct-2015</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
                         <property name="tooltip_text" translatable="yes">When selected: Use a single File View window, otherwise open a new window for each file.</property>
+                        <property name="halign">start</property>
                         <property name="margin_left">30</property>
-                        <property name="xalign">0</property>
                         <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="on_reuse_window_checkbutton_toggled" swapped="no"/>
                       </object>
@@ -2490,7 +2482,7 @@ Build: 25-Oct-2015</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
                         <property name="tooltip_text" translatable="yes">Use the specified text editor to view/modify files.</property>
-                        <property name="xalign">0</property>
+                        <property name="halign">start</property>
                         <property name="draw_indicator">True</property>
                         <property name="group">use_viewer_radiobutton</property>
                         <signal name="toggled" handler="on_use_editor_radiobutton_toggled" swapped="no"/>
@@ -2510,7 +2502,8 @@ Build: 25-Oct-2015</property>
                           <object class="GtkLabel" id="editor_command_label">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="xpad">35</property>
+                            <property name="margin_left">10</property>
+                            <property name="margin_right">10</property>
                             <property name="label" translatable="yes">Editor Command</property>
                           </object>
                           <packing>
@@ -2555,7 +2548,7 @@ Don't forget to launch a terminal window for your editor if it needs one</proper
                   <object class="GtkLabel" id="label8">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="ypad">15</property>
+                    <property name="margin_top">15</property>
                   </object>
                   <packing>
                     <property name="expand">True</property>
@@ -2666,7 +2659,7 @@ and View</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="xalign">0</property>
+                        <property name="halign">start</property>
                         <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="on_no_rebuild_radiobutton_toggled" swapped="no"/>
                       </object>
@@ -2682,7 +2675,7 @@ and View</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="xalign">0</property>
+                        <property name="halign">start</property>
                         <property name="draw_indicator">True</property>
                         <property name="group">no_rebuild_radiobutton</property>
                         <signal name="toggled" handler="on_rebuild_radiobutton_toggled" swapped="no"/>
@@ -2699,7 +2692,7 @@ and View</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="xalign">0</property>
+                        <property name="halign">start</property>
                         <property name="draw_indicator">True</property>
                         <property name="group">no_rebuild_radiobutton</property>
                         <signal name="toggled" handler="on_force_rebuild_radiobutton_toggled" swapped="no"/>
@@ -2738,7 +2731,7 @@ and View</property>
                       <object class="GtkImage" id="image31">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="xalign">0.059999998658895493</property>
+                        <property name="halign">start</property>
                         <property name="pixbuf">../share/gscope/pixmaps/configure.png</property>
                       </object>
                       <packing>
@@ -2771,8 +2764,8 @@ and View</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
                         <property name="tooltip_text" translatable="yes">Use only the first 8 characters to match C symbols.</property>
+                        <property name="halign">start</property>
                         <property name="use_underline">True</property>
-                        <property name="xalign">0</property>
                         <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="on_truncate_symbols_checkbutton_toggled" swapped="no"/>
                       </object>
@@ -2789,8 +2782,8 @@ and View</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
                         <property name="tooltip_text" translatable="yes">Build a compressed symbol table (Reccommended)</property>
+                        <property name="halign">start</property>
                         <property name="use_underline">True</property>
-                        <property name="xalign">0</property>
                         <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="on_compress_symbols_checkbutton_toggled" swapped="no"/>
                       </object>
@@ -2828,7 +2821,7 @@ and View</property>
                       <object class="GtkImage" id="image503">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="xalign">0.059999998658895493</property>
+                        <property name="halign">start</property>
                         <property name="icon_name">accessories-text-editor</property>
                         <property name="icon_size">6</property>
                       </object>
@@ -3049,10 +3042,10 @@ and View</property>
                       <object class="GtkCheckButton" id="autogen_enable_checkbutton1">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="receives_default">False</property>
-                        <property name="use_underline">True</property>
                         <property name="focus_on_click">False</property>
-                        <property name="xalign">0</property>
+                        <property name="receives_default">False</property>
+                        <property name="halign">start</property>
+                        <property name="use_underline">True</property>
                         <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="on_autogen_enable_checkbutton1_toggled" swapped="no"/>
                       </object>
@@ -3611,9 +3604,9 @@ Reference</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
+                    <property name="halign">start</property>
                     <property name="margin_left">30</property>
                     <property name="use_underline">True</property>
-                    <property name="xalign">0</property>
                     <property name="draw_indicator">True</property>
                     <signal name="toggled" handler="on_recursive_search_mode_checkbutton_toggled" swapped="no"/>
                   </object>
@@ -4172,7 +4165,8 @@ Search</property>
                       <object class="GtkLabel" id="label62">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="ypad">15</property>
+                        <property name="margin_top">8</property>
+                        <property name="margin_bottom">8</property>
                         <property name="label" translatable="yes">&lt;span weight="bold" size="large"&gt;Applicaton Behavior Control&lt;/span&gt;</property>
                         <property name="use_markup">True</property>
                       </object>
@@ -4210,9 +4204,9 @@ Search</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
+                    <property name="halign">start</property>
                     <property name="border_width">6</property>
                     <property name="use_underline">True</property>
-                    <property name="xalign">0</property>
                     <property name="active">True</property>
                     <property name="draw_indicator">True</property>
                     <signal name="toggled" handler="on_confirmation_checkbutton_toggled" swapped="no"/>
@@ -4230,9 +4224,9 @@ Search</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
                     <property name="tooltip_text" translatable="yes">Display Icons (and text) in drop-down menus.</property>
+                    <property name="halign">start</property>
                     <property name="border_width">6</property>
                     <property name="use_underline">True</property>
-                    <property name="xalign">0</property>
                     <property name="active">True</property>
                     <property name="draw_indicator">True</property>
                     <signal name="toggled" handler="on_showicons_checkbutton_toggled" swapped="no"/>
@@ -4250,9 +4244,9 @@ Search</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
                     <property name="tooltip_text" translatable="yes">Open search result item with a single mouse click</property>
+                    <property name="halign">start</property>
                     <property name="border_width">6</property>
                     <property name="use_underline">True</property>
-                    <property name="xalign">0</property>
                     <property name="draw_indicator">True</property>
                     <signal name="toggled" handler="on_single_click_checkbutton_toggled" swapped="no"/>
                   </object>
@@ -4270,7 +4264,8 @@ Search</property>
                       <object class="GtkLabel" id="label63">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="ypad">15</property>
+                        <property name="margin_top">8</property>
+                        <property name="margin_bottom">8</property>
                         <property name="label" translatable="yes">&lt;span weight="bold" size="large"&gt;Debug Settings&lt;/span&gt;</property>
                         <property name="use_markup">True</property>
                       </object>
@@ -4307,9 +4302,9 @@ Search</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
+                    <property name="halign">start</property>
                     <property name="border_width">6</property>
                     <property name="use_underline">True</property>
-                    <property name="xalign">0</property>
                     <property name="active">True</property>
                     <property name="draw_indicator">True</property>
                     <signal name="toggled" handler="on_show_includes_checkbutton_toggled" swapped="no"/>
@@ -4539,6 +4534,9 @@ Search</property>
     <property name="action">select-folder</property>
     <signal name="delete-event" handler="on_folder_chooser_dialog_delete_event" swapped="no"/>
     <signal name="response" handler="on_folder_chooser_dialog_response" swapped="no"/>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="filechooserdialog-vbox1">
         <property name="can_focus">False</property>
