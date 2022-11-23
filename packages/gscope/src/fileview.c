@@ -134,7 +134,7 @@ void FILEVIEW_create(gchar *file_name, gint line)
             g_free(windowPtr->filename);
             windowPtr->filename = strdup(file_name);
             gtk_window_set_title (GTK_WINDOW (windowPtr->topWidget), windowPtr->filename);
-            gtk_widget_set_name(GTK_WIDGET(windowPtr->topWidget), windowPtr->filename); 
+            gtk_widget_set_name(GTK_WIDGET(windowPtr->topWidget), windowPtr->filename);
 
             // Clear the current buffer text
             s_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(windowPtr->srcViewWidget));
@@ -152,10 +152,10 @@ void FILEVIEW_create(gchar *file_name, gint line)
             // We could not find a window displaying this file.
             // And we are not to re-use an old window
             // Create a new window and add it to the list.
-    
+
             windowPtr = (ViewWindow *) g_malloc(sizeof(ViewWindow));
             windowPtr->filename = strdup(file_name);
-    
+
             // create a new GtkSourceView window
             createFileViewer(windowPtr);
             s_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(windowPtr->srcViewWidget));
@@ -163,7 +163,7 @@ void FILEVIEW_create(gchar *file_name, gint line)
             // Create a marker to indicate the matched line
             gtk_text_buffer_get_iter_at_line (GTK_TEXT_BUFFER (s_buffer), &iter, line - 1);
             gtk_source_buffer_create_source_mark (GTK_SOURCE_BUFFER (s_buffer), "LineMarker", "LMtype", &iter);
-    
+
             if (viewListBegin == NULL)
             {
                 // This is the first window in the list
@@ -174,7 +174,7 @@ void FILEVIEW_create(gchar *file_name, gint line)
             {
                 // Add the window to the end of the list
                 windowPtr->next = NULL;
-                if (viewListEnd) viewListEnd->next = windowPtr; 
+                if (viewListEnd) viewListEnd->next = windowPtr;
                 viewListEnd = windowPtr;
             }
         }
@@ -226,7 +226,7 @@ static void createFileViewer(ViewWindow *windowPtr)
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     gtk_container_set_border_width (GTK_CONTAINER (window), 10);
     gtk_window_set_title (GTK_WINDOW (window), windowPtr->filename);
-    gtk_widget_set_name(GTK_WIDGET(window), windowPtr->filename); 
+    gtk_widget_set_name(GTK_WIDGET(window), windowPtr->filename);
     gtk_window_set_default_size (GTK_WINDOW(window), 660, 500);
     gtk_window_move(GTK_WINDOW (window), x, y);
     x+=30;
@@ -236,10 +236,7 @@ static void createFileViewer(ViewWindow *windowPtr)
 
     fileview_icon_pixbuf = create_pixbuf ("icon-search.png");
     if (fileview_icon_pixbuf)
-    {
         gtk_window_set_icon (GTK_WINDOW (window), fileview_icon_pixbuf);
-        g_object_unref (fileview_icon_pixbuf);
-    }
 
     /* Create a Scrolled Window that will contain the GtkSourceView */
     pScrollWin = gtk_scrolled_window_new (NULL, NULL);
@@ -251,7 +248,7 @@ static void createFileViewer(ViewWindow *windowPtr)
     // "lang_files_dir" HACK: instead of simply calling gtk_source_languages_manager_new(), we
     // create the language manager with the "lang_files_dir" property set to $PACKAGE_DATA_DIR/gtksourceview/language-specs.
     // This enables gtksourceview to find the language spec files when it is not installed at its "normal" path.
-    
+
     lm = gtk_source_language_manager_new();
     gtk_source_language_manager_set_search_path(lm, (gchar **) lang_dirs);
 
@@ -282,6 +279,7 @@ static void createFileViewer(ViewWindow *windowPtr)
     gtk_source_view_set_mark_category_icon_from_pixbuf(GTK_SOURCE_VIEW(sView), "LMtype", fileview_icon_pixbuf);
     #endif
 
+    g_object_unref (fileview_icon_pixbuf);  // Free the pixbuf
     g_signal_connect (GTK_SOURCE_VIEW(sView),"populate-popup",G_CALLBACK(ModifyTextPopUp),windowPtr);
 
     #ifdef GTK3_BUILD
@@ -428,7 +426,7 @@ void ModifyTextPopUp(GtkTextView *textview, GtkMenu *menu, gpointer user_data)
     }
 
     g_list_free(list);
-    
+
     ImageMenuItem1 = gtk_image_menu_item_new_from_stock (GTK_STOCK_EDIT, NULL);
     gtk_container_add (GTK_CONTAINER (menu), ImageMenuItem1);
 
@@ -439,11 +437,11 @@ void ModifyTextPopUp(GtkTextView *textview, GtkMenu *menu, gpointer user_data)
     g_signal_connect(G_OBJECT(ImageMenuItem2), "activate", G_CALLBACK(on_fileview_close_activate), user_data);
 
     gtk_widget_show_all(GTK_WIDGET(menu));
-    
+
 }
 
 
-static gboolean is_mf_or_makefile(const char *filename) 
+static gboolean is_mf_or_makefile(const char *filename)
 {
     char *ptr;
 
@@ -463,6 +461,6 @@ static gboolean is_mf_or_makefile(const char *filename)
             return (TRUE);
         }
     }
-    
+
     return (FALSE);
 }

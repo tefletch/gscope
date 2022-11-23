@@ -60,10 +60,10 @@ and for each source line containing a symbol
 Leading and trailing white space in the source line is removed. Tabs are
 changed to blanks, and multiple blanks are squeezed to a single blank,
 even in character and string constants. The symbol data for the last file
-ends with 
+ends with
 
     <file mark>
-    
+
 A mark is a tab followed by one of these characters:
 
     Char    Meaning
@@ -91,11 +91,11 @@ they are not use by the C language, but since they can appear in a string
 constant, the tab prefix was added. They were never changed to more
 meaningful characters because other programs had been written to read
 the database file.
- 
- 
-============================= begin obsolete section ============================= 
-Note:  The trailer is now obsolete (2/10/13 TF) 
- 
+
+
+============================= begin obsolete section =============================
+Note:  The trailer is now obsolete (2/10/13 TF)
+
 The trailer contains lists of source directories, include directories, and
 source files; its format is
 
@@ -119,8 +119,8 @@ list is used by findstring() and findregexp(), so the #include'd files were
 not searched if the database was up-to-date.  Outputting the source file
 list after the symbol data solved this problem.  The directory lists could
 have remained part of the header; it was just easier move all but the first
-line of the header to the trailer. 
-============================== end obsolete section ============================= 
+line of the header to the trailer.
+============================== end obsolete section =============================
 */
 
 
@@ -205,7 +205,7 @@ int     fileversion;        /* cross-reference file version */
 //===============================================================
 
 
-/* Note: these digraph character frequencies were calculated from possible 
+/* Note: these digraph character frequencies were calculated from possible
    printable digraphs in the cross-reference for the C compiler */
 char        dichar1[] = " teisaprnl(of)=c"; /* 16 most frequent first chars */
 char        dichar2[] = " tnerpla";         /* 8 most frequent second chars using the above as first chars */
@@ -225,33 +225,33 @@ static char build_stats_msg[1024];
 //
 // Open up the cross reference database.  This database will be
 // constructed by one of three methods:
-// 
-//    1) Nobuild: An old, pre-existing, database will be opened 
+//
+//    1) Nobuild: An old, pre-existing, database will be opened
 //       without any modifications to the original contents.
 //       This is the default behavior if, and only if, absolutely
 //       none of the source files, and include files have changed.
-//       This mode can be explicity requested by the user, but 
-//       doing so could create a data coherency problem if target 
-//       source file content (or file existance) have changed since 
+//       This mode can be explicity requested by the user, but
+//       doing so could create a data coherency problem if target
+//       source file content (or file existance) have changed since
 //       the original cross-reference was generated.
-// 
+//
 //    2) Full: A completely new, built from scratch, cross reference
-//       database is created. (Slowest mode of open - source file 
-//       list is constructed and cross reference is built from 
-//       scratch, every detected source file is parsed).  This is 
-//       the default behavior if no previous cross-reference is 
+//       database is created. (Slowest mode of open - source file
+//       list is constructed and cross reference is built from
+//       scratch, every detected source file is parsed).  This is
+//       the default behavior if no previous cross-reference is
 //       detected (or the user requests a 'forced' rebuild).
-// 
+//
 //    3) Incremental:  An out-of-date, but "compatible" old cross-
 //       reference is found. A completely new, source file list is
 //       constructed.  When the cross-reference database is
 //       populated, only new files and modifed files are parsed.
-//       Existing files that have not been touched are not re-parsed 
+//       Existing files that have not been touched are not re-parsed
 //       and their existing data is simply copied to the new database.
-//       This is the default behavior if a previous, compatible, 
+//       This is the default behavior if a previous, compatible,
 //       cross-reference is detected.  (Assuming 'forced' and
 //       'nobuild' are not specified)
-// 
+//
 //====================================================================
 
 void BUILD_initDatabase()
@@ -273,7 +273,7 @@ void BUILD_initDatabase()
     if (settings.noBuild)
     {
         /* We want to re-use an existing cross-reference */
-        printf("\nWARNING: The '--no_build' option is active.\n"); 
+        printf("\nWARNING: The '--no_build' option is active.\n");
         printf("         The pre-existing Cross-Reference will be coherent only if no source\n");
         printf("         files have changed since the last time it was built.\n\n");
 
@@ -288,7 +288,7 @@ void BUILD_initDatabase()
 
     // Now that we have a valid cross-reference database,
     // Initialize the "search" sub-system
-    SEARCH_init(); 
+    SEARCH_init();
 
     /* Free the source_name hash table (no longer needed) */
     DIR_free_src_names_hash();
@@ -314,7 +314,7 @@ void BUILD_initDatabase()
 
 
     strcat(build_stats_msg,"\n");
-    
+
     /* Show elapsed times */
 
     if (src_list_time_stop.tv_usec >= src_list_time_start.tv_usec)
@@ -325,7 +325,7 @@ void BUILD_initDatabase()
         src_list_time_stop.tv_sec--;
     }
 
-    sprintf(working_buf, "Source Search Time:    %ld.%6.6ld seconds\n", 
+    sprintf(working_buf, "Source Search Time:    %ld.%6.6ld seconds\n",
            src_list_time_stop.tv_sec - src_list_time_start.tv_sec,
            elapsed_usec );
     strcat(build_stats_msg, working_buf);
@@ -357,7 +357,7 @@ void BUILD_initDatabase()
     {
         sprintf(working_buf, "Autogen time:              %ld.%6.6ld seconds\n",
                autogen_elapsed_sec,
-               autogen_elapsed_usec ); 
+               autogen_elapsed_usec );
         strcat(build_stats_msg, working_buf);
     }
 
@@ -460,7 +460,7 @@ static void initialize_using_old_cref()
 
     /* Extract the source file list from the existing cross-reference data */
     /***********************************************************************/
-    DIR_init(OLD_CREF);    
+    DIR_init(OLD_CREF);
 
     file_count = 0;
     oldbuf_ptr = old_file_buf;
@@ -497,8 +497,8 @@ static void initialize_for_new_cref()
         /* Bring up the splash screen prior to searching for source files (the search can take a while) */
         DISPLAY_update_build_progress(0, 100);   /* Show (essentially) no progress */
     }
-   
-    /* Create a fresh Source-File list. 
+
+    /* Create a fresh Source-File list.
        Initialize the Include-Directory list.
        Initialize key path variables and file name */
     DIR_init(NEW_CREF);
@@ -507,7 +507,7 @@ static void initialize_for_new_cref()
         AUTOGEN_run( DIR_get_path(DIR_DATA));
 
 
-    if (nsrcfiles == 0)    
+    if (nsrcfiles == 0)
     {
         if ( !settings.refOnly )
             DISPLAY_msg(GTK_MESSAGE_ERROR, "<span weight=\"bold\"> No source files found</span>\nGscope will exit.");
@@ -567,14 +567,14 @@ static void initcompress()
 
 void build_new_cref()
 {
-    FILE    *old_file;              
+    FILE    *old_file;
     char    *old_file_buf = NULL;   /* Buffer that holds the entire old crossref file contents */
     struct  stat statstruct;        /* file status */
-    
+
     gboolean force_rebuild;
     old_buf_decriptor_t     old_buf_descriptor;
 
-    /* 
+    /*
         The cross reference build algorithm is as follows:
             1) If absolutely nothing has changed re-use the old cross-reference as-is (no rebuild)
             2) If the "force rebuild" option is set, or there is no 'old' cross-reference file, build
@@ -644,7 +644,7 @@ void build_new_cref()
 
     if ( force_rebuild )
         make_new_cref(NULL);                /* Create a full cross reference */
-    else 
+    else
         make_new_cref(&old_buf_descriptor); /* Create an incremental cross-reference */
 
 
@@ -722,7 +722,7 @@ static gboolean old_crossref_is_compatible(char *file_buf)
         retval = FALSE;
     }
 
-    free(cref_header);
+    g_free(cref_header);
     return(retval);
 }
 
@@ -771,8 +771,8 @@ static void make_new_cref(old_buf_decriptor_t *old_descriptor)
     /* make passes through the source file list until the last level of included files is processed */
 
     // The initial source file list is based on startup options (command line args and current config).
-    // This list is sorted, and there are no duplicates.  It is further augmented when #include directives 
-    // are encountered in source files and the included file is not already on the source list (but found 
+    // This list is sorted, and there are no duplicates.  It is further augmented when #include directives
+    // are encountered in source files and the included file is not already on the source list (but found
     // via include file search path - as source files are parsed).
 
     firstfile = 0;
@@ -800,7 +800,7 @@ static void make_new_cref(old_buf_decriptor_t *old_descriptor)
                         DISPLAY_update_build_progress(fileindex, nsrcfiles);
                     }
                 }
-                
+
                 /* if srcDir is not NULL, temporarily cd to srcDir */
                 if ( strcmp(settings.srcDir, "") != 0) my_chdir(settings.srcDir);
 
@@ -813,13 +813,13 @@ static void make_new_cref(old_buf_decriptor_t *old_descriptor)
 
                 /* if srcDir is not NULL, pop back to the original CWD */
                 if ( strcmp(settings.srcDir, "") != 0) my_chdir( DIR_get_path(DIR_CURRENT_WORKING) );
-                
+
             }  /* for (fileindex = firstfile; fileindex < lastfile; ++fileindex) */
 
             /* Process all include files detected during parsing */
             if (lastfile == nsrcfiles)
             {
-                sprintf(working_buf, "Cross-referenced %d files\n(Source parsing found %d additional include files)\n", 
+                sprintf(working_buf, "Cross-referenced %d files\n(Source parsing found %d additional include files)\n",
                         nsrcfiles - skipped, nsrcfiles - skipped - num_original);
                 strcat(build_stats_msg, working_buf);
 
@@ -849,7 +849,7 @@ static void make_new_cref(old_buf_decriptor_t *old_descriptor)
         /*** Start Incremental Update ***/
 
         DIR_create_offset_hash(old_descriptor->start);   /* Construct a hash table of old-cref file section offsets (for re-use lookup) */
-        
+
         /*** Walk the NEW source file list and generate a new cross-reference using oldcross-reference data (if  ***/
         /*** it is still up-to-date). Otherwise, generate a new cross-reference section for the file.            ***/
         /***********************************************************************************************************/
@@ -899,7 +899,7 @@ static void make_new_cref(old_buf_decriptor_t *old_descriptor)
                 }
                 else            // File not found in old CREF, this must be a new file
                 {
-                    if ( crossref(new_file) ) 
+                    if ( crossref(new_file) )
                         ++built;
                     else
                         skipped++;
@@ -913,7 +913,7 @@ static void make_new_cref(old_buf_decriptor_t *old_descriptor)
             /* Process all include files detected during parsing */
             if (lastfile == nsrcfiles)
             {
-                sprintf(working_buf, "Cross-referenced %d files (%d New, %d Re-used)\nSource parsing found %d additional include files\n", 
+                sprintf(working_buf, "Cross-referenced %d files (%d New, %d Re-used)\nSource parsing found %d additional include files\n",
                         nsrcfiles - skipped, built, copied, nsrcfiles - skipped - num_original);
                 strcat(build_stats_msg, working_buf);
 
@@ -952,7 +952,7 @@ static void make_new_cref(old_buf_decriptor_t *old_descriptor)
         exit(EXIT_FAILURE);
     }
 
- 
+
     (void) fclose(newrefs);
 
     /* replace the old database file with the new database file */

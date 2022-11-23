@@ -933,7 +933,10 @@ static void parse_app_config(const char *filename)
         else
         {
             // The user is not allowed to configure a "null" string for this value.  If they tried, fix it.
-            g_strlcpy(settings.autoGenPath, autoGenPathDef, MAX_STRING_ARG_SIZE);
+            if ( g_strlcpy(settings.autoGenPath, autoGenPathDef, MAX_STRING_ARG_SIZE) )
+            {
+                // Do nothing, the default value will always fit.  The 'if' is added to keep coverity happy
+            }
         }
         g_free(tmp_ptr);
     }
@@ -1748,6 +1751,7 @@ gchar *template =
     gboolean    use_override = FALSE;
     const gchar config_file[] = "site_default_override";
     gchar       *buf;
+    gboolean    retval = FALSE;
     struct stat statstruct;
     FILE        *override_file;
     ssize_t     num_chars;
@@ -1784,6 +1788,20 @@ gchar *template =
                             buf[statstruct.st_size] = '\0';     // Null terminate the file data.
                             use_override = TRUE;
                         }
+
+                        printf("Performing first time application configuration using: ");
+                        if ( use_override )
+                        {
+                            printf("Site defaults.\n");
+                            retval = create_template_file(filename, buf);
+                        }
+                        else
+                        {
+                            printf("Built-in defaults\n");
+                            retval = create_template_file(filename, template);
+                        }
+
+                        g_free(buf);
                     }
                     fclose(override_file);
                 }
@@ -1791,21 +1809,7 @@ gchar *template =
         }
     }
 
-    printf("Performing first time application configuration using: ");
-    if ( use_override )
-    {
-        gboolean retval;
-
-        printf("Site defaults.\n");
-        retval = create_template_file(filename, buf);
-        g_free(buf);
-        return(retval);
-    }
-    else
-    {
-        printf("Built-in defaults\n");
-        return (create_template_file(filename, template));
-    }
+    return(retval);
 }
 
 

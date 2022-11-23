@@ -1162,7 +1162,7 @@ static char *open_results_file(char *full_filename, off_t *size)
 {
     FILE     *results_file;
     struct   stat statstruct;
-    char     *results_buf;
+    static char     *results_buf;
 
     if ( (stat(full_filename, &statstruct) != 0 ) || ((results_file = fopen(full_filename, "rb")) == NULL) )
     {
@@ -1712,7 +1712,7 @@ search_results_t *SEARCH_lookup(search_t search_operation, gchar *pattern)
     {
         char      *msg;
         char      *esc_pattern;
-        
+
         esc_pattern = g_markup_escape_text(pattern, -1);        // Escape any/all special markup chars <,>,&
 
         if (result == NOTSYMBOL)
@@ -1901,6 +1901,7 @@ gboolean SEARCH_save_html(gchar *filename)
     char     *end_ptr;
     char     *work_ptr;
     char     *full_filename;
+    gboolean retval = TRUE;
     off_t    size;
     uint8_t  format_index;
     uint8_t  i;
@@ -1917,228 +1918,235 @@ gboolean SEARCH_save_html(gchar *filename)
 
 
     full_filename = g_malloc(strlen(filename) + 6);
-    if (full_filename == NULL)
+    if ( full_filename )
     {
-        fprintf(stderr, "Error: Unable to allocate memory for new file name.\n");
-        return(FALSE);
-    }
+        /* Add an appropriate file extension, if neccessary */
+        work_ptr = strrchr(filename, '.');
 
-    /* Add an appropriate file extension, if neccessary */
-    work_ptr = strrchr(filename, '.');
-
-    if (work_ptr == NULL)
-    {
-        /* Filename has no extension, add ".html" */
-        strcpy(full_filename, filename);
-        strcat(full_filename, ".html");
-    }
-    else
-    {
-        /* Filename has an extension, check for .htm or .html */
-        if ( (strcmp(work_ptr, ".htm") == 0) || (strcmp(work_ptr, ".html") == 0) )
+        if (work_ptr == NULL)
         {
-            /* We already have a valid html extension, don't add one */
-            strcpy(full_filename, filename);
-        }
-        else
-        {
-            /* Not a valid html extension, add ".html" */
+            /* Filename has no extension, add ".html" */
             strcpy(full_filename, filename);
             strcat(full_filename, ".html");
         }
-    }
-
-    /*** See if a non-zero results file exists.  If it does, open the results file and the output file ***/
-    /*****************************************************************************************************/
-
-    results_buf = open_results_file(temp1, &size);
-    if ( results_buf == NULL )
-    {
-        return(FALSE);
-    }
-
-    output_file = open_out_file(full_filename);
-    if ( output_file == NULL )
-    {
-        my_cannotopen(full_filename);
-        return(FALSE);
-    }
-
-    /*** Determine the results format ***/
-    /************************************/
-
-    // Looking for one of three formats:
-    //  1) file, function, linenumber, text
-    //  2) file, linenumber, text
-    //  3) file
-    //
-    //  Discrimination algorithm:
-    //      Scan past file (always present, scan past '|')
-    //      If next entry is <unknown>
-    //          format is 2 or 3.
-    //      else
-    //          format is 1 (done).
-    //
-    //      if (format 2 or 3) scan past line number (<uknown> # text)
-    //         if text = <unknown>
-    //              format is 3 (done)
-    //          else
-    //              format is 2 (done)
-    //
-
-    /* Get a pointer to the beginning of the file buffer */
-    results_ptr = results_buf;
-    end_ptr = results_buf + size;
-
-    /* Scan past the file name */
-    while ( *results_ptr++ != '|');
-
-    if ( strncmp(results_ptr, "<unknown> ", 10) == 0)
-    {
-        results_ptr += 10;  // Scan past the dummy function name;
-
-        while (*results_ptr++ != ' ');  // Scan past the line number
-
-        if ( strncmp(results_ptr, "<unknown>", 9) == 0 )
-            format_index = 2;
         else
-            format_index = 1;
+        {
+            /* Filename has an extension, check for .htm or .html */
+            if ( (strcmp(work_ptr, ".htm") == 0) || (strcmp(work_ptr, ".html") == 0) )
+            {
+                /* We already have a valid html extension, don't add one */
+                strcpy(full_filename, filename);
+            }
+            else
+            {
+                /* Not a valid html extension, add ".html" */
+                strcpy(full_filename, filename);
+                strcat(full_filename, ".html");
+            }
+        }
+
+        /*** See if a non-zero results file exists.  If it does, open the results file and the output file ***/
+        /*****************************************************************************************************/
+
+        results_buf = open_results_file(temp1, &size);
+        if ( results_buf )
+        {
+            output_file = open_out_file(full_filename);
+            if ( output_file )
+            {
+                /*** Determine the results format ***/
+                /************************************/
+
+                // Looking for one of three formats:
+                //  1) file, function, linenumber, text
+                //  2) file, linenumber, text
+                //  3) file
+                //
+                //  Discrimination algorithm:
+                //      Scan past file (always present, scan past '|')
+                //      If next entry is <unknown>
+                //          format is 2 or 3.
+                //      else
+                //          format is 1 (done).
+                //
+                //      if (format 2 or 3) scan past line number (<uknown> # text)
+                //         if text = <unknown>
+                //              format is 3 (done)
+                //          else
+                //              format is 2 (done)
+                //
+
+                /* Get a pointer to the beginning of the file buffer */
+                results_ptr = results_buf;
+                end_ptr = results_buf + size;
+
+                /* Scan past the file name */
+                while ( *results_ptr++ != '|');
+
+                if ( strncmp(results_ptr, "<unknown> ", 10) == 0)
+                {
+                    results_ptr += 10;  // Scan past the dummy function name;
+
+                    while (*results_ptr++ != ' ');  // Scan past the line number
+
+                    if ( strncmp(results_ptr, "<unknown>", 9) == 0 )
+                        format_index = 2;
+                    else
+                        format_index = 1;
+                }
+                else
+                {
+                    format_index = 0;
+                }
+
+                /* Reset the read pointer */
+                results_ptr = results_buf;
+
+
+                /*** Emit the HTML table ***/
+                /***************************/
+
+                // Emit fixed HTML preamble data
+                fprintf(output_file, "\n<html>\n<table class=SrcTable border=1 cellspacing=0 cellpadding=0 style='border-collapse:collapse;border:none'>\n");
+                format = &(format_table[format_index]);
+
+                // Emit column number specific header row
+                fprintf(output_file, "<tr>\n");
+                for (i = 0; i < format->num_columns; i++)
+                {
+                    fprintf(output_file, "<td nowrap=\"nowrap\"\nstyle='background:%s'>\n<b><span style='color:%s'>%s</span></b>\n</td>\n\n",
+                                HEADER_BACKGROUND_COLOR,
+                                HEADER_TEXT_COLOR,
+                                format->column_header[i]
+                            );
+                }
+                fprintf(output_file, "</tr>\n");
+
+                while ( results_ptr < end_ptr )
+                {
+                    /* build row data */
+                    /******************/
+
+                    // build row preambles
+                    fprintf(output_file, "<tr>");
+
+                    for (i = 0; i < format->num_columns; i++)
+                    {
+                        // build cell preamble
+                        fprintf(output_file, "<td nowrap=\"nowrap\"\nstyle='border-top:none;\n");
+
+                        // Check for left border
+                        if (i == 0)
+                        {
+                            fprintf(output_file, "border-left:solid %s", BORDER_COLOR_AND_SIZE);  // Turn on left border
+                        }
+                        else
+                        {
+                            fprintf(output_file, "border-left:none;\n");
+                        }
+
+                        fprintf(output_file, "border-bottom:solid %s", BORDER_COLOR_AND_SIZE);
+
+                        // Check for right border
+                        if (i == format->num_columns - 1)
+                        {
+                            fprintf(output_file, "border-right:solid %s", BORDER_COLOR_AND_SIZE); // Turn on right border
+                        }
+                        else
+                        {
+                            fprintf(output_file, "border-right:none;\n");
+                        }
+
+                        fprintf(output_file, "padding:0in 0.2in 0in 0in;\nbackground:");
+
+                        if (row)
+                            fprintf(output_file, "%s", ROW_HIGHLIGHT_COLOR);
+                        else
+                            fprintf(output_file, "%s", ROW_NORMAL_COLOR);
+
+                        fprintf(output_file, "'>\n");
+
+                        // enter cell data
+
+                        switch (i)
+                        {
+                            case 0:
+                                /* The first column is always a 'file' column, and it is uniquely delimited */
+                                fprintf(output_file, "<b>");
+
+                                results_ptr = html_copy(output_file, results_ptr, '|');
+
+                                if (format->num_columns == 1)
+                                {
+                                    /* skip over dummy data */
+                                    while (*results_ptr++ != '\n');
+                                }
+
+                                fprintf(output_file, "</b>\n");
+                            break;
+
+                            case 1:
+                                if (format->num_columns == 3)
+                                {
+                                    /* this is 3-column output, skip the dummy info in the function field. */
+                                    while (*results_ptr++ != ' ');
+                                }
+
+                                results_ptr = html_copy(output_file, results_ptr, ' ');
+
+                            break;
+
+                            case 2:
+                                if (format->num_columns == 3)
+                                {
+                                    results_ptr = html_copy(output_file, results_ptr, '\n');
+                                }
+                                else
+                                {
+                                    results_ptr = html_copy(output_file, results_ptr, ' ');
+                                }
+                            break;
+
+                            case 3:
+                                results_ptr = html_copy(output_file, results_ptr, '\n');
+                            break;
+                        }
+
+                        // emit cell postamble
+                        fprintf(output_file, "\n</td>\n");
+                    }
+                    // emit row postamble
+                    fprintf(output_file, "\n</tr>\n");
+                    row = !row;
+                }
+
+                // emit file postamble
+                fprintf(output_file, "\n</table>\n</html>\n");
+
+                fclose(output_file);
+            }
+            else
+            {
+                my_cannotopen(full_filename);
+                retval = FALSE;
+            }
+
+            g_free(results_buf);
+        }
+        else
+        {
+            retval = FALSE;
+        }
+
+        g_free(full_filename);
     }
     else
     {
-        format_index = 0;
+        fprintf(stderr, "Error: Unable to allocate memory for new file name.\n");
+        retval = FALSE;
     }
 
-    /* Reset the read pointer */
-    results_ptr = results_buf;
-
-
-    /*** Emit the HTML table ***/
-    /***************************/
-
-    // Emit fixed HTML preamble data
-    fprintf(output_file, "\n<html>\n<table class=SrcTable border=1 cellspacing=0 cellpadding=0 style='border-collapse:collapse;border:none'>\n");
-    format = &(format_table[format_index]);
-
-    // Emit column number specific header row
-    fprintf(output_file, "<tr>\n");
-    for (i = 0; i < format->num_columns; i++)
-    {
-        fprintf(output_file, "<td nowrap=\"nowrap\"\nstyle='background:%s'>\n<b><span style='color:%s'>%s</span></b>\n</td>\n\n",
-                    HEADER_BACKGROUND_COLOR,
-                    HEADER_TEXT_COLOR,
-                    format->column_header[i]
-                );
-    }
-    fprintf(output_file, "</tr>\n");
-
-    while ( results_ptr < end_ptr )
-    {
-        /* build row data */
-        /******************/
-
-        // build row preambles
-        fprintf(output_file, "<tr>");
-
-        for (i = 0; i < format->num_columns; i++)
-        {
-            // build cell preamble
-            fprintf(output_file, "<td nowrap=\"nowrap\"\nstyle='border-top:none;\n");
-
-            // Check for left border
-            if (i == 0)
-            {
-                fprintf(output_file, "border-left:solid %s", BORDER_COLOR_AND_SIZE);  // Turn on left border
-            }
-            else
-            {
-                fprintf(output_file, "border-left:none;\n");
-            }
-
-            fprintf(output_file, "border-bottom:solid %s", BORDER_COLOR_AND_SIZE);
-
-            // Check for right border
-            if (i == format->num_columns - 1)
-            {
-                fprintf(output_file, "border-right:solid %s", BORDER_COLOR_AND_SIZE); // Turn on right border
-            }
-            else
-            {
-                fprintf(output_file, "border-right:none;\n");
-            }
-
-            fprintf(output_file, "padding:0in 0.2in 0in 0in;\nbackground:");
-
-            if (row)
-                fprintf(output_file, "%s", ROW_HIGHLIGHT_COLOR);
-            else
-                fprintf(output_file, "%s", ROW_NORMAL_COLOR);
-
-            fprintf(output_file, "'>\n");
-
-            // enter cell data
-
-            switch (i)
-            {
-                case 0:
-                    /* The first column is always a 'file' column, and it is uniquely delimited */
-                    fprintf(output_file, "<b>");
-
-                    results_ptr = html_copy(output_file, results_ptr, '|');
-
-                    if (format->num_columns == 1)
-                    {
-                        /* skip over dummy data */
-                        while (*results_ptr++ != '\n');
-                    }
-
-                    fprintf(output_file, "</b>\n");
-                break;
-
-                case 1:
-                    if (format->num_columns == 3)
-                    {
-                        /* this is 3-column output, skip the dummy info in the function field. */
-                        while (*results_ptr++ != ' ');
-                    }
-
-                    results_ptr = html_copy(output_file, results_ptr, ' ');
-
-                break;
-
-                case 2:
-                    if (format->num_columns == 3)
-                    {
-                        results_ptr = html_copy(output_file, results_ptr, '\n');
-                    }
-                    else
-                    {
-                        results_ptr = html_copy(output_file, results_ptr, ' ');
-                    }
-                break;
-
-                case 3:
-                    results_ptr = html_copy(output_file, results_ptr, '\n');
-                break;
-            }
-
-            // emit cell postamble
-            fprintf(output_file, "\n</td>\n");
-        }
-        // emit row postamble
-        fprintf(output_file, "\n</tr>\n");
-        row = !row;
-    }
-
-    // emit file postamble
-    fprintf(output_file, "\n</table>\n</html>\n");
-
-    fclose(output_file);
-
-    if (full_filename) g_free(full_filename);
-    if (results_buf)   g_free(results_buf);
-
-    return(TRUE);
+    return(retval);
 }
 
 
@@ -2197,71 +2205,79 @@ gboolean SEARCH_save_text(gchar *filename)
     char     *end_ptr;
     char     *work_ptr;
     char     *full_filename;
+    gboolean retval = TRUE;
     off_t    size;
 
     /* Add an appropriate file extension, if neccessary */
     full_filename = g_malloc(strlen(filename) + 5);
-    if (full_filename == NULL)
+    if ( full_filename )
     {
-        fprintf(stderr, "Error: Unable to allocate memory for new file name.\n");
-        return(FALSE);
-    }
+        work_ptr = strrchr(filename, '.');
 
-    work_ptr = strrchr(filename, '.');
-
-    if (work_ptr == NULL)
-    {
-        /* Filename has no extension, add ".txt" */
-        strcpy(full_filename, filename);
-        strcat(full_filename, ".txt");
-    }
-    else
-    {
-        /* Filename has an extension, check for .txt */
-        if ( strcmp(work_ptr, ".txt") == 0 )
+        if (work_ptr == NULL)
         {
-            /* We already have a valid .txt extension, don't add one */
-            strcpy(full_filename, filename);
-        }
-        else
-        {
-            /* Not a valid .txt extension, add ".txt" */
+            /* Filename has no extension, add ".txt" */
             strcpy(full_filename, filename);
             strcat(full_filename, ".txt");
         }
+        else
+        {
+            /* Filename has an extension, check for .txt */
+            if ( strcmp(work_ptr, ".txt") == 0 )
+            {
+                /* We already have a valid .txt extension, don't add one */
+                strcpy(full_filename, filename);
+            }
+            else
+            {
+                /* Not a valid .txt extension, add ".txt" */
+                strcpy(full_filename, filename);
+                strcat(full_filename, ".txt");
+            }
+        }
+
+        /*** See if a non-zero results file exists.  If it does, open the results file and the output file ***/
+        /*****************************************************************************************************/
+
+        results_buf = open_results_file(temp1, &size);
+        if ( results_buf )
+        {
+            output_file = open_out_file(full_filename);
+            if ( output_file )
+            {
+                /* Get a pointer to the beginning of the file buffer */
+                results_ptr = results_buf;
+                end_ptr = results_buf + size;
+
+                while ( results_ptr < end_ptr )
+                {
+                    fputc(*results_ptr++, output_file);
+                }
+
+                fclose(output_file);
+            }
+            else
+            {
+                my_cannotopen(full_filename);
+                retval = FALSE;
+            }
+
+            g_free(results_buf);
+        }
+        else
+        {
+            retval = FALSE;
+        }
+
+        g_free(full_filename);
     }
-
-    /*** See if a non-zero results file exists.  If it does, open the results file and the output file ***/
-    /*****************************************************************************************************/
-
-    results_buf = open_results_file(temp1, &size);
-    if ( results_buf == NULL )
+    else
     {
-        return(FALSE);
+        fprintf(stderr, "Error: Unable to allocate memory for new file name.\n");
+        retval = FALSE;
     }
 
-    output_file = open_out_file(full_filename);
-    if ( output_file == NULL )
-    {
-        my_cannotopen(full_filename);
-        return(FALSE);
-    }
-
-    /* Get a pointer to the beginning of the file buffer */
-    results_ptr = results_buf;
-    end_ptr = results_buf + size;
-
-    while ( results_ptr < end_ptr )
-    {
-        fputc(*results_ptr++, output_file);
-    }
-
-    fclose(output_file);
-
-    if (full_filename) g_free(full_filename);
-    if (results_buf)   g_free(results_buf);
-
-    return(TRUE);
+    return(retval);
 }
 
 
@@ -2274,112 +2290,120 @@ gboolean SEARCH_save_csv(gchar *filename)
     char     *end_ptr;
     char     *work_ptr;
     char     *full_filename;
+    gboolean retval = TRUE;
     off_t    size;
 
     /* Add an appropriate file extension, if neccessary */
     full_filename = g_malloc(strlen(filename) + 5);
-    if (full_filename == NULL)
+    if ( full_filename )
     {
-        fprintf(stderr, "Error: Unable to allocate memory for new file name.\n");
-        return(FALSE);
-    }
+        work_ptr = strrchr(filename, '.');
 
-    work_ptr = strrchr(filename, '.');
-
-    if (work_ptr == NULL)
-    {
-        /* Filename has no extension, add ".csv" */
-        strcpy(full_filename, filename);
-        strcat(full_filename, ".csv");
-    }
-    else
-    {
-        /* Filename has an extension, check for .txt */
-        if ( strcmp(work_ptr, ".csv") == 0 )
+        if (work_ptr == NULL)
         {
-            /* We already have a valid .txt extension, don't add one */
-            strcpy(full_filename, filename);
-        }
-        else
-        {
-            /* Not a valid .txt extension, add ".txt" */
+            /* Filename has no extension, add ".csv" */
             strcpy(full_filename, filename);
             strcat(full_filename, ".csv");
         }
+        else
+        {
+            /* Filename has an extension, check for .txt */
+            if ( strcmp(work_ptr, ".csv") == 0 )
+            {
+                /* We already have a valid .txt extension, don't add one */
+                strcpy(full_filename, filename);
+            }
+            else
+            {
+                /* Not a valid .txt extension, add ".txt" */
+                strcpy(full_filename, filename);
+                strcat(full_filename, ".csv");
+            }
+        }
+
+        /*** See if a non-zero results file exists.  If it does, open the results file and the output file ***/
+        /*****************************************************************************************************/
+
+        results_buf = open_results_file(temp1, &size);
+        if ( results_buf )
+        {
+            output_file = open_out_file(full_filename);
+            if ( output_file )
+            {
+                /* Get a pointer to the beginning of the file buffer */
+                results_ptr = results_buf;
+                end_ptr = results_buf + size;
+
+                // Create header entries
+                fprintf(output_file, "File, Function, Line Number, Source Text,\n");
+
+                while ( results_ptr < end_ptr )
+                {
+                    // Copy the "filename"
+                    while (*results_ptr != '|')
+                    {
+                        fputc(*results_ptr++, output_file);
+                    }
+                    fputc(',', output_file);
+                    results_ptr++;
+
+                    // Copy the "function"
+                    while (*results_ptr != ' ')
+                    {
+                        fputc(*results_ptr++, output_file);
+                    }
+                    fputc(',', output_file);
+                    results_ptr++;
+
+                    // Copy the "Line Number"
+                    while (*results_ptr != ' ')
+                    {
+                        fputc(*results_ptr++, output_file);
+                    }
+                    fputc(',', output_file);
+                    results_ptr++;
+
+                    // Copy the "Source Text"
+                    fputc('"', output_file);   // Since source text can contain ',' delimiter, we need to quot the whole entry
+                    while ( (*results_ptr == ' ') || (*results_ptr == '\t') )
+                    {
+                        results_ptr++;      // Squash leading white space
+                    }
+
+                    while (*results_ptr != '\n')
+                    {
+                        if (*results_ptr == '"') fputc('"', output_file);   // Change all source text '"' to double-quote
+                        fputc(*results_ptr++, output_file);
+                    }
+                    fputc('"', output_file);
+                    fputc('\n', output_file);
+                    results_ptr++;
+                }
+
+                fclose(output_file);
+            }
+            else
+            {
+                my_cannotopen(full_filename);
+                retval = FALSE;
+            }
+
+            g_free(results_buf);
+        }
+        else
+        {
+            retval = FALSE;
+        }
+
+        g_free(full_filename);
     }
-
-    /*** See if a non-zero results file exists.  If it does, open the results file and the output file ***/
-    /*****************************************************************************************************/
-
-    results_buf = open_results_file(temp1, &size);
-    if ( results_buf == NULL )
+    else
     {
-        return(FALSE);
+        fprintf(stderr, "Error: Unable to allocate memory for new file name.\n");
+        retval = FALSE;
     }
 
-    output_file = open_out_file(full_filename);
-    if ( output_file == NULL )
-    {
-        my_cannotopen(full_filename);
-        return(FALSE);
-    }
-
-    /* Get a pointer to the beginning of the file buffer */
-    results_ptr = results_buf;
-    end_ptr = results_buf + size;
-
-    // Create header entries
-    fprintf(output_file, "File, Function, Line Number, Source Text,\n");
-
-    while ( results_ptr < end_ptr )
-    {
-        // Copy the "filename"
-        while (*results_ptr != '|')
-        {
-            fputc(*results_ptr++, output_file);
-        }
-        fputc(',', output_file);
-        results_ptr++;
-
-        // Copy the "function"
-        while (*results_ptr != ' ')
-        {
-            fputc(*results_ptr++, output_file);
-        }
-        fputc(',', output_file);
-        results_ptr++;
-
-        // Copy the "Line Number"
-        while (*results_ptr != ' ')
-        {
-            fputc(*results_ptr++, output_file);
-        }
-        fputc(',', output_file);
-        results_ptr++;
-
-        // Copy the "Source Text"
-        fputc('"', output_file);   // Since source text can contain ',' delimiter, we need to quot the whole entry
-        while ( (*results_ptr == ' ') || (*results_ptr == '\t') )
-        {
-            results_ptr++;      // Squash leading white space
-        }
-
-        while (*results_ptr != '\n')
-        {
-            if (*results_ptr == '"') fputc('"', output_file);   // Change all source text '"' to double-quote
-            fputc(*results_ptr++, output_file);
-        }
-        fputc('"', output_file);
-        fputc('\n', output_file);
-        results_ptr++;
-    }
-
-    fclose(output_file);
-
-    if (full_filename) g_free(full_filename);
-    if (results_buf)   g_free(results_buf);
-
-    return(TRUE);
+    return(retval);
 }
 
 

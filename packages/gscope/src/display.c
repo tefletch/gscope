@@ -66,11 +66,11 @@ GtkListStore *h_store;
 GtkTreeViewColumn *display_col[4];
 GtkTreeViewColumn *h_col;
 
-// Transient_parent for all message dialogs.   Set to gscope_splash during start-up.  
+// Transient_parent for all message dialogs.   Set to gscope_splash during start-up.
 // After start-up always set to gscope-main
 GtkWidget   *msg_dialog_parent = NULL;
 
-gboolean line_number_info_avail = FALSE;   // Indicates if the most recent query 
+gboolean line_number_info_avail = FALSE;   // Indicates if the most recent query
                                            // produced line number information.
 
 //  ==== Private Global Variables ====
@@ -90,7 +90,7 @@ static gboolean search_equal_func(GtkTreeModel *model, gint column, const gchar 
 
 void DISPLAY_init(GtkWidget *main)
 {
-    
+
     GtkCellRenderer *renderer;
     GtkWidget *image1;
     GtkWidget *sms_button;
@@ -98,7 +98,7 @@ void DISPLAY_init(GtkWidget *main)
     gscope_main = main;     // Save a convenience pointer to the main window
 
     // ======== Set up the search RESULTS treeview ========
-    // Add four columms to the GtkTreeView.  
+    // Add four columms to the GtkTreeView.
     // All four columns will be displayed as text.
 
     treeview   = lookup_widget(GTK_WIDGET (gscope_main), "treeview1");
@@ -144,10 +144,10 @@ void DISPLAY_init(GtkWidget *main)
 
     /* Configure a custom function for interactive searches */
     gtk_tree_view_set_search_equal_func (GTK_TREE_VIEW(treeview), search_equal_func, NULL, NULL);
-  
+
 
     // ======== Set up the search HISTORY treeview ========
-    // Add one columm to the GtkTreeView.  
+    // Add one columm to the GtkTreeView.
     // The column will be displayed as text.
     h_treeview = lookup_widget(GTK_WIDGET (gscope_main), "history_treeview");
 
@@ -270,7 +270,7 @@ void DISPLAY_search_results(search_t button, search_results_t *results)
     #define FILE_FN_LN_TXT_COL_MASK  0x0f
     #define FILE_LN_TXT_COL_MASK     0x0d
     #define FILE_COL_MASK            0x01
-    
+
     if (results->match_count < 1) return;   /* This should never happen, but just in case... */
 
     gtk_list_store_clear(store);
@@ -338,8 +338,8 @@ void DISPLAY_history_update(const gchar *newEntry)
     gchar *entry;
     GtkTreePath *path;
 
-    /* 
-     * If newEntry already exists somewhere in the list, remove the old 
+    /*
+     * If newEntry already exists somewhere in the list, remove the old
      * instance before adding it again at the bottom of the list.
      */
     if ( gtk_tree_model_get_iter_first(GTK_TREE_MODEL(h_store), &iter) )
@@ -365,7 +365,7 @@ void DISPLAY_history_update(const gchar *newEntry)
     gtk_list_store_set(h_store, &iter, HISTORY, newEntry, -1);
 
     /* Make the new entry visible in the history scroll window */
-    gtk_tree_view_scroll_to_cell( GTK_TREE_VIEW(h_treeview), 
+    gtk_tree_view_scroll_to_cell( GTK_TREE_VIEW(h_treeview),
                                   path = gtk_tree_model_get_path(GTK_TREE_MODEL(h_store), &iter),
                                   NULL,
                                   TRUE,     // Use alignment
@@ -429,12 +429,12 @@ void DISPLAY_history_load()
 
         hist_file_buf = g_malloc(statstruct.st_size);    /* malloc a buffer to hold the entire history file */
 
-        if (hist_file_buf != NULL)
+        if ( hist_file_buf )
         {
             /* Read in the entire file */
             if ( fread(hist_file_buf, 1, statstruct.st_size, hist_file) == statstruct.st_size )
             {
-                // Walk the newline-separated list and create a new entry in the history list for 
+                // Walk the newline-separated list and create a new entry in the history list for
                 // each line contained in the file
 
                 end_of_file = hist_file_buf + statstruct.st_size;  // Set the EOF marker
@@ -459,7 +459,7 @@ void DISPLAY_history_load()
                 }
 
                 /* Make the new entry visible in the history scroll window */
-                gtk_tree_view_scroll_to_cell( GTK_TREE_VIEW(h_treeview), 
+                gtk_tree_view_scroll_to_cell( GTK_TREE_VIEW(h_treeview),
                                               path = gtk_tree_model_get_path(GTK_TREE_MODEL(h_store), &iter),
                                               NULL,
                                               TRUE,     // Use alignment
@@ -473,6 +473,7 @@ void DISPLAY_history_load()
                 fprintf(stderr, "Error: Unable to to read history file.  Load aborted.\n");
             }
 
+            g_free(hist_file_buf);
         }
         else
         {
@@ -486,7 +487,7 @@ void DISPLAY_history_load()
         MsgDialog = gtk_message_dialog_new_with_markup (
                                   GTK_WINDOW (gscope_main),
                                   GTK_DIALOG_DESTROY_WITH_PARENT,
-                                  GTK_MESSAGE_ERROR, 
+                                  GTK_MESSAGE_ERROR,
                                   GTK_BUTTONS_CLOSE,
                                   "<span weight =\"bold\">Error:</span>  No history file found");
 
@@ -571,7 +572,7 @@ gboolean DISPLAY_get_entry_info(GtkTreePath *path, gchar **filename, gchar **lin
     }
     else
         return(FALSE);
-     
+
 }
 
 void DISPLAY_update_progress_bar(guint count, guint max)
@@ -692,16 +693,16 @@ void DISPLAY_set_cref_current(gboolean up_to_date)
 //---------------------------------------------------------------------------
 //
 // Display a message dialog of the specified type.
-// Parameters:  
+// Parameters:
 //   type:  Mesage type, one of [GTK_MESSAGE_INFO | GTK_MESSAGE_WARNING |
 //                               GTK_MESSAGE_QUESTION | GTK_MESSAGE_ERROR |
 //                               GTK_MESSAGE_OTHER ]
 //
 //   message:  The text to be displayed in the message dialog.  Note,
-//             The string parameter "message" can be a Pango text 
+//             The string parameter "message" can be a Pango text
 //             markup string.
 //
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
 void DISPLAY_msg(GtkMessageType type, const gchar *message)
 {
     DISPLAY_message_dialog(type, message, TRUE);  // Display a modal message dialog.
@@ -717,7 +718,7 @@ void DISPLAY_message_dialog(GtkMessageType type, const gchar *message, gboolean 
     MsgDialog = gtk_message_dialog_new (
                               GTK_WINDOW(msg_dialog_parent),
                               GTK_DIALOG_DESTROY_WITH_PARENT,
-                              type, 
+                              type,
                               GTK_BUTTONS_CLOSE,
                               NULL);
     gtk_message_dialog_set_markup (GTK_MESSAGE_DIALOG (MsgDialog), message);
@@ -733,7 +734,7 @@ void DISPLAY_message_dialog(GtkMessageType type, const gchar *message, gboolean 
     else  // display a non-modal message dialog
     {
         gtk_widget_show(MsgDialog);
-    
+
         // Destroy the dialog when the user responds to it (e.g. clicks a button)
         g_signal_connect_swapped (MsgDialog, "response",
                                G_CALLBACK (gtk_widget_destroy),
@@ -835,10 +836,10 @@ Mask:     | 7 | 6 | 5 | 4 | 3 | 2 | 2 | 0 |
                Text_________|   |   |   |
                Line_____________|   |   |
                Function_____________|   |
-               File_____________________|             
-                   
+               File_____________________|
+
  Each bit in the mask represents a column.  If the bit is set,
- the corresponding column is displayed in the query results.  
+ the corresponding column is displayed in the query results.
  If the bit is zero, the corresponding column is not displayed.
 --------------------------------------------------------------------*/
 static void configure_columns(gchar new_mask)
@@ -858,7 +859,7 @@ static void configure_columns(gchar new_mask)
 
             new_mask = new_mask >> 1;
         }
-        
+
         column_mask = new_mask;
     }
     return;
@@ -1027,12 +1028,12 @@ static void update_list_store(search_results_t *results)
 
             if (over_count > MAX_CRAZY_BIG_SIZE)  // We have so many "big" source lines, we need to filter it down to the "worst".
             {
-                fprintf(stderr, "Warning: Field width overflow: [Source Text] will be truncated.\n"); 
+                fprintf(stderr, "Warning: Field width overflow: [Source Text] will be truncated.\n");
                 fprintf(stderr, "    Max Source Text length allowed: %d, Actual Source Text length: %d\n", MAX_DISPLAY_SOURCE, over_count);
                 fprintf(stderr, "    File: %s\n    Line: %s\n", file, linenum);
                 width = MAX_DISPLAY_SOURCE / 4;
                 if (width > MAX_EXCERPT_SIZE) width = MAX_EXCERPT_SIZE;
-                fprintf(stderr, "    Excerpt [Head]: %.*s\n", width, start_ptr); 
+                fprintf(stderr, "    Excerpt [Head]: %.*s\n", width, start_ptr);
                 fprintf(stderr, "    Excerpt [Tail]: %.*s\n\n", width, start_ptr + over_count - width);
             }
         }
@@ -1042,7 +1043,7 @@ static void update_list_store(search_results_t *results)
 
 
         gtk_list_store_append(store, &iter);
-        gtk_list_store_set(store, &iter, FILENAME, file, FUNCTION, function, 
+        gtk_list_store_set(store, &iter, FILENAME, file, FUNCTION, function,
                            LINE, linenum, TEXT, source_text, -1);
     }
     return;

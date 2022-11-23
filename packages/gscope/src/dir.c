@@ -102,7 +102,7 @@ This was tested for:
   the output delta to a Gray code (a^(a>>1)) so a string of 1's (as
   is commonly produced by subtraction) look like a single 1-bit
   difference.
-* the base values were pseudorandom, all zero but one bit set, or 
+* the base values were pseudorandom, all zero but one bit set, or
   all zero plus a counter that starts at zero.
 
 Some k values for my "a-=c; a^=rot(c,k); c+=b;" arrangement that
@@ -112,7 +112,7 @@ satisfy this are
    14  9  3  7 17  3
 Well, "9 15 3 18 27 15" didn't quite get 32 bits diffing
 for "differ" defined as + with a one-bit base and a two-bit delta.  I
-used http://burtleburtle.net/bob/hash/avalanche.html to choose 
+used http://burtleburtle.net/bob/hash/avalanche.html to choose
 the operations, constants, and arrangements of the variables.
 
 This does not achieve avalanche.  There are input bits of (a,b,c)
@@ -151,7 +151,7 @@ produce values of c that look totally different.  This was tested for
   the output delta to a Gray code (a^(a>>1)) so a string of 1's (as
   is commonly produced by subtraction) look like a single 1-bit
   difference.
-* the base values were pseudorandom, all zero but one bit set, or 
+* the base values were pseudorandom, all zero but one bit set, or
   all zero plus a counter that starts at zero.
 
 These constants passed:
@@ -307,7 +307,7 @@ char *DIR_get_path(get_method_e method)
     {
         case DIR_INITIALIZE:
             // Derive the paths of several key run-time directories and files
-            // Including:  
+            // Including:
             //   1. Current-Working-Directory (the directory that G-Scope was run from)
             //   2. Data-Directory (the directory where cross-reference data is stored -- default is CWD)
             //   3. Source-directory (the directory where source files are found -- default is CWD)
@@ -400,7 +400,7 @@ char *DIR_get_path(get_method_e method)
             /* do nothing */
         break;
     }
-    
+
     return(NULL);
 }
 
@@ -485,7 +485,7 @@ void DIR_create_offset_hash(char *buf_ptr)
 {
     struct      offset_listitem *list_ptr;
     uint32_t    i;
-    uint32_t    name_len;  
+    uint32_t    name_len;
     char        *file_name;
     char        *offset_ptr;
 
@@ -613,11 +613,11 @@ void DIR_addincdir(char *path)
     /* make sure it is a directory */
     if ( (stat(clean_path, &statstruct) == 0) && (statstruct.st_mode & S_IFDIR) )
     {
-        
+
         if (num_include_dirs == max_include_dirs)   /* If the include-directory list is full, make it larger */
         {
             max_include_dirs += DIRINC;
-            include_dirs = (char **) g_realloc((char *) include_dirs, 
+            include_dirs = (char **) g_realloc((char *) include_dirs,
                                            max_include_dirs * sizeof(char *));
         }
 
@@ -626,7 +626,7 @@ void DIR_addincdir(char *path)
         while (i < num_include_dirs)
         {
             if ( strcmp(include_dirs[i++], clean_path) == 0)   /* duplicate found */
-            {    
+            {
                 free(clean_path); // Prevent memeory leak
                 return;
             }
@@ -720,7 +720,7 @@ static void _alloc_src_file_list()
 // Name:  _make_src_file_list()
 //
 // Description:  Create the Source-File list.
-// 
+//
 //   Create the source file list using the following precedence:
 //      1) Use the list of files supplied on the command line.
 //      2) Use the list of files contained in a text file specifiec
@@ -730,7 +730,7 @@ static void _alloc_src_file_list()
 //                 Recursively search the srcDir
 //              else
 //                 flat-search srcDir
-//       
+//
 //======================================================================
 
 static void _make_src_file_list()
@@ -813,7 +813,7 @@ static void _make_src_file_list()
     /* Default:  Directory = CWD, Recursive Search = OFF          */
     /* Optional: Use specified directory and/or Recursive Search  */
     /*============================================================*/
-    
+
     src_dir = DIR_get_path(DIR_SOURCE);
 
     /*** Now Perform the source file search ***/
@@ -928,7 +928,7 @@ static gboolean issrcfile(const char *file)
     }
 
     /* no suffix - "typeless" file - these names can get rather long so allow twice as many chars before truncating */
-    
+
     s = &(file[0]);
     pat_ptr = &(pattern[0]);
     pattern_len = strlen(file);
@@ -994,7 +994,7 @@ static void find_srcfiles_in_tree(gchar *src_dir)
 }
 
 
-static int list(const char *name, const struct stat *status, int type) 
+static int list(const char *name, const struct stat *status, int type)
 {
     char *base_name;
 
@@ -1031,7 +1031,7 @@ static int list(const char *name, const struct stat *status, int type)
             }
         }
     }
-    
+
     /* ignore readable & unreadable directories */
     return 0;
 }
@@ -1042,11 +1042,11 @@ static int list(const char *name, const struct stat *status, int type)
    or any subdirectory of 'dir' is not on the directory exclusion
    list.  Return FALSE if 'dir', or any subdirectory is found in the
    exclusion list.
- 
-   Examples: 
+
+   Examples:
 
    Assuming ignoredirList= ":root:root1:root2:root3:"
-   
+
    ./root2 = no match (file - not a dir),  return TRUE
    ./root3/... = root3  match,  return FALSE
    ./root/sub1/sub2 = root match, return FALSE
@@ -1065,7 +1065,7 @@ static gboolean path_check_ok(const char *file)
 
     if (master_ignored_list[0] != '\0')    // Scan the (non-empty) master ignore list  (User list + built-in list)
     {
-        while (TRUE) 
+        while (TRUE)
         {
             i = 0;
             pat_ptr = &(pattern[0]);
@@ -1091,7 +1091,7 @@ static gboolean path_check_ok(const char *file)
         }
     }
 
-    return (TRUE); 
+    return (TRUE);
 }
 
 
@@ -1109,7 +1109,7 @@ void DIR_incfile(char *file)
     compress_path(clean_name);    // warning: compress_path might modify 'file'
 
 
-    if ( infilelist(clean_name) ) 
+    if ( infilelist(clean_name) )
     {
         free(clean_name);
         return;   // If the file is already in the list, no further action is required.
@@ -1216,7 +1216,7 @@ static gboolean is_regular_file(const char *path)
 //
 // Wrapper function to add a single, or multiple (iterated name files)
 // to the source file list
-// 
+//
 //********************************************************************
 void DIR_addsrcfile(char *name)
 {
@@ -1247,7 +1247,7 @@ void DIR_addsrcfile(char *name)
 
         my_asprintf(&synthetic_name, "%s/%s%s.c", GSCOPE_GEN_DIR, tmp_name, settings.autoGenId);
         my_asprintf(&full_path, "%s/%s", DIR_get_path(DIR_DATA), synthetic_name);
-        
+
         // Adds compiled output files before they are created if they do not already exist
         if (stat(full_path, &statstruct) != 0)
         {
@@ -1258,14 +1258,14 @@ void DIR_addsrcfile(char *name)
             work_ptr = strrchr(synthetic_name,'.');
             if (work_ptr)
             {
-                *(++work_ptr) = 'h'; 
+                *(++work_ptr) = 'h';
                 add_src_primitive( strdup(synthetic_name) );
             }
         }
 
         g_free(synthetic_name);
         g_free(full_path);
-        g_free(tmp_name);
+        free(tmp_name);
     }
 }
 
@@ -1277,7 +1277,7 @@ void DIR_addsrcfile(char *name)
 // of allowing DIR_addsrcfile() to iterate over a given filename.  If
 // you want to add a source file to the list, call DIR_addsrcfile()
 // NOT THIS function.
-// 
+//
 //********************************************************************
 static void add_src_primitive(char *name)
 {
@@ -1302,7 +1302,7 @@ static void add_src_primitive(char *name)
     i = hash(p->text);
 
     #if (HASH_ANALASYS == 1)
-    if (src_names_hash_tbl[i] != NULL) 
+    if (src_names_hash_tbl[i] != NULL)
         hash_collisions++;
     #endif
 
@@ -1313,7 +1313,7 @@ static void add_src_primitive(char *name)
 
 
 
-/* 
+/*
  * Determine if the file (passed via parameter *srcfile) is on the include file search
  *  path (by using the global include file directories information).
  */
@@ -1328,7 +1328,7 @@ gboolean DIR_file_on_include_search_path(gchar *srcfile)
         if ( strncmp(srcfile, include_dirs[i], strlen(include_dirs[i])) == 0 )
             return(TRUE);
     }
-    
+
     return(FALSE);
 }
 
@@ -1459,7 +1459,7 @@ static char * compress_path(char *pathname)
 
                 sofar = nextchar - 1;
                 while ((*nextchar++ = *lastchar++) != '\0');
-                    
+
                 lastchar = sofar;
 
                 /*
@@ -1513,7 +1513,7 @@ static int  hash(const char *ss)
 {
     int i;
     unsigned char   *s = (unsigned char *)ss;
-    
+
     for (i = 0; *s != '\0'; )
         i += *s++;  /* += is faster than <<= for cscope */
     return(i % HASH_SIZE);
@@ -1540,8 +1540,8 @@ static uint32_t hash(const char *key)
 lookup3.c, by Bob Jenkins, May 2006, Public Domain.
 
 These are functions for producing 32-bit hashes for hash table lookup.
-hashword(), hashlittle(), hashlittle2(), hashbig(), mix(), and final() 
-are externally useful functions.  Routines to test the hash are included 
+hashword(), hashlittle(), hashlittle2(), hashbig(), mix(), and final()
+are externally useful functions.  Routines to test the hash are included
 if SELF_TEST is defined.  You can use this free for any purpose.  It's in
 the public domain.  It has no warranty.
 
@@ -1549,7 +1549,7 @@ You probably want to use hashlittle().  hashlittle() and hashbig()
 hash byte arrays.  hashlittle() is is faster than hashbig() on
 little-endian machines.  Intel and AMD are little-endian machines.
 On second thought, you probably want hashlittle2(), which is identical to
-hashlittle() except it returns two 32-bit hashes for the price of one.  
+hashlittle() except it returns two 32-bit hashes for the price of one.
 You could implement hashbig2() if you wanted but I haven't bothered here.
 
 If you want to find a hash of, say, exactly 7 integers, do
@@ -1562,9 +1562,9 @@ If you want to find a hash of, say, exactly 7 integers, do
 then use c as the hash value.  If you have a variable length array of
 4-byte integers to hash, use hashword().  If you have a byte array (like
 a character string), use hashlittle().  If you have several byte arrays, or
-a mix of things, see the comments above hashlittle().  
+a mix of things, see the comments above hashlittle().
 
-Why is this so big?  I read 12 bytes at a time into 3 4-byte integers, 
+Why is this so big?  I read 12 bytes at a time into 3 4-byte integers,
 then mix those integers.  This is fast (you can do a lot more thorough
 mixing with 12*3 instructions on 3 integers than you can with 3 instructions
 on 1 byte), but shoehorning those bytes into integers efficiently is messy.
@@ -1625,7 +1625,7 @@ static uint32_t hashlittle( const void *key, size_t length, uint32_t initval)
     }
 
     /*----------------------------- handle the last (probably partial) block */
-    /* 
+    /*
      * "k[2]&0xffffff" actually reads beyond the end of the string, but
      * then masks off the part it's not allowed to read.  Because the
      * string is aligned, the masked-off tail is in the same word as the

@@ -1148,8 +1148,8 @@ void on_open_terminal(GtkWidget *menuitem, gchar *container)
     my_asprintf(&command, settings.terminalApp, coded_container);  // Synthesize the full command line
     my_system(command);
 
-    g_free(command);
-    g_free(coded_container);
+    free(command);
+    free(coded_container);
 }
 
 
@@ -1165,8 +1165,8 @@ void on_open_file_browser(GtkWidget *menuitem, gchar *container)
     my_asprintf(&command, settings.fileManager, coded_container);
     my_system(command);
 
-    g_free(command);
-    g_free(coded_container);
+    free(command);
+    free(coded_container);
 }
 
 void on_open_call_browser(GtkWidget *menuitem, gchar *entry)
@@ -1224,8 +1224,8 @@ void show_context_menu(GtkWidget *treeview, GdkEventButton *event, gchar *filena
 {
     static GtkWidget   *menu = NULL;
     static GtkWidget   *menu_item;
-    gchar              tmp_path[PATHLEN + 1];
-    static gchar       container[PATHLEN + 1];
+    gchar              tmp_path[PATHLEN];
+    static gchar       container[(2 * PATHLEN) + 1];                   // +1 for '/'
     static gchar       file_and_line[PATHLEN + MAX_LINENUM_SIZE + 2];  // +2 for Field-Delimiter and trailing null
     static gchar       entry[1024];
 
@@ -1271,12 +1271,15 @@ void show_context_menu(GtkWidget *treeview, GdkEventButton *event, gchar *filena
         if (tmp_path[0] == '\0')
         {
             // Null 'dirname' add CWD
-            g_strlcpy(container, DIR_get_path(DIR_CURRENT_WORKING), PATHLEN);
+            if ( g_strlcpy(container, DIR_get_path(DIR_CURRENT_WORKING), PATHLEN) >= PATHLEN )
+            {
+                // Do nothing: Quietly truncate the path
+            }
         }
         else
         {
             // Relative 'dirname' make it absolute
-            snprintf(container, PATHLEN, "%s/%s", DIR_get_path(DIR_CURRENT_WORKING), tmp_path);
+            snprintf(container, (2 * PATHLEN), "%s/%s", DIR_get_path(DIR_CURRENT_WORKING), tmp_path);
         }
     }
 
