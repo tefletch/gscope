@@ -601,6 +601,8 @@
                           <object class="GtkGrid" id="search_button_grid">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="row_spacing">2</property>
+                            <property name="column_spacing">2</property>
                             <property name="column_homogeneous">True</property>
                             <child>
                               <object class="GtkButton" id="find_c_identifier_button">
