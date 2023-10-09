@@ -1,3 +1,9 @@
+<a href="https://scan.coverity.com/projects/tefletch-gscope">
+  <img alt="Coverity Scan Build Status"
+       src="https://scan.coverity.com/projects/29174/badge.svg"/>
+</a>
+
+
 # gscope
 An interactive source code browsing tool for C.
 
