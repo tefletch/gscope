@@ -4,7 +4,7 @@
 // Defines
 //===============================================================
 
-#define     MAX_STRING_ARG_SIZE     256             /* Maximum supported length of any single command-line string-type argument */
+#define     MAX_STRING_ARG_SIZE     256             /* Maximum supported length of any single command-line string-type argument (including NULL termination */
 #define     PATHLEN                 500             /* file pathname length */
 
 

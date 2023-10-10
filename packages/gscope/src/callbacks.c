@@ -280,7 +280,7 @@ static void process_query(search_t query_type)
             // remember our last successful query
             previous_query = query_type;
             // remember the last successful query pattern
-            strncpy(previous_pattern, pattern, MAX_COMPARISON);
+            snprintf(previous_pattern, MAX_COMPARISON, "%s", pattern);
 
             if (search_results->match_count > 1)
                 strcpy(plural, "es");

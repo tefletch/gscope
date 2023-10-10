@@ -570,6 +570,7 @@ void build_new_cref()
     FILE    *old_file;
     char    *old_file_buf = NULL;   /* Buffer that holds the entire old crossref file contents */
     struct  stat statstruct;        /* file status */
+    size_t  num_bytes;
 
     gboolean force_rebuild;
     old_buf_decriptor_t     old_buf_descriptor;
@@ -605,7 +606,7 @@ void build_new_cref()
         }
         else    /* The old cross-reference file has been successfully opened */
         {
-            old_file_buf = g_malloc(statstruct.st_size);  /* malloc a buffer to hold the entire old-file */
+            old_file_buf = g_malloc(statstruct.st_size + 1);  /* malloc a buffer to hold the entire old-file */
             if ( old_file_buf == NULL )
             {
                 fprintf(stderr, "Error allocating memory to read old cross-reference file.  Assuming old file is out-of-date.\n");
@@ -613,13 +614,15 @@ void build_new_cref()
             }
             else
             {
-                if ( fread(old_file_buf, 1, statstruct.st_size, old_file) != statstruct.st_size )
+                num_bytes = fread(old_file_buf, 1, statstruct.st_size, old_file);
+                if ( num_bytes != statstruct.st_size )
                 {
                     fprintf(stderr, "Error reading old cross-reference file.  Assuming old file is out-of-date.\n");
                     force_rebuild = TRUE;
                 }
                 else
                 {
+                    old_file_buf[num_bytes] = '\0';
                     if ( !old_crossref_is_compatible(old_file_buf) )
                     {
                         printf("Pre-existing cross-reference file is incompatible.  Building New database...\n");

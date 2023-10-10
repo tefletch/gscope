@@ -1501,7 +1501,7 @@ static char * compress_path(char *pathname)
      */
 
     if (*pathname == '\0')
-        (void) strcpy(pathname, ".");
+        sprintf(pathname, ".");
 
     return(pathname);
 }

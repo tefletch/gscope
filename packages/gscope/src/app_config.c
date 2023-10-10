@@ -242,11 +242,11 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
             strncat(app_config_file, "gscoperc", 20);       /* Use the default config file */
         }
 
-        strncpy(settings.rcFile, app_config_file, MAX_STRING_ARG_SIZE);
+        snprintf(settings.rcFile, MAX_STRING_ARG_SIZE, "%s", app_config_file);
     }
     else   // use settings.rcFile as-is
     {
-        strncpy(app_config_file, settings.rcFile, MAX_STRING_ARG_SIZE);
+        snprintf(app_config_file, MAX_STRING_ARG_SIZE, "%s", settings.rcFile);
     }
 
     //printf("home=%s\napp=%s\ngtk=%s\n", app_home, app_config_file, gtk_config_file);
@@ -665,16 +665,19 @@ static void pixmap_path_fixup(char *filename, char *path, GtkWidget *parent)
     struct  stat statstruct;
     gboolean path_ok = FALSE;
     GtkWidget *MsgDialog;
+    size_t  num_bytes;
 
     // open gtk config file and locate pixmap path string
     if ( stat(filename, &statstruct) == 0 )                                                     // if we can stat() the file
     {
         if ( (config_file = fopen(filename, "rwb")) )                                           // and we can open the file
         {
-            if ( (config_file_buf = g_malloc(statstruct.st_size)) )                             // and we can alloc a buffer
+            if ( (config_file_buf = g_malloc(statstruct.st_size + 1)) )                         // and we can alloc a buffer
             {
-                if ( fread(config_file_buf, 1, statstruct.st_size, config_file) == statstruct.st_size ) // and we can read the file into the buffer
+                num_bytes = fread(config_file_buf, 1, statstruct.st_size, config_file);
+                if ( num_bytes == statstruct.st_size ) // and we can read the file into the buffer
                 {
+                    config_file_buf[num_bytes] = '\0';  // Null terminate the fread buffer
                     sub_string = strstr(config_file_buf, path);
                     if (sub_string)      // Might be a good path, check delimiters
                     {
