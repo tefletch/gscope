@@ -60,7 +60,7 @@ typedef enum    {       /* Search result codes */
 
 static char         *cref_file_buf = NULL;  /* Buffer the holds the entire cross reference database */
 static char         global[] = "<global>";  /* dummy global function name */
-static uint32_t     starttime;              /* start time for progress messages */
+static time_t       starttime;              /* start time for progress messages */
 static uint32_t     imatch_count;           /* Intermediate match count */
 static char         temp1[PATHLEN + 1];     /* temporary file name */
 static char         temp2[PATHLEN + 1];     /* temporary file name */
@@ -1083,8 +1083,8 @@ static void initprogress()
 /* Periodically display the search progress */
 static void progress(uint32_t n1, uint32_t n2)
 {
-    uint32_t    now;
-    char        *msg;
+    time_t  now;
+    char    *msg;
 
     static char format[] = "Searched %ld of %ld files [%ld matches]";
 

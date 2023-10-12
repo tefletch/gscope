@@ -76,12 +76,15 @@
 // Defines
 //===============================================================
 #define     MAX_UPDATE_MSG  1000
+#define     MAX_HOME_ROOT   256
+#define     MAX_APP_DIR     20
+#define     MAX_HOME_PATH   MAX_HOME_ROOT + MAX_APP_DIR
 
 /*** Version Checking Defines ***/
 #define     VCHECK_SIZE     30
 
 #define     MAX_LIST_SIZE           1023            /* Max size for all lists.  All lists must be the same size */
-#define     MAX_OVERRIDE_PATH_SIZE  255
+#define     MAX_OVERRIDE_PATH_SIZE  256
 
 #ifdef GTK3_BUILD   // GTK3 (gscope.css)
 #define     CURRENT_CONFIG_VERSION   "005"
@@ -201,24 +204,21 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
     static GtkWidget *MsgDialog;
     char        new_version_string[20];
     char        old_version_string[20];
-
     gchar       gtk_config_file[256] = {0};
-    gchar       app_home[256] = {0};
+    gchar       app_home[MAX_HOME_PATH + 1] = {0};
     gboolean    new_version_detected = FALSE;
-
     char        *home;
 
     home = getenv("HOME");
 
-    if (home == NULL)
+    if (home == NULL  || strlen(home) > MAX_HOME_ROOT)
     {
-        fprintf(stderr,"\nWarning: The $HOME environment variable is not defined\n"
+        fprintf(stderr,"\nWarning: The $HOME environment variable is not defined (or path too long)\n"
                 "G-scope cannot read or write configuration files\n\n");
         return;
     }
 
-    strncpy(app_home, home, 215);
-    strncat(app_home, "/.gscope/", 20);
+    snprintf(app_home, MAX_HOME_PATH + 1, "%s%s", home, "/.gscope/");
 
     strncpy(gtk_config_file, app_home, 235);
     #ifdef GTK3_BUILD
@@ -659,7 +659,7 @@ static gboolean app_version_check(char *old_string, char *new_string)
 
 static void pixmap_path_fixup(char *filename, char *path, GtkWidget *parent)
 {
-    FILE    *config_file;
+    FILE    *config_file = NULL;
     char    *config_file_buf = NULL;
     char    *sub_string;
     struct  stat statstruct;
@@ -721,8 +721,8 @@ static void pixmap_path_fixup(char *filename, char *path, GtkWidget *parent)
             }
             g_free(config_file_buf);
         }
-        fclose(config_file);
     }
+    if (config_file) fclose(config_file);
 }
 
 
@@ -1753,7 +1753,7 @@ gchar *template =
     gchar       *buf;
     gboolean    retval = FALSE;
     struct stat statstruct;
-    FILE        *override_file;
+    FILE        *override_file = NULL;
     ssize_t     num_chars;
 
     printf("\nChecking for a site-specific-defaults file: ");
@@ -1803,8 +1803,8 @@ gchar *template =
 
                         g_free(buf);
                     }
-                    fclose(override_file);
                 }
+                if (override_file) fclose(override_file);
             }
         }
     }
