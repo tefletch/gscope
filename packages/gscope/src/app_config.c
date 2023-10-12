@@ -668,63 +668,60 @@ static void pixmap_path_fixup(char *filename, char *path, GtkWidget *parent)
     size_t  num_bytes;
 
     // open gtk config file and locate pixmap path string
-    if ( stat(filename, &statstruct) == 0 )                                                     // if we can stat() the file
+    if ( ((config_file = fopen(filename, "rwb")) != NULL) && (fstat(fileno(config_file), &statstruct) == 0) )
     {
-        if ( (config_file = fopen(filename, "rwb")) )                                           // and we can open the file
+        if ( (config_file_buf = g_malloc(statstruct.st_size + 1)) )                         // and we can alloc a buffer
         {
-            if ( (config_file_buf = g_malloc(statstruct.st_size + 1)) )                         // and we can alloc a buffer
+            num_bytes = fread(config_file_buf, 1, statstruct.st_size, config_file);
+            if ( num_bytes == statstruct.st_size ) // and we can read the file into the buffer
             {
-                num_bytes = fread(config_file_buf, 1, statstruct.st_size, config_file);
-                if ( num_bytes == statstruct.st_size ) // and we can read the file into the buffer
+                config_file_buf[num_bytes] = '\0';  // Null terminate the fread buffer
+                sub_string = strstr(config_file_buf, path);
+                if (sub_string)      // Might be a good path, check delimiters
                 {
-                    config_file_buf[num_bytes] = '\0';  // Null terminate the fread buffer
-                    sub_string = strstr(config_file_buf, path);
-                    if (sub_string)      // Might be a good path, check delimiters
-                    {
-                        #ifdef GTK3_BUILD
-                        if ( *(sub_string - 1) == '\'')
-                            if ( *(sub_string + strlen(path)) == '/' )
+                    #ifdef GTK3_BUILD
+                    if ( *(sub_string - 1) == '\'')
+                        if ( *(sub_string + strlen(path)) == '/' )
+                            path_ok = TRUE;
+                    #else       // GTK2
+                        if ( *(sub_string - 1) == '"' || *(sub_string - 1) == ':' )
+                            if ( *(sub_string + strlen(path)) == '"' || *(sub_string + strlen(path)) == ':' )
                                 path_ok = TRUE;
-                        #else       // GTK2
-                            if ( *(sub_string - 1) == '"' || *(sub_string - 1) == ':' )
-                                if ( *(sub_string + strlen(path)) == '"' || *(sub_string + strlen(path)) == ':' )
-                                    path_ok = TRUE;
-                        #endif
-                    }
-
-                    // compare in-file pixmap_path with "path" parameter
-                    if ( !path_ok )
-                    {
-                        char *new_filename;
-
-                        // Preserve possible end-user customization
-                        my_asprintf(&new_filename, "%s.sav", filename);
-                        if ( rename(filename, new_filename) < 0 )
-                            fprintf(stderr,"Warning: Unable to rename original GTK config file:\n%s\n", strerror(errno));
-
-                        create_gtk_config_file(filename);
-
-                        MsgDialog = gtk_message_dialog_new_with_markup (
-                                GTK_WINDOW (parent),
-                                GTK_DIALOG_DESTROY_WITH_PARENT,
-                                GTK_MESSAGE_INFO,
-                                GTK_BUTTONS_CLOSE,
-                                "<span weight=\"bold\" size=\"large\">Fixed bad pixmap_path in G-Scope button theme.</span>\n\n"
-                                "If you had customizations in <span weight=\"bold\">%s</span> you will need to merge them back"
-                                "from your old config file"
-                                "(now named %s)",
-                                filename,
-                                new_filename);
-
-                        gtk_dialog_run (GTK_DIALOG (MsgDialog));
-                        gtk_widget_destroy (GTK_WIDGET (MsgDialog));
-                        g_free(new_filename);
-                    }
+                    #endif
                 }
-                g_free(config_file_buf);
+
+                // compare in-file pixmap_path with "path" parameter
+                if ( !path_ok )
+                {
+                    char *new_filename;
+
+                    // Preserve possible end-user customization
+                    my_asprintf(&new_filename, "%s.sav", filename);
+                    if ( rename(filename, new_filename) < 0 )
+                        fprintf(stderr,"Warning: Unable to rename original GTK config file:\n%s\n", strerror(errno));
+
+                    create_gtk_config_file(filename);
+
+                    MsgDialog = gtk_message_dialog_new_with_markup (
+                            GTK_WINDOW (parent),
+                            GTK_DIALOG_DESTROY_WITH_PARENT,
+                            GTK_MESSAGE_INFO,
+                            GTK_BUTTONS_CLOSE,
+                            "<span weight=\"bold\" size=\"large\">Fixed bad pixmap_path in G-Scope button theme.</span>\n\n"
+                            "If you had customizations in <span weight=\"bold\">%s</span> you will need to merge them back"
+                            "from your old config file"
+                            "(now named %s)",
+                            filename,
+                            new_filename);
+
+                    gtk_dialog_run (GTK_DIALOG (MsgDialog));
+                    gtk_widget_destroy (GTK_WIDGET (MsgDialog));
+                    g_free(new_filename);
+                }
             }
-            fclose(config_file);
+            g_free(config_file_buf);
         }
+        fclose(config_file);
     }
 }
 
@@ -1781,7 +1778,7 @@ gchar *template =
 
             if ( g_file_test(override_path, G_FILE_TEST_EXISTS) )
             {
-                if ( stat(override_path, &statstruct) == 0 && ((override_file = fopen(override_path, "rb")) != NULL) )
+                if ( ((override_file = fopen(override_path, "rb")) != NULL) && (fstat(fileno(override_file), &statstruct) == 0) )   // Fix TOCTOU defect
                 {
                     buf = g_malloc(statstruct.st_size + 1);
                     if ( buf )

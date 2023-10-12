@@ -89,7 +89,7 @@ typedef struct
       gchar     rcFile[MAX_STRING_ARG_SIZE];
       gchar     fileEditor[MAX_STRING_ARG_SIZE];
       // Non-command-argument [string] settings
-      gchar     autoGenPath[MAX_STRING_ARG_SIZE];
+      gchar     autoGenPath[MAX_STRING_ARG_SIZE + 1];
       gchar     autoGenSuffix[MAX_STRING_ARG_SIZE];
       gchar     autoGenCmd[MAX_STRING_ARG_SIZE];
       gchar     autoGenRoot[MAX_STRING_ARG_SIZE];

@@ -31,12 +31,13 @@
 
 #define GEN_PREFIX      "autogen_"
 #define BLD_PREFIX      "autobld_"
+#define MAX_USER_SIZE   40          /* My condolences if your have a username anywhere near 40 chars */
 
 //===============================================================
 //       Local Type Definitions
 //===============================================================
 
-typedef struct 
+typedef struct
 {
     char        *true_basename;     //Real basename
     char        *unique_basename;   //Modified basename if basename already exists. Same as true_basename if name is unique
@@ -48,7 +49,7 @@ typedef struct
 //       Public Global Variables
 //===============================================================
 
-time_t      autogen_elapsed_sec;                    //Holds the elapsed seconds 
+time_t      autogen_elapsed_sec;                    //Holds the elapsed seconds
 suseconds_t autogen_elapsed_usec;                   //Holds the elapsed milliseconds
 
 //===============================================================
@@ -82,7 +83,7 @@ static int      recursive_remove(char *path);
 
 /**
  * Creates symlinks to build(symlinks to uncompiled files) and generation(compiled files) directories.
- * Then initializes storage as neccessary and populates file_info_list with compiled files from 
+ * Then initializes storage as neccessary and populates file_info_list with compiled files from
  * previous sessions.
  */
 void AUTOGEN_init(char *data_dir)
@@ -91,8 +92,9 @@ void AUTOGEN_init(char *data_dir)
     char    *extract_ptr;
     char    gen_symlink_path[PATHLEN + 10];                     // +10 for literal chars and null-terminator
     char    bld_symlink_path[PATHLEN + 10];
-    char    euid[MAX_STRING_ARG_SIZE];                          // Per session/direAUTOGEN_initctory unique ID.  
-    char    link_dest[PATHLEN + PATHLEN + sizeof(BLD_PREFIX) + sizeof(euid) + 20];   // +20 for literal chars and null-terminator
+    char    euid[MAX_STRING_ARG_SIZE];                          // Per session/direAUTOGEN_initctory unique ID.
+    char    username[MAX_USER_SIZE + 1];
+    char    link_dest[PATHLEN + PATHLEN + MAX_USER_SIZE + sizeof(BLD_PREFIX) + sizeof(euid) + 20];   // +20 for literal chars and null-terminator
 
     DIR     *dir;
     struct  dirent *ent;
@@ -100,6 +102,7 @@ void AUTOGEN_init(char *data_dir)
     char    *real_path;
 
     gettimeofday(&autogen_time_start, NULL);
+    snprintf(username, MAX_USER_SIZE + 1, "%s", getenv("USER"));     // Truncate any username > MAX_USER_SIZE
 
     /*** Initialize "auto generated" symlink and destination ***/
     /***********************************************************/
@@ -111,7 +114,7 @@ void AUTOGEN_init(char *data_dir)
         sprintf(euid, "%ld", time(NULL));
 
         // Create new "auto generated" symlink and destination
-        sprintf (link_dest,"%s/%s/%s%s", settings.autoGenPath, getenv("USER"), GEN_PREFIX, euid);
+        sprintf (link_dest,"%s/%s/%s%s", settings.autoGenPath, username, GEN_PREFIX, euid);
         _mkdir_all(link_dest);
         if ( symlink (link_dest , gen_symlink_path) < 0 )
         {
@@ -124,7 +127,7 @@ void AUTOGEN_init(char *data_dir)
     else            // Symlink exists
     {
         link_dest[num_bytes] = '\0';
-        
+
         // Extract the pre-existing EUID
         extract_ptr = strrchr(link_dest, '_');
         extract_ptr++;
@@ -156,9 +159,9 @@ void AUTOGEN_init(char *data_dir)
     if (num_bytes < 0)  // Symlink does not exist
     {
         // euid (new, or extracted) has already been set
-        
+
         // Create new "auto build" symlink and destination
-        sprintf (link_dest,"%s/%s/%s%s", settings.autoGenPath, getenv("USER"), BLD_PREFIX, euid);
+        sprintf (link_dest,"%s/%s/%s%s", settings.autoGenPath, username, BLD_PREFIX, euid);
         _mkdir_all(link_dest);
         if ( symlink (link_dest, bld_symlink_path) < 0 )
         {
@@ -169,7 +172,7 @@ void AUTOGEN_init(char *data_dir)
     else            // Symlink exists
     {
         link_dest[num_bytes] = '\0';
-        
+
         if ( access(link_dest, X_OK) < 0 )       // Symlink exists, but symlink destination does not exist
         {
             switch (errno)
@@ -210,13 +213,13 @@ void AUTOGEN_init(char *data_dir)
 
     /* ALWAYS initialize the file-info list storage (g_malloc() does not guarantee zero'd memory) */
     memset(file_info_list, 0, autogen_max_src_files * sizeof(file_info_t));
-    nfile_info = 0;    
+    nfile_info = 0;
     gettimeofday(&autogen_time_start, NULL);
-     
-    
+
+
     /*** Update the file-info list with information extracted from a pre-existing build directory ***/
     /************************************************************************************************/
-    if ((dir = opendir(bld_symlink_path)) == NULL) 
+    if ((dir = opendir(bld_symlink_path)) == NULL)
     {
         /* could not open directory */
         perror ("ERROR: Failed to open auto_gen BUILD directory.");
@@ -227,14 +230,14 @@ void AUTOGEN_init(char *data_dir)
 
     /*** Loop through all the files in the BUILD directory ***/
     /* If "force rebuild" is checked, unlink all symlinks. Else, repopulate file_info_list with current files */
-    while ((ent = readdir (dir)) != NULL) 
+    while ((ent = readdir (dir)) != NULL)
     {
         if (_is_protobuf_file(ent->d_name))
         {
             pc_stats.num_proto_files++;
 
             sprintf(file_path, "%s/%s/%s", data_dir, GSCOPE_BLD_DIR, ent->d_name);
-            real_path = realpath(file_path, NULL); 
+            real_path = realpath(file_path, NULL);
             if (settings.updateAll) // Unlink all symlinks
             {
                 if (unlink(file_path) != 0)
@@ -259,11 +262,11 @@ void AUTOGEN_init(char *data_dir)
                     file_info_list[nfile_info].exists = FALSE; // Causes symlink to be removed later
                     nfile_info++;
                     free(real_path);
-     
+
                     continue;
                 }
-              
-                file_info_list[nfile_info].unique_basename = strdup(ent->d_name); 
+
+                file_info_list[nfile_info].unique_basename = strdup(ent->d_name);
                 file_info_list[nfile_info].true_basename   = strdup(my_basename(real_path));
                 file_info_list[nfile_info].unique_dirname  = strdup(my_dirname(real_path + strlen(data_dir) + 1));
 
@@ -275,7 +278,7 @@ void AUTOGEN_init(char *data_dir)
     closedir (dir);
 
     gettimeofday(&autogen_time_stop, NULL);
-   
+
     /* Timing calculations: calculate milliseconds */
     if (autogen_time_stop.tv_usec >= autogen_time_start.tv_usec)
         autogen_elapsed_usec += autogen_time_stop.tv_usec - autogen_time_start.tv_usec;
@@ -291,7 +294,7 @@ void AUTOGEN_init(char *data_dir)
 /**
  * Main function to run compilation process of the user specified files */
 void AUTOGEN_run(char *data_dir)
-{ 
+{
     struct  stat statstruct;
     int     src_file_index;     //Index of autogen_src_files
     time_t  compile_time;       //Last time file was compiled
@@ -303,7 +306,7 @@ void AUTOGEN_run(char *data_dir)
 
     gettimeofday(&autogen_time_start, NULL);
 
-    no_compile_flag = FALSE;    
+    no_compile_flag = FALSE;
     src_file_index = 0;
     pc_stats.proto_build_success = 0;
     pc_stats.proto_build_failed = 0;
@@ -318,31 +321,31 @@ void AUTOGEN_run(char *data_dir)
     {
         /* <directory>/<file.proto> */
         sprintf(file_path_buf, "%s/%s", file_info_list[src_file_index].unique_dirname, file_info_list[src_file_index].unique_basename);
-        
+
         /* .../GSCOPE_BLD_DIR/<symlink to .proto> */
-        sprintf(full_path_buf, "%s/%s/%s", 
+        sprintf(full_path_buf, "%s/%s/%s",
                                data_dir,
                                GSCOPE_BLD_DIR,
                                file_info_list[src_file_index].unique_basename);
 
         /* .../GSCOPE_GEN_DIR/<directory>/<file.proto> */
-        sprintf(compiledBuf, "%s/%s/%s/%s", 
-                             data_dir, 
+        sprintf(compiledBuf, "%s/%s/%s/%s",
+                             data_dir,
                              GSCOPE_GEN_DIR,
-                             file_info_list[src_file_index].unique_dirname, 
+                             file_info_list[src_file_index].unique_dirname,
                              file_info_list[src_file_index].true_basename);
 
         /* .../GSCOPE_GEN_DIR/<directory>/<file.pb-c.c> */
         sprintf(strstr(compiledBuf, settings.autoGenSuffix), "%s%s", settings.autoGenId,".c");
 
-        /* Checks to not compile file if it is already up to date */ 
+        /* Checks to not compile file if it is already up to date */
         if ( (stat(compiledBuf, &statstruct) != 0) )
         {
             no_compile_flag = TRUE;
             //fprintf(stderr, "Could not find compiled file: %s\n", compiledBuf);
         }
         compile_time = statstruct.st_mtime;
-        
+
         if ( (stat(full_path_buf, &statstruct) != 0) )
         {
             fprintf(stderr, "Fatal Error: Meta-source file [%s] is missing.  Try running Gscope again.\n", full_path_buf);
@@ -359,11 +362,11 @@ void AUTOGEN_run(char *data_dir)
                 pc_stats.proto_build_success++;
             else
                 pc_stats.proto_build_failed++;
-        }       
+        }
         src_file_index++;
     }
     gettimeofday(&autogen_time_stop, NULL);
-   
+
     /* Timing calculations: calculate milliseconds */
     if (autogen_time_stop.tv_usec >= autogen_time_start.tv_usec)
         autogen_elapsed_usec += autogen_time_stop.tv_usec - autogen_time_start.tv_usec;
@@ -410,7 +413,7 @@ void AUTOGEN_addproto(char* name)
             {
                 /* Symlink already exists */
                 file_info_list[file_info_index].exists = TRUE;
-                
+
                 free(dirName);  /* Don't leak... */
                 return;
             }
@@ -429,13 +432,13 @@ void AUTOGEN_addproto(char* name)
         file_info_list = (file_info_t *) g_realloc(file_info_list, autogen_max_src_files * sizeof(file_info_t));
         // Reminder:  Any new memory allocated is un-initialized.
     }
-    
+
     // Record the true basename and unique dirname.
     file_info_list[nfile_info].true_basename = strdup(baseName);    // Real basename
     file_info_list[nfile_info].unique_dirname = dirName;            // dirName is already malloc'd
 
 
-    // If this bassename already exists in the build directory, create a synthetic 
+    // If this bassename already exists in the build directory, create a synthetic
     // "unique" base name and use it as the name for the new symlink.
     sprintf(build_link_src, "%s/%s", GSCOPE_BLD_DIR, baseName);
 
@@ -443,7 +446,7 @@ void AUTOGEN_addproto(char* name)
     {
         /* File (link) doesn't exist - create symlink (unique_basename == true_basename) */
 
-        file_info_list[nfile_info].unique_basename = strdup(baseName);  // Record the unique basename 
+        file_info_list[nfile_info].unique_basename = strdup(baseName);  // Record the unique basename
     }
     else
     {
@@ -470,16 +473,16 @@ void AUTOGEN_addproto(char* name)
         if (dirName[0] == '/')
         {
             // dirName is an absolute path, use it as-is
-            sprintf(build_link_dest, "%s/%s", dirName, baseName); 
+            sprintf(build_link_dest, "%s/%s", dirName, baseName);
         }
         else
         {
             // dirName is a relative path, make it absolute
-            sprintf(build_link_dest, "%s/%s/%s", cwd = getcwd(NULL, 0), dirName, baseName); 
+            sprintf(build_link_dest, "%s/%s/%s", cwd = getcwd(NULL, 0), dirName, baseName);
             free(cwd);
         }
     }
-    
+
     if ( symlink(build_link_dest, build_link_src) < 0 )       // Create the new "build file" symlink
     {
         fprintf(stderr, "Fatal Error: 3Symlink symlnk() failed: old=%s new=%s\n%s\n", build_link_dest, build_link_src, strerror(errno));
@@ -491,7 +494,7 @@ void AUTOGEN_addproto(char* name)
     nfile_info++;
 
     gettimeofday(&autogen_time_stop, NULL);
-   
+
     /* Timing calculations: calculate milliseconds */
     if (autogen_time_stop.tv_usec >= autogen_time_start.tv_usec)
         autogen_elapsed_usec += autogen_time_stop.tv_usec - autogen_time_start.tv_usec;
@@ -521,7 +524,7 @@ unsigned int AUTOGEN_get_cache_count(char *cache_path)
     {
         if (entry->d_type == DT_DIR)    // If the entry is a directory
         {
-            if ( strstr(entry->d_name, GEN_PREFIX) || strstr(entry->d_name, BLD_PREFIX) ) 
+            if ( strstr(entry->d_name, GEN_PREFIX) || strstr(entry->d_name, BLD_PREFIX) )
                 count++;
         }
     }
@@ -548,7 +551,7 @@ static void _remove_old_symlinks(char *data_dir)
 {
     int     file_info_index;
     char    remove_buf[PATHLEN + sizeof(GSCOPE_BLD_DIR) + PATHLEN + 10];    // +10 for literal chars and null-terminator
-    
+
     for (file_info_index = 0; file_info_index < nfile_info; file_info_index++)
     {
         if (!file_info_list[file_info_index].exists) //If target proto file is no longer found in directory
@@ -563,15 +566,15 @@ static void _remove_old_symlinks(char *data_dir)
             file_info_list[file_info_index] = file_info_list[nfile_info - 1]; //Replace removed file with last element in array
             file_info_index--; //Makes sure loop checks the element moved in
             nfile_info--;
-        } 
+        }
     }
 }
 
- 
+
 /**
  * Takes a proto file path as the input and parses it to create the protoc
  * command string that is then inputted into a protoc-c system call.
- * Will compile the proto file and place the output in the specified 
+ * Will compile the proto file and place the output in the specified
  * outputPath directory.
  */
 static gboolean _protobuf_csrc (const char *full_filename, char *data_dir)
@@ -587,11 +590,11 @@ static gboolean _protobuf_csrc (const char *full_filename, char *data_dir)
     char    output_dir  [PATHLEN + sizeof(GSCOPE_GEN_DIR) + PATHLEN + 10];  // +10 for literal chars and null-terminator
     char    symlink_buf [PATHLEN + sizeof(GSCOPE_BLD_DIR) + PATHLEN + 10];
     char    isearch_buf [PATHLEN + sizeof(GSCOPE_BLD_DIR) + 10];
-    char    command_buf [sizeof(settings.autoGenCmd) + 
-                         sizeof(output_dir) + 
-                         PATHLEN + 
-                         PATHLEN + 
-                         sizeof(isearch_buf) + 
+    char    command_buf [sizeof(settings.autoGenCmd) +
+                         sizeof(output_dir) +
+                         PATHLEN +
+                         PATHLEN +
+                         sizeof(isearch_buf) +
                          PATHLEN + 100]; // +100 for literal chars in fmt string and null-terminator
 
     // Build the protobuf compiler include search path
@@ -615,8 +618,8 @@ static gboolean _protobuf_csrc (const char *full_filename, char *data_dir)
 
 
     // Construct the complete protoc-c command string to be run.  Redirect error output to /dev/null
-    sprintf(command_buf, "%s --c_out=%s -I=%s/%s:%s %s > /dev/null 2>&1", 
-                          settings.autoGenCmd, 
+    sprintf(command_buf, "%s --c_out=%s -I=%s/%s:%s %s > /dev/null 2>&1",
+                          settings.autoGenCmd,
                           output_dir,
                           data_dir,
                           dirname_ptr,
@@ -653,7 +656,7 @@ static gboolean _protobuf_csrc (const char *full_filename, char *data_dir)
                 fclose(file_ptr);
             }
             else
-            { 
+            {
                 my_cannotopen(errfile_buf);
                 exit(EXIT_FAILURE);
             }
@@ -678,7 +681,7 @@ static gboolean _protobuf_csrc (const char *full_filename, char *data_dir)
                            "File ignored.\n", errfile_buf);
         }
     }
-    
+
     free(realpath_ptr);
 
     return(retval);
@@ -700,7 +703,7 @@ static void _mkdir_all(const char *dir)
 
     if (tmp[len - 1] == '/')
         tmp[len - 1] = 0;
-    
+
     // Parses individual directories of the path and creates them one by one
     for (p = tmp + 1; *p; p++)
         if (*p == '/')
@@ -709,7 +712,7 @@ static void _mkdir_all(const char *dir)
             (void) mkdir(tmp, ACCESSPERMS);
             *p = '/';
         }
-    
+
     (void) mkdir(tmp, ACCESSPERMS);
     free(tmp);
 }
@@ -731,45 +734,45 @@ static gboolean _is_protobuf_file(const char *filename)
         if ( (*(ptr + 1) == settings.autoGenSuffix[1]) && (strcmp(ptr, settings.autoGenSuffix) == 0) )
             return (TRUE);
     }
-    
+
     return (FALSE);
 }
 
 
 
 //============================================================================
-// 
+//
 // Name: _do_garbage_collection
-// 
+//
 // Input: new_cache - The path of the newly created Gscope auto-gen cache dir
-// 
+//
 // Description:
-// 
+//
 // Every time we create a new auto-ten cache directory, see if some clean-up
 // should be performed:
-// 
+//
 //  1. Count the total number of user-specific local cache directories
 //     present.
 //
-//  2. If the total number of cache directories meets (or exceeds) the 
+//  2. If the total number of cache directories meets (or exceeds) the
 //     configured auto-cache threshold value:
 //          a) Trim/Delete Threshold/2 old cache directories using an
 //             oldest-directory-first algorithm.
 //
 //  3. If we deleted any old cache directoris:
-//          a) Display an informational pop-up:  
+//          a) Display an informational pop-up:
 //                "Auto cache garbage collection activated if you see
 //                 this message on a regular basis you may want to
 //                 increase your auto-gen cache threshold.  See:
 //                 Options-->preferences-->Cross Reference-->
 //                 Autogen Cache Garbage-Collection threshold"
-//          b)  Be careful not to display pop-up message when we are in 
+//          b)  Be careful not to display pop-up message when we are in
 //              settings.refOnly mode (use stderr instead)
-// 
-//  4. Garbage collection Threshold must be >= 10. Default is 10. 
+//
+//  4. Garbage collection Threshold must be >= 10. Default is 10.
 //     Max is 100 (arbitrary)
 //
-//  5. Do not attempt to clean up the "broken" symlinks caused by garbage 
+//  5. Do not attempt to clean up the "broken" symlinks caused by garbage
 //     collection.  The user can delete them if desired.  These newly broken
 //     symlinks can be "recovered" by running gscope in the future on the
 //     corresponding data set.
@@ -809,7 +812,7 @@ static void _do_garbage_collection()
             {
                 if (entry->d_type == DT_DIR)    // If the entry is a directory
                 {
-                    if ( strstr(entry->d_name, GEN_PREFIX) || strstr(entry->d_name, BLD_PREFIX) ) 
+                    if ( strstr(entry->d_name, GEN_PREFIX) || strstr(entry->d_name, BLD_PREFIX) )
                     {
                         cache_list[entry_count] = strdup(entry->d_name);
                         entry_count++;
@@ -844,7 +847,7 @@ static void _do_garbage_collection()
                 if ( cache_list[i] )
                     free(cache_list[i]);
             }
-            free(cache_list); 
+            free(cache_list);
         }
         else
         {
@@ -858,7 +861,7 @@ static void _do_garbage_collection()
     {
         char message[] = "G-Scope garbage collection has been run to reduce the amount of Autogen Cache data.\n\n"
                          "If you are seeing this message on a regular basis, you may want to increase the CACHE "
-                         "GARBAGE COLLECTION THRESHOLD preference value.  See:\n\n(Options-->Preferences-->Cross Reference)";                      
+                         "GARBAGE COLLECTION THRESHOLD preference value.  See:\n\n(Options-->Preferences-->Cross Reference)";
         if ( !settings.refOnly )
             DISPLAY_msg(GTK_MESSAGE_INFO, message);
         else
@@ -876,13 +879,13 @@ static int _my_compare(char **s1, char **s2)
 
 
 //============================================================================
-// 
+//
 // Name: recursive_remove
 //
 // Input: Path to file (or directory) to recursively remove
-// 
+//
 // Note that on many systems the d_type member in struct dirent is not
-// supported; on such platforms, you will have to use stat() and 
+// supported; on such platforms, you will have to use stat() and
 // S_ISDIR(stat.st_mode) to determine if a given path is a directory.
 //
 // Most other directory browsing functions in G-Scope utilize the
@@ -890,7 +893,7 @@ static int _my_compare(char **s1, char **s2)
 // member support is REQUIRED by OTHER portions of G-Scope.  This
 // function is left as an example of how to check for directories
 // without using "d_type".
-// 
+//
 // Most, if not all, modern Linux distros support the "d_type" member,
 // so this methodology might only be interesting for porting to
 // non-Linux platforms.
