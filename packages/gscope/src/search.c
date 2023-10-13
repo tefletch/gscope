@@ -34,8 +34,9 @@
 //===============================================================
 //       Defines
 //===============================================================
-#define     TMPDIR                  "/tmp"
-#define     MAX_SYMBOL_SIZE         1024
+#define MAX_SYMBOL_SIZE     1024
+#define MAX_PID_SIZE        (7+1)   /* For most 64-bit systems, Max PID is 2^22 = 4194304 (7 digits + null termination) */
+#define MAX_TMP_PATH        PATHLEN + sizeof("/cscope.1") + MAX_PID_SIZE
 
 //===============================================================
 //       Local Type Definitions
@@ -62,8 +63,8 @@ static char         *cref_file_buf = NULL;  /* Buffer the holds the entire cross
 static char         global[] = "<global>";  /* dummy global function name */
 static time_t       starttime;              /* start time for progress messages */
 static uint32_t     imatch_count;           /* Intermediate match count */
-static char         temp1[PATHLEN + 1];     /* temporary file name */
-static char         temp2[PATHLEN + 1];     /* temporary file name */
+static char         temp1[MAX_TMP_PATH + 1]; /* temporary file name */
+static char         temp2[MAX_TMP_PATH + 1]; /* temporary file name */
 static FILE         *nonglobalrefs;
 static gboolean     cancel_search = FALSE;  /* UI hook to abort a lengthy search */
 static gboolean     cref_status   = TRUE;   /* Cross reference up-to-date status */
@@ -560,6 +561,7 @@ static search_result_t find_calling(char *pattern)
     read_ptr++;                     /* Skip the file marker */
     get_string(file, &read_ptr);    /* Get the first file name */
 
+    function[0] = '\0';     // Initialilze (clear) the function name
 
     while (!done)
     {
@@ -1501,7 +1503,8 @@ void SEARCH_init()
 {
     FILE    *cref_file;
     struct  stat statstruct;
-    char    *tmpdir;    /* temporary directory */
+    char    tmpdir[PATHLEN + 1];            /* temporary directory */
+    char    *raw_tmpdir;
     pid_t   pid;
 
     if (cref_file_buf != NULL)
@@ -1545,12 +1548,15 @@ void SEARCH_init()
        (cref_file_buf) for use by the various functions of the SEARCH component */
 
     /*** create the temporary file names ***/
-    tmpdir = getenv("TMPDIR");
-    if (tmpdir == NULL) tmpdir = TMPDIR;
+    raw_tmpdir = getenv("TMPDIR");
+    if ( raw_tmpdir )
+        snprintf(tmpdir, PATHLEN + 1, "%s", raw_tmpdir);    // Ridiculously long tmpdir paths will be truncated
+    else
+        sprintf(tmpdir, "/tmp");
 
     pid = getpid();
-    sprintf(temp1, "%s/cscope%d.1", tmpdir, pid);
-    sprintf(temp2, "%s/cscope%d.2", tmpdir, pid);
+    snprintf(temp1, MAX_TMP_PATH +1, "%s/cscope%d.1", tmpdir, pid);
+    snprintf(temp2, MAX_TMP_PATH +1, "%s/cscope%d.2", tmpdir, pid);
 
     /*** Initialize the Cross-Reference "periodic check" timer ***/
     periodic_check_cref();

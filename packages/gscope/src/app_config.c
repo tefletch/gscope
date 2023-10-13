@@ -211,7 +211,7 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
 
     home = getenv("HOME");
 
-    if (home == NULL  || strlen(home) > MAX_HOME_ROOT)
+    if (home == NULL || strlen(home) > MAX_HOME_ROOT)
     {
         fprintf(stderr,"\nWarning: The $HOME environment variable is not defined (or path too long)\n"
                 "G-scope cannot read or write configuration files\n\n");
