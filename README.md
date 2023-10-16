@@ -3,6 +3,7 @@
        src="https://scan.coverity.com/projects/29174/badge.svg"/>
 </a>
 
+Stability enhancements (via static analysis) in process. Open issues resolution(s) to follow.
 
 # gscope
 An interactive source code browsing tool for C.
