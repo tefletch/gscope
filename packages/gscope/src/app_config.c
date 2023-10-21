@@ -1748,7 +1748,6 @@ gchar *template =
 };
 
     gchar       override_path[MAX_OVERRIDE_PATH_SIZE + 1];
-    gboolean    use_override = FALSE;
     const gchar config_file[] = "site_default_override";
     gchar       *buf;
     gboolean    retval = FALSE;
@@ -1756,7 +1755,7 @@ gchar *template =
     FILE        *override_file = NULL;
     ssize_t     num_chars;
 
-    printf("\nChecking for a site-specific-defaults file: ");
+    printf("Performing first time application configuration using: ");
 
     num_chars = readlink("/proc/self/exe", override_path, MAX_OVERRIDE_PATH_SIZE);
 
@@ -1774,7 +1773,6 @@ gchar *template =
         {
             strcat(override_path, "/");
             strcat(override_path, config_file);
-            printf("%s\n", override_path);
 
             if ( g_file_test(override_path, G_FILE_TEST_EXISTS) )
             {
@@ -1785,14 +1783,8 @@ gchar *template =
                     {
                         if ( fread(buf, 1, statstruct.st_size, override_file) == statstruct.st_size )
                         {
+                            printf("Site defaults: %s\n", override_path);
                             buf[statstruct.st_size] = '\0';     // Null terminate the file data.
-                            use_override = TRUE;
-                        }
-
-                        printf("Performing first time application configuration using: ");
-                        if ( use_override )
-                        {
-                            printf("Site defaults.\n");
                             retval = create_template_file(filename, buf);
                         }
                         else
@@ -1805,6 +1797,11 @@ gchar *template =
                     }
                 }
                 if (override_file) fclose(override_file);
+            }
+            else
+            {
+                printf("Built-in defaults\n");
+                retval = create_template_file(filename, template);
             }
         }
     }
