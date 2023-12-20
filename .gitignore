@@ -19,6 +19,7 @@ autom4te.cache
 *.Tpo
 config.*
 configure
+compile
 packages/gscope*/COPYING
 packages/gscope*/INSTALL
 packages/gscope*/Makefile
