@@ -1,0 +1,1 @@
+../../gscope/src/app_config.c
