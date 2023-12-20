@@ -1,0 +1,1 @@
+../gscope/autogen.sh
