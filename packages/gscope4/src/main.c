@@ -218,7 +218,11 @@ int main(int argc, char *argv[])
             ui_file_path[255] = '\0';        // Ensure path string is null terminated -- readlink() does not append a null if it truncates.
             my_dirname(ui_file_path);
             strcat(ui_file_path, "/gscope4.cmb");
-            builder = gtk_builder_new_from_file(ui_file_path);
+
+            // gtk4 migration:
+            // If needed, use gtk_builder_set_current_object() to add user data to signals.
+            // If gtk_builder_set_current_object() is used then we can no longer use gtk_builder_new_from_file() or gtk_builder_new_from_string().
+           builder = gtk_builder_new_from_file(ui_file_path);
         }
         #else
             builder = gtk_builder_new_from_string(gscope3_glade, gscope3_glade_len);
@@ -249,8 +253,8 @@ int main(int argc, char *argv[])
         //while (gtk_events_pending() )
         //    gtk_main_iteration();
 
-
-        gtk_builder_connect_signals(builder, NULL);
+        // gtk4 migration: gtk_builder_connect_signals() no longer exists. Instead, signals are always connected automatically
+        //gtk_builder_connect_signals(builder, NULL);
 
         APP_CONFIG_init(gscope_splash);
 

@@ -18,7 +18,7 @@ AC_SEARCH_LIBS([strerror],[cposix])
 
 AC_CHECK_FUNCS([asprintf])
 
-pkg_modules="gtk+-3.0 >= 3.0 gtksourceview-3.0 >= 3.8"
+pkg_modules="gtk4 >= 4.8 gtksourceview-3.0 >= 3.8"
 PKG_CHECK_MODULES(PACKAGE, [$pkg_modules])
 AC_SUBST(PACKAGE_CFLAGS)
 AC_SUBST(PACKAGE_LIBS)
