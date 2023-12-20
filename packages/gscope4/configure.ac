@@ -1,15 +1,19 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([gscope], [4.22])
+AC_INIT([gscope],[4.22])
 AC_CONFIG_SRCDIR([src/gscope4.cmb])
 AM_INIT_AUTOMAKE
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 AM_MAINTAINER_MODE
 
 AC_USE_SYSTEM_EXTENSIONS
 AC_PROG_CC
 AC_DEFINE([GTK3_BUILD], [], [Build Control])
-AC_HEADER_STDC
+# Autoupdate added the next two lines to ensure that your configure
+# script's behavior did not change.  They are probably safe to remove.
+AC_CHECK_INCLUDES_DEFAULT
+AC_PROG_EGREP
+
 AC_SEARCH_LIBS([strerror],[cposix])
 
 AC_CHECK_FUNCS([asprintf])

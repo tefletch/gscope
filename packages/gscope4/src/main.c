@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
             }
             ui_file_path[255] = '\0';        // Ensure path string is null terminated -- readlink() does not append a null if it truncates.
             my_dirname(ui_file_path);
-            strcat(ui_file_path, "/gscope3.glade");
+            strcat(ui_file_path, "/gscope4.cmb");
             builder = gtk_builder_new_from_file(ui_file_path);
         }
         #else
