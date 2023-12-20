@@ -4,6 +4,12 @@
   <ui>
 	(1,None,"gscope.ui","gscope.ui",None,None,None,None,None,None,None)
   </ui>
+  <css>
+	(1,"../../../../../../.gscope/gscope.css",None,1)
+  </css>
+  <css_ui>
+	(1,1)
+  </css_ui>
   <object>
 	(1,1,"GtkWindow","gscope_main",None,None,None,None,-1,None),
 	(1,2,"GtkBox","vbox1",1,None,None,None,-1,None),
@@ -65,6 +71,7 @@
 	(1,24,"GtkWidget","can-target","False",None,None,None,None,None,None,None,None,None),
 	(1,24,"GtkWidget","focus-on-click","False",None,None,None,None,None,None,None,None,None),
 	(1,25,"GtkButton","label","Find C Identifier",None,None,None,None,None,None,None,None,None),
+	(1,25,"GtkWidget","css-name","find_c_identifier_button",None,None,None,None,None,None,None,None,None),
 	(1,25,"GtkWidget","receives-default","True",None,None,None,None,None,None,None,None,None),
 	(1,35,"GtkButton","label","Find definition of",None,None,None,None,None,None,None,None,None),
 	(1,35,"GtkWidget","receives-default","True",None,None,None,None,None,None,None,None,None),
