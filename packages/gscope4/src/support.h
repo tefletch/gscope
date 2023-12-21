@@ -1,1 +1,1 @@
-../../gscope/src/support.h
+../../gscope3/src/support.h

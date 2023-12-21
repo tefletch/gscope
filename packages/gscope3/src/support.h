@@ -36,3 +36,4 @@ GtkWidget*  create_pixmap              (GtkWidget       *widget,
 
 /* This is used to create the pixbufs used in the interface. */
 GdkPixbuf*  create_pixbuf              (const gchar     *filename);
+
