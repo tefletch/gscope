@@ -20,7 +20,7 @@
 #define NUM_COL_MAX             (40)
 #define INITIAL_SCA_COL_WIDTH   (70)
 #define MIN_COLUMN_WIDTH        (25)  /* Units = points, should be sufficient for both large and small default font sizes */
-
+#define GDK_BUTTON_ANY          0
 
 // Typedefs
 //=======================
@@ -113,21 +113,6 @@ static void         extend_table_right(tcb_t *tcb, guint col);
 static void         make_expander_at_position(tcb_t *tcb, guint col, guint row, dir_e direction);
 static void         make_collapser_at_position(tcb_t *tcb, guint col, guint row, dir_e direction);
 static gboolean     on_browser_delete_event(GtkWidget *widget, GdkEvent *event, gpointer user_data);
-//static gboolean     on_left_expander_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
-static void         on_left_expander_button_release_event(GtkGesture *gesture, int n_press, double x, double y, gpointer *user_data);
-//static gboolean     on_right_expander_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
-static void         on_right_expander_button_release_event(GtkGesture *gesture, int n_press, double x, double y, gpointer *user_data);
-//static gboolean     on_left_collapser_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
-static void         on_left_collapser_button_release_event(GtkGesture *gesture, int n_press, double x, double y, gpointer *user_data);
-//static gboolean     on_right_collapser_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
-static void         on_right_collapser_button_release_event(GtkGesture *gesture, int n_press, double x, double y, gpointer *user_data);
-static gboolean     on_function_button_press(GtkWidget *widget, GdkEventButton *event, result_t *user_data);
-static void         right_click_menu(GtkWidget *widget, GdkEventButton *event, result_t *function_box);
-static void         on_reroot(GtkWidget *menuitem, result_t *function_box);
-static gboolean     on_adjuster_eventbox_enter_notify_event(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
-static gboolean     on_adjuster_eventbox_leave_notify_event(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
-static gboolean     on_adjuster_eventbox_leave_notify_event(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
-static gboolean     on_adjuster_eventbox_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 
 static void         initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gchar *line_num);
 static void         ensure_column_capacity(tcb_t *tcb, guint origin_col, dir_e direction);
@@ -173,7 +158,7 @@ static result_t*    parse_results(search_results_t *results);
 
 static GdkPixbuf    *adjuster_active_image   = NULL;
 static GdkPixbuf    *adjuster_inactive_image = NULL;
-static gint         initial_x_offset = 0;
+static gdouble      initial_x_offset = 0;
 
 
 
@@ -244,33 +229,29 @@ static gboolean on_browser_delete_event(GtkWidget *widget, GdkEvent *event, gpoi
 //********************************************************************************************** 
 // on_left_expander_button_release_event
 //********************************************************************************************** 
-static gboolean on_left_expander_button_release_event(GtkGesture *gesture, int n_press, double x, double y, gpointer *user_data)
+static void on_left_expander_button_release_event(GtkGestureClick *gesture, int n_press, double x, double y, gpointer *user_data)
 {
-    tcb_t   *tcb = user_data;
+    tcb_t   *tcb = (tcb_t *) user_data;
     guint   row, col;
 
     // Get the expander widget's position in the table
-    gtk_container_child_get(GTK_CONTAINER(tcb->browser_table), widget,
-                            "top-attach", &row,
-                            "left-attach", &col,
-                            NULL);
+    gtk_grid_get_child_at(GTK_GRID(tcb->browser_table), col, row);
 
     // Remove the selected expander widget from the [col] column list
     column_list_remove(&(tcb->col_list[col]), widget);
 
-    // Destroy the selected expander widget
-    // Revisit: gtk_widget_destroy(widget);
+    // Destroy the selected expander widget and associated controller
+    gtk_widget_destroy(gtk_event_controller_get_widget(gesture));
+    g_object_unref(gesture);
 
     make_collapser_at_position((tcb_t *) user_data, col, row, LEFT);
-
-    return FALSE;
 }
 
 
 //********************************************************************************************** 
 // on_right_expander_button_release_event
 //********************************************************************************************** 
-static gboolean on_right_expander_button_release_event(GtkGesture *gesture, int n_press, double x, double y, gpointer *user_data)
+static void on_right_expander_button_release_event(GtkGestureClick *gesture, int n_press, double x, double y, gpointer *user_data)
 {
     tcb_t   *tcb = user_data;
     guint   row, col;
@@ -284,19 +265,18 @@ static gboolean on_right_expander_button_release_event(GtkGesture *gesture, int 
     // Remove the selected expander widget from the [col] column list
     column_list_remove(&(tcb->col_list[col]), widget);
 
-    // Destroy the selected expander widget
-    // Revisit: gtk_widget_destroy(widget);
+    // Destroy the selected expander widget and associated controller
+    gtk_widget_destroy(gtk_event_controller_get_widget(gesture));
+    g_object_unref(gesture);
 
     make_collapser_at_position(tcb, col, row, RIGHT);
-
-    return FALSE;
 }
 
 
 //**********************************************************************************************
 // on_left_collapser_button_release_event
 //********************************************************************************************** 
-static gboolean on_left_collapser_button_release_event(GtkGesture *gesture, int n_press, double x, double y, gpointer *user_data)
+static void on_left_collapser_button_release_event(GtkGestureClick *gesture, int n_press, double x, double y, gpointer *user_data)
 {
     tcb_t   *tcb = user_data;
     guint   row, col;
@@ -310,20 +290,19 @@ static gboolean on_left_collapser_button_release_event(GtkGesture *gesture, int 
     // Remove the selected collapser widget pointer from the column [col] member list
     column_list_remove(&(tcb->col_list[col]), widget);
 
-    // Destroy the selected collapser widget
-    // Revisit: gtk_widget_destroy(widget);
+    // Destroy the selected expander widget and associated controller
+    gtk_widget_destroy(gtk_event_controller_get_widget(gesture));
+    g_object_unref(gesture);
 
     make_expander_at_position(tcb, col, row, LEFT);
     collapse_table(row, col, tcb, LEFT);
-
-    return FALSE;
 }
 
 
 //**********************************************************************************************
 // on_right_collapser_button_release_event
 //********************************************************************************************** 
-static gboolean on_right_collapser_button_release_event(GtkGesture *gesture, int n_press, double x, double y, gpointer *user_data)
+static void on_right_collapser_button_release_event(GtkGestureClick *gesture, int n_press, double x, double y, gpointer *user_data)
 {
     tcb_t   *tcb = user_data;
     guint   row, col;
@@ -337,23 +316,21 @@ static gboolean on_right_collapser_button_release_event(GtkGesture *gesture, int
     // Remove the selected collapser widget pointer from the column [col] member list
     column_list_remove(&(tcb->col_list[col]), widget);
 
-    // Destroy the selected collapser widget
-    // Revisit: gtk_widget_destroy(widget);
+    // Destroy the selected expander widget and associated controller
+    gtk_widget_destroy(gtk_event_controller_get_widget(gesture));
+    g_object_unref(gesture);
 
     make_expander_at_position((tcb_t *) user_data, col, row, RIGHT);
     collapse_table(row, col, tcb, RIGHT);
-
-    return FALSE;
 }
 
 
 //********************************************************************************************** 
 // on_function_button_press
 //********************************************************************************************** 
-static gboolean on_function_button_press(GtkWidget *widget, GdkEventButton *event, result_t  *box)
+static void on_function_button_press(GtkGestureClick *gesture, int n_press, double x, double y, result_t  *box)
 {
-    // open text editor at location on left double click, open menu on right click
-    if (event->type == GDK_2BUTTON_PRESS && event->button == 1) // left double click
+    if ( (n_press == 2) && gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_PRIMARY ) // Double-click, left button: View/Edit entry
     {
         if (settings.useEditor)
         {
@@ -364,11 +341,10 @@ static gboolean on_function_button_press(GtkWidget *widget, GdkEventButton *even
             FILEVIEW_create(box->file_name, atoi(box->line_num));
         }
     }
-    else if (event->type == GDK_BUTTON_PRESS && event->button == 3) // right click
+    else if ( (n_press == 1) && gtk_gesture_single_get_current_button(gesture) == GDK_BUTTON_SECONDARY )  // Single-click, right button: Open Menu
     {
-        right_click_menu(widget, event, box);
+        right_click_menu(gtk_event_controller_get_widget(gesture), box);
     }
-    return FALSE;
 }
 
 
@@ -403,74 +379,60 @@ static void on_reroot(GtkWidget *menuitem, result_t *function_box)
 //********************************************************************************************** 
 // on_adjuster_eventbox_enter_notify_event
 //********************************************************************************************** 
-static gboolean on_adjuster_eventbox_enter_notify_event(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static void on_adjuster_eventbox_enter_notify_event(GtkEventControllerMotion* self, gdouble x, gdouble y, gpointer user_data)
 {
     GtkImage *adjuster_image = (GtkImage *) user_data;
 
     gtk_image_set_from_pixbuf(adjuster_image, adjuster_active_image);
-    return FALSE;
 }
 
 
 //********************************************************************************************** 
 // on_adjuster_eventbox_leave_notify_event
 //********************************************************************************************** 
-static gboolean on_adjuster_eventbox_leave_notify_event(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static void on_adjuster_eventbox_leave_notify_event(GtkEventControllerMotion* self, gdouble x, gdouble y, gpointer user_data)
 {
     GtkImage *adjuster_image = (GtkImage *) user_data;
 
     gtk_image_set_from_pixbuf(adjuster_image, adjuster_inactive_image);
-    return FALSE;
 }
 
 
 //********************************************************************************************** 
 // on_adjuster_eventbox_button_press_event
 //********************************************************************************************** 
-static gboolean on_adjuster_eventbox_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static void on_adjuster_eventbox_button_press_event(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data)
 {
-    if (event->type == GDK_BUTTON_PRESS)
-    {
-        GdkEventButton *my_event = (GdkEventButton *)event;
-
-        // Set the initial offset in a private-global [to be used motion_notify callback]
-        // We can share this value via a global because only one adjuster_eventbox can
-        // be active at a time.
-        initial_x_offset = (gint) my_event->x;
-    }
-
-    return FALSE;
+    // Set the initial offset in a private-global [to be used motion_notify callback]
+    // We can share this value via a global because only one adjuster_eventbox can
+    // be active at a time.
+    initial_x_offset = x;
 }
 
 
 //********************************************************************************************** 
 // on_adjuster_eventbox_motion_notify_event
 //********************************************************************************************** 
-gboolean on_adjuster_eventbox_motion_notify_event(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+static void on_adjuster_eventbox_motion_notify_event(GtkEventControllerMotion* self, gdouble x, gdouble y, gpointer user_data)
 {
     GtkAllocation allocation;
     GtkRequisition req;
-    gint offset;
+    gdouble offset;
     GtkWidget *header_button = (GtkWidget *) user_data;
-    GdkEventMotion *my_event = (GdkEventMotion *) event;
 
     gtk_widget_size_request(header_button, &req);
     gtk_widget_get_allocation(header_button, &allocation);
 
     // We can share initial_x_offset via a global because only one adjuster_eventbox can
     // be active at a time.
-    offset = (gint)my_event->x - initial_x_offset;
+    offset = x - initial_x_offset;
 
     allocation.width += offset;
     if (allocation.width < MIN_COLUMN_WIDTH)
         allocation.width = MIN_COLUMN_WIDTH;
 
-    //printf("my_event=%d, off=%d, new_width=%d\n", (gint)my_event->x, offset, allocation.width);
-
     gtk_widget_set_size_request(header_button, allocation.width, req.height);
     gtk_widget_size_allocate(header_button, &allocation);
-
-    return FALSE;
 }
 
 
@@ -555,9 +517,10 @@ static void make_collapser_at_position(tcb_t *tcb, guint col, guint row, dir_e d
 {
     GtkWidget   *collapser;
     GtkWidget   *image;
+    GtkGesture  *gesture;
 
     // Create a new collapser widget
-    collapser = gtk_event_box_new();
+    collapser = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
     gtk_widget_set_name(collapser, "expander_eventbox");
     gtk_widget_show(collapser);
     image = create_pixmap(collapser, "sca_collapser_multi.png");
@@ -572,9 +535,13 @@ static void make_collapser_at_position(tcb_t *tcb, guint col, guint row, dir_e d
 
     tcb->col_list[col].type = EXPANDER;     // Yes, this is correct, a collapser is an EXPANDER-class item
 
+    gesture = gtk_gesture_click_new();  // Caller must free gesture
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(collapser), GDK_BUTTON_PRIMARY);
+    gtk_widget_add_controller(collapser, GTK_EVENT_CONTROLLER(gesture));
+
     if ( direction == RIGHT )
     {
-        g_signal_connect((gpointer)collapser, "button_release_event",
+        g_signal_connect(gesture, "release",
                          G_CALLBACK(on_right_collapser_button_release_event),
                          tcb);
 
@@ -583,7 +550,7 @@ static void make_collapser_at_position(tcb_t *tcb, guint col, guint row, dir_e d
     }
     else    // direction == LEFT
     {
-        g_signal_connect((gpointer)collapser, "button_release_event",
+        g_signal_connect(gesture, "release_event",
                          G_CALLBACK(on_left_collapser_button_release_event),
                          tcb);
 
@@ -602,7 +569,8 @@ static void make_expander_at_position(tcb_t *tcb, guint col, guint row, dir_e di
     GtkWidget   *image;
     GtkGesture  *gesture;
 
-    expander = gtk_event_box_new();
+    //expander = gtk_event_box_new();
+    expander = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
     gtk_widget_set_name(expander, "expander_eventbox");
     gtk_widget_show(expander);
 
@@ -621,18 +589,19 @@ static void make_expander_at_position(tcb_t *tcb, guint col, guint row, dir_e di
 
     tcb->col_list[col].type = EXPANDER;
 
-    gesture = gtk_gesture_click_new();
+    gesture = gtk_gesture_click_new();  // Caller must free gesture
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(expander), GDK_BUTTON_PRIMARY);
     gtk_widget_add_controller(expander, GTK_EVENT_CONTROLLER(gesture));
 
     if (direction == RIGHT)
     {
-        g_signal_connect((gesture, "released",
+        g_signal_connect(gesture, "released",
                          G_CALLBACK(on_right_expander_button_release_event),
                          tcb);
     }
     else
     {
-        g_signal_connect((gpointer)expander, "released",
+        g_signal_connect(gesture, "released",
                          G_CALLBACK(on_left_expander_button_release_event),
                          tcb);
     }
@@ -658,7 +627,7 @@ static void delete_table(tcb_t *tcb)
 //********************************************************************************************** 
 // right_click_menu
 //********************************************************************************************** 
-static void right_click_menu(GtkWidget *widget, GdkEventButton *event, result_t *function_box)
+static void right_click_menu(GtkWidget *widget, result_t *function_box)
 {
     GtkWidget * menu,*menu_item;
 
@@ -669,9 +638,7 @@ static void right_click_menu(GtkWidget *widget, GdkEventButton *event, result_t 
     g_signal_connect(menu_item, "activate", (GCallback)on_reroot, function_box);
 
     gtk_widget_show_all(menu);
-    gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
-                   (event != NULL) ? event->button : 0,
-                   gdk_event_get_time((GdkEvent *)event));
+    gtk_menu_popup_at_pointer(GTK_MENU(menu), NULL);
 }
 
 
@@ -690,6 +657,8 @@ static void create_header_button_with_adjuster(tcb_t *tcb, guint col, gint label
     GtkWidget   *adjuster_image;
     col_list_t  *column;
     gchar       *num_str;
+    GtkEventController *pointer_motion;
+    GtkGesture  *gesture;
 
     int left_bound  = col;
     int right_bound = col + 1;
@@ -719,7 +688,7 @@ static void create_header_button_with_adjuster(tcb_t *tcb, guint col, gint label
     // (to the immediate right of the new header button)
     //==================================================
 
-    adjuster_eventbox = gtk_event_box_new ();
+    adjuster_eventbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
     gtk_widget_set_name (adjuster_eventbox, "adjuster_eventbox");
     gtk_widget_set_can_focus(adjuster_eventbox, FALSE);
     gtk_widget_set_size_request (adjuster_eventbox, 8, -1);
@@ -740,19 +709,27 @@ static void create_header_button_with_adjuster(tcb_t *tcb, guint col, gint label
     column = &(tcb->col_list[col + 1]);
     column->type                = EXPANDER;
 
-    g_signal_connect ((gpointer) adjuster_eventbox, "enter_notify_event",
+    pointer_motion = gtk_event_controller_motion_new();
+    gtk_widget_add_controller(adjuster_eventbox, GTK_EVENT_CONTROLLER(pointer_motion));
+
+    gesture = gtk_gesture_click_new();  // Caller must free gesture
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(adjuster_eventbox), GDK_BUTTON_PRIMARY);
+    gtk_widget_add_controller(adjuster_eventbox, GTK_EVENT_CONTROLLER(gesture));
+
+
+    g_signal_connect (pointer_motion, "enter",
                       G_CALLBACK(on_adjuster_eventbox_enter_notify_event),
                       adjuster_image);
 
-    g_signal_connect ((gpointer) adjuster_eventbox, "leave_notify_event",
+    g_signal_connect (pointer_motion, "leave",
                       G_CALLBACK(on_adjuster_eventbox_leave_notify_event),
                       adjuster_image);
 
-    g_signal_connect ((gpointer) adjuster_eventbox, "button_press_event",
+    g_signal_connect (gesture, "pressed",
                       G_CALLBACK(on_adjuster_eventbox_button_press_event),
                       NULL);
 
-    g_signal_connect ((gpointer) adjuster_eventbox, "motion_notify_event",
+    g_signal_connect (pointer_motion, "motion",
                       G_CALLBACK(on_adjuster_eventbox_motion_notify_event),
                       header_button);
 }
@@ -766,7 +743,7 @@ static void create_dummy_adjuster(tcb_t *tcb, guint col, guint row)
     GtkWidget   *adjuster_eventbox;
     GtkWidget   *adjuster_image;
 
-    adjuster_eventbox = gtk_event_box_new ();
+    adjuster_eventbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_set_name (adjuster_eventbox, "adjuster_eventbox");
     gtk_widget_set_can_focus(adjuster_eventbox, FALSE);
     gtk_widget_set_size_request (adjuster_eventbox, 8, -1);
@@ -796,6 +773,7 @@ static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gc
     GtkWidget   *root_function_blue_eventbox;
     GtkWidget   *root_function_label;
     gchar       *var_string;
+    GtkGesture  *gesture;
 
     gtk_table_resize(GTK_TABLE(tcb->browser_table), 2, 5);
 
@@ -841,7 +819,7 @@ static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gc
     g_free(var_string);
 
     // Create the root function table entry eventbox [container for label]
-    root_function_blue_eventbox = gtk_event_box_new();
+    root_function_blue_eventbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
     gtk_widget_set_name(root_function_blue_eventbox, "blue_eventbox");
     gtk_widget_show(root_function_blue_eventbox);
     gtk_table_attach(GTK_TABLE(tcb->browser_table), root_function_blue_eventbox, tcb->root_col, tcb->root_col + 1, 1, 2,
@@ -852,8 +830,13 @@ static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gc
 
     // Place label in eventbox and hook up button press event.
     gtk_container_add(GTK_CONTAINER(root_function_blue_eventbox), root_function_label);
-    g_signal_connect((gpointer)root_function_blue_eventbox, "button_press_event",
-                     G_CALLBACK(on_function_button_press), &(tcb->root_entry));
+
+    gesture = gtk_gesture_click_new();  // Caller must free gesture
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(root_function_blue_eventbox), GDK_BUTTON_PRIMARY);
+    gtk_widget_add_controller(root_function_blue_eventbox, GTK_EVENT_CONTROLLER(gesture));
+   
+    g_signal_connect(gesture, "pressed",
+                     G_CALLBACK(on_function_button_press), &(tcb->root_entry);
 
 }
 
@@ -1513,6 +1496,7 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
     result_t *node;
     search_results_t *children;
     search_t operation;
+    GtkGesture  *gesture;
 
     offset = (direction == RIGHT ? 1 : -1);
     node = function_list;
@@ -1520,7 +1504,7 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
     for (row = starting_row; row < starting_row + num_results; row++)
     {
         // Revisit: This event_box pattern is almost exactly duplicated elsewhere - add a create_function_box function
-        function_event_box = gtk_event_box_new();
+        function_event_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
         gtk_widget_set_name(function_event_box, "blue_eventbox");
         gtk_widget_show(function_event_box);
         gtk_table_attach(GTK_TABLE(tcb->browser_table), function_event_box, col, col + 1, row, row + 1,
@@ -1558,7 +1542,12 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
         }
 
         node->tcb = tcb;
-        g_signal_connect((gpointer)function_event_box, "button_press_event",
+
+        gesture = gtk_gesture_click_new();  // Caller must free gesture
+        gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(function_event_box), GDK_BUTTON_ANY);
+        gtk_widget_add_controller(function_event_box, GTK_EVENT_CONTROLLER(gesture));
+
+        g_signal_connect(gesture, "pressed",
                          G_CALLBACK(on_function_button_press), node);
 
         // check to see if we actually need to add an expander
@@ -2100,7 +2089,7 @@ static GtkWidget* make_end_connector(dir_e direction)
     GtkWidget *eventbox;
     GtkWidget *image;
 
-    eventbox = gtk_event_box_new();
+    eventbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
     gtk_widget_set_name(eventbox, "end_connector");
     gtk_widget_show(eventbox);
 
@@ -2128,7 +2117,7 @@ static GtkWidget* make_three_way_connector(dir_e direction)
     GtkWidget *eventbox;
     GtkWidget *image;
 
-    eventbox = gtk_event_box_new();
+    eventbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
     gtk_widget_set_name(eventbox, "three_connector");
     gtk_widget_show(eventbox);
 
@@ -2156,7 +2145,7 @@ static GtkWidget* make_straight_connector()
     GtkWidget *eventbox;
     GtkWidget *image;
 
-    eventbox = gtk_event_box_new();
+    eventbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
     gtk_widget_set_name(eventbox, "straight_connector");
     gtk_widget_show(eventbox);
     image = create_pixmap(eventbox, "sca_mid_branch_center.png");
