@@ -238,11 +238,10 @@ static void on_left_expander_button_release_event(GtkGestureClick *gesture, int 
     gtk_grid_get_child_at(GTK_GRID(tcb->browser_table), col, row);
 
     // Remove the selected expander widget from the [col] column list
-    column_list_remove(&(tcb->col_list[col]), widget);
+    column_list_remove(&(tcb->col_list[col]), gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture)));
 
     // Destroy the selected expander widget and associated controller
-    gtk_widget_destroy(gtk_event_controller_get_widget(gesture));
-    g_object_unref(gesture);
+    g_object_unref(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture)));
 
     make_collapser_at_position((tcb_t *) user_data, col, row, LEFT);
 }
@@ -253,7 +252,7 @@ static void on_left_expander_button_release_event(GtkGestureClick *gesture, int 
 //********************************************************************************************** 
 static void on_right_expander_button_release_event(GtkGestureClick *gesture, int n_press, double x, double y, gpointer *user_data)
 {
-    tcb_t   *tcb = user_data;
+    tcb_t   *tcb = (tcb_t *) user_data;
     guint   row, col;
 
     // Get the expander widget's position in the table
@@ -266,8 +265,7 @@ static void on_right_expander_button_release_event(GtkGestureClick *gesture, int
     column_list_remove(&(tcb->col_list[col]), widget);
 
     // Destroy the selected expander widget and associated controller
-    gtk_widget_destroy(gtk_event_controller_get_widget(gesture));
-    g_object_unref(gesture);
+    g_ojbect_unref(gtk_event_controller_get_widget(gesture));
 
     make_collapser_at_position(tcb, col, row, RIGHT);
 }
@@ -278,7 +276,7 @@ static void on_right_expander_button_release_event(GtkGestureClick *gesture, int
 //********************************************************************************************** 
 static void on_left_collapser_button_release_event(GtkGestureClick *gesture, int n_press, double x, double y, gpointer *user_data)
 {
-    tcb_t   *tcb = user_data;
+    tcb_t   *tcb = (tcb_t *) user_data;
     guint   row, col;
 
     // Get the collapser widget's position in the table
@@ -286,13 +284,13 @@ static void on_left_collapser_button_release_event(GtkGestureClick *gesture, int
                             "top-attach", &row,
                             "left-attach", &col,
                             NULL);
+    gtk_grid_layout_child_get_row
 
     // Remove the selected collapser widget pointer from the column [col] member list
     column_list_remove(&(tcb->col_list[col]), widget);
 
     // Destroy the selected expander widget and associated controller
-    gtk_widget_destroy(gtk_event_controller_get_widget(gesture));
-    g_object_unref(gesture);
+    g_object_unref(gtk_event_controller_get_widget(gesture));
 
     make_expander_at_position(tcb, col, row, LEFT);
     collapse_table(row, col, tcb, LEFT);
@@ -304,7 +302,7 @@ static void on_left_collapser_button_release_event(GtkGestureClick *gesture, int
 //********************************************************************************************** 
 static void on_right_collapser_button_release_event(GtkGestureClick *gesture, int n_press, double x, double y, gpointer *user_data)
 {
-    tcb_t   *tcb = user_data;
+    tcb_t   *tcb = (tcb_t *) user_data;
     guint   row, col;
 
     // Get the collapser widget's position in the table
@@ -317,8 +315,7 @@ static void on_right_collapser_button_release_event(GtkGestureClick *gesture, in
     column_list_remove(&(tcb->col_list[col]), widget);
 
     // Destroy the selected expander widget and associated controller
-    gtk_widget_destroy(gtk_event_controller_get_widget(gesture));
-    g_object_unref(gesture);
+    g_object_unref(gtk_event_controller_get_widget(gesture));
 
     make_expander_at_position((tcb_t *) user_data, col, row, RIGHT);
     collapse_table(row, col, tcb, RIGHT);
