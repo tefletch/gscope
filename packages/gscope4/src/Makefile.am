@@ -29,6 +29,8 @@ gscope_SOURCES = \
 	fileview.c 	\
 	fileview.h 	\
 	global.h	\
+	gtk4_aux.c  \
+	gtk4_aux.h  \
 	lookup.c 	\
 	lookup.h 	\
 	main.c 		\
