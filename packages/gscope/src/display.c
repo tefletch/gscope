@@ -171,7 +171,7 @@ void DISPLAY_init(GtkWidget *main)
     {
         image1 = create_pixmap (gscope_main, "recursive.png");
         gtk_widget_show (image1);
-        gtk_container_add (GTK_CONTAINER (sms_button), image1);
+        gtk_button_set_child (GTK_BUTTON (sms_button), image1);
 
         gtk_widget_set_tooltip_text (sms_button, "Source Search Mode: [Recursive]");
     }
@@ -179,7 +179,7 @@ void DISPLAY_init(GtkWidget *main)
     {
         image1 = create_pixmap (gscope_main, "non-recursive.png");
         gtk_widget_show (image1);
-        gtk_container_add (GTK_CONTAINER (sms_button), image1);
+        gtk_button_set_child (GTK_BUTTON (sms_button), image1);
 
         gtk_widget_set_tooltip_text (sms_button, "Source Search Mode: [Non-Recursive]");
     }
@@ -420,7 +420,6 @@ void DISPLAY_history_load()
     char        *end_of_file;
     GtkTreeIter iter;
     GtkTreePath *path;
-    GtkWidget   *MsgDialog;
 
     if ( (stat(settings.histFile, &statstruct) == 0 ) && ((hist_file = fopen(settings.histFile, "r")) != NULL) )
     {
@@ -482,19 +481,7 @@ void DISPLAY_history_load()
 
         fclose(hist_file);
     }
-    else
-    {
-        MsgDialog = gtk_message_dialog_new_with_markup (
-                                  GTK_WINDOW (gscope_main),
-                                  GTK_DIALOG_DESTROY_WITH_PARENT,
-                                  GTK_MESSAGE_ERROR,
-                                  GTK_BUTTONS_CLOSE,
-                                  "<span weight =\"bold\">Error:</span>  No history file found");
-
-        gtk_dialog_run (GTK_DIALOG (MsgDialog));
-        gtk_widget_destroy (GTK_WIDGET (MsgDialog));
-    }
-
+    // else: Quietly move on.  No need to post a message.
 }
 
 
