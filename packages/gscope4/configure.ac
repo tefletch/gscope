@@ -9,6 +9,7 @@ AM_MAINTAINER_MODE
 AC_USE_SYSTEM_EXTENSIONS
 AC_PROG_CC
 AC_DEFINE([GTK3_BUILD], [], [Build Control])
+AC_DEFINE([GTK4_BUILD], [], [Build Control])
 # Autoupdate added the next two lines to ensure that your configure
 # script's behavior did not change.  They are probably safe to remove.
 AC_CHECK_INCLUDES_DEFAULT

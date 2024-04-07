@@ -171,7 +171,11 @@ void DISPLAY_init(GtkWidget *main)
     {
         image1 = create_pixmap (gscope_main, "recursive.png");
         gtk_widget_show (image1);
+        #ifndef GTK4_BUILD
+        gtk_container_add (GTK_CONTAINER (sms_button), image1);
+        #else
         gtk_button_set_child (GTK_BUTTON (sms_button), image1);
+        #endif
 
         gtk_widget_set_tooltip_text (sms_button, "Source Search Mode: [Recursive]");
     }
@@ -179,7 +183,11 @@ void DISPLAY_init(GtkWidget *main)
     {
         image1 = create_pixmap (gscope_main, "non-recursive.png");
         gtk_widget_show (image1);
+        #ifndef GTK4_BUILD
+        gtk_container_add (GTK_CONTAINER (sms_button), image1);
+        #else
         gtk_button_set_child (GTK_BUTTON (sms_button), image1);
+        #endif
 
         gtk_widget_set_tooltip_text (sms_button, "Source Search Mode: [Non-Recursive]");
     }
