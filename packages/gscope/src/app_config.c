@@ -201,7 +201,7 @@ gchar app_snapshot_file[256] = {0};
 
 void APP_CONFIG_init(GtkWidget *gscope_splash)
 {
-    static GtkAlertDialog *AlertDialog;
+    static GtkWidget *MsgDialog;
     char        new_version_string[20];
     char        old_version_string[20];
     gchar       gtk_config_file[256] = {0};
@@ -284,11 +284,18 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
         {
             if (gscope_splash)  // if we are in GUI mode
             {
-                AlertDialog = gtk_alert_dialog_new("Unable to create default G-Scope configuration file:\n%s.\n\n"
-                                                    "Starting program using factory defaults.\n"
-                                                    "G-Scope will not retain configuration changes.", app_config_file);
-                gtk_alert_dialog_show(AlertDialog, GTK_WINDOW (gscope_splash));
-                gtk_window_destroy (GTK_WINDOW (AlertDialog));
+                MsgDialog = gtk_message_dialog_new_with_markup (
+                        GTK_WINDOW (gscope_splash),
+                        GTK_DIALOG_DESTROY_WITH_PARENT,
+                        GTK_MESSAGE_WARNING,
+                        GTK_BUTTONS_CLOSE,
+                        "Unable to create default G-Scope configuration file:\n"
+                        "%s.\n\n"
+                        "Starting program using factory defaults.\n"
+                        "G-Scope will not retain configuration changes.", app_config_file);
+
+                gtk_dialog_run (GTK_DIALOG (MsgDialog));
+                gtk_widget_destroy (GTK_WIDGET (MsgDialog));
             }
             else        // not in GUI mode
             {
@@ -328,21 +335,33 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
 
             if ( !create_gtk_config_file(gtk_config_file) )
             {
-                AlertDialog = gtk_alert_dialog_new("Unable to create default G-Scope button theme\ntemplate file: %s.\n\n"
-                                                   "It may not be pretty, but\nG-Scope will still work.",
-                                                    gtk_config_file);
-                gtk_alert_dialog_show(AlertDialog, GTK_WINDOW (gscope_splash));
-                gtk_window_destroy (GTK_WINDOW (AlertDialog));
+                MsgDialog = gtk_message_dialog_new_with_markup (
+                        GTK_WINDOW (gscope_splash),
+                        GTK_DIALOG_DESTROY_WITH_PARENT,
+                        GTK_MESSAGE_WARNING,
+                        GTK_BUTTONS_CLOSE,
+                        "Unable to create default G-Scope button theme\ntemplate file: %s.\n\n"
+                        "It may not be pretty, but\nG-Scope will still work.",
+                        gtk_config_file);
+
+                gtk_dialog_run (GTK_DIALOG (MsgDialog));
+                gtk_widget_destroy (GTK_WIDGET (MsgDialog));
             }
             else
             {
-                AlertDialog = gtk_alert_dialog_new("<span weight=\"bold\" size=\"large\">Updating obsolete (or missing)\n"
+                MsgDialog = gtk_message_dialog_new_with_markup (
+                        GTK_WINDOW (gscope_splash),
+                        GTK_DIALOG_DESTROY_WITH_PARENT,
+                        GTK_MESSAGE_INFO,
+                        GTK_BUTTONS_CLOSE,
+                        "<span weight=\"bold\" size=\"large\">Updating obsolete (or missing)\n"
                         "G-Scope button theme.</span>\n\n"
                         "File: <span weight=\"bold\">%s</span>",
                         gtk_config_file);
-                gtk_alert_dialog_show(AlertDialog, GTK_WINDOW (gscope_splash));
-                gtk_window_destroy (GTK_WINDOW (AlertDialog));
-                
+
+                gtk_dialog_run (GTK_DIALOG (MsgDialog));
+                gtk_widget_destroy (GTK_WIDGET (MsgDialog));
+
                 // process the newly created config file
                 //=====================================
                 gtk_config_parse(gtk_config_file);
@@ -353,13 +372,12 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
         {
             GtkWidget *update_dialog;
             GtkWidget *update_dialog_hbox;
-            GtkWidget *update_dialog_vbox;
             GtkWidget *update_dialog_image;
             GtkWidget *update_dialog_notification_label;
             GtkWidget *release_notes_button;
 
             #ifdef GTK3_BUILD
-            // GtkWidget *update_dialog_content_area;
+            GtkWidget *update_dialog_content_area;
             #else
             GtkWidget *update_dialog_vbox;
             GtkWidget *update_dialog_action_area;
@@ -381,50 +399,42 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
             gtk_widget_set_name (update_dialog_notification_label, "update_dialog_notification_label");
             gtk_widget_show (update_dialog_notification_label);
 
+            update_dialog_image = gtk_image_new_from_icon_name ("gtk-dialog-info", GTK_ICON_SIZE_DIALOG);
+            gtk_widget_set_name (update_dialog_image, "update_dialog_image");
+            gtk_widget_show (update_dialog_image);
 
-            update_dialog = gtk_window_new ();
+
+            update_dialog = gtk_dialog_new ();
             gtk_widget_set_name (update_dialog, "update_dialog");
+            gtk_window_set_title(GTK_WINDOW (update_dialog), "");
             gtk_window_set_transient_for(GTK_WINDOW (update_dialog), GTK_WINDOW(gscope_splash));
+            gtk_window_set_position (GTK_WINDOW (update_dialog), GTK_WIN_POS_CENTER_ON_PARENT);
             gtk_window_set_modal (GTK_WINDOW (update_dialog), TRUE);
             gtk_window_set_resizable (GTK_WINDOW (update_dialog), FALSE);
             gtk_window_set_destroy_with_parent (GTK_WINDOW (update_dialog), TRUE);
-            gtk_window_set_title(GTK_WINDOW (update_dialog), "");
+
 
             #ifdef GTK3_BUILD
-            
-            gtk_widget_set_hexpand(update_dialog_notification_label, TRUE);
-            gtk_widget_set_halign(update_dialog_notification_label, GTK_ALIGN_FILL);
 
-            update_dialog_image = gtk_image_new_from_icon_name ("gtk-dialog-info");
-            gtk_image_set_icon_size (GTK_IMAGE (update_dialog_image), GTK_ICON_SIZE_LARGE);
-            gtk_widget_set_name (update_dialog_image, "update_dialog_image");
-            gtk_widget_set_hexpand(update_dialog_image, FALSE);
-            gtk_widget_show (update_dialog_image);
+            update_dialog_content_area = gtk_dialog_get_content_area( GTK_DIALOG(update_dialog) );
 
             update_dialog_hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
             gtk_widget_set_name (update_dialog_hbox, "update_dialog_hbox");
-            
-            gtk_box_prepend (GTK_BOX (update_dialog_hbox), update_dialog_image);
-            gtk_box_prepend (GTK_BOX (update_dialog_hbox), update_dialog_notification_label);
+            gtk_container_add(GTK_CONTAINER(update_dialog_content_area), update_dialog_hbox);
+
+            gtk_box_pack_start (GTK_BOX (update_dialog_hbox), update_dialog_image, FALSE, FALSE, 0);
+            gtk_box_pack_start (GTK_BOX (update_dialog_hbox), update_dialog_notification_label, TRUE, TRUE, 0);
+
 
             release_notes_button = gtk_link_button_new_with_label("https://github.com/tefletch/gscope/wiki/Gscope-Release-Notes",
                                                                   "Gscope Release Notes");
             gtk_widget_set_name (release_notes_button, "release_notes_button");
 
-            update_dialog_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-            gtk_window_set_child(GTK_WINDOW(update_dialog), update_dialog_vbox);
-            gtk_box_prepend (GTK_BOX (update_dialog_vbox), release_notes_button);
-            gtk_box_prepend (GTK_BOX (update_dialog_vbox), update_dialog_hbox);
+            gtk_dialog_add_action_widget(GTK_DIALOG(update_dialog), release_notes_button, 0);
 
-            gtk_window_destroy(GTK_WINDOW(update_dialog));
+            gtk_widget_show_all(update_dialog);
 
             #else
-
-            gtk_window_set_position (GTK_WINDOW (update_dialog), GTK_WIN_POS_CENTER_ON_PARENT); // This API not available in GTK4
-
-            update_dialog_image = gtk_image_new_from_icon_name ("gtk-dialog-info", GTK_ICON_SIZE_DIALOG);
-            gtk_widget_set_name (update_dialog_image, "update_dialog_image");
-            gtk_widget_show (update_dialog_image);
 
             gtk_window_set_type_hint (GTK_WINDOW (update_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
             gtk_dialog_set_has_separator (GTK_DIALOG (update_dialog), FALSE);
@@ -454,10 +464,11 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
             GTK_WIDGET_SET_FLAGS (release_notes_button, GTK_CAN_DEFAULT);
 
             gtk_widget_show_all(update_dialog);
-            gtk_dialog_run (GTK_DIALOG (update_dialog));
-            gtk_widget_destroy (GTK_WIDGET (update_dialog));
 
             #endif
+
+            gtk_dialog_run (GTK_DIALOG (update_dialog));
+            gtk_widget_destroy (GTK_WIDGET (update_dialog));
         }
     }
     return;
@@ -550,15 +561,17 @@ static void gtk_config_parse(char *gtk_config_file)
     {
         GtkCssProvider  *provider;
         GdkDisplay      *display;
+        GdkScreen       *screen;
 
         provider = gtk_css_provider_new();
 
         #if 1 // applies to all widgets on the screen
 
         display  = gdk_display_get_default();
-        gtk_style_context_add_provider_for_display(display, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+        screen   = gdk_display_get_default_screen(display);
+        gtk_style_context_add_provider_for_screen(screen, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
-        gtk_css_provider_load_from_path(provider, gtk_config_file);
+        gtk_css_provider_load_from_path(provider, gtk_config_file, NULL);
         g_object_unref(provider);
 
         #else  // affect only specific widgets  g_object_get_data(G_OBJECT(widget), name)
@@ -645,14 +658,14 @@ static gboolean app_version_check(char *old_string, char *new_string)
 
 
 static void pixmap_path_fixup(char *filename, char *path, GtkWidget *parent)
-{   
-    FILE            *config_file = NULL;
-    char            *config_file_buf = NULL;
-    char            *sub_string;
-    struct          stat statstruct;
-    gboolean        path_ok = FALSE;
-    GtkAlertDialog  *AlertDialog;
-    size_t          num_bytes;
+{
+    FILE    *config_file = NULL;
+    char    *config_file_buf = NULL;
+    char    *sub_string;
+    struct  stat statstruct;
+    gboolean path_ok = FALSE;
+    GtkWidget *MsgDialog;
+    size_t  num_bytes;
 
     // open gtk config file and locate pixmap path string
     if ( ((config_file = fopen(filename, "rwb")) != NULL) && (fstat(fileno(config_file), &statstruct) == 0) )
@@ -689,16 +702,21 @@ static void pixmap_path_fixup(char *filename, char *path, GtkWidget *parent)
 
                     create_gtk_config_file(filename);
 
-                    AlertDialog = gtk_alert_dialog_new(
-                        "<span weight=\"bold\" size=\"large\">Fixed bad pixmap_path in G-Scope button theme.</span>\n\n"
-                        "If you had customizations in <span weight=\"bold\">%s</span> you will need to merge them back"
-                        "from your old config file"
-                        "(now named %s)",
-                        filename,
-                        new_filename);
-                    gtk_alert_dialog_show (AlertDialog, GTK_WINDOW (parent));
-                    gtk_window_destroy (GTK_WINDOW (AlertDialog));
-                   g_free(new_filename);
+                    MsgDialog = gtk_message_dialog_new_with_markup (
+                            GTK_WINDOW (parent),
+                            GTK_DIALOG_DESTROY_WITH_PARENT,
+                            GTK_MESSAGE_INFO,
+                            GTK_BUTTONS_CLOSE,
+                            "<span weight=\"bold\" size=\"large\">Fixed bad pixmap_path in G-Scope button theme.</span>\n\n"
+                            "If you had customizations in <span weight=\"bold\">%s</span> you will need to merge them back"
+                            "from your old config file"
+                            "(now named %s)",
+                            filename,
+                            new_filename);
+
+                    gtk_dialog_run (GTK_DIALOG (MsgDialog));
+                    gtk_widget_destroy (GTK_WIDGET (MsgDialog));
+                    g_free(new_filename);
                 }
             }
             g_free(config_file_buf);
