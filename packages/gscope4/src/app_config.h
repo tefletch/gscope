@@ -5,6 +5,7 @@
 //===============================================================
 
 #define     MAX_STRING_ARG_SIZE     256             /* Maximum supported length of any single command-line string-type argument (including NULL termination */
+#define     MAX_GTK_ENTRY_SIZE      2048            /* Maximum size for "large" GTK entry strings (less than default 65536)*/
 #define     PATHLEN                 500             /* file pathname length */
 
 

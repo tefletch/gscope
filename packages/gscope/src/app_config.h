@@ -5,6 +5,7 @@
 //===============================================================
 
 #define     MAX_STRING_ARG_SIZE     256             /* Maximum supported length of any single command-line string-type argument (including NULL termination */
+#define     MAX_GTK_ENTRY_SIZE      2048            /* Maximum size for "large" GTK entry strings (less than default 65536)*/
 #define     PATHLEN                 500             /* file pathname length */
 
 
@@ -83,9 +84,9 @@ typedef struct
       // Command agrument [string] settings
       gchar     refFile[MAX_STRING_ARG_SIZE];
       gchar     nameFile[MAX_STRING_ARG_SIZE];
-      gchar     includeDir[MAX_STRING_ARG_SIZE];
+      gchar     includeDir[MAX_GTK_ENTRY_SIZE];
       gchar     includeDirDelim;
-      gchar     srcDir[MAX_STRING_ARG_SIZE];
+      gchar     srcDir[MAX_GTK_ENTRY_SIZE];
       gchar     rcFile[MAX_STRING_ARG_SIZE];
       gchar     fileEditor[MAX_STRING_ARG_SIZE];
       // Non-command-argument [string] settings
@@ -96,11 +97,11 @@ typedef struct
       gchar     autoGenId[MAX_STRING_ARG_SIZE];
       guint     autoGenThresh;
       gchar     searchLogFile[MAX_STRING_ARG_SIZE];
-      gchar     suffixList[MAX_STRING_ARG_SIZE];
+      gchar     suffixList[MAX_GTK_ENTRY_SIZE];
       gchar     suffixDelim;
-      gchar     typelessList[MAX_STRING_ARG_SIZE];
+      gchar     typelessList[MAX_GTK_ENTRY_SIZE];
       gchar     typelessDelim;
-      gchar     ignoredList[MAX_STRING_ARG_SIZE];
+      gchar     ignoredList[MAX_GTK_ENTRY_SIZE];
       gchar     ignoredDelim;
       gchar     histFile[MAX_STRING_ARG_SIZE];
       gchar     terminalApp[MAX_STRING_ARG_SIZE];

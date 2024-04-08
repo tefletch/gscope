@@ -941,15 +941,15 @@ void on_preferences_activate(GtkMenuItem     *menuitem,
 
         /*** Initialize the preference dialog settings (Tab #3 "Source File Search") ***/
         /*******************************************************************************/
-        //gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "suffix_entry")),   MAX_STRING_ARG_SIZE - 1);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "suffix_entry")),   MAX_GTK_ENTRY_SIZE - 1);
         gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "suffix_entry")),   settings.suffixList);
-        //gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "typeless_entry")), MAX_STRING_ARG_SIZE - 1);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "typeless_entry")), MAX_GTK_ENTRY_SIZE - 1);
         gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "typeless_entry")), settings.typelessList);
-        //gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "ignored_entry")),  MAX_STRING_ARG_SIZE - 1);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "ignored_entry")),  MAX_GTK_ENTRY_SIZE - 1);
         gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "ignored_entry")),  settings.ignoredList);
-        //gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "source_entry")),   MAX_STRING_ARG_SIZE - 1);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "source_entry")),   MAX_GTK_ENTRY_SIZE - 1);
         gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "source_entry")),   settings.srcDir);
-        //gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "include_entry")),  MAX_STRING_ARG_SIZE - 1);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "include_entry")),  MAX_GTK_ENTRY_SIZE - 1);
         gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "include_entry")),  settings.includeDir);
 
 

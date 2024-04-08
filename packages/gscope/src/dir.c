@@ -260,14 +260,14 @@ void DIR_init(dir_init_e init_type)
 {
     if (init_type == NEW_CREF)
     {
-        DIR_get_path(DIR_INITIALIZE);
-        _alloc_src_file_list();
+        DIR_get_path(DIR_INITIALIZE);   // Configure gscope operatin: CWD, cref-name, data-dir, src-dir, autogen-cache
+        _alloc_src_file_list();         // Allocate (or clear) the source file list (and the src_file hash table)
         _make_src_file_list();
         _init_include_dir_list();
     }
     else
     {
-        _alloc_src_file_list();
+        _alloc_src_file_list();         // Allocate (or clear) the source file list (and the src_file hash table)
     }
 }
 
@@ -411,7 +411,7 @@ static void _init_include_dir_list()
    char *extract_ptr;
    char *extract_end_ptr;
    char *working_ptr;
-   char  include_dir[MAX_STRING_ARG_SIZE];
+   char  include_dir[MAX_GTK_ENTRY_SIZE];
 
 
    if (include_dirs != NULL)   /* If the include-directory list is NOT empty */
@@ -609,7 +609,6 @@ void DIR_addincdir(char *path)
 
     clean_path = strdup( (char *) path);   // Malloc a duplicate 'path' string.
     compress_path(clean_path);             // Sanitize the 'path' string.
-
     /* make sure it is a directory */
     if ( (stat(clean_path, &statstruct) == 0) && (statstruct.st_mode & S_IFDIR) )
     {
@@ -633,7 +632,7 @@ void DIR_addincdir(char *path)
         }
 
         /* Not a duplicate entry, add it to the list */
-        include_dirs[num_include_dirs++] = strdup(clean_path);
+         include_dirs[num_include_dirs++] = strdup(clean_path);
     }
 
     free(clean_path);
@@ -1325,7 +1324,7 @@ gboolean DIR_file_on_include_search_path(gchar *srcfile)
 
     for (i = 0; i < num_include_dirs; i++)
     {
-        if ( strncmp(srcfile, include_dirs[i], strlen(include_dirs[i])) == 0 )
+            if ( strncmp(srcfile, include_dirs[i], strlen(include_dirs[i])) == 0 )
             return(TRUE);
     }
 

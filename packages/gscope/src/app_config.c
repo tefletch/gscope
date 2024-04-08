@@ -83,7 +83,6 @@
 /*** Version Checking Defines ***/
 #define     VCHECK_SIZE     30
 
-#define     MAX_LIST_SIZE           1023            /* Max size for all lists.  All lists must be the same size */
 #define     MAX_OVERRIDE_PATH_SIZE  256
 
 #ifdef GTK3_BUILD   // GTK3 (gscope.css)
@@ -524,9 +523,9 @@ gboolean APP_CONFIG_valid_list(const char *list_name, char *list_ptr, char *deli
 
     pattern_len = strlen(list_ptr);
 
-    if (pattern_len > MAX_LIST_SIZE)
+    if (pattern_len > MAX_GTK_ENTRY_SIZE)
     {
-        fprintf(stderr, "List syntax error: '%s' pattern exceeds %d characters.\n", list_name, MAX_LIST_SIZE);
+        fprintf(stderr, "List syntax error: '%s' pattern exceeds %d characters.\n", list_name, MAX_GTK_ENTRY_SIZE);
         return(FALSE);
     }
 
@@ -873,7 +872,7 @@ static void parse_app_config(const char *filename)
     tmp_ptr = g_key_file_get_string(key_file, "Defaults", "suffixList", NULL);
     if (tmp_ptr)
     {
-        if ( g_strlcpy(settings.suffixList, tmp_ptr, MAX_STRING_ARG_SIZE) >= MAX_STRING_ARG_SIZE )
+        if ( g_strlcpy(settings.suffixList, tmp_ptr, MAX_GTK_ENTRY_SIZE) >= MAX_GTK_ENTRY_SIZE )
             string_trunc_warn("settings.suffixList");
         g_free(tmp_ptr);
     }
@@ -885,7 +884,7 @@ static void parse_app_config(const char *filename)
     tmp_ptr = g_key_file_get_string(key_file, "Defaults", "typelessList", NULL);
     if (tmp_ptr)
     {
-        if ( g_strlcpy(settings.typelessList, tmp_ptr, MAX_STRING_ARG_SIZE) >= MAX_STRING_ARG_SIZE )
+        if ( g_strlcpy(settings.typelessList, tmp_ptr, MAX_GTK_ENTRY_SIZE) >= MAX_GTK_ENTRY_SIZE )
             string_trunc_warn("settings.typelessList");
         g_free(tmp_ptr);
     }
@@ -897,7 +896,7 @@ static void parse_app_config(const char *filename)
     tmp_ptr = g_key_file_get_string(key_file, "Defaults", "ignoredList", NULL);
     if (tmp_ptr)
     {
-        if ( g_strlcpy(settings.ignoredList, tmp_ptr, MAX_STRING_ARG_SIZE) >= MAX_STRING_ARG_SIZE )
+        if ( g_strlcpy(settings.ignoredList, tmp_ptr, MAX_GTK_ENTRY_SIZE) >= MAX_GTK_ENTRY_SIZE )
             string_trunc_warn("settings.ignoredList");
         g_free(tmp_ptr);
     }
@@ -1112,7 +1111,7 @@ static void parse_app_config(const char *filename)
         tmp_ptr = g_key_file_get_string(key_file, "Defaults", "includeDir", NULL);
         if (tmp_ptr)
         {
-            if ( g_strlcpy(settings.includeDir, tmp_ptr, MAX_STRING_ARG_SIZE) >= MAX_STRING_ARG_SIZE )
+            if ( g_strlcpy(settings.includeDir, tmp_ptr, MAX_GTK_ENTRY_SIZE) >= MAX_GTK_ENTRY_SIZE)
                 string_trunc_warn("settings.includeDir");
             g_free(tmp_ptr);
         }
@@ -1135,7 +1134,7 @@ static void parse_app_config(const char *filename)
         tmp_ptr = g_key_file_get_string(key_file, "Defaults", "srcDir", NULL);
         if (tmp_ptr)
         {
-            if ( g_strlcpy(settings.srcDir, tmp_ptr, MAX_STRING_ARG_SIZE) >= MAX_STRING_ARG_SIZE )
+            if ( g_strlcpy(settings.srcDir, tmp_ptr, MAX_GTK_ENTRY_SIZE) >= MAX_GTK_ENTRY_SIZE)
             string_trunc_warn("settings.srcDir");
             g_free(tmp_ptr);
         }
