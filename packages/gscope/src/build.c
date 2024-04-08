@@ -171,7 +171,7 @@ typedef struct
     time_t          reftime;
     char            *start;      /* Pointer to the beginning of the buffer */
     char            *end;        /* Pointer to the last byte of the buffer.  (buffer_start + buffer_length -1) */
-} old_buf_decriptor_t;
+} old_buf_descriptor_t;
 
 
 
@@ -183,7 +183,7 @@ static gboolean old_crossref_is_compatible(char *file_buf);
 static void     initialize_using_old_cref(void);
 static void     initialize_for_new_cref(void);
 static void     build_new_cref(void);
-static void     make_new_cref(old_buf_decriptor_t *old_descriptor);
+static void     make_new_cref(old_buf_descriptor_t *old_descriptor);
 static void     initcompress(void);
 static void     putheader(char *dir);
 static char     *get_old_file(char *dest_ptr, char *src_ptr);
@@ -573,7 +573,7 @@ void build_new_cref()
     size_t  num_bytes;
 
     gboolean force_rebuild;
-    old_buf_decriptor_t     old_buf_descriptor;
+    old_buf_descriptor_t     old_buf_descriptor;
 
     /*
         The cross reference build algorithm is as follows:
@@ -731,7 +731,7 @@ static gboolean old_crossref_is_compatible(char *file_buf)
 
 
 
-static void make_new_cref(old_buf_decriptor_t *old_descriptor)
+static void make_new_cref(old_buf_descriptor_t *old_descriptor)
 {
     uint32_t    firstfile;          /* first source file in pass */
     uint32_t    lastfile;           /* last source file in pass */
