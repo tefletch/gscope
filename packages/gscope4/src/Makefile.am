@@ -8,41 +8,41 @@ AM_CPPFLAGS = \
 AM_CFLAGS = -Wno-deprecated-declarations
 bin_PROGRAMS = gscope
 
-gscope_SOURCES = \
-	app_config.c \
-	app_config.h \
-	app_types.h  \
-	auto_gen.c 	\
-	auto_gen.h 	\
-	browser.c   \
-	broswer.h   \
-	build.c		\
-	build.h		\
-	callbacks.c \
-	callbacks.h \
-	crossref.c 	\
-	crossref.h 	\
-	dir.c 		\
-	dir.h 		\
-	display.c 	\
-	display.h 	\
-	fileview.c 	\
-	fileview.h 	\
-	global.h	\
-	gtk4_aux.c  \
-	gtk4_aux.h  \
-	lookup.c 	\
-	lookup.h 	\
-	main.c 		\
-	scanner.c 	\
-	scanner.h 	\
-	search.c 	\
-	search.h 	\
-	support.c	\
-	support.h	\
-	utils.c 	\
-	utils.h 	\
-	version.h
+gscope_SOURCES = global.h main.c
+#
+#	app_config.c \
+#	app_config.h \
+#	auto_gen.c 	\
+#	auto_gen.h 	\
+#	browser.c   \
+#	broswer.h   \
+#	build.c		\
+#	build.h		\
+#	callbacks.c \
+#	callbacks.h \
+#	crossref.c 	\
+#	crossref.h 	\
+#	dir.c 		\
+#	dir.h 		\
+#	display.c 	\
+#	display.h 	\
+#	fileview.c 	\
+#	fileview.h 	\
+#	global.h	\
+#	gtk4_aux.c  \
+#	gtk4_aux.h  \
+#	lookup.c 	\
+#	lookup.h 	\
+#	main.c 		\
+#	scanner.c 	\
+#	scanner.h 	\
+#	search.c 	\
+#	search.h 	\
+#	support.c	\
+#	support.h	\
+#	utils.c 	\
+#	utils.h 	\
+#	version.h
 
 xmldir = $(prefix)/bin
 xml_DATA = gscope4.cmb

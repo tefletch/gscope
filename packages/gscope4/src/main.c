@@ -19,43 +19,88 @@
 
 #include "app_config.h"
 
-#include "support.h"
-#include "callbacks.h"
-#include "search.h"
-#include "display.h"
+//#include "support.h"
+//#include "callbacks.h"
+//#include "search.h"
+//#include "display.h"
 #include "build.h"
 #include "utils.h"
 
 
-// set this value to TRUE to utilize GTK builder XML file ./gscope3.glade
+// set this value to TRUE to utilize GTK builder XML file ./gscope4.cmb
 // set this value to FALSE to utilize the built-in string array created by xxd -i gscope3.glade > interface.c
 #define BUILD_WIDGETS_FROM_FILE     TRUE
 
+// Revist: Possible use manually created widgets for GTK4
 #if (!BUILD_WIDGETS_FROM_FILE)
 #include    "interface.c"
 #endif
 
 //  ==== Global Variables ====
+settings_t settings = {
+    /*.refOnly            =*/refOnlyDef,
+    /*.noBuild            =*/noBuildDef,
+    /*.updateAll          =*/updateAllDef,
+    /*.truncateSymbols    =*/truncateSymbolsDef,
+    /*.compressDisable    =*/compressDisableDef,
+    /*.recurseDir         =*/recurseDirDef,
+    /*.version            =*/versionDef,
+    /*.ignoreCase         =*/ignoreCaseDef,
+    /*.useEditor          =*/useEditorDef,
+    /*.retainInput        =*/retainInputDef,
+    /*.retainFailed       =*/retainFailedDef,
+    /*.searchLogging      =*/searchLoggingDef,
+    /*.reuseWin           =*/reuseWinDef,
+    /*.exitConfirm        =*/exitConfirmDef,
+    /*.menuIcons          =*/menuIconsDef,
+    /*.singleClick        =*/singleClickDef,
+    /*.showIncludes       =*/showIncludesDef,
+    /*.autoGenEnable      =*/autoGenEnableDef,
+    /*.refFile            =*/refFileDef,
+    /*.nameFile           =*/nameFileDef,
+    /*.includeDir         =*/includeDirDef,
+    /*.includeDirDelim    =*/includeDirDelimDef,
+    /*.srcDir             =*/srcDirDef,
+    /*.rcFile             =*/rcFileDef,
+    /*.fileEditor         =*/fileEditorDef,
+    /*.autoGenPath        =*/autoGenPathDef,
+    /*.autoGenSuffix      =*/autoGenSuffixDef,
+    /*.autoGenCmd         =*/autoGenCmdDef,
+    /*.autoGenRoot        =*/autoGenRootDef,
+    /*.autoGenId          =*/autoGenIdDef,
+    /*.autoGenThresh      =*/autoGenThreshDef,
+    /*.searchLogFile      =*/searchLogFileDef,
+    /*.suffixList         =*/suffixListDef,
+    /*.suffixDelim        =*/suffixDelimDef,
+    /*.typelessList       =*/typelessListDef,
+    /*.typelessDelim      =*/typelessDelimDef,
+    /*.ignoredList        =*/ignoredListDef,
+    /*.ignoredDelim       =*/ignoredDelimDef,
+    /*.histFile           =*/histFileDef,
+    /*.terminalApp        =*/terminalAppDef,
+    /*.fileManager        =*/fileManagerDef,
+    /*.geometry           =*/geometryDef,
+    /*.trackedVersion     =*/trackedVersionDef,
+    /*.smartQuery         =*/TRUE
+};
 
 
-int main(int argc, char *argv[])
+static gboolean cmd_line_handler(gpointer data)
 {
-    GtkWidget   *gscope_main;
-    GtkWidget   *gscope_splash;
+    GApplicationCommandLine *cmd_line = data;
+    gchar **GskShaderArgsBuilder;
+    gchar **args;
+    gint  argc;
+    GOptionContext  *context;
+    GError *error = NULL;
 
-    GError      *error = NULL;
-
-    static gboolean option_error = FALSE;
-    static gchar *refFile = NULL;
-    static gchar *nameFile = NULL;
-    static gchar *includeDir = NULL;
-    static gchar *rcFile = NULL;
-    static gchar *srcDir = NULL;
-    static gchar *geometry = NULL;
-
-    GtkBuilder      *builder;       // For GTK3
-
-#define G_OPTION_FLAG_NONE 0
+    gboolean option_error = FALSE;
+    gchar *refFile = NULL;
+    gchar *nameFile = NULL;
+    gchar *includeDir = NULL;
+    gchar *rcFile = NULL;
+    gchar *srcDir = NULL;
+    gchar *geometry = NULL;
 
     GOptionEntry options[] = {
         {
@@ -116,8 +161,87 @@ int main(int argc, char *argv[])
             "Show version information", NULL
         },
         { NULL }
-
     };
+
+    /* Process the command line options */
+    args = g_application_command_line_get_arguments(cmd_line, &argc);
+    context = g_option_context_new (NULL);
+    g_option_context_set_help_enabled (context, TRUE);
+    g_option_context_add_main_entries (context, options, NULL);         // Load the argument definitions
+
+    if ( !g_option_context_parse_strv (context, &args, &error) ) // Parse the command line argument list
+    {
+        g_application_command_line_printerr (cmd_line, "%s\n", error->message);
+        g_error_free (error);
+        g_application_command_line_set_exit_status (cmd_line, 1);
+    }
+    else
+    {
+        g_application_command_line_print (cmd_line, 
+                                          "refOnly=%s\ncompress=%s\nnoBuld=%s\nrefFile=%s\n",
+                                          settings.refOnly ? "TRUE" : "FALSE",
+                                          settings.compressDisable ? "Disabled" : "Enabled",
+                                          settings.noBuild ? "TRUE" : "FALSE",
+                                          refFile
+                                         );
+        g_application_command_line_set_exit_status (cmd_line, 0);       
+    }
+
+    /* Copy any dynamically allocated [argument] strings to the settings structure (and free them) */
+    /* Buffer overflow protection:  Any [argument] string that exceeds the maximum allowed size is truncated */
+    if (refFile)
+    {strncpy(settings.refFile,    refFile,    MAX_STRING_ARG_SIZE); settings.refFile[MAX_STRING_ARG_SIZE - 1] = 0; g_free(refFile);    }
+
+
+    g_strfreev(args);
+    g_option_context_free(context);
+    g_object_unref(cmd_line);
+
+    return (G_SOURCE_REMOVE);   // FALSE
+}
+
+
+static int gscope_main(GApplication *application, GApplicationCommandLine *cmdline)
+{
+/* keep the application running until we are done with this commandline */
+  g_application_hold (application);
+
+  g_object_set_data_full (G_OBJECT (cmdline),
+                          "application", application,
+                          (GDestroyNotify)g_application_release);
+
+  g_object_ref (cmdline);
+  g_idle_add (cmd_line_handler, cmdline);
+
+  return 0;
+}
+
+
+int main(int argc, char *argv[])
+{
+    GtkApplication *app;
+    int status;
+
+    app = gtk_application_new(NULL, G_APPLICATION_HANDLES_COMMAND_LINE);
+    g_signal_connect(app, "command-line", G_CALLBACK(gscope_main), NULL);
+    g_application_set_inactivity_timeout (G_APPLICATION(app), 10000);
+    
+    status = g_application_run (G_APPLICATION(app), argc, argv);
+    
+    g_object_unref (app);
+
+    printf("Good-bye\n");
+
+#if 0 // GTK4 bootstrap: Migrate later (build spash screen next -- see below)
+    GtkWidget   *gscope_main;
+    GtkWidget   *gscope_splash;
+
+    GError      *error = NULL;
+
+
+    GtkBuilder      *builder;       // For GTK3
+
+
 
 
     if (!gtk_init_with_args(&argc, &argv, "[source files]", options, NULL, &error))
@@ -256,6 +380,7 @@ int main(int argc, char *argv[])
         // gtk4 migration: gtk_builder_connect_signals() no longer exists. Instead, signals are always connected automatically
         //gtk_builder_connect_signals(builder, NULL);
 
+        /* Initialze the application settings */
         APP_CONFIG_init(gscope_splash);
 
         /* Get a reference to the top-level application window */
@@ -281,7 +406,7 @@ int main(int argc, char *argv[])
         }
 
 
-        // Initialize the Quick-option checkbox settings
+        // Initialize the Quick-option checkbox settings -- Revisit: Can this be moved to app initialization app_config
         //==============================================
 
         if (settings.ignoreCase)
@@ -326,6 +451,8 @@ int main(int argc, char *argv[])
 
         gtk_main();
     }
-    return 0;
+#endif
+
+    return status;
 }
 
