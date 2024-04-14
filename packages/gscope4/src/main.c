@@ -85,6 +85,14 @@ settings_t settings = {
 };
 
 
+   gboolean option_error = FALSE;
+    gchar *refFile = NULL;
+    gchar *nameFile = NULL;
+    gchar *includeDir = NULL;
+    gchar *rcFile = NULL;
+    gchar *srcDir = NULL;
+    gchar *geometry = NULL;
+
 static gboolean cmd_line_handler(gpointer data)
 {
     GApplicationCommandLine *cmd_line = data;
@@ -94,14 +102,7 @@ static gboolean cmd_line_handler(gpointer data)
     GOptionContext  *context;
     GError *error = NULL;
 
-    gboolean option_error = FALSE;
-    gchar *refFile = NULL;
-    gchar *nameFile = NULL;
-    gchar *includeDir = NULL;
-    gchar *rcFile = NULL;
-    gchar *srcDir = NULL;
-    gchar *geometry = NULL;
-
+ 
     GOptionEntry options[] = {
         {
             "refOnly", 'b', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, &settings.refOnly,
@@ -163,6 +164,8 @@ static gboolean cmd_line_handler(gpointer data)
         { NULL }
     };
 
+    printf("\n%s: enter\n", __func__);
+
     /* Process the command line options */
     args = g_application_command_line_get_arguments(cmd_line, &argc);
     context = g_option_context_new (NULL);
@@ -197,23 +200,80 @@ static gboolean cmd_line_handler(gpointer data)
     g_option_context_free(context);
     g_object_unref(cmd_line);
 
-    return (G_SOURCE_REMOVE);   // FALSE
+    printf("%s: done\n", __func__);
+
+    return (G_SOURCE_REMOVE);
+}
+
+static void startup (GApplication *app, gpointer *user_data)
+{
+    printf("\n%s: enter\n", __func__);
+    printf("%s: done\n", __func__);
 }
 
 
-static int gscope_main(GApplication *application, GApplicationCommandLine *cmdline)
+static void print_hello (GtkWidget *widget, gpointer   data)
 {
-/* keep the application running until we are done with this commandline */
-  g_application_hold (application);
+  g_print ("Hello World\n");
+}
 
-  g_object_set_data_full (G_OBJECT (cmdline),
-                          "application", application,
-                          (GDestroyNotify)g_application_release);
+static void activate (GApplication *app, gpointer *user_data)
+{
+    GtkWidget *window;
+    GtkWidget *button;
+    GtkWidget *box;
 
-  g_object_ref (cmdline);
-  g_idle_add (cmd_line_handler, cmdline);
+    printf("\n%s: enter\n", __func__);
 
-  return 0;
+    g_application_hold (app);
+    window = gtk_application_window_new (GTK_APPLICATION(app));
+    gtk_window_set_title (GTK_WINDOW (window), "Window");
+    gtk_window_set_default_size (GTK_WINDOW (window), 200, 200);
+
+    box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+    gtk_widget_set_halign (box, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign (box, GTK_ALIGN_CENTER);
+
+    gtk_window_set_child (GTK_WINDOW (window), box);
+
+    button = gtk_button_new_with_label ("Hello World");
+
+    g_signal_connect (button, "clicked", G_CALLBACK (print_hello), NULL);
+    //g_signal_connect_swapped (button, "clicked", G_CALLBACK (gtk_window_destroy), window);
+
+    gtk_box_append (GTK_BOX (box), button);
+
+    gtk_window_present (GTK_WINDOW (window));
+
+    printf("\n%s: done\n", __func__);
+}
+
+static int command_line(GApplication *app, GApplicationCommandLine *cmdline)
+{
+    printf("\n%s: enter\n", __func__);
+
+    #if 1   // Add a (idle-priority) defferred function call to the main loop
+    /* keep the application running until we are done with this commandline */
+    g_application_hold (app);     // Increase the use count of 'application'
+
+    // Load 'cmdline' object into a key/value table (release the application when cmdline object is destroyed)
+    g_object_set_data_full (G_OBJECT (cmdline), "application", app, (GDestroyNotify)g_application_release);
+
+    g_object_ref (cmdline);                 // Increase the reference count of 'cmdline'
+    g_idle_add (cmd_line_handler, cmdline);  // Call command line handler from THE main-loop('default-idle' priority)
+    printf("%s: handler request submitted\n", __func__);
+
+    #else   // Process the command line options here
+    g_application_hold (app);
+    g_object_set_data (G_OBJECT (cmdline), "application", app);
+    g_object_ref (cmdline); 
+    cmd_line_handler (cmdline);   
+    #endif
+
+    activate(app, NULL);
+
+    printf("%s: done\n", __func__);
+    return 1;
 }
 
 
@@ -222,15 +282,20 @@ int main(int argc, char *argv[])
     GtkApplication *app;
     int status;
 
-    app = gtk_application_new(NULL, G_APPLICATION_HANDLES_COMMAND_LINE);
-    g_signal_connect(app, "command-line", G_CALLBACK(gscope_main), NULL);
-    g_application_set_inactivity_timeout (G_APPLICATION(app), 10000);
+    //app = gtk_application_new("gscope.gscope4", G_APPLICATION_HANDLES_COMMAND_LINE);
+    app = gtk_application_new("gscope.gscope4", G_APPLICATION_DEFAULT_FLAGS);
+    g_signal_connect(app, "startup", G_CALLBACK(startup), NULL);
+    g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
+    g_signal_connect(app, "command-line", G_CALLBACK(command_line), NULL);
+    //g_application_set_inactivity_timeout (G_APPLICATION(app), 10000);
     
+    printf("\n%s: run application\n", __func__);
     status = g_application_run (G_APPLICATION(app), argc, argv);
-    
+    printf("\n%s: application_run complete\n", __func__);
+   
     g_object_unref (app);
 
-    printf("Good-bye\n");
+    printf("%s: done\n", __func__);
 
 #if 0 // GTK4 bootstrap: Migrate later (build spash screen next -- see below)
     GtkWidget   *gscope_main;
