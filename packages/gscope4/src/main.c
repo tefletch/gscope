@@ -164,7 +164,7 @@ static gboolean cmd_line_handler(gpointer data)
         { NULL }
     };
 
-    printf("\n%s: enter\n", __func__);
+    printf("%s\n", __func__);
 
     /* Process the command line options */
     args = g_application_command_line_get_arguments(cmd_line, &argc);
@@ -198,7 +198,6 @@ static gboolean cmd_line_handler(gpointer data)
 
     g_strfreev(args);
     g_option_context_free(context);
-    g_object_unref(cmd_line);
 
     printf("%s: done\n", __func__);
 
@@ -207,15 +206,21 @@ static gboolean cmd_line_handler(gpointer data)
 
 static void startup (GApplication *app, gpointer *user_data)
 {
-    printf("\n%s: enter\n", __func__);
-    printf("%s: done\n", __func__);
-}
-
+    printf("** %s **\n", __func__);
+ }
 
 static void print_hello (GtkWidget *widget, gpointer   data)
 {
-  g_print ("Hello World\n");
+  printf ("Hello World\n");
 }
+
+
+static void window_removed(GtkWidget *widget, gpointer   data)
+{
+    printf("** %s **\n", __func__);
+    g_application_release(G_APPLICATION(widget));
+}
+
 
 static void activate (GApplication *app, gpointer *user_data)
 {
@@ -223,7 +228,7 @@ static void activate (GApplication *app, gpointer *user_data)
     GtkWidget *button;
     GtkWidget *box;
 
-    printf("\n%s: enter\n", __func__);
+    printf("** %s **\n", __func__);
 
     g_application_hold (app);
     window = gtk_application_window_new (GTK_APPLICATION(app));
@@ -240,12 +245,12 @@ static void activate (GApplication *app, gpointer *user_data)
 
     g_signal_connect (button, "clicked", G_CALLBACK (print_hello), NULL);
     //g_signal_connect_swapped (button, "clicked", G_CALLBACK (gtk_window_destroy), window);
+    g_signal_connect(app, "window-removed", G_CALLBACK(window_removed), NULL);
 
     gtk_box_append (GTK_BOX (box), button);
 
     gtk_window_present (GTK_WINDOW (window));
 
-    printf("\n%s: done\n", __func__);
 }
 
 static int command_line(GApplication *app, GApplicationCommandLine *cmdline)
@@ -267,14 +272,24 @@ static int command_line(GApplication *app, GApplicationCommandLine *cmdline)
     g_application_hold (app);
     g_object_set_data (G_OBJECT (cmdline), "application", app);
     g_object_ref (cmdline); 
-    cmd_line_handler (cmdline);   
+    cmd_line_handler (cmdline);
+    g_object_unref(cmdline);
+   
     #endif
 
-    activate(app, NULL);
+    //activate(app, NULL);
 
     printf("%s: done\n", __func__);
     return 1;
 }
+
+
+static void shutdown(GApplication *app, gpointer *user_data)
+{
+    printf("** Shutdown **\n");
+    // Perform all shutdown cleanup (save/close files)
+}
+
 
 
 int main(int argc, char *argv[])
@@ -282,17 +297,50 @@ int main(int argc, char *argv[])
     GtkApplication *app;
     int status;
 
-    //app = gtk_application_new("gscope.gscope4", G_APPLICATION_HANDLES_COMMAND_LINE);
     app = gtk_application_new("gscope.gscope4", G_APPLICATION_DEFAULT_FLAGS);
+    //app = gtk_application_new("gscope.gscope4", G_APPLICATION_DEFAULT_FLAGS | G_APPLICATION_HANDLES_COMMAND_LINE);
+   
+    // *** startup ***
     g_signal_connect(app, "startup", G_CALLBACK(startup), NULL);
+    /*
+        When your application starts, the startup signal will be fired. This gives you a chance to perform initialisation
+        tasks that are not directly related to showing a new window. After this, depending on how the application is started, 
+        either activate or open will be called next.   
+    */
+    
+    // *** activate ***
     g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
+    /*
+        GtkApplication defaults to applications being single-instance. If the user attempts to start a second instance
+        of a single-instance application then GtkApplication will signal the first instance and you will receive additional
+        activate or open signals. In this case, the second instance will exit immediately, without calling startup or shutdown.
+
+        All startup initialisation should be done in startup. This avoids wasting work in the second-instance case where the 
+        program just exits immediately.
+
+        The application will continue to run for as long as it needs to. This is usually for as long as there are any open windows.
+        You can additionally force the application to stay alive using g_application_hold().
+    */
+    
+    // *** command-line ***
     g_signal_connect(app, "command-line", G_CALLBACK(command_line), NULL);
     //g_application_set_inactivity_timeout (G_APPLICATION(app), 10000);
-    
+
+    // *** shutdown ***
+    g_signal_connect(app, "shutdown", G_CALLBACK(shutdown), NULL);
+    /*
+        On shutdown, you receive a shutdown signal where you can do any necessary cleanup tasks (such as saving files to disk).
+        
+        The main entry point for your application should only create a GtkApplication instance, set up the signal handlers,
+        and then call g_application_run().   
+    */
+
+     
+    // *** Run the application instance ***
     printf("\n%s: run application\n", __func__);
     status = g_application_run (G_APPLICATION(app), argc, argv);
-    printf("\n%s: application_run complete\n", __func__);
-   
+
+    printf("%s: application_run complete\n", __func__);
     g_object_unref (app);
 
     printf("%s: done\n", __func__);
