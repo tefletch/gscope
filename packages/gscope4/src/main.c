@@ -278,7 +278,8 @@ static int command_line(GApplication *app, GApplicationCommandLine *cmdline)
    
     #endif
 
-    //activate(app, NULL);
+    // When command_line option is processed, the activate signal is not automatically issued
+    activate(app, NULL);
 
     printf("%s: done\n", __func__);
     return 0;
