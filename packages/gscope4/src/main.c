@@ -198,6 +198,7 @@ static gboolean cmd_line_handler(gpointer data)
 
     g_strfreev(args);
     g_option_context_free(context);
+    g_object_unref(cmd_line);
 
     printf("%s: done\n", __func__);
 
@@ -264,7 +265,7 @@ static int command_line(GApplication *app, GApplicationCommandLine *cmdline)
     // Load 'cmdline' object into a key/value table (release the application when cmdline object is destroyed)
     g_object_set_data_full (G_OBJECT (cmdline), "application", app, (GDestroyNotify)g_application_release);
 
-    g_object_ref (cmdline);                 // Increase the reference count of 'cmdline'
+    g_object_ref (cmdline);                  // Increase the reference count of 'cmdline' (refcount decremented by handler)
     g_idle_add (cmd_line_handler, cmdline);  // Call command line handler from THE main-loop('default-idle' priority)
     printf("%s: handler request submitted\n", __func__);
 
@@ -280,7 +281,7 @@ static int command_line(GApplication *app, GApplicationCommandLine *cmdline)
     //activate(app, NULL);
 
     printf("%s: done\n", __func__);
-    return 1;
+    return 0;
 }
 
 
@@ -297,8 +298,8 @@ int main(int argc, char *argv[])
     GtkApplication *app;
     int status;
 
-    app = gtk_application_new("gscope.gscope4", G_APPLICATION_DEFAULT_FLAGS);
-    //app = gtk_application_new("gscope.gscope4", G_APPLICATION_DEFAULT_FLAGS | G_APPLICATION_HANDLES_COMMAND_LINE);
+    //app = gtk_application_new("gscope.gscope4", G_APPLICATION_DEFAULT_FLAGS);
+    app = gtk_application_new("gscope.gscope4", G_APPLICATION_DEFAULT_FLAGS | G_APPLICATION_HANDLES_COMMAND_LINE);
    
     // *** startup ***
     g_signal_connect(app, "startup", G_CALLBACK(startup), NULL);
