@@ -8,34 +8,38 @@ AM_CPPFLAGS = \
 AM_CFLAGS = -Wno-deprecated-declarations
 bin_PROGRAMS = gscope
 
-gscope_SOURCES = global.h main.c
+gscope_SOURCES = \
+	main.c       \
+	global.h     \
+	auto_gen.c   \
+	auto_gen.h   \
+	build.c      \
+	build.h      \
+	crossref.c   \
+	crossref.h   \
+	dir.c        \
+	dir.h        \
+	gtk4_aux.c   \
+	gtk4_aux.h   \
+	lookup.c 	 \
+	lookup.h 	 \
+	scanner.c 	 \
+	scanner.h 	 \
+	utils.c      \
+	utils.h
 #
 #	app_config.c \
 #	app_config.h \
-#	auto_gen.c 	\
-#	auto_gen.h 	\
 #	browser.c   \
 #	broswer.h   \
-#	build.c		\
-#	build.h		\
 #	callbacks.c \
 #	callbacks.h \
-#	crossref.c 	\
-#	crossref.h 	\
-#	dir.c 		\
-#	dir.h 		\
 #	display.c 	\
 #	display.h 	\
 #	fileview.c 	\
 #	fileview.h 	\
 #	global.h	\
-#	gtk4_aux.c  \
-#	gtk4_aux.h  \
-#	lookup.c 	\
-#	lookup.h 	\
 #	main.c 		\
-#	scanner.c 	\
-#	scanner.h 	\
 #	search.c 	\
 #	search.h 	\
 #	support.c	\
