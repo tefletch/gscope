@@ -177,43 +177,18 @@ static void window_removed(GtkWidget *widget, gpointer   data)
 
 static void activate (GApplication *app, gpointer *user_data)
 {
-    GtkWidget *window;
-    GtkWidget *button;
-    GtkWidget *box;
-
+    GtkWidget   *window;
     GtkBuilder  *builder;
-    GtkWidget   *gscope_main;
+    GSList      *list;
 
 
     printf("** %s **\n", __func__);
 
-    g_application_hold (app);
-    window = gtk_application_window_new (GTK_APPLICATION(app));
-    gtk_window_set_title (GTK_WINDOW (window), "Window");
-    gtk_window_set_default_size (GTK_WINDOW (window), 200, 200);
-
-    box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-    gtk_widget_set_halign (box, GTK_ALIGN_CENTER);
-    gtk_widget_set_valign (box, GTK_ALIGN_CENTER);
-
-    gtk_window_set_child (GTK_WINDOW (window), box);
-
-    button = gtk_button_new_with_label ("Hello World");
-
-    g_signal_connect (button, "clicked", G_CALLBACK (print_hello), NULL);
-    //g_signal_connect_swapped (button, "clicked", G_CALLBACK (gtk_window_destroy), window);
-    g_signal_connect(app, "window-removed", G_CALLBACK(window_removed), NULL);
-
-    gtk_box_append (GTK_BOX (box), button);
-
-    gtk_window_present (GTK_WINDOW (window));
-
-    APP_CONFIG_init(NULL);
-    BUILD_initDatabase();
-
+    // Construct a builder
+    //====================
     #if (BUILD_WIDGETS_FROM_FILE)
     {
-        gchar ui_file_path[256];
+        gchar ui_file_path[256];    // Revisit: Buffer overrun risk
 
         if (readlink("/proc/self/exe", ui_file_path, sizeof(ui_file_path)) == -1)
         {
@@ -233,16 +208,40 @@ static void activate (GApplication *app, gpointer *user_data)
         builder = gtk_builder_new_from_string(gscope3_glade, gscope3_glade_len);
     #endif
 
-    {
-        GSList  *list;
+    //Create a list of all builder objects
+    //====================================
+    list = gtk_builder_get_objects(builder);
+    g_slist_foreach(list, my_add_widget, NULL);
 
-        list = gtk_builder_get_objects(builder);
-        g_slist_foreach(list, my_add_widget, NULL);
-    }
+    /* Connect the gscope_main build objet to the top-level application window */
+    window = GTK_WIDGET(gtk_builder_get_object(builder, "gscope_main"));
+    gtk_window_set_application(GTK_WINDOW(window), GTK_APPLICATION(app));
+    gtk_window_present (GTK_WINDOW (window));
 
-    /* Get a reference to the top-level application window */
-    gscope_main  = my_lookup_widget("gscope_main");
-    gtk_widget_show(gscope_main);
+    #if 0
+    GtkWidget   *button;
+    GtkWidget   *box;
+
+    box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+    gtk_widget_set_halign (box, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign (box, GTK_ALIGN_CENTER);
+
+    gtk_window_set_child (GTK_WINDOW (window), box);
+
+    button = gtk_button_new_with_label ("Hello World");
+
+    g_signal_connect (button, "clicked", G_CALLBACK (print_hello), NULL);
+    //g_signal_connect_swapped (button, "clicked", G_CALLBACK (gtk_window_destroy), window);
+    g_signal_connect(app, "window-removed", G_CALLBACK(window_removed), NULL);
+
+    gtk_box_append (GTK_BOX (box), button);
+
+    gtk_window_present (GTK_WINDOW (window));
+    #endif
+
+    APP_CONFIG_init(NULL);
+    BUILD_initDatabase();
+
 
 }
 
@@ -450,7 +449,7 @@ int main(int argc, char *argv[])
             }
             ui_file_path[255] = '\0';        // Ensure path string is null terminated -- readlink() does not append a null if it truncates.
             my_dirname(ui_file_path);
-            strcat(ui_file_path, "/gscope4.cmb");
+            strcat(ui_file_path, "/gscope4.");
 
             // gtk4 migration:
             // If needed, use gtk_builder_set_current_object() to add user data to signals.

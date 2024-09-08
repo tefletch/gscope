@@ -3,30 +3,29 @@
 <interface>
   <!-- interface-name gscope.ui -->
   <requires lib="gtk" version="4.8"/>
-  <object class="GtkWindow" id="gscope_main">
-    <property name="can-target">False</property>
-    <property name="default-height">600</property>
-    <property name="default-width">750</property>
-    <property name="focusable">True</property>
-    <property name="icon-name">system-search</property>
-    <property name="title">G-Scope</property>
+  <object class="GtkApplicationWindow" id="gscope_main">
+    <property name="destroy-with-parent">True</property>
+    <property name="height-request">600</property>
+    <property name="show-menubar">True</property>
+    <property name="title">Gscope</property>
+    <property name="width-request">750</property>
     <child>
       <object class="GtkBox" id="vbox1">
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkBox" id="hbox1">
+          <object class="GtkBox" id="hbox1_2">
             <child>
-              <object class="GtkBox" id="vbox2">
+              <object class="GtkBox" id="vbox2_2">
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkBox" id="hbox2">
+                  <object class="GtkBox" id="hbox2_2">
                     <child>
-                      <object class="GtkLabel" id="menubar1_plchldr">
+                      <object class="GtkLabel" id="menubar1_plchldr_2">
                         <property name="label">Commands Options View Help</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="version_label">
+                      <object class="GtkLabel" id="version_label_2">
                         <property name="hexpand">True</property>
                         <property name="label">&lt;b&gt;G-Scope v4.0&lt;/b&gt;</property>
                         <property name="use-markup">True</property>
@@ -35,12 +34,12 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkFrame" id="search_button_frame">
+                  <object class="GtkFrame" id="search_button_frame_2">
                     <property name="can-focus">False</property>
                     <property name="can-target">False</property>
                     <property name="focus-on-click">False</property>
                     <child>
-                      <object class="GtkGrid" id="search_button_grid">
+                      <object class="GtkGrid" id="search_button_grid_2">
                         <property name="can-focus">False</property>
                         <property name="can-target">False</property>
                         <property name="column-homogeneous">True</property>
@@ -48,7 +47,7 @@
                         <property name="focus-on-click">False</property>
                         <property name="row-spacing">2</property>
                         <child>
-                          <object class="GtkButton" id="find_c_identifier_button">
+                          <object class="GtkButton" id="find_c_identifier_button_2">
                             <property name="css-name">find_c_identifier_button</property>
                             <property name="label">Find C Identifier</property>
                             <property name="receives-default">True</property>
@@ -59,7 +58,7 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkButton" id="find_definition_of_button">
+                          <object class="GtkButton" id="find_definition_of_button_2">
                             <property name="label">Find definition of</property>
                             <property name="receives-default">True</property>
                             <layout>
@@ -69,7 +68,7 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkButton" id="find_functions_called_by_button">
+                          <object class="GtkButton" id="find_functions_called_by_button_2">
                             <property name="label">Find functions called by</property>
                             <property name="receives-default">True</property>
                             <layout>
@@ -79,7 +78,7 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkButton" id="find_fuctions_calling_button">
+                          <object class="GtkButton" id="find_fuctions_calling_button_2">
                             <property name="label">Find functions calling</property>
                             <property name="receives-default">True</property>
                             <layout>
@@ -89,7 +88,7 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkButton" id="find_text_string_button">
+                          <object class="GtkButton" id="find_text_string_button_2">
                             <property name="label">Find text string</property>
                             <property name="receives-default">True</property>
                             <layout>
@@ -99,7 +98,7 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkButton" id="find_egrep_pattern_button">
+                          <object class="GtkButton" id="find_egrep_pattern_button_2">
                             <property name="label">Find egrep pattern</property>
                             <property name="receives-default">True</property>
                             <layout>
@@ -109,7 +108,7 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkButton" id="find_files_button">
+                          <object class="GtkButton" id="find_files_button_2">
                             <property name="label">Find Files</property>
                             <property name="receives-default">True</property>
                             <layout>
@@ -119,7 +118,7 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkButton" id="find_files_including_button">
+                          <object class="GtkButton" id="find_files_including_button_2">
                             <property name="label">Find files including</property>
                             <property name="receives-default">True</property>
                             <layout>
@@ -135,22 +134,22 @@
               </object>
             </child>
             <child>
-              <object class="GtkBox" id="vbox3">
+              <object class="GtkBox" id="vbox3_2">
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkScrolledWindow" id="history_scrolledwindow">
+                  <object class="GtkScrolledWindow" id="history_scrolledwindow_2">
                     <property name="has-frame">True</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkBox" id="hbox64">
+                  <object class="GtkBox" id="hbox64_2">
                     <child>
-                      <object class="GtkBox" id="query_vbox">
+                      <object class="GtkBox" id="query_vbox_2">
                         <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkLabel" id="query_entry_label">
+                          <object class="GtkLabel" id="query_entry_label_2">
                             <property name="can-focus">False</property>
                             <property name="can-target">False</property>
                             <property name="focus-on-click">False</property>
@@ -159,7 +158,7 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkEntry" id="query_entry">
+                          <object class="GtkEntry" id="query_entry_2">
                             <property name="activates-default">True</property>
                             <property name="halign">start</property>
                             <property name="hexpand">True</property>
@@ -172,7 +171,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkButton" id="clear_query_button">
+                      <object class="GtkButton" id="clear_query_button_2">
                         <property name="child">
                           <object class="GtkImage" id="image17">
                             <property name="icon-name">edit-clear</property>
@@ -189,18 +188,18 @@
           </object>
         </child>
         <child>
-          <object class="GtkFrame" id="status_frame">
+          <object class="GtkFrame" id="status_frame_2">
             <child>
               <object class="GtkBox">
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkLabel" id="status_label">
+                  <object class="GtkLabel" id="status_label_2">
                     <property name="halign">start</property>
                     <property name="label">Status:</property>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkProgressBar" id="rebuild_progressbar"/>
+                  <object class="GtkProgressBar" id="rebuild_progressbar_2"/>
                 </child>
               </object>
             </child>

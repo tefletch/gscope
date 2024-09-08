@@ -14,7 +14,7 @@
         "/usr/include/graphene-1.0",
         "/usr/lib/x86_64-linux-gnu/graphene-1.0/include"
       ],
-      "defines": [],
+      "defines": ["GTK3_BUILD", "GTK4_BUILD", "PACKAGE_DATA_DIR=\"/usr/local/share\"", "VERSION=\"4.22\"", "PACKAGE=\"gscope\""],
       "compilerPath": "/usr/bin/gcc",
       "cStandard": "c17",
       "cppStandard": "gnu++17",
