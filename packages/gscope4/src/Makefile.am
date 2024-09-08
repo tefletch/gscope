@@ -11,6 +11,8 @@ bin_PROGRAMS = gscope
 gscope_SOURCES = \
 	main.c       \
 	global.h     \
+	app_config.c \
+	app_config.h \
 	auto_gen.c   \
 	auto_gen.h   \
 	build.c      \
@@ -28,8 +30,6 @@ gscope_SOURCES = \
 	utils.c      \
 	utils.h
 #
-#	app_config.c \
-#	app_config.h \
 #	browser.c   \
 #	broswer.h   \
 #	callbacks.c \

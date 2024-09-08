@@ -208,7 +208,7 @@ static gboolean cmd_line_handler(gpointer data)
 static void startup (GApplication *app, gpointer *user_data)
 {
     printf("** %s **\n", __func__);
- }
+}
 
 static void print_hello (GtkWidget *widget, gpointer   data)
 {
@@ -252,6 +252,7 @@ static void activate (GApplication *app, gpointer *user_data)
 
     gtk_window_present (GTK_WINDOW (window));
 
+    BUILD_initDatabase();
 }
 
 static int command_line(GApplication *app, GApplicationCommandLine *cmdline)

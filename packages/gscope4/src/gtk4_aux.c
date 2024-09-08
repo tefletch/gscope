@@ -57,10 +57,10 @@ void SEARCH_init()
 }
 
 
-// Temporary GTK4 stub functions for SEARCH component
+// Temporary GTK4 stub functions for message dialogs
 //===================================================
 
-gboolean APP_CONFIG_valid_list(const char *list_name, char *list_ptr, char *delim_char)
+void GTK4_message_dialog_stub(char *message)
 {
-    printf("Stub call: %s\n", __func__);  
+    fprintf(stderr, "%s", message);
 }

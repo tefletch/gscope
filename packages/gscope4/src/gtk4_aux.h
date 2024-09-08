@@ -6,7 +6,6 @@ void DISPLAY_update_stats_tooltip(gchar *msg);
 void DISPLAY_set_cref_current(gboolean up_to_date);
 void DISPLAY_update_path_label(gchar *path);
 
-void SEARCH_init(NULL);
+void SEARCH_init();
 
-gboolean APP_CONFIG_valid_list(const char *list_name, char *list_ptr, char *delim_char);
-
+void GTK4_message_dialog_stub(char *message);
