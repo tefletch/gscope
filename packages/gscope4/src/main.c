@@ -36,54 +36,6 @@
 #include    "interface.c"
 #endif
 
-//  ==== Global Variables ====
-settings_t settings = {
-    /*.refOnly            =*/refOnlyDef,
-    /*.noBuild            =*/noBuildDef,
-    /*.updateAll          =*/updateAllDef,
-    /*.truncateSymbols    =*/truncateSymbolsDef,
-    /*.compressDisable    =*/compressDisableDef,
-    /*.recurseDir         =*/recurseDirDef,
-    /*.version            =*/versionDef,
-    /*.ignoreCase         =*/ignoreCaseDef,
-    /*.useEditor          =*/useEditorDef,
-    /*.retainInput        =*/retainInputDef,
-    /*.retainFailed       =*/retainFailedDef,
-    /*.searchLogging      =*/searchLoggingDef,
-    /*.reuseWin           =*/reuseWinDef,
-    /*.exitConfirm        =*/exitConfirmDef,
-    /*.menuIcons          =*/menuIconsDef,
-    /*.singleClick        =*/singleClickDef,
-    /*.showIncludes       =*/showIncludesDef,
-    /*.autoGenEnable      =*/autoGenEnableDef,
-    /*.refFile            =*/refFileDef,
-    /*.nameFile           =*/nameFileDef,
-    /*.includeDir         =*/includeDirDef,
-    /*.includeDirDelim    =*/includeDirDelimDef,
-    /*.srcDir             =*/srcDirDef,
-    /*.rcFile             =*/rcFileDef,
-    /*.fileEditor         =*/fileEditorDef,
-    /*.autoGenPath        =*/autoGenPathDef,
-    /*.autoGenSuffix      =*/autoGenSuffixDef,
-    /*.autoGenCmd         =*/autoGenCmdDef,
-    /*.autoGenRoot        =*/autoGenRootDef,
-    /*.autoGenId          =*/autoGenIdDef,
-    /*.autoGenThresh      =*/autoGenThreshDef,
-    /*.searchLogFile      =*/searchLogFileDef,
-    /*.suffixList         =*/suffixListDef,
-    /*.suffixDelim        =*/suffixDelimDef,
-    /*.typelessList       =*/typelessListDef,
-    /*.typelessDelim      =*/typelessDelimDef,
-    /*.ignoredList        =*/ignoredListDef,
-    /*.ignoredDelim       =*/ignoredDelimDef,
-    /*.histFile           =*/histFileDef,
-    /*.terminalApp        =*/terminalAppDef,
-    /*.fileManager        =*/fileManagerDef,
-    /*.geometry           =*/geometryDef,
-    /*.trackedVersion     =*/trackedVersionDef,
-    /*.smartQuery         =*/TRUE
-};
-
 
    gboolean option_error = FALSE;
     gchar *refFile = NULL;
