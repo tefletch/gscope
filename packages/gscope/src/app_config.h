@@ -16,7 +16,7 @@
 #define updateAllDef       FALSE
 #define truncateSymbolsDef FALSE
 #define compressDisableDef FALSE
-#define autoGenEnableDef   TRUE
+#define autoGenEnableDef   FALSE
 #define recurseDirDef      FALSE
 #define versionDef         FALSE
 #define useEditorDef       FALSE

@@ -204,6 +204,7 @@ static void activate (GApplication *app, gpointer *user_data)
 
     gtk_window_present (GTK_WINDOW (window));
 
+    APP_CONFIG_init(NULL);
     BUILD_initDatabase();
 }
 
