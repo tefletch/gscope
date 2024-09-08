@@ -181,6 +181,10 @@ static void activate (GApplication *app, gpointer *user_data)
     GtkWidget *button;
     GtkWidget *box;
 
+    GtkBuilder  *builder;
+    GtkWidget   *gscope_main;
+
+
     printf("** %s **\n", __func__);
 
     g_application_hold (app);
@@ -206,7 +210,43 @@ static void activate (GApplication *app, gpointer *user_data)
 
     APP_CONFIG_init(NULL);
     BUILD_initDatabase();
+
+    #if (BUILD_WIDGETS_FROM_FILE)
+    {
+        gchar ui_file_path[256];
+
+        if (readlink("/proc/self/exe", ui_file_path, sizeof(ui_file_path)) == -1)
+        {
+            fprintf(stderr, "Application abort: Could not get location of Gscope binary.\nUnable to load UI...\n");
+            exit(EXIT_FAILURE);
+        }
+        ui_file_path[255] = '\0';        // Ensure path string is null terminated -- readlink() does not append a null if it truncates.
+        my_dirname(ui_file_path);
+        strcat(ui_file_path, "/gscope4.ui");
+
+        // gtk4 migration:
+        // If needed, use gtk_builder_set_current_object() to add user data to signals.
+        // If gtk_builder_set_current_object() is used then we can no longer use gtk_builder_new_from_file() or gtk_builder_new_from_string().
+        builder = gtk_builder_new_from_file(ui_file_path);
+    }
+    #else
+        builder = gtk_builder_new_from_string(gscope3_glade, gscope3_glade_len);
+    #endif
+
+    {
+        GSList  *list;
+
+        list = gtk_builder_get_objects(builder);
+        g_slist_foreach(list, my_add_widget, NULL);
+    }
+
+    /* Get a reference to the top-level application window */
+    gscope_main  = my_lookup_widget("gscope_main");
+    gtk_widget_show(gscope_main);
+
 }
+
+//================================================================================================================
 
 static int command_line(GApplication *app, GApplicationCommandLine *cmdline)
 {

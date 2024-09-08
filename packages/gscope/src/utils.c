@@ -179,7 +179,9 @@ GtkWidget *create_widget(gchar *widget_name)
     builder = gtk_builder_new();
     gtk_builder_add_objects_from_file(builder, "../gscope3.glade", toplevel, NULL);
     widget = GTK_WIDGET(gtk_builder_get_object(builder, widget_name));
+    #ifndef GTK4_BUILD      //GTK4: gtk_builder_connect_signals() no longer exists. Instead, signals are always connected automatically.
     gtk_builder_connect_signals(builder, NULL);
+    #endif
     g_object_unref(G_OBJECT(builder));
 
     return(widget);

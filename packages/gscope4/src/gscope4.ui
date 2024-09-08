@@ -2,7 +2,7 @@
 <!-- Created with Cambalache 0.90.4 -->
 <interface>
   <!-- interface-name gscope.ui -->
-  <requires lib="gtk" version="4.12"/>
+  <requires lib="gtk" version="4.8"/>
   <object class="GtkWindow" id="gscope_main">
     <property name="can-target">False</property>
     <property name="default-height">600</property>
@@ -10,7 +10,6 @@
     <property name="focusable">True</property>
     <property name="icon-name">system-search</property>
     <property name="title">G-Scope</property>
-    <signal name="destroy" handler="on_gscope_main_destroy"/>
     <child>
       <object class="GtkBox" id="vbox1">
         <property name="orientation">vertical</property>

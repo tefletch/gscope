@@ -1,9 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
 <!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
-<cambalache-project version="0.13.1" target_tk="gtk-4.0">
+<cambalache-project version="0.17.3" target_tk="gtk-4.0">
   <ui>
-	(1,None,"gscope.ui","gscope.ui",None,None,None,None,None,None,None)
+	(1,None,"gscope.ui","gscope4.ui",None,None,None,None,None,None,None)
   </ui>
+  <ui_library>
+	(1,"gtk","4.8",None)
+  </ui_library>
   <css>
 	(1,"../../../../../../.gscope/gscope.css",None,1)
   </css>
@@ -11,37 +14,37 @@
 	(1,1)
   </css_ui>
   <object>
-	(1,1,"GtkWindow","gscope_main",None,None,None,None,-1,None),
-	(1,2,"GtkBox","vbox1",1,None,None,None,-1,None),
-	(1,5,"GtkFrame","status_frame",2,None,None,None,1,None),
-	(1,6,"GtkBox",None,5,None,None,None,-1,None),
-	(1,7,"GtkLabel","status_label",6,None,None,None,-1,None),
-	(1,8,"GtkProgressBar","rebuild_progressbar",6,None,None,None,-1,None),
-	(1,9,"GtkBox",None,2,None,None,None,2,None),
-	(1,16,"GtkLabel",None,2,None,None,None,3,None),
-	(1,17,"GtkBox","hbox1",2,None,None,None,None,None),
-	(1,18,"GtkBox","vbox2",17,None,None,None,-1,None),
-	(1,19,"GtkBox","vbox3",17,None,None,None,-1,None),
-	(1,20,"GtkBox","hbox2",18,None,None,None,-1,None),
-	(1,21,"GtkFrame","search_button_frame",18,None,None,None,-1,None),
-	(1,22,"GtkLabel","menubar1_plchldr",20,None,None,None,-1,None),
-	(1,23,"GtkLabel","version_label",20,None,None,None,-1,None),
-	(1,24,"GtkGrid","search_button_grid",21,None,None,None,-1,None),
-	(1,25,"GtkButton","find_c_identifier_button",24,None,None,None,-1,None),
-	(1,35,"GtkButton","find_definition_of_button",24,None,None,None,1,None),
-	(1,36,"GtkButton","find_functions_called_by_button",24,None,None,None,2,None),
-	(1,37,"GtkButton","find_fuctions_calling_button",24,None,None,None,3,None),
-	(1,38,"GtkButton","find_text_string_button",24,None,None,None,4,None),
-	(1,39,"GtkButton","find_egrep_pattern_button",24,None,None,None,5,None),
-	(1,40,"GtkButton","find_files_button",24,None,None,None,6,None),
-	(1,41,"GtkButton","find_files_including_button",24,None,None,None,7,None),
-	(1,42,"GtkScrolledWindow","history_scrolledwindow",19,None,None,None,None,None),
-	(1,43,"GtkBox","hbox64",19,None,None,None,1,None),
-	(1,44,"GtkBox","query_vbox",43,None,None,None,None,None),
-	(1,45,"GtkLabel","query_entry_label",44,None,None,None,None,None),
-	(1,46,"GtkEntry","query_entry",44,None,None,None,1,None),
-	(1,47,"GtkButton","clear_query_button",43,None,None,None,1,None),
-	(1,48,"GtkImage","image17",47,None,None,None,-1,None)
+	(1,1,"GtkWindow","gscope_main",None,None,None,None,-1,None,None),
+	(1,2,"GtkBox","vbox1",1,None,None,None,-1,None,None),
+	(1,5,"GtkFrame","status_frame",2,None,None,None,1,None,None),
+	(1,6,"GtkBox",None,5,None,None,None,-1,None,None),
+	(1,7,"GtkLabel","status_label",6,None,None,None,-1,None,None),
+	(1,8,"GtkProgressBar","rebuild_progressbar",6,None,None,None,-1,None,None),
+	(1,9,"GtkBox",None,2,None,None,None,2,None,None),
+	(1,16,"GtkLabel",None,2,None,None,None,3,None,None),
+	(1,17,"GtkBox","hbox1",2,None,None,None,None,None,None),
+	(1,18,"GtkBox","vbox2",17,None,None,None,-1,None,None),
+	(1,19,"GtkBox","vbox3",17,None,None,None,-1,None,None),
+	(1,20,"GtkBox","hbox2",18,None,None,None,-1,None,None),
+	(1,21,"GtkFrame","search_button_frame",18,None,None,None,-1,None,None),
+	(1,22,"GtkLabel","menubar1_plchldr",20,None,None,None,-1,None,None),
+	(1,23,"GtkLabel","version_label",20,None,None,None,-1,None,None),
+	(1,24,"GtkGrid","search_button_grid",21,None,None,None,-1,None,None),
+	(1,25,"GtkButton","find_c_identifier_button",24,None,None,None,-1,None,None),
+	(1,35,"GtkButton","find_definition_of_button",24,None,None,None,1,None,None),
+	(1,36,"GtkButton","find_functions_called_by_button",24,None,None,None,2,None,None),
+	(1,37,"GtkButton","find_fuctions_calling_button",24,None,None,None,3,None,None),
+	(1,38,"GtkButton","find_text_string_button",24,None,None,None,4,None,None),
+	(1,39,"GtkButton","find_egrep_pattern_button",24,None,None,None,5,None,None),
+	(1,40,"GtkButton","find_files_button",24,None,None,None,6,None,None),
+	(1,41,"GtkButton","find_files_including_button",24,None,None,None,7,None,None),
+	(1,42,"GtkScrolledWindow","history_scrolledwindow",19,None,None,None,None,None,None),
+	(1,43,"GtkBox","hbox64",19,None,None,None,1,None,None),
+	(1,44,"GtkBox","query_vbox",43,None,None,None,None,None,None),
+	(1,45,"GtkLabel","query_entry_label",44,None,None,None,None,None,None),
+	(1,46,"GtkEntry","query_entry",44,None,None,None,1,None,None),
+	(1,47,"GtkButton","clear_query_button",43,None,None,None,1,None,None),
+	(1,48,"GtkImage","image17",47,None,None,None,-1,None,None)
   </object>
   <object_property>
 	(1,1,"GtkWidget","can-target","False",None,None,None,None,None,None,None,None,None),
@@ -120,7 +123,4 @@
 	(1,24,41,"GtkGridLayoutChild","column","1",None,None,None,None),
 	(1,24,41,"GtkGridLayoutChild","row","3",None,None,None,None)
   </object_layout_property>
-  <object_signal>
-	(2,1,1,"GtkWidget","destroy","on_gscope_main_destroy",None,None,None,None,None)
-  </object_signal>
 </cambalache-project>
