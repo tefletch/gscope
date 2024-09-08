@@ -222,7 +222,7 @@ void AUTOGEN_init(char *data_dir)
     if ((dir = opendir(bld_symlink_path)) == NULL)
     {
         /* could not open directory */
-        perror ("ERROR: Failed to open auto_gen BUILD directory.");
+        fprintf(stderr, "ERROR: Failed to open auto_gen BUILD directory[%s]: %s\n", bld_symlink_path, strerror(errno));
         exit(EXIT_FAILURE);
     }
 
@@ -516,7 +516,7 @@ unsigned int AUTOGEN_get_cache_count(char *cache_path)
 
     if ((fd = opendir(cache_path)) == NULL)
     {
-        fprintf(stderr, "Fatal Error: Cannot open autogen cache directory.\n");
+        fprintf(stderr, "Fatal Error: Cannot open autogen cache directory: %s.\n", cache_path);
         exit(EXIT_FAILURE);
     }
 
