@@ -149,7 +149,7 @@ void my_add_widget(gpointer widget, gpointer user_data)
         /* Add the widget to to the reference database */
         #ifndef GTK4_BUILD
         g_hash_table_insert(hash_table, strdup(gtk_buildable_get_name(GTK_BUILDABLE(widget))), widget); 
-        else
+        #else
         g_hash_table_insert(hash_table, strdup(gtk_buildable_get_buildable_id(GTK_BUILDABLE(widget))), widget); 
         #endif
 

@@ -71,7 +71,9 @@
 #include "dir.h"
 #include "utils.h"
 
+#ifdef GTK4_BUILD
 #include "gtk4_aux.h"
+#endif
 
 
 //===============================================================
@@ -471,8 +473,7 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
             gtk_widget_set_hexpand(update_dialog_notification_label, TRUE);
             gtk_widget_set_halign(update_dialog_notification_label, GTK_ALIGN_FILL);
 
-            update_dialog_image = gtk_image_new_from_icon_name ("gtk-dialog-info");
-            gtk_image_set_icon_size (GTK_IMAGE (update_dialog_image), GTK_ICON_SIZE_LARGE);
+            update_dialog_image = gtk_image_new_from_icon_name ("gtk-dialog-info",GTK_ICON_SIZE_DIALOG);
             
             gtk_widget_set_name (update_dialog_image, "update_dialog_image");
             gtk_widget_set_hexpand(update_dialog_image, FALSE);
@@ -530,6 +531,9 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
             gtk_window_set_title(GTK_WINDOW (update_dialog), "");
             //gtk_window_set_position (GTK_WINDOW (update_dialog), GTK_WIN_POS_CENTER_ON_PARENT); // This API not available in GTK4
             update_dialog_image = gtk_image_new_from_icon_name ("gtk-dialog-info");
+            gtk_image_set_icon_size (GTK_IMAGE (update_dialog_image), GTK_ICON_SIZE_LARGE);
+            
+
             gtk_widget_set_name (update_dialog_image, "update_dialog_image");
             gtk_widget_show (update_dialog_image);
             update_dialog_hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
