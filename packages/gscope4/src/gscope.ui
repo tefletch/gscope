@@ -1,0 +1,221 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.90.4 -->
+<interface>
+  <!-- interface-name gscope.ui -->
+  <requires lib="gtk" version="4.12"/>
+  <object class="GtkWindow" id="gscope_main">
+    <property name="can-target">False</property>
+    <property name="default-height">600</property>
+    <property name="default-width">750</property>
+    <property name="focusable">True</property>
+    <property name="icon-name">system-search</property>
+    <property name="title">G-Scope</property>
+    <signal name="destroy" handler="on_gscope_main_destroy"/>
+    <child>
+      <object class="GtkBox" id="vbox1">
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkBox" id="hbox1">
+            <child>
+              <object class="GtkBox" id="vbox2">
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkBox" id="hbox2">
+                    <child>
+                      <object class="GtkLabel" id="menubar1_plchldr">
+                        <property name="label">Commands Options View Help</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="version_label">
+                        <property name="hexpand">True</property>
+                        <property name="label">&lt;b&gt;G-Scope v4.0&lt;/b&gt;</property>
+                        <property name="use-markup">True</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkFrame" id="search_button_frame">
+                    <property name="can-focus">False</property>
+                    <property name="can-target">False</property>
+                    <property name="focus-on-click">False</property>
+                    <child>
+                      <object class="GtkGrid" id="search_button_grid">
+                        <property name="can-focus">False</property>
+                        <property name="can-target">False</property>
+                        <property name="column-homogeneous">True</property>
+                        <property name="column-spacing">2</property>
+                        <property name="focus-on-click">False</property>
+                        <property name="row-spacing">2</property>
+                        <child>
+                          <object class="GtkButton" id="find_c_identifier_button">
+                            <property name="css-name">find_c_identifier_button</property>
+                            <property name="label">Find C Identifier</property>
+                            <property name="receives-default">True</property>
+                            <layout>
+                              <property name="column">0</property>
+                              <property name="row">0</property>
+                            </layout>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="find_definition_of_button">
+                            <property name="label">Find definition of</property>
+                            <property name="receives-default">True</property>
+                            <layout>
+                              <property name="column">0</property>
+                              <property name="row">1</property>
+                            </layout>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="find_functions_called_by_button">
+                            <property name="label">Find functions called by</property>
+                            <property name="receives-default">True</property>
+                            <layout>
+                              <property name="column">0</property>
+                              <property name="row">2</property>
+                            </layout>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="find_fuctions_calling_button">
+                            <property name="label">Find functions calling</property>
+                            <property name="receives-default">True</property>
+                            <layout>
+                              <property name="column">0</property>
+                              <property name="row">3</property>
+                            </layout>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="find_text_string_button">
+                            <property name="label">Find text string</property>
+                            <property name="receives-default">True</property>
+                            <layout>
+                              <property name="column">1</property>
+                              <property name="row">0</property>
+                            </layout>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="find_egrep_pattern_button">
+                            <property name="label">Find egrep pattern</property>
+                            <property name="receives-default">True</property>
+                            <layout>
+                              <property name="column">1</property>
+                              <property name="row">1</property>
+                            </layout>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="find_files_button">
+                            <property name="label">Find Files</property>
+                            <property name="receives-default">True</property>
+                            <layout>
+                              <property name="column">1</property>
+                              <property name="row">2</property>
+                            </layout>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="find_files_including_button">
+                            <property name="label">Find files including</property>
+                            <property name="receives-default">True</property>
+                            <layout>
+                              <property name="column">1</property>
+                              <property name="row">3</property>
+                            </layout>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox" id="vbox3">
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkScrolledWindow" id="history_scrolledwindow">
+                    <property name="has-frame">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox" id="hbox64">
+                    <child>
+                      <object class="GtkBox" id="query_vbox">
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkLabel" id="query_entry_label">
+                            <property name="can-focus">False</property>
+                            <property name="can-target">False</property>
+                            <property name="focus-on-click">False</property>
+                            <property name="halign">start</property>
+                            <property name="label">Query Input:</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkEntry" id="query_entry">
+                            <property name="activates-default">True</property>
+                            <property name="halign">start</property>
+                            <property name="hexpand">True</property>
+                            <property name="margin-bottom">8</property>
+                            <property name="primary-icon-name">edit-find</property>
+                            <property name="progress-pulse-step">0.1</property>
+                            <property name="secondary-icon-name">edit-clear</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="clear_query_button">
+                        <property name="child">
+                          <object class="GtkImage" id="image17">
+                            <property name="icon-name">edit-clear</property>
+                          </object>
+                        </property>
+                        <property name="focus-on-click">False</property>
+                        <property name="valign">baseline</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkFrame" id="status_frame">
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkLabel" id="status_label">
+                    <property name="halign">start</property>
+                    <property name="label">Status:</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkProgressBar" id="rebuild_progressbar"/>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox"/>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="label">label5</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
