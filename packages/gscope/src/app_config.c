@@ -639,9 +639,26 @@ gboolean APP_CONFIG_valid_list(const char *list_name, char *list_ptr, char *deli
 // Private Functions
 //===================================
 
+static void parsing_error(GtkCssProvider* self, GtkCssSection* section, GError* error, gpointer user_data)
+{
+    GString     *sect_string;
+
+    printf("*** %s ***\n", __func__);
+    
+    gtk_css_section_print(section, sect_string);
+    printf("CSS parsing error: Section: %s: ", sect_string->str);
+    free(sect_string);
+    if ( error )
+        printf("%s\n", error->message);
+    else
+        printf("Unknown Parsing Error\n");
+}
+
 
 static void gtk_config_parse(char *gtk_config_file)
 {
+    printf("Parsing GTK config: %s\n", gtk_config_file);
+
     #ifdef GTK3_BUILD
     {
         GtkCssProvider  *provider;
@@ -661,6 +678,7 @@ static void gtk_config_parse(char *gtk_config_file)
         gtk_style_context_add_provider_for_screen(screen, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
         gtk_css_provider_load_from_path(provider, gtk_config_file, NULL);
         #else
+        g_signal_connect(provider, "parsing-error", G_CALLBACK(parsing_error), NULL);
         gtk_style_context_add_provider_for_display(display, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
         gtk_css_provider_load_from_path(provider, gtk_config_file);
         #endif

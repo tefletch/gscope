@@ -178,11 +178,14 @@ static void window_removed(GtkWidget *widget, gpointer   data)
 static void activate (GApplication *app, gpointer *user_data)
 {
     GtkWidget   *window;
+    GtkWidget   *gscope_splash;
     GtkBuilder  *builder;
     GSList      *list;
 
 
     printf("** %s **\n", __func__);
+
+    gscope_splash = gtk_button_new_with_label ("Hello World");  // Temporary hack
 
     // Construct a builder
     //====================
@@ -239,7 +242,7 @@ static void activate (GApplication *app, gpointer *user_data)
     gtk_window_present (GTK_WINDOW (window));
     #endif
 
-    APP_CONFIG_init(NULL);
+    APP_CONFIG_init(gscope_splash);
     BUILD_initDatabase();
 
 
