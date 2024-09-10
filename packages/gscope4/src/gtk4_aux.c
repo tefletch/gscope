@@ -64,3 +64,11 @@ void GTK4_message_dialog_stub(char *message)
 {
     fprintf(stderr, "%s", message);
 }
+
+
+void on_find_c_identifier_button_clicked(GtkButton       *button,
+                                         gpointer         user_data)
+{
+    printf("Hello from CALLBACK: %s\n", __func__);
+}
+

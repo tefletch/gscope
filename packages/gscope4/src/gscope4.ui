@@ -4,7 +4,9 @@
   <!-- interface-name gscope.ui -->
   <requires lib="gtk" version="4.8"/>
   <object class="GtkWindow" id="gscope_main">
+    <property name="height-request">600</property>
     <property name="title">Gscope</property>
+    <property name="width-request">750</property>
     <child>
       <object class="GtkBox" id="vbox1">
         <property name="orientation">vertical</property>
@@ -13,6 +15,8 @@
             <property name="spacing">10</property>
             <child>
               <object class="GtkBox" id="vbox2">
+                <property name="can-focus">False</property>
+                <property name="focus-on-click">False</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkLabel">
@@ -23,9 +27,13 @@
                 <child>
                   <object class="GtkGrid" id="search_button_grid">
                     <property name="column-homogeneous">True</property>
-                    <property name="column-spacing">8</property>
+                    <property name="column-spacing">6</property>
+                    <property name="margin-bottom">8</property>
+                    <property name="margin-end">8</property>
+                    <property name="margin-start">8</property>
+                    <property name="margin-top">8</property>
                     <property name="name">search_button_grid</property>
-                    <property name="row-spacing">8</property>
+                    <property name="row-spacing">6</property>
                     <child>
                       <object class="GtkButton" id="find_definition_of_button">
                         <property name="label">Find definition of</property>
@@ -55,7 +63,7 @@
                         <property name="label">Find C Identifier</property>
                         <property name="name">find_c_identifier_button</property>
                         <property name="receives-default">True</property>
-                        <signal name="clicked" handler="print_hello"/>
+                        <signal name="clicked" handler="on_find_c_identifier_button_clicked"/>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">0</property>
@@ -132,11 +140,12 @@
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkScrolledWindow" id="history_scrolledwindow">
-                    <property name="vexpand">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="can-target">False</property>
+                    <property name="focus-on-click">False</property>
+                    <property name="height-request">147</property>
                     <child>
-                      <object class="GtkTreeView">
-                        <property name="vexpand">True</property>
-                      </object>
+                      <object class="GtkTreeView"/>
                     </child>
                   </object>
                 </child>
@@ -152,7 +161,9 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkEntry" id="query_entry"/>
+                          <object class="GtkEntry" id="query_entry">
+                            <property name="hexpand">True</property>
+                          </object>
                         </child>
                       </object>
                     </child>
@@ -184,7 +195,7 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkProgressBar">
+                  <object class="GtkProgressBar" id="rebuild_progressbar">
                     <property name="show-text">True</property>
                     <property name="text">Building Cross Reference...Please Wait</property>
                   </object>
@@ -194,8 +205,74 @@
           </object>
         </child>
         <child>
-          <object class="GtkLabel">
-            <property name="label">vbox1 bottom</property>
+          <object class="GtkScrolledWindow" id="results_scrolledwindow">
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
+            <child>
+              <object class="GtkTreeView" id="treeview1">
+                <property name="enable-grid-lines">both</property>
+                <property name="reorderable">True</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox" id="hbox5">
+            <property name="margin-bottom">5</property>
+            <property name="margin-top">5</property>
+            <property name="spacing">5</property>
+            <child>
+              <object class="GtkButton" id="session_info_button">
+                <child>
+                  <object class="GtkImage" id="session_info_button_image">
+                    <property name="file">../share/gscope/pixmaps/info.png</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="cref_update_button"/>
+            </child>
+            <child>
+              <object class="GtkLabel" id="path_label">
+                <property name="label">&lt;span foreground="seagreen"&gt;Source Directory:&lt;/span&gt;</property>
+                <property name="use-markup">True</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="src_mode_status_button"/>
+            </child>
+            <child>
+              <object class="GtkProgressBar">
+                <property name="can-focus">False</property>
+                <property name="can-target">False</property>
+                <property name="focus-on-click">False</property>
+                <property name="hexpand">True</property>
+                <property name="margin-bottom">10</property>
+                <property name="margin-top">10</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="cancel_button">
+                <property name="halign">end</property>
+                <property name="margin-end">5</property>
+                <child>
+                  <object class="GtkBox" id="cancel_button_hbox">
+                    <property name="spacing">3</property>
+                    <child>
+                      <object class="GtkImage" id="cancel_button_image">
+                        <property name="icon-name">gtk-cancel</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="cancel_button_label">
+                        <property name="label">Cancel</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
       </object>

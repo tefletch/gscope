@@ -683,7 +683,7 @@ static void gtk_config_parse(char *gtk_config_file)
         gtk_css_provider_load_from_path(provider, gtk_config_file);
         #endif
 
-        g_object_unref(provider);
+        g_object_unref(provider);       // This doesn't destrory the provider, the display still has a reference.
 
         #else  // affect only specific widgets  g_object_get_data(G_OBJECT(widget), name)
         GtkStyleContext *context;

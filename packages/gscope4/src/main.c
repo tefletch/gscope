@@ -27,6 +27,13 @@
 #include "utils.h"
 
 
+
+void print_hello (GtkWidget *widget, gpointer   data)
+{
+  printf ("Hello World\n");
+}
+
+
 // set this value to TRUE to utilize GTK builder XML file ./gscope4.cmb
 // set this value to FALSE to utilize the built-in string array created by xxd -i gscope3.glade > interface.c
 #define BUILD_WIDGETS_FROM_FILE     TRUE
@@ -44,6 +51,8 @@
     gchar *rcFile = NULL;
     gchar *srcDir = NULL;
     gchar *geometry = NULL;
+
+
 
 static gboolean cmd_line_handler(gpointer data)
 {
@@ -157,35 +166,22 @@ static gboolean cmd_line_handler(gpointer data)
     return (G_SOURCE_REMOVE);
 }
 
+/* WARMING: Do not call any functions from this handler that are affected by command line arguments 
+            Place command-line dependent function calls in the 'activate' handler. */
 static void startup (GApplication *app, gpointer *user_data)
 {
     printf("** %s **\n", __func__);
 }
 
-static void print_hello (GtkWidget *widget, gpointer   data)
+
+static void activate (GtkApplication *app, gpointer *user_data)
 {
-  printf ("Hello World\n");
-}
-
-
-static void window_removed(GtkWidget *widget, gpointer   data)
-{
-    printf("** %s **\n", __func__);
-    g_application_release(G_APPLICATION(widget));
-}
-
-
-static void activate (GApplication *app, gpointer *user_data)
-{
-    GtkWidget   *window;
-    GtkWidget   *gscope_splash;
+    GtkWidget   *gscope_main;
     GtkBuilder  *builder;
     GSList      *list;
-
+    GtkWidget   *gscope_splash;
 
     printf("** %s **\n", __func__);
-
-    gscope_splash = gtk_button_new_with_label ("Hello World");  // Temporary hack
 
     // Construct a builder
     //====================
@@ -211,44 +207,26 @@ static void activate (GApplication *app, gpointer *user_data)
         builder = gtk_builder_new_from_string(gscope3_glade, gscope3_glade_len);
     #endif
 
+
     //Create a list of all builder objects
     //====================================
     list = gtk_builder_get_objects(builder);
     g_slist_foreach(list, my_add_widget, NULL);
 
-    /* Connect the gscope_main build objet to the top-level application window */
-    window = GTK_WIDGET(gtk_builder_get_object(builder, "gscope_main"));
-    gtk_window_set_application(GTK_WINDOW(window), GTK_APPLICATION(app));
-    gtk_window_present (GTK_WINDOW (window));
+    // Connect the 'gscope_main' build object to the top-level application window
+    //===========================================================================
+    GObject *window = gtk_builder_get_object (builder, "gscope_main");
+    gtk_window_set_application (GTK_WINDOW (window), app);
 
-    #if 0
-    GtkWidget   *button;
-    GtkWidget   *box;
+    gtk_widget_set_visible (GTK_WIDGET(window), TRUE);
 
-    box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-    gtk_widget_set_halign (box, GTK_ALIGN_CENTER);
-    gtk_widget_set_valign (box, GTK_ALIGN_CENTER);
+    g_object_unref(builder);
 
-    gtk_window_set_child (GTK_WINDOW (window), box);
-
-    button = gtk_button_new_with_label ("Hello World");
-
-    g_signal_connect (button, "clicked", G_CALLBACK (print_hello), NULL);
-    //g_signal_connect_swapped (button, "clicked", G_CALLBACK (gtk_window_destroy), window);
-    g_signal_connect(app, "window-removed", G_CALLBACK(window_removed), NULL);
-
-    gtk_box_append (GTK_BOX (box), button);
-
-    gtk_window_present (GTK_WINDOW (window));
-    #endif
-
-    APP_CONFIG_init(gscope_splash);
-    BUILD_initDatabase();
-
-
+    gscope_splash = gtk_button_new_with_label ("Dummy Button");  // Temporary hack
+    APP_CONFIG_init(gscope_splash);     // Must run AFTER command_line handler
+    BUILD_initDatabase();               // Must run AFTER command_line handler
 }
 
-//================================================================================================================
 
 static int command_line(GApplication *app, GApplicationCommandLine *cmdline)
 {
@@ -275,7 +253,7 @@ static int command_line(GApplication *app, GApplicationCommandLine *cmdline)
     #endif
 
     // When command_line option is processed, the activate signal is not automatically issued
-    activate(app, NULL);
+    activate(GTK_APPLICATION(app), NULL);
 
     printf("%s: done\n", __func__);
     return 0;
