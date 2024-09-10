@@ -198,15 +198,11 @@ static void activate (GtkApplication *app, gpointer *user_data)
         my_dirname(ui_file_path);
         strcat(ui_file_path, "/gscope4.ui");
 
-        // gtk4 migration:
-        // If needed, use gtk_builder_set_current_object() to add user data to signals.
-        // If gtk_builder_set_current_object() is used then we can no longer use gtk_builder_new_from_file() or gtk_builder_new_from_string().
         builder = gtk_builder_new_from_file(ui_file_path);
     }
     #else
         builder = gtk_builder_new_from_string(gscope3_glade, gscope3_glade_len);
     #endif
-
 
     //Create a list of all builder objects
     //====================================
@@ -219,7 +215,6 @@ static void activate (GtkApplication *app, gpointer *user_data)
     gtk_window_set_application (GTK_WINDOW (window), app);
 
     gtk_widget_set_visible (GTK_WIDGET(window), TRUE);
-
     g_object_unref(builder);
 
     gscope_splash = gtk_button_new_with_label ("Dummy Button");  // Temporary hack
