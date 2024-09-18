@@ -161,7 +161,6 @@ static gboolean cmd_line_handler(gpointer data)
 
     g_strfreev(args);
     g_option_context_free(context);
-    g_object_unref(cmd_line);
 
     printf("%s: done\n", __func__);
 
@@ -184,6 +183,12 @@ static void activate (GtkApplication *app, gpointer *user_data)
     GError      *error = NULL;
 
     printf("** %s **\n", __func__);
+
+    if (settings.version)
+    {
+        printf("GSCOPE version %s\n", VERSION);
+        exit(EXIT_SUCCESS);
+    }
 
     // Construct a builder
     //====================
@@ -223,17 +228,23 @@ static void activate (GtkApplication *app, gpointer *user_data)
     list = gtk_builder_get_objects(builder);
     g_slist_foreach(list, my_add_widget, NULL);
 
-    // Connect the 'gscope_main' build object to the top-level application window
-    //===========================================================================
+    // Instantiate the main window 'gscope_main' and
+    // connect it to the top-level application window
+    //======================================================
     GObject *gscope_main = gtk_builder_get_object (builder, "gscope_main");
     gtk_window_set_application (GTK_WINDOW(gscope_main), app);
     gtk_widget_set_visible (GTK_WIDGET(gscope_main), TRUE);
 
+    // Instantiate the message window object (message dialog)
+    //=======================================================
     GObject *message_window = gtk_builder_get_object(builder, "message_window");
     gtk_window_set_transient_for(GTK_WINDOW(message_window), GTK_WINDOW(gscope_main));
     g_signal_connect(my_lookup_widget("message_button"), "clicked", G_CALLBACK(on_message_button_clicked), NULL);
     g_signal_connect(my_lookup_widget("message_window"), "close-request", G_CALLBACK(on_message_window_close_request), NULL);
     gtk_widget_set_visible(GTK_WIDGET(message_window), FALSE);
+
+    // Instantiate the splash screen 'gscope_splash'
+    //==============================================
 
 
     g_object_unref(builder);
@@ -248,25 +259,18 @@ static int command_line(GApplication *app, GApplicationCommandLine *cmdline)
 {
     printf("\n%s: enter\n", __func__);
 
-    #if 1   // Add a (idle-priority) defferred function call to the main loop
-    /* keep the application running until we are done with this commandline */
+    // Keep the application running until we are done with this commandline
     g_application_hold (app);     // Increase the use count of 'application'
 
     // Load 'cmdline' object into a key/value table (release the application when cmdline object is destroyed)
     g_object_set_data_full (G_OBJECT (cmdline), "application", app, (GDestroyNotify)g_application_release);
 
-    g_object_ref (cmdline);                  // Increase the reference count of 'cmdline' (refcount decremented by handler)
-    g_idle_add (cmd_line_handler, cmdline);  // Call command line handler from THE main-loop('default-idle' priority)
-    printf("%s: handler request submitted\n", __func__);
-
-    #else   // Process the command line options here
-    g_application_hold (app);
-    g_object_set_data (G_OBJECT (cmdline), "application", app);
-    g_object_ref (cmdline); 
-    cmd_line_handler (cmdline);
-    g_object_unref(cmdline);
-   
-    #endif
+    // Why would we ever want command line handling to be handled in the main/idle loop????
+    // g_object_ref (cmdline);                  // Increase the reference count of 'cmdline' (refcount decremented by handler)
+    // g_idle_add (cmd_line_handler, cmdline);  // Call command line handler from THE main-loop('default-idle' priority)
+    
+    cmd_line_handler(cmdline);
+    printf("%s: All options set\n\n", __func__);
 
     // When command_line option is processed, the activate signal is not automatically issued
     activate(GTK_APPLICATION(app), NULL);
