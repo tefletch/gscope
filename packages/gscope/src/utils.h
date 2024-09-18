@@ -14,10 +14,8 @@
 #define     ENCODE  TRUE
 #define     DECODE  FALSE
 
-#ifdef GTK3_BUILD
-
+#if defined(GTK3_BUILD) || defined(GTK4_BUILD)
 #define lookup_widget(wiget, name) my_lookup_widget(name)
-
 #endif
 
 //===============================================================

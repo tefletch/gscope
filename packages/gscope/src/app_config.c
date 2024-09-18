@@ -205,7 +205,7 @@ gchar app_snapshot_file[256] = {0};
 
 void APP_CONFIG_init(GtkWidget *gscope_splash)
 {
-    static GtkWidget *MsgDialog;
+    static      GtkWidget   *MsgDialog;
     char        new_version_string[20];
     char        old_version_string[20];
     gchar       gtk_config_file[256] = {0};
@@ -301,15 +301,16 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
 
                 gtk_dialog_run (GTK_DIALOG (MsgDialog));
                 gtk_widget_destroy (GTK_WIDGET (MsgDialog));
-                #else
+                #else   // GTK4 Build
                     char *message;
                     asprintf(&message,
-                        "Unable to create default G-Scope configuration file:\n"
-                        "%s.\n\n"
+                        "Unable to create default G-Scope configuration file\n"
+                        "Filename: %s\n\n"
                         "Starting program using factory defaults.\n"
-                        "G-Scope will not retain configuration changes.\n", app_config_file);
+                        "G-Scope will not retain configuration changes.", app_config_file);
 
-                    GTK4_message_dialog_stub(message);
+                    GTK4_message_dialog(GTK_MESSAGE_WARNING, message);
+
                     free(message);
                 #endif
             }
@@ -371,7 +372,7 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
                         gtk_config_file);
 
 
-                    GTK4_message_dialog_stub(message);
+                    //GTK4_message_dialog_stub(message);
                     free(message);
                 #endif
             }
@@ -390,16 +391,15 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
 
                 gtk_dialog_run (GTK_DIALOG (MsgDialog));
                 gtk_widget_destroy (GTK_WIDGET (MsgDialog));
-                #else
+                #else   // GTK4_BUILD
                     char *message;
                     asprintf(&message,
-                        "<Updating obsolete (or missing)\n"
-                        "G-Scope button theme.\n\n"
-                        "File: %s",
+                        "<span weight=\"bold\" size=\"large\">Updating obsolete (or missing)\n"
+                        "G-Scope button theme.</span>\n\n"
+                        "File: <span weight=\"bold\">%s</span>",
                         gtk_config_file);
 
-
-                    GTK4_message_dialog_stub(message);
+                    GTK4_message_dialog(GTK_MESSAGE_INFO, message);
                     free(message);
                 #endif
 
@@ -810,7 +810,6 @@ static void pixmap_path_fixup(char *filename, char *path, GtkWidget *parent)
                     my_asprintf(&new_filename, "%s.sav", filename);
                     if ( rename(filename, new_filename) < 0 )
                         fprintf(stderr,"Warning: Unable to rename original GTK config file:\n%s\n", strerror(errno));
-
                     create_gtk_config_file(filename);
 
                     #ifndef GTK4_BUILD
@@ -828,16 +827,15 @@ static void pixmap_path_fixup(char *filename, char *path, GtkWidget *parent)
 
                     gtk_dialog_run (GTK_DIALOG (MsgDialog));
                     gtk_widget_destroy (GTK_WIDGET (MsgDialog));
-                    #else
+                    #else   // GTK4 build
                     char *message;
                     asprintf(&message,
                             "<span weight=\"bold\" size=\"large\">Fixed bad pixmap_path in G-Scope button theme.</span>\n\n"
-                            "If you had customizations in <span weight=\"bold\">%s</span> you will need to merge them back"
-                            "from your old config file"
-                            "(now named %s)",
+                            "If you had customizations in <span weight=\"bold\">%s</span>\nyou will need to merge them back "
+                            "from your old config file.\n\n<b>Saved file name:</b> %s",
                             filename,
                             new_filename);
-                    GTK4_message_dialog_stub(message);
+                    GTK4_message_dialog(GTK_MESSAGE_INFO, message);
                     free(message);
                     #endif
                     g_free(new_filename);

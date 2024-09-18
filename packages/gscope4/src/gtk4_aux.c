@@ -1,6 +1,8 @@
 
 #include <gtk/gtk.h>
 
+#include "utils.h"
+
 
 // Temporary GTK4 stub functions for DISPLAY component
 //====================================================
@@ -60,9 +62,47 @@ void SEARCH_init()
 // Temporary GTK4 stub functions for message dialogs
 //===================================================
 
-void GTK4_message_dialog_stub(char *message)
+void GTK4_message_dialog(GtkMessageType msg_type, char *message)
 {
-    fprintf(stderr, "%s", message);
+    GtkWindow   *message_window;
+    GtkLabel    *message_label;
+    GtkImage    *message_image;
+
+    message_window = GTK_WINDOW(my_lookup_widget("message_window"));
+    message_label  = GTK_LABEL(my_lookup_widget("message_label"));
+    message_image  = GTK_IMAGE(my_lookup_widget("message_image"));
+
+    switch (msg_type)
+    {
+        case GTK_MESSAGE_INFO:
+            gtk_image_set_from_icon_name(message_image, "dialog-information");
+            gtk_window_set_title(message_window, "Gscope Info");
+        break;
+
+        case GTK_MESSAGE_WARNING:
+            gtk_image_set_from_icon_name(message_image, "dialog-warning");
+            gtk_window_set_title(message_window, "Gscope Warning");
+        break;
+
+        case GTK_MESSAGE_QUESTION:
+            gtk_image_set_from_icon_name(message_image, "dialog-question");
+            gtk_window_set_title(message_window, "Gscope Question");
+        break;
+
+        case GTK_MESSAGE_ERROR:
+            gtk_image_set_from_icon_name(message_image, "dialog-error");
+            gtk_window_set_title(message_window, "Gscope Error");
+        break;
+
+        default:  //other
+            gtk_image_set_from_icon_name(message_image, "emblem-important");
+            gtk_window_set_title(message_window, "Gscope Other");
+        break;
+    }
+
+    gtk_label_set_markup(message_label, message);
+
+    gtk_widget_show(GTK_WIDGET(message_window));
 }
 
 
@@ -72,3 +112,13 @@ void on_find_c_identifier_button_clicked(GtkButton       *button,
     printf("Hello from CALLBACK: %s\n", __func__);
 }
 
+void on_message_button_clicked(GtkButton *button, gpointer user_data)
+{
+    gtk_widget_hide(my_lookup_widget("message_window"));
+}
+
+gboolean on_message_window_close_request(GtkWindow *window, gpointer user_data)
+{
+    gtk_widget_hide(my_lookup_widget("message_window"));
+    return(TRUE);       // Stop other handlers from being invoked for this signal
+}

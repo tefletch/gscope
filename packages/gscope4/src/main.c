@@ -26,6 +26,8 @@
 #include "build.h"
 #include "utils.h"
 
+#include "gtk4_aux.h"
+
 
 
 void print_hello (GtkWidget *widget, gpointer   data)
@@ -176,10 +178,10 @@ static void startup (GApplication *app, gpointer *user_data)
 
 static void activate (GtkApplication *app, gpointer *user_data)
 {
-    GtkWidget   *gscope_main;
     GtkBuilder  *builder;
     GSList      *list;
     GtkWidget   *gscope_splash;
+    GError      *error = NULL;
 
     printf("** %s **\n", __func__);
 
@@ -188,7 +190,10 @@ static void activate (GtkApplication *app, gpointer *user_data)
     #if (BUILD_WIDGETS_FROM_FILE)
     {
         gchar ui_file_path[256];    // Revisit: Buffer overrun risk
-
+        gchar ui_file[256];
+        
+        // Read to core UI definitions
+        //============================
         if (readlink("/proc/self/exe", ui_file_path, sizeof(ui_file_path)) == -1)
         {
             fprintf(stderr, "Application abort: Could not get location of Gscope binary.\nUnable to load UI...\n");
@@ -196,9 +201,18 @@ static void activate (GtkApplication *app, gpointer *user_data)
         }
         ui_file_path[255] = '\0';        // Ensure path string is null terminated -- readlink() does not append a null if it truncates.
         my_dirname(ui_file_path);
-        strcat(ui_file_path, "/gscope4.ui");
+        sprintf(ui_file, "%s%s", ui_file_path, "/gscope4.ui");
+        builder = gtk_builder_new_from_file(ui_file);
 
-        builder = gtk_builder_new_from_file(ui_file_path);
+        // Read supplemental UI definitions
+        //=================================
+        const char *objects[] = {"message_window", ""};
+        sprintf(ui_file,"%s%s", ui_file_path, "/message.ui");
+        if (!gtk_builder_add_objects_from_file(builder, ui_file, objects, &error))
+        {
+            fprintf(stderr, "UI object merge error: File: %s. Error: %s\n", ui_file, error ? error->message : "Unknown");
+            if (error) g_error_free(error);
+        }
     }
     #else
         builder = gtk_builder_new_from_string(gscope3_glade, gscope3_glade_len);
@@ -211,10 +225,17 @@ static void activate (GtkApplication *app, gpointer *user_data)
 
     // Connect the 'gscope_main' build object to the top-level application window
     //===========================================================================
-    GObject *window = gtk_builder_get_object (builder, "gscope_main");
-    gtk_window_set_application (GTK_WINDOW (window), app);
+    GObject *gscope_main = gtk_builder_get_object (builder, "gscope_main");
+    gtk_window_set_application (GTK_WINDOW(gscope_main), app);
+    gtk_widget_set_visible (GTK_WIDGET(gscope_main), TRUE);
 
-    gtk_widget_set_visible (GTK_WIDGET(window), TRUE);
+    GObject *message_window = gtk_builder_get_object(builder, "message_window");
+    gtk_window_set_transient_for(GTK_WINDOW(message_window), GTK_WINDOW(gscope_main));
+    g_signal_connect(my_lookup_widget("message_button"), "clicked", G_CALLBACK(on_message_button_clicked), NULL);
+    g_signal_connect(my_lookup_widget("message_window"), "close-request", G_CALLBACK(on_message_window_close_request), NULL);
+    gtk_widget_set_visible(GTK_WIDGET(message_window), FALSE);
+
+
     g_object_unref(builder);
 
     gscope_splash = gtk_button_new_with_label ("Dummy Button");  // Temporary hack

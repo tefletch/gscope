@@ -2,7 +2,8 @@
 <!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
 <cambalache-project version="0.17.3" target_tk="gtk-4.0">
   <ui>
-	(1,None,"gscope.ui","gscope4.ui",None,None,None,None,None,None,None)
+	(1,None,"gscope.ui","gscope4.ui",None,None,None,None,None,None,None),
+	(2,None,None,"message.ui",None,None,None,None,None,None,None)
   </ui>
   <ui_library>
 	(1,"gtk","4.8",None)
@@ -47,7 +48,12 @@
 	(1,162,"GtkButton","cancel_button",155,None,None,None,5,None,None),
 	(1,163,"GtkBox","cancel_button_hbox",162,None,None,None,-1,None,None),
 	(1,164,"GtkImage","cancel_button_image",163,None,None,None,None,None,None),
-	(1,165,"GtkLabel","cancel_button_label",163,None,None,None,1,None,None)
+	(1,165,"GtkLabel","cancel_button_label",163,None,None,None,1,None,None),
+	(2,1,"GtkWindow","message_window",None,None,None,None,-1,None,None),
+	(2,2,"GtkGrid","message_grid",1,None,None,None,None,None,None),
+	(2,5,"GtkImage","message_image",2,None,None,None,None,None,None),
+	(2,6,"GtkButton","message_button",2,None,None,None,None,None,None),
+	(2,7,"GtkLabel","message_label",2,None,None,None,None,None,None)
   </object>
   <object_property>
 	(1,110,"GtkWidget","height-request","600",None,None,None,None,None,None,None,None,None),
@@ -129,7 +135,26 @@
 	(1,162,"GtkWidget","margin-end","5",None,None,None,None,None,None,None,None,None),
 	(1,163,"GtkBox","spacing","3",None,None,None,None,None,None,None,None,None),
 	(1,164,"GtkImage","icon-name","gtk-cancel",None,None,None,None,None,None,None,None,None),
-	(1,165,"GtkLabel","label","Cancel",None,None,None,None,None,None,None,None,None)
+	(1,165,"GtkLabel","label","Cancel",None,None,None,None,None,None,None,None,None),
+	(2,1,"GtkWindow","handle-menubar-accel","False",None,None,None,None,None,None,None,None,None),
+	(2,1,"GtkWindow","icon-name","software-update-available",None,None,None,None,None,None,None,None,None),
+	(2,1,"GtkWindow","modal","True",None,None,None,None,None,None,None,None,None),
+	(2,1,"GtkWindow","resizable","False",None,None,None,None,None,None,None,None,None),
+	(2,1,"GtkWindow","title","Gscope Message",None,None,None,None,None,None,None,None,None),
+	(2,5,"GtkImage","icon-name","dialog-warning",None,None,None,None,None,None,None,None,None),
+	(2,5,"GtkImage","icon-size","large",None,None,None,None,None,None,None,None,None),
+	(2,5,"GtkWidget","margin-top","15",None,None,None,None,None,None,None,None,None),
+	(2,6,"GtkButton","label","Ok",None,None,None,None,None,None,None,None,None),
+	(2,6,"GtkWidget","halign","center",None,None,None,None,None,None,None,None,None),
+	(2,6,"GtkWidget","margin-bottom","10",None,None,None,None,None,None,None,None,None),
+	(2,6,"GtkWidget","margin-end","10",None,None,None,None,None,None,None,None,None),
+	(2,7,"GtkLabel","justify","center",None,None,None,None,None,None,None,None,None),
+	(2,7,"GtkLabel","label","Your info here",None,None,None,None,None,None,None,None,None),
+	(2,7,"GtkLabel","use-markup","True",None,None,None,None,None,None,None,None,None),
+	(2,7,"GtkWidget","margin-bottom","10",None,None,None,None,None,None,None,None,None),
+	(2,7,"GtkWidget","margin-end","10",None,None,None,None,None,None,None,None,None),
+	(2,7,"GtkWidget","margin-start","10",None,None,None,None,None,None,None,None,None),
+	(2,7,"GtkWidget","margin-top","10",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_layout_property>
 	(1,120,126,"GtkGridLayoutChild","row","1",None,None,None,None),
@@ -141,7 +166,17 @@
 	(1,120,131,"GtkGridLayoutChild","column","1",None,None,None,None),
 	(1,120,131,"GtkGridLayoutChild","row","2",None,None,None,None),
 	(1,120,132,"GtkGridLayoutChild","column","1",None,None,None,None),
-	(1,120,132,"GtkGridLayoutChild","row","3",None,None,None,None)
+	(1,120,132,"GtkGridLayoutChild","row","3",None,None,None,None),
+	(2,2,5,"GtkGridLayoutChild","row","0",None,None,None,None),
+	(2,2,5,"GtkGridLayoutChild","row-span","1",None,None,None,None),
+	(2,2,6,"GtkGridLayoutChild","column","0",None,None,None,None),
+	(2,2,6,"GtkGridLayoutChild","column-span","1",None,None,None,None),
+	(2,2,6,"GtkGridLayoutChild","row","2",None,None,None,None),
+	(2,2,6,"GtkGridLayoutChild","row-span","1",None,None,None,None),
+	(2,2,7,"GtkGridLayoutChild","column","0",None,None,None,None),
+	(2,2,7,"GtkGridLayoutChild","column-span","1",None,None,None,None),
+	(2,2,7,"GtkGridLayoutChild","row","1",None,None,None,None),
+	(2,2,7,"GtkGridLayoutChild","row-span","1",None,None,None,None)
   </object_layout_property>
   <object_signal>
 	(22,1,124,"GtkButton","clicked","on_find_c_identifier_button_clicked",None,None,None,None,None),
@@ -151,6 +186,8 @@
 	(29,1,129,"GtkButton","clicked","print_hello",None,None,None,None,None),
 	(30,1,130,"GtkButton","clicked","print_hello",None,None,None,None,None),
 	(32,1,131,"GtkButton","clicked","print_hello",None,None,None,None,None),
-	(33,1,132,"GtkButton","clicked","print_hello",None,None,None,None,None)
+	(33,1,132,"GtkButton","clicked","print_hello",None,None,None,None,None),
+	(35,2,6,"GtkButton","clicked","on_message_button_clicked",None,None,None,None,None),
+	(36,2,1,"GtkWindow","close-request","on_message_window_close_request",None,None,None,None,None)
   </object_signal>
 </cambalache-project>
