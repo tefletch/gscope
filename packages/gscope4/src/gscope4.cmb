@@ -3,7 +3,8 @@
 <cambalache-project version="0.17.3" target_tk="gtk-4.0">
   <ui>
 	(1,None,"gscope.ui","gscope4.ui",None,None,None,None,None,None,None),
-	(2,None,None,"message.ui",None,None,None,None,None,None,None)
+	(2,None,None,"message.ui",None,None,None,None,None,None,None),
+	(3,None,None,"splash.ui",None,None,None,None,None,None,None)
   </ui>
   <ui_library>
 	(1,"gtk","4.8",None)
@@ -53,7 +54,11 @@
 	(2,2,"GtkGrid","message_grid",1,None,None,None,None,None,None),
 	(2,5,"GtkImage","message_image",2,None,None,None,None,None,None),
 	(2,6,"GtkButton","message_button",2,None,None,None,None,None,None),
-	(2,7,"GtkLabel","message_label",2,None,None,None,None,None,None)
+	(2,7,"GtkLabel","message_label",2,None,None,None,None,None,None),
+	(3,1,"GtkWindow","gscope_splash",None,None,None,None,-1,None,None),
+	(3,2,"GtkBox","splash_box",1,None,None,None,-1,None,None),
+	(3,3,"GtkImage","splash_image",2,None,None,None,None,None,None),
+	(3,4,"GtkProgressBar","splash_progressbar",2,None,None,None,1,None,None)
   </object>
   <object_property>
 	(1,110,"GtkWidget","height-request","600",None,None,None,None,None,None,None,None,None),
@@ -154,7 +159,21 @@
 	(2,7,"GtkWidget","margin-bottom","10",None,None,None,None,None,None,None,None,None),
 	(2,7,"GtkWidget","margin-end","10",None,None,None,None,None,None,None,None,None),
 	(2,7,"GtkWidget","margin-start","10",None,None,None,None,None,None,None,None,None),
-	(2,7,"GtkWidget","margin-top","10",None,None,None,None,None,None,None,None,None)
+	(2,7,"GtkWidget","margin-top","10",None,None,None,None,None,None,None,None,None),
+	(3,1,"GtkWindow","decorated","False",None,None,None,None,None,None,None,None,None),
+	(3,2,"GtkBox","baseline-position","top",None,None,None,None,None,None,None,None,None),
+	(3,2,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(3,2,"GtkWidget","halign","center",None,None,None,None,None,None,None,None,None),
+	(3,3,"GtkImage","file","../share/gscope/pixmaps/gscope_splash3.png",None,None,None,None,None,None,None,None,None),
+	(3,3,"GtkWidget","can-focus","False",None,None,None,None,None,None,None,None,None),
+	(3,3,"GtkWidget","focus-on-click","False",None,None,None,None,None,None,None,None,None),
+	(3,3,"GtkWidget","height-request","500",None,None,None,None,None,None,None,None,None),
+	(3,3,"GtkWidget","name","splash_screen",None,None,None,None,None,None,None,None,None),
+	(3,3,"GtkWidget","width-request","420",None,None,None,None,None,None,None,None,None),
+	(3,4,"GtkProgressBar","show-text","True",None,None,None,None,None,None,None,None,None),
+	(3,4,"GtkProgressBar","text","Building Cross-Reference...Please Wait.",None,None,None,None,None,None,None,None,None),
+	(3,4,"GtkWidget","can-focus","False",None,None,None,None,None,None,None,None,None),
+	(3,4,"GtkWidget","name","splash_screen",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_layout_property>
 	(1,120,126,"GtkGridLayoutChild","row","1",None,None,None,None),

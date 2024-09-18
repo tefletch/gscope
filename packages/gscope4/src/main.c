@@ -179,7 +179,6 @@ static void activate (GtkApplication *app, gpointer *user_data)
 {
     GtkBuilder  *builder;
     GSList      *list;
-    GtkWidget   *gscope_splash;
     GError      *error = NULL;
 
     printf("** %s **\n", __func__);
@@ -211,13 +210,22 @@ static void activate (GtkApplication *app, gpointer *user_data)
 
         // Read supplemental UI definitions
         //=================================
-        const char *objects[] = {"message_window", ""};
+        const char *msg_objects[] = {"message_window", ""};
         sprintf(ui_file,"%s%s", ui_file_path, "/message.ui");
-        if (!gtk_builder_add_objects_from_file(builder, ui_file, objects, &error))
+        if (!gtk_builder_add_objects_from_file(builder, ui_file, msg_objects, &error))
         {
             fprintf(stderr, "UI object merge error: File: %s. Error: %s\n", ui_file, error ? error->message : "Unknown");
             if (error) g_error_free(error);
         }
+
+        const char *splash_objects[] = {"gscope_splash", ""};
+        sprintf(ui_file, "%s%s", ui_file_path, "/splash.ui");
+        if (!gtk_builder_add_objects_from_file(builder, ui_file, splash_objects, &error))
+        {
+            fprintf(stderr, "UI object merge error: File: %s. Error: %s\n", ui_file, error ? error->message : "Unknown");
+            if (error) g_error_free(error);
+        }
+
     }
     #else
         builder = gtk_builder_new_from_string(gscope3_glade, gscope3_glade_len);
@@ -245,12 +253,15 @@ static void activate (GtkApplication *app, gpointer *user_data)
 
     // Instantiate the splash screen 'gscope_splash'
     //==============================================
+    GObject *gscope_splash = gtk_builder_get_object(builder, "gscope_splash");
+    gtk_window_set_transient_for(GTK_WINDOW(gscope_splash), GTK_WINDOW(gscope_main));
+    gtk_widget_set_visible(GTK_WIDGET(gscope_splash), TRUE);
 
 
     g_object_unref(builder);
 
-    gscope_splash = gtk_button_new_with_label ("Dummy Button");  // Temporary hack
-    APP_CONFIG_init(gscope_splash);     // Must run AFTER command_line handler
+    //gscope_splash = gtk_button_new_with_label ("Dummy Button");  // Temporary hack
+    APP_CONFIG_init(GTK_WIDGET(gscope_splash));     // Must run AFTER command_line handler
     BUILD_initDatabase();               // Must run AFTER command_line handler
 }
 

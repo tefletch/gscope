@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.90.4 -->
+<interface>
+  <requires lib="gtk" version="4.12"/>
+  <object class="GtkWindow" id="gscope_splash">
+    <property name="decorated">False</property>
+    <child>
+      <object class="GtkBox" id="splash_box">
+        <property name="baseline-position">top</property>
+        <property name="halign">center</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkImage" id="splash_image">
+            <property name="can-focus">False</property>
+            <property name="file">../share/gscope/pixmaps/gscope_splash3.png</property>
+            <property name="focus-on-click">False</property>
+            <property name="height-request">500</property>
+            <property name="name">splash_screen</property>
+            <property name="width-request">420</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkProgressBar" id="splash_progressbar">
+            <property name="can-focus">False</property>
+            <property name="name">splash_screen</property>
+            <property name="show-text">True</property>
+            <property name="text">Building Cross-Reference...Please Wait.</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
