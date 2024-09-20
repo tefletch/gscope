@@ -205,7 +205,9 @@ gchar app_snapshot_file[256] = {0};
 
 void APP_CONFIG_init(GtkWidget *gscope_splash)
 {
+    #ifndef GTK4_BUILD
     static      GtkWidget   *MsgDialog;
+    #endif
     char        new_version_string[20];
     char        old_version_string[20];
     gchar       gtk_config_file[256] = {0};
@@ -775,7 +777,6 @@ static void pixmap_path_fixup(char *filename, char *path, GtkWidget *parent)
     char    *sub_string;
     struct  stat statstruct;
     gboolean path_ok = FALSE;
-    GtkWidget *MsgDialog;
     size_t  num_bytes;
 
     // open gtk config file and locate pixmap path string
@@ -813,6 +814,7 @@ static void pixmap_path_fixup(char *filename, char *path, GtkWidget *parent)
                     create_gtk_config_file(filename);
 
                     #ifndef GTK4_BUILD
+                    GtkWidget *MsgDialog;
                     MsgDialog = gtk_message_dialog_new_with_markup (
                             GTK_WINDOW (parent),
                             GTK_DIALOG_DESTROY_WITH_PARENT,
