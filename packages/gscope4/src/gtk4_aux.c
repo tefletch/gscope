@@ -14,26 +14,6 @@ void DISPLAY_msg(GtkMessageType type, const gchar *message)
 }
 
 
-void DISPLAY_update_build_progress(guint count, guint max)
-{
-    gdouble fraction;
-    gchar *message;
-
-    fraction = (gdouble)count/(gdouble)max;
-    message = g_strdup_printf("Building Cross Reference:  %.0f%% Complete", fraction * 100.0);
-
-    //gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(active_progress_bar), fraction);
-    //gtk_progress_bar_set_text(GTK_PROGRESS_BAR(active_progress_bar), message);
-    printf("Progress bar update: %s\n", message);
-
-    // Revisit Not "proper" for GTK4
-    //while (gtk_events_pending() )
-    //    gtk_main_iteration();
-
-    g_free(message);
-}
-
-
 void DISPLAY_update_stats_tooltip(gchar *msg)
 {
     printf("Stub call: %s\n", __func__);
