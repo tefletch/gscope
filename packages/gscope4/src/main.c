@@ -261,8 +261,13 @@ static void activate (GtkApplication *app, gpointer *user_data)
     g_object_unref(builder);
 
     //gscope_splash = gtk_button_new_with_label ("Dummy Button");  // Temporary hack
-    APP_CONFIG_init(GTK_WIDGET(gscope_splash));     // Must run AFTER command_line handler
-    BUILD_initDatabase();               // Must run AFTER command_line handler
+    APP_CONFIG_init(GTK_WIDGET(gscope_splash)); // Must run AFTER command_line handler
+
+    // Run BUILD_initDatabase as a g_main_loop source (thread) ( via g_idle_add() ). In addition to the specific callback (to trigger a progress bar UI update), all
+    // Relevent setttings (for building) must be passed to the source  (or maybe pass the entire 'settings' struct).  Callback could be something like active
+    // progressbar update.  Returned values would be the widget and 'percent complete' (to be rendered).  Note that main context must not continue until the buld is
+    // complete (something like a thread 'join'/sync) possible trigger close splash window event - this might come for free-no effort since splash is modal.
+    BUILD_initDatabase();                       // Must run AFTER command_line handler
 }
 
 
