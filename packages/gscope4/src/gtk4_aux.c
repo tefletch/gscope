@@ -13,17 +13,23 @@ void DISPLAY_msg(GtkMessageType type, const gchar *message)
     fprintf(stderr,"%s\n", message);
 }
 
-// Keep this stub until the equivalent function in display.c is refactored
-void DISPLAY_update_build_progress(GtkWidget *bar, guint count, guint max)
+// Keep this stub until the equivalent function in display.c is refactored  RENAME to DISPLAY_progress() once all gscope versions refactor complete
+void DISPLAY_update_build_progress(GtkWidget *bar, char *progress_msg, guint count, guint max)
 {
     gdouble fraction;
     gchar *message;
 
     fraction = (gdouble)count/(gdouble)max;
-    message = g_strdup_printf("Building Cross Reference:  %.0f%% Complete", fraction * 100.0);
+
+    if ( progress_msg )
+    {
+        message = g_strdup_printf("%s %.0f%% Complete", progress_msg, fraction * 100.0);
+        //printf("fraction = %.0f\n", fraction);
+        gtk_progress_bar_set_text(GTK_PROGRESS_BAR(bar), message);
+    }
 
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(bar), fraction);
-    gtk_progress_bar_set_text(GTK_PROGRESS_BAR(bar), message);
+    
 
     // Revisit Not "proper" for GTK4
     while ( g_main_context_pending( NULL/*default context*/  ) )
