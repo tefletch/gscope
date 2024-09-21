@@ -24,7 +24,6 @@ void DISPLAY_update_build_progress(GtkWidget *bar, guint count, guint max)
 
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(bar), fraction);
     gtk_progress_bar_set_text(GTK_PROGRESS_BAR(bar), message);
-    printf("Progress bar update: %s\n", message);
 
     // Revisit Not "proper" for GTK4
     while ( g_main_context_pending( NULL/*default context*/  ) )
