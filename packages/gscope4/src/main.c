@@ -47,12 +47,12 @@ void testBUILD_initDatabase(GtkWidget *bar)
 
     for (i = 0; i < 10; i++)
     {
-        DISPLAY_update_build_progress(bar, i, 10);
+        DISPLAY_update_build_progress(bar, "Building Cross Reference:", i, 10);
         sleep(1);
         printf("%d fraction = %f\n", i, (gdouble)i/(gdouble)10);
     }
     // Done building database
-    DISPLAY_update_build_progress(bar, i, 10);
+    DISPLAY_update_build_progress(bar, "Building Cross Reference:", i, 10);
     printf("Build complete\n");
 }
 
