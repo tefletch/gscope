@@ -22,7 +22,7 @@
         <child>
           <object class="GtkProgressBar" id="splash_progressbar">
             <property name="can-focus">False</property>
-            <property name="name">splash_screen</property>
+            <property name="name">splash_progressbar</property>
             <property name="show-text">True</property>
             <property name="text">Building Cross-Reference...Please Wait.</property>
           </object>

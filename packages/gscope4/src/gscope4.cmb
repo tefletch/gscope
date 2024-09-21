@@ -173,7 +173,7 @@
 	(3,4,"GtkProgressBar","show-text","True",None,None,None,None,None,None,None,None,None),
 	(3,4,"GtkProgressBar","text","Building Cross-Reference...Please Wait.",None,None,None,None,None,None,None,None,None),
 	(3,4,"GtkWidget","can-focus","False",None,None,None,None,None,None,None,None,None),
-	(3,4,"GtkWidget","name","splash_screen",None,None,None,None,None,None,None,None,None)
+	(3,4,"GtkWidget","name","splash_progressbar",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_layout_property>
 	(1,120,126,"GtkGridLayoutChild","row","1",None,None,None,None),

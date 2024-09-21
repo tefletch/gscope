@@ -29,11 +29,34 @@
 #include "gtk4_aux.h"
 
 
-
+// Test callback
 void print_hello (GtkWidget *widget, gpointer   data)
 {
   printf ("Hello World\n");
 }
+
+
+
+
+// Revisit:  Temporary code (simulated long duration build) to be run on the main-idle loop.
+void testBUILD_initDatabase(GtkWidget *bar)
+{
+    int i;
+
+    gchar message[] = "Test_message";
+
+    for (i = 0; i < 10; i++)
+    {
+        DISPLAY_update_build_progress(bar, i, 10);
+        sleep(1);
+        printf("%d fraction = %f\n", i, (gdouble)i/(gdouble)10);
+    }
+    // Done building database
+    DISPLAY_update_build_progress(bar, i, 10);
+    printf("Build complete\n");
+}
+
+
 
 
 // set this value to TRUE to utilize GTK builder XML file ./gscope4.cmb
@@ -164,10 +187,10 @@ static gboolean cmd_line_handler(gpointer data)
 
     printf("%s: done\n", __func__);
 
-    return (G_SOURCE_REMOVE);
+    return (G_SOURCE_REMOVE);   // Revisit: should no longer be needed since we aren't processing options in another thread.
 }
 
-/* WARMING: Do not call any functions from this handler that are affected by command line arguments 
+/* WARNING: Do not call any functions from this handler that are affected by command line arguments 
             Place command-line dependent function calls in the 'activate' handler. */
 static void startup (GApplication *app, gpointer *user_data)
 {
@@ -241,7 +264,7 @@ static void activate (GtkApplication *app, gpointer *user_data)
     //======================================================
     GObject *gscope_main = gtk_builder_get_object (builder, "gscope_main");
     gtk_window_set_application (GTK_WINDOW(gscope_main), app);
-    gtk_widget_set_visible (GTK_WIDGET(gscope_main), TRUE);
+    gtk_widget_set_visible (GTK_WIDGET(gscope_main), FALSE);
 
     // Instantiate the message window object (message dialog)
     //=======================================================
@@ -257,17 +280,17 @@ static void activate (GtkApplication *app, gpointer *user_data)
     gtk_window_set_transient_for(GTK_WINDOW(gscope_splash), GTK_WINDOW(gscope_main));
     gtk_widget_set_visible(GTK_WIDGET(gscope_splash), TRUE);
 
-
     g_object_unref(builder);
 
-    //gscope_splash = gtk_button_new_with_label ("Dummy Button");  // Temporary hack
+    // Sequential startup
+    //===================
     APP_CONFIG_init(GTK_WIDGET(gscope_splash)); // Must run AFTER command_line handler
+    //BUILD_initDatabase();                       // Must run AFTER command_line handler
+    testBUILD_initDatabase( my_lookup_widget("splash_progressbar") );    // Must run AFTER command_line handler
+    
+    gtk_widget_set_visible(GTK_WIDGET(gscope_splash), FALSE);
+    gtk_widget_set_visible (GTK_WIDGET(gscope_main), TRUE);
 
-    // Run BUILD_initDatabase as a g_main_loop source (thread) ( via g_idle_add() ). In addition to the specific callback (to trigger a progress bar UI update), all
-    // Relevent setttings (for building) must be passed to the source  (or maybe pass the entire 'settings' struct).  Callback could be something like active
-    // progressbar update.  Returned values would be the widget and 'percent complete' (to be rendered).  Note that main context must not continue until the buld is
-    // complete (something like a thread 'join'/sync) possible trigger close splash window event - this might come for free-no effort since splash is modal.
-    BUILD_initDatabase();                       // Must run AFTER command_line handler
 }
 
 

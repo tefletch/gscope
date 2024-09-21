@@ -13,6 +13,26 @@ void DISPLAY_msg(GtkMessageType type, const gchar *message)
     fprintf(stderr,"%s\n", message);
 }
 
+// Keep this stub until the equivalent function in display.c is refactored
+void DISPLAY_update_build_progress(GtkWidget *bar, guint count, guint max)
+{
+    gdouble fraction;
+    gchar *message;
+
+    fraction = (gdouble)count/(gdouble)max;
+    message = g_strdup_printf("Building Cross Reference:  %.0f%% Complete", fraction * 100.0);
+
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(bar), fraction);
+    gtk_progress_bar_set_text(GTK_PROGRESS_BAR(bar), message);
+    printf("Progress bar update: %s\n", message);
+
+    // Revisit Not "proper" for GTK4
+    while ( g_main_context_pending( NULL/*default context*/  ) )
+        g_main_context_iteration( NULL/*default context*/, TRUE/*may block*/);
+
+    g_free(message);
+}
+
 
 void DISPLAY_update_stats_tooltip(gchar *msg)
 {
