@@ -26,11 +26,8 @@ gboolean DISPLAY_get_filename_and_lineinfo(GtkTreePath *path, gchar **filename, 
 /* Return the filename, line number, and symbol from the activated query result row */
 gboolean DISPLAY_get_entry_info(GtkTreePath *path, gchar **filename, gchar **line_num, gchar **symbol);
 
-/* Update the progress bar */
-void DISPLAY_update_progress_bar(guint count, guint max);
-
-/* Update the splash progress bar */
-void DISPLAY_update_build_progress(guint count, guint max);
+/* Update the specified progress bar */
+void DISPLAY_progress(GtkWidget *bar, char *progress_msg, guint count, guint max);
 
 /* Update the path label contents */
 void DISPLAY_update_path_label(gchar *path);
@@ -41,20 +38,14 @@ void DISPLAY_always_show_image(gboolean always_show);
 /* Set the session info button tooltip */
 void DISPLAY_update_stats_tooltip(gchar *msg);
 
-/* Convenience function to display a (modal=TRUE) message dialog */
-void DISPLAY_msg(GtkMessageType type, const gchar *message);
-
-/* Display a message dialog(type, message, modal) */
-void DISPLAY_message_dialog(GtkMessageType type, const gchar *message, gboolean modal);
+/* Display a message dialog(type, message, modal) over a specific parent */
+void DISPLAY_message_dialog(GtkWindow *parent, GtkMessageType severity, const gchar *message, gboolean modal);
 
 /* Update the cross-reference status indicator */
 void DISPLAY_set_cref_current(gboolean up_to_date);
 
 /* Set/change the parent for message dialogs */
 void DISPLAY_message_set_transient_parent(GtkWidget *parent);
-
-/* Display a message over a specified "parent" */
-void DISPLAY_message_dialog_on_parent(GtkWindow *parent, GtkMessageType severity, const char *message);
 
 /* Select the "active" progress bar widget (splash or rebuild) */
 void DISPLAY_set_active_progress_bar(GtkWidget *progress_bar);

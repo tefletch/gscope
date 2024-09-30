@@ -21,12 +21,16 @@ gscope_SOURCES = \
 	crossref.h   \
 	dir.c        \
 	dir.h        \
+	display.c    \
+	display.h 	 \
 	gtk4_aux.c   \
 	gtk4_aux.h   \
 	lookup.c 	 \
 	lookup.h 	 \
 	scanner.c 	 \
 	scanner.h 	 \
+	support.c	 \
+	support.h	 \
 	utils.c      \
 	utils.h
 #
@@ -34,16 +38,12 @@ gscope_SOURCES = \
 #	broswer.h   \
 #	callbacks.c \
 #	callbacks.h \
-#	display.c 	\
-#	display.h 	\
 #	fileview.c 	\
 #	fileview.h 	\
 #	global.h	\
 #	main.c 		\
 #	search.c 	\
 #	search.h 	\
-#	support.c	\
-#	support.h	\
 #	utils.c 	\
 #	utils.h 	\
 #	version.h

@@ -19,10 +19,10 @@
 
 #include "app_config.h"
 
-//#include "support.h"
+#include "support.h"
 //#include "callbacks.h"
-//#include "search.h"
-//#include "display.h"
+#include "search.h"
+#include "display.h"
 #include "build.h"
 #include "utils.h"
 
@@ -43,16 +43,14 @@ void testBUILD_initDatabase(GtkWidget *bar)
 {
     int i;
 
-    gchar message[] = "Test_message";
-
     for (i = 0; i < 10; i++)
     {
-        DISPLAY_update_build_progress(bar, "Building Cross Reference:", i, 10);
+        DISPLAY_progress(bar, "Building Cross Reference:", i, 10);
         sleep(1);
         printf("%d fraction = %f\n", i, (gdouble)i/(gdouble)10);
     }
     // Done building database
-    DISPLAY_update_build_progress(bar, "Building Cross Reference:", i, 10);
+    DISPLAY_progress(bar, "Building Cross Reference:", i, 10);
     printf("Build complete\n");
 }
 
@@ -68,16 +66,13 @@ void testBUILD_initDatabase(GtkWidget *bar)
 #include    "interface.c"
 #endif
 
-
-   gboolean option_error = FALSE;
-    gchar *refFile = NULL;
-    gchar *nameFile = NULL;
-    gchar *includeDir = NULL;
-    gchar *rcFile = NULL;
-    gchar *srcDir = NULL;
-    gchar *geometry = NULL;
-
-
+gchar *refFile = NULL;
+gchar *nameFile = NULL;
+gchar *includeDir = NULL;
+gchar *rcFile = NULL;
+gchar *srcDir = NULL;
+gchar *geometry = NULL;
+gboolean option_error = FALSE;
 
 static gboolean cmd_line_handler(gpointer data)
 {
@@ -166,6 +161,7 @@ static gboolean cmd_line_handler(gpointer data)
     }
     else
     {
+        /*
         g_application_command_line_print (cmd_line, 
                                           "refOnly=%s\ncompress=%s\nnoBuld=%s\nrefFile=%s\n",
                                           settings.refOnly ? "TRUE" : "FALSE",
@@ -173,13 +169,24 @@ static gboolean cmd_line_handler(gpointer data)
                                           settings.noBuild ? "TRUE" : "FALSE",
                                           refFile
                                          );
+        */
         g_application_command_line_set_exit_status (cmd_line, 0);       
     }
 
     /* Copy any dynamically allocated [argument] strings to the settings structure (and free them) */
     /* Buffer overflow protection:  Any [argument] string that exceeds the maximum allowed size is truncated */
     if (refFile)
-    {strncpy(settings.refFile,    refFile,    MAX_STRING_ARG_SIZE); settings.refFile[MAX_STRING_ARG_SIZE - 1] = 0; g_free(refFile);    }
+    {strncpy(settings.refFile,    refFile,    MAX_STRING_ARG_SIZE); settings.refFile[MAX_STRING_ARG_SIZE - 1] = 0; g_free(refFile);}
+    if (nameFile)
+    {strncpy(settings.nameFile,   nameFile,   MAX_STRING_ARG_SIZE); settings.nameFile[MAX_STRING_ARG_SIZE - 1] = 0; g_free(nameFile);}
+    if (includeDir)
+    {strncpy(settings.includeDir, includeDir, MAX_STRING_ARG_SIZE); settings.includeDir[MAX_STRING_ARG_SIZE - 1] = 0; g_free(includeDir);}
+    if (rcFile)
+    {strncpy(settings.rcFile,     rcFile,     MAX_STRING_ARG_SIZE); settings.rcFile[MAX_STRING_ARG_SIZE - 1] = 0; g_free(rcFile);}
+    if (srcDir)
+    {strncpy(settings.srcDir,     srcDir,     MAX_STRING_ARG_SIZE); settings.srcDir[MAX_STRING_ARG_SIZE - 1] = 0; g_free(srcDir);}
+    if (geometry)
+    {strncpy(settings.geometry,   geometry,   MAX_STRING_ARG_SIZE); settings.geometry[MAX_STRING_ARG_SIZE - 1] = 0; g_free(geometry);}
 
 
     g_strfreev(args);
@@ -211,6 +218,10 @@ static void activate (GtkApplication *app, gpointer *user_data)
         printf("GSCOPE version %s\n", VERSION);
         exit(EXIT_SUCCESS);
     }
+
+    /* App-Standard location for pixmap files */
+    add_pixmap_directory("../pixmaps");
+    add_pixmap_directory(PACKAGE_DATA_DIR "/" PACKAGE "/pixmaps");  // The pixmap directory "added" last is the firt to be checked
 
     // Construct a builder
     //====================
@@ -280,17 +291,30 @@ static void activate (GtkApplication *app, gpointer *user_data)
     gtk_window_set_transient_for(GTK_WINDOW(gscope_splash), GTK_WINDOW(gscope_main));
     gtk_widget_set_visible(GTK_WIDGET(gscope_splash), TRUE);
 
-    g_object_unref(builder);
 
-    // Sequential startup
-    //===================
-    APP_CONFIG_init(GTK_WIDGET(gscope_splash)); // Must run AFTER command_line handler
-    //BUILD_initDatabase();                       // Must run AFTER command_line handler
-    testBUILD_initDatabase( my_lookup_widget("splash_progressbar") );    // Must run AFTER command_line handler
-    
+
+    // Settings-conditional startup
+    // (Must run AFTER command_line handler)
+    //======================================
+
+    if (settings.refOnly)
+    {
+        APP_CONFIG_init(NULL);
+        BUILD_initDatabase(NULL);
+    }
+    else
+    {
+        APP_CONFIG_init(GTK_WIDGET(gscope_splash));
+        CALLBACKS_init(GTK_WIDGET(gscope_main));
+        BUILD_initDatabase(GTK_WIDGET(gtk_builder_get_object(builder, "splash_progressbar")));
+    }
+
+    // testBUILD_initDatabase( my_lookup_widget("splash_progressbar") );
+
     gtk_widget_set_visible(GTK_WIDGET(gscope_splash), FALSE);
     gtk_widget_set_visible (GTK_WIDGET(gscope_main), TRUE);
 
+    g_object_unref(builder);
 }
 
 

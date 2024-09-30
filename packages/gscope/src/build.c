@@ -181,9 +181,9 @@ typedef struct
 //===============================================================
 static gboolean old_crossref_is_compatible(char *file_buf);
 static void     initialize_using_old_cref(void);
-static void     initialize_for_new_cref(void);
-static void     build_new_cref(void);
-static void     make_new_cref(old_buf_descriptor_t *old_descriptor);
+static void     initialize_for_new_cref(GtkWidget *progress_bar);
+static void     build_new_cref(GtkWidget *progress_bar);
+static void     make_new_cref(old_buf_descriptor_t *old_descriptor, GtkWidget *progress_bar);
 static void     initcompress(void);
 static void     putheader(char *dir);
 static char     *get_old_file(char *dest_ptr, char *src_ptr);
@@ -254,7 +254,7 @@ static char build_stats_msg[1024];
 //
 //====================================================================
 
-void BUILD_initDatabase()
+void BUILD_initDatabase(GtkWidget *progress_bar)
 {
     suseconds_t elapsed_usec;
     char working_buf[500];
@@ -283,7 +283,7 @@ void BUILD_initDatabase()
     else
     {
         /* Build a new cross-reference */
-        initialize_for_new_cref();
+        initialize_for_new_cref(progress_bar);
     }
 
     // Now that we have a valid cross-reference database,
@@ -488,14 +488,14 @@ static void initialize_using_old_cref()
 }
 
 
-static void initialize_for_new_cref()
+static void initialize_for_new_cref(GtkWidget *progress_bar)
 {
     gettimeofday(&src_list_time_start, NULL);
 
     if ( !settings.refOnly )  // Only update if we are in GUI mode.
     {
         /* Bring up the splash screen prior to searching for source files (the search can take a while) */
-        DISPLAY_update_build_progress(0, 100);   /* Show (essentially) no progress */
+        DISPLAY_progress(progress_bar, NULL, 0, 100);   /* Show (essentially) no progress */
     }
 
     /* Create a fresh Source-File list.
@@ -510,7 +510,7 @@ static void initialize_for_new_cref()
     if (nsrcfiles == 0)
     {
         if ( !settings.refOnly )
-            DISPLAY_msg(GTK_MESSAGE_ERROR, "<span weight=\"bold\"> No source files found</span>\nGscope will exit.");
+            DISPLAY_message_dialog(NULL, GTK_MESSAGE_ERROR, "<span weight=\"bold\"> No source files found</span>\nGscope will exit.", TRUE);
         else
             fprintf(stderr,"No source files found. Gscope will exit.\n");
 
@@ -534,7 +534,7 @@ static void initialize_for_new_cref()
     // We are now ready parse the source files and build the cross-reference database
     gettimeofday(&cref_time_start, NULL);
 
-    build_new_cref();
+    build_new_cref(progress_bar);
 
     gettimeofday(&cref_time_stop, NULL);
 }
@@ -565,7 +565,7 @@ static void initcompress()
 
 /* build the cross-reference */
 
-void build_new_cref()
+void build_new_cref(GtkWidget *progress_bar)
 {
     FILE    *old_file;
     char    *old_file_buf = NULL;   /* Buffer that holds the entire old crossref file contents */
@@ -646,9 +646,9 @@ void build_new_cref()
 
 
     if ( force_rebuild )
-        make_new_cref(NULL);                /* Create a full cross reference */
+        make_new_cref(NULL, progress_bar);                /* Create a full cross reference */
     else
-        make_new_cref(&old_buf_descriptor); /* Create an incremental cross-reference */
+        make_new_cref(&old_buf_descriptor, progress_bar); /* Create an incremental cross-reference */
 
 
     if (old_file_buf) g_free(old_file_buf);
@@ -731,7 +731,7 @@ static gboolean old_crossref_is_compatible(char *file_buf)
 
 
 
-static void make_new_cref(old_buf_descriptor_t *old_descriptor)
+static void make_new_cref(old_buf_descriptor_t *old_descriptor, GtkWidget *progress_bar)
 {
     uint32_t    firstfile;          /* first source file in pass */
     uint32_t    lastfile;           /* last source file in pass */
@@ -800,7 +800,7 @@ static void make_new_cref(old_buf_descriptor_t *old_descriptor)
                     if ( (now  - starttime) >= 1 )
                     {
                         starttime = now;
-                        DISPLAY_update_build_progress(fileindex, nsrcfiles);
+                        DISPLAY_progress(progress_bar, "Building Cross Reference:", fileindex, nsrcfiles);
                     }
                 }
 
@@ -868,7 +868,7 @@ static void make_new_cref(old_buf_descriptor_t *old_descriptor)
                     if ( (now  - starttime) >= 1 )
                     {
                         starttime = now;
-                        DISPLAY_update_build_progress(fileindex, nsrcfiles);
+                        DISPLAY_progress(progress_bar, "Building Cross Reference:", fileindex, nsrcfiles);
                     }
                 }
 

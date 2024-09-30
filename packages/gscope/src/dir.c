@@ -978,7 +978,7 @@ static void find_srcfiles_in_tree(gchar *src_dir)
         my_asprintf(&message,"\nG-Scope Error: Recursive File Tree Walk Error: %s", strerror(errno));
 
         if ( !settings.refOnly )  // If we are in GUI mode
-            DISPLAY_msg(GTK_MESSAGE_ERROR, message);
+            DISPLAY_message_dialog(NULL, GTK_MESSAGE_ERROR, message, TRUE);
         else
             fprintf(stderr, "%s\n", message);
 

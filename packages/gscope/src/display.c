@@ -75,7 +75,6 @@ gboolean line_number_info_avail = FALSE;   // Indicates if the most recent query
 
 //  ==== Private Global Variables ====
 static GtkWidget   *gscope_main = NULL;
-static GtkWidget   *active_progress_bar = NULL;
 
 /*** Local Function Prototypes ***/
 
@@ -97,6 +96,7 @@ void DISPLAY_init(GtkWidget *main)
 
     gscope_main = main;     // Save a convenience pointer to the main window
 
+    #ifndef GTK4_BUILD  // gtk4: Bypass treeview initialization for now (does this logic belong here, or callbacks?)
     // ======== Set up the search RESULTS treeview ========
     // Add four columms to the GtkTreeView.
     // All four columns will be displayed as text.
@@ -162,6 +162,9 @@ void DISPLAY_init(GtkWidget *main)
      * destroyed along with the tree view. */
     gtk_tree_view_set_model(GTK_TREE_VIEW(h_treeview), GTK_TREE_MODEL(h_store));
     g_object_unref(h_store);
+    #else
+    printf("GTK4: Bypassing treeview setup for now\n");
+    #endif
 
     // ======== Initialize the static status info ========
 
@@ -193,11 +196,16 @@ void DISPLAY_init(GtkWidget *main)
     }
 
     // ===== Initialize optional sensitivity Menu Items =====
+    #ifndef GTK4_BUILD
     gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_main), "imagemenuitem20"), settings.autoGenEnable);
 
     #ifndef GTK3_BUILD
     // ======== Initialize ImageMenuItem Icon Display Behavior ========
     DISPLAY_always_show_image(settings.menuIcons);
+    #endif
+
+    #else   // GTK4_BUILD
+    printf("GTK4: bypassing menu configuration (for now)\n");
     #endif
 }
 
@@ -570,39 +578,29 @@ gboolean DISPLAY_get_entry_info(GtkTreePath *path, gchar **filename, gchar **lin
 
 }
 
-void DISPLAY_update_progress_bar(guint count, guint max)
-{
-    GtkWidget *progress;
 
-    progress = lookup_widget(GTK_WIDGET (gscope_main),"progressbar1");
-
-    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progress), ((gdouble)count/(gdouble)max));
-
-    while (gtk_events_pending() )
-        gtk_main_iteration();
-}
-
-
-void DISPLAY_set_active_progress_bar(GtkWidget *progress_bar)
-{
-    active_progress_bar = progress_bar;
-}
-
-void DISPLAY_update_build_progress(guint count, guint max)
+// Update the specified progress bar using optional progress message (Pass NULL for no message)
+void DISPLAY_progress(GtkWidget *bar, char *progress_msg, guint count, guint max)
 {
     gdouble fraction;
-    gchar *message;
 
     fraction = (gdouble)count/(gdouble)max;
-    message = g_strdup_printf("Building Cross Reference:  %.0f%% Complete", fraction * 100.0);
 
-    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(active_progress_bar), fraction);
-    gtk_progress_bar_set_text(GTK_PROGRESS_BAR(active_progress_bar), message);
+    if ( progress_msg )
+    {
+        gchar *message;
+        message = g_strdup_printf("%s %.0f%% Complete", progress_msg, fraction * 100.0);
+        gtk_progress_bar_set_text(GTK_PROGRESS_BAR(bar), message);
+        g_free(message);
+    }
 
-    while (gtk_events_pending() )
-        gtk_main_iteration();
+    //printf("fraction = %.8f\n", fraction);
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(bar), fraction);
+    
 
-    g_free(message);
+    // Process pending GTK events
+    while ( g_main_context_pending( NULL/*default context*/  ) )
+        g_main_context_iteration( NULL/*default context*/, TRUE/*may block*/);
 }
 
 
@@ -614,6 +612,7 @@ void DISPLAY_update_build_progress(guint count, guint max)
 
 void DISPLAY_always_show_image(gboolean always_show)
 {
+    #ifndef GTK4_BUILD
     char item[40];
     int i;
 
@@ -626,6 +625,7 @@ void DISPLAY_always_show_image(gboolean always_show)
             gtk_image_menu_item_set_always_show_image(GTK_IMAGE_MENU_ITEM(lookup_widget(GTK_WIDGET(gscope_main), item)), always_show);
         }
     }
+    #endif
 }
 
 
@@ -653,7 +653,11 @@ void DISPLAY_set_cref_current(gboolean up_to_date)
         g_object_ref(image_blue);
         g_object_ref(image_red);
 
+        #ifndef GTK4_BUILD
         gtk_container_add (GTK_CONTAINER (cref_update_button), image_visible);
+        #else
+        gtk_button_set_child(GTK_BUTTON(cref_update_button), image_visible);
+        #endif
         gtk_widget_set_tooltip_text(cref_update_button, update_string);
         gtk_widget_show(image_visible);
 
@@ -676,9 +680,16 @@ void DISPLAY_set_cref_current(gboolean up_to_date)
 
     if ( update_image != image_visible)
     {
+        #ifndef GTK4_BUILD
         gtk_container_remove(GTK_CONTAINER(cref_update_button), image_visible);
         image_visible = update_image;
         gtk_container_add(GTK_CONTAINER (cref_update_button), image_visible);
+        #else
+        gtk_widget_unparent(image_visible);
+        image_visible = update_image;
+        gtk_button_set_child(GTK_BUTTON(cref_update_button), image_visible);
+        #endif
+
         gtk_widget_set_tooltip_text(cref_update_button, update_string);
         gtk_widget_show(image_visible);
     }
@@ -687,9 +698,12 @@ void DISPLAY_set_cref_current(gboolean up_to_date)
 
 //---------------------------------------------------------------------------
 //
-// Display a message dialog of the specified type.
+// Display a message dialog of the specified type (severity) over the 
+// specified parent window.
 // Parameters:
-//   type:  Mesage type, one of [GTK_MESSAGE_INFO | GTK_MESSAGE_WARNING |
+//     parent:  The parent window (or NULL for the default)
+//
+//   severity:  Mesage type, one of [GTK_MESSAGE_INFO | GTK_MESSAGE_WARNING |
 //                               GTK_MESSAGE_QUESTION | GTK_MESSAGE_ERROR |
 //                               GTK_MESSAGE_OTHER ]
 //
@@ -697,34 +711,39 @@ void DISPLAY_set_cref_current(gboolean up_to_date)
 //             The string parameter "message" can be a Pango text
 //             markup string.
 //
+//     modal:  Set TRUE if the message dialog window is modal
+//
 //---------------------------------------------------------------------------
-void DISPLAY_msg(GtkMessageType type, const gchar *message)
+void DISPLAY_message_dialog(GtkWindow *parent, GtkMessageType severity, const gchar *message, gboolean modal)
 {
-    DISPLAY_message_dialog(type, message, TRUE);  // Display a modal message dialog.
-}
+    GtkWidget *MsgDialog;
+    const char *title[5] = {"Info", "Warning", "Question", "Error", "Misc"}; // Message type names indexed by GtkMessageType: severity
 
+    if ( !parent )  // Use the 'default' parent
+    {
+        if ( gtk_widget_is_visible(lookup_widget(gscope_splash, "gscope_splash")) )
+            parent = GTK_WINDOW(lookup_widget(gscope_splash, "gscope_splash"));
+        else
+            parent = GTK_WINDOW(lookup_widget(gscope_main, "main"));
+    }
 
+    MsgDialog = gtk_message_dialog_new_with_markup(parent,
+                                                   GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                   severity,
+                                                   GTK_BUTTONS_OK,
+                                                   NULL);
 
-void DISPLAY_message_dialog(GtkMessageType type, const gchar *message, gboolean modal)
-{
-    static GtkWidget *MsgDialog;
-//    GdkPixbuf        *MsgWindowIcon;
-
-    MsgDialog = gtk_message_dialog_new (
-                              GTK_WINDOW(msg_dialog_parent),
-                              GTK_DIALOG_DESTROY_WITH_PARENT,
-                              type,
-                              GTK_BUTTONS_CLOSE,
-                              NULL);
-    gtk_message_dialog_set_markup (GTK_MESSAGE_DIALOG (MsgDialog), message);
 
  // Pango markup example:
  //    _("<span foreground=\"blue\" size=\"x-large\" weight=\"bold\">Build Monitor 0.1</span>\nA panel application for monitoring print build status\n2007 Tom Fletcher")
 
+    #ifndef GTK4_BUILD
+    gtk_window_set_title(GTK_WINDOW(MsgDialog), title[severity]);
+
     if (modal)
     {
-        gtk_dialog_run (GTK_DIALOG (MsgDialog));
-        gtk_widget_destroy (GTK_WIDGET (MsgDialog));
+        gtk_dialog_run(GTK_DIALOG (MsgDialog));
+        gtk_widget_destroy(GTK_WIDGET (MsgDialog));
     }
     else  // display a non-modal message dialog
     {
@@ -735,51 +754,63 @@ void DISPLAY_message_dialog(GtkMessageType type, const gchar *message, gboolean 
                                G_CALLBACK (gtk_widget_destroy),
                                MsgDialog);
     }
+    #else   // GTK4 build
+
+    GtkWindow   *message_window;
+    GtkLabel    *message_label;
+    GtkImage    *message_image;
+    const char *icon_name[5] = {"dialog-information", "dialog-warning", "dialog-question", "dialog-error", "emblem-important"};
+
+
+    message_window = GTK_WINDOW(my_lookup_widget("message_window"));
+    message_label  = GTK_LABEL(my_lookup_widget("message_label"));
+    message_image  = GTK_IMAGE(my_lookup_widget("message_image"));
+
+    gtk_window_set_modal(message_window, modal);
+    gtk_window_set_transient_for(message_window, parent);
+    gtk_window_set_title(message_window, title[severity]);
+    gtk_image_set_from_icon_name(message_image, icon_name[severity]);
+    gtk_label_set_markup(message_label, message);
+    gtk_widget_show(GTK_WIDGET(message_window));
+    #endif
 }
 
-
-void DISPLAY_message_dialog_on_parent(GtkWindow *parent, GtkMessageType severity, const char *message)
+#if 0
+ DISPLAY_message_dialog_on_parent(GtkWindow *parent, GtkMessageType severity, const char *message)
 {
     GtkWidget *MsgDialog;
-    char msg_type[80];
+    // Message type names indexed by GtkMessageType: severity
+    const char *title[5] = {"Info", "Warning", "Question", "Error", "Misc"};
 
-    switch (severity)
-    {
-        case GTK_MESSAGE_INFO:
-            strcpy(msg_type, "Info");
-            break;
-
-        case GTK_MESSAGE_WARNING:
-            strcpy(msg_type, "Warning");
-            break;
-
-        case GTK_MESSAGE_QUESTION:
-            strcpy(msg_type, "Question");
-            break;
-
-        case GTK_MESSAGE_ERROR:
-            strcpy(msg_type, "Error");
-            break;
-
-        default:
-            strcpy(msg_type, "Misc");
-            break;
-    }
-
-
+    #ifndef GTK4_BUILD  // Create, Run and Destroy a MODAL message dialog
     MsgDialog = gtk_message_dialog_new_with_markup(parent,
-                                                   GTK_DIALOG_MODAL,
+                                                   GGTK_DIALOG_MODAL,
                                                    severity,
                                                    GTK_BUTTONS_OK,
-                                                   "<span foreground=\"blue\" size=\"xx-large\" weight=\"bold\">%s</span>",
-                                                   msg_type);
+                                                   message);
 
-    gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(MsgDialog), "%s", message);
+    // gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(MsgDialog), "%s", message);
+    gtk_window_set_title(GTK_WINDOW(MsgDialog), title[severity]);
 
     gtk_dialog_run(GTK_DIALOG(MsgDialog));
     gtk_widget_destroy(GTK_WIDGET(MsgDialog));
-}
+    
+    #else   // GTK4 build: Show a generic MODAL message window (from message.ui)
+    
+    // Icon names indexed by GtkMessageType: severity
+    const char *icon_name[5] = {"dialog-information", "dialog-warning", "dialog-question", "dialog-error", "emblem-important"};
 
+
+// ************* Bug: callers are ALL preferences errors, message window is transient for gscope_main NOT gscope_preferences
+    gtk_window_set_title(message_window, title[severity]);
+    gtk_image_set_from_icon_name(message_image, icon_name[severity]);
+
+    gtk_label_set_markup(message_label, message);
+    gtk_widget_show(GTK_WIDGET(message_window));
+
+    #endif
+}
+#endif
 
 
 void DISPLAY_message_set_transient_parent(GtkWidget *parent)

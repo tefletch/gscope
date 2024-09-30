@@ -42,7 +42,6 @@ int main(int argc, char *argv[])
 {
     GtkWidget   *gscope_main;
     GtkWidget   *gscope_splash;
-
     GError      *error = NULL;
 
     static gboolean option_error = FALSE;
@@ -166,7 +165,7 @@ int main(int argc, char *argv[])
     if (settings.refOnly)
     {
         APP_CONFIG_init(NULL);
-        BUILD_initDatabase();
+        BUILD_initDatabase(NULL);
     }
     else
     {
@@ -305,11 +304,9 @@ int main(int argc, char *argv[])
             settings.retainInput = TRUE;  // undo the value change caused by the "set_active" callback
         }
 
-        gtk_widget_hide(lookup_widget(GTK_WIDGET(gscope_main), "progressbar1"));
+        gtk_widget_hide(GTK_WIDGET(gtk_builder_get_object(builder, "progressbar1")));
 
-        DISPLAY_set_active_progress_bar( GTK_WIDGET(gtk_builder_get_object(builder, "splash_progressbar")) );  // build progress meter
-        BUILD_initDatabase();
-        DISPLAY_set_active_progress_bar( GTK_WIDGET(gtk_builder_get_object(builder, "rebuild_progressbar")) );  // build progress meter
+        BUILD_initDatabase(GTK_WIDGET(gtk_builder_get_object(builder, "splash_progressbar")));
         g_object_unref(G_OBJECT(builder));
     }
 

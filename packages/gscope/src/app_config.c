@@ -641,6 +641,7 @@ gboolean APP_CONFIG_valid_list(const char *list_name, char *list_ptr, char *deli
 // Private Functions
 //===================================
 
+#ifdef GTK4_BUILD
 static void parsing_error(GtkCssProvider* self, GtkCssSection* section, GError* error, gpointer user_data)
 {
     GString     *sect_string;
@@ -655,6 +656,7 @@ static void parsing_error(GtkCssProvider* self, GtkCssSection* section, GError* 
     else
         printf("Unknown Parsing Error\n");
 }
+#endif
 
 
 static void gtk_config_parse(char *gtk_config_file)

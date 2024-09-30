@@ -61,7 +61,6 @@ typedef enum    {       /* Search result codes */
 
 static char         *cref_file_buf = NULL;  /* Buffer the holds the entire cross reference database */
 static char         global[] = "<global>";  /* dummy global function name */
-static time_t       starttime;              /* start time for progress messages */
 static uint32_t     imatch_count;           /* Intermediate match count */
 static char         temp1[MAX_TMP_PATH + 1]; /* temporary file name */
 static char         temp2[MAX_TMP_PATH + 1]; /* temporary file name */
@@ -1076,7 +1075,6 @@ static void get_string(char *dest, char **src)
 /* initialize the progress message */
 static void initprogress()
 {
-    starttime = time((time_t *) NULL);
     imatch_count = 0;
 }
 
@@ -1085,24 +1083,21 @@ static void initprogress()
 /* Periodically display the search progress */
 static void progress(uint32_t n1, uint32_t n2)
 {
-    time_t  now;
-    char    *msg;
-
+    static time_t   starttime = 0; 
+    time_t          now = 0;
+    char            *msg;
     static char format[] = "Searched %ld of %ld files [%ld matches]";
 
     /* Update every 1 second */
     now = time((time_t *) NULL);
+    
     if ( (now - starttime) >= 1 )
     {
         starttime = now;
         my_asprintf(&msg, format, n1, n2, imatch_count);
         DISPLAY_status(msg);
-        DISPLAY_update_progress_bar(n1, n2);
+        DISPLAY_progress(lookup_widget(GTK_WIDGET (gscope_main),"progressbar1"), NULL, n1, n2);
         g_free(msg);
-
-        // Process any pending gtk events
-        while (gtk_events_pending() )
-            gtk_main_iteration();
     }
 }
 
