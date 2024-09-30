@@ -43,3 +43,9 @@ interface.[ch].bak
 /packages/gscope/compile
 /packages/gscope3/compile
 /packages/gscope3/src/gscope3.glade~
+
+# ignore Coverity files
+#######################
+packages/gscope*/cov-int/*
+packages/gscope*/myproject.tgz
+
