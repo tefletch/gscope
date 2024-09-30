@@ -198,13 +198,52 @@ gboolean crossref(char *srcfile)
 
 static gboolean file_is_ascii_text(FILE *filename)
 {
-    char check_buf[TEXT_CHECK_SIZE];
+    gchar check_buf[TEXT_CHECK_SIZE];
     size_t bytes_read;
     int i;
-    char *check_ptr = check_buf;
 
     bytes_read = fread(check_buf, 1, TEXT_CHECK_SIZE, filename);
+
+    // Some text editors create UTF-8 encoded files that contain special values in the first 3 bytes.
+    // Consider files that utilize a Unicode BOM as ASCII files.
+    //
+    // Warning: This function ASSUMES that a file with a Unicode BOM contains only ASCII characters
+    //
+    // This behavior is a tad dangerous.  If we encounter a real UTF8 file that contains
+    // a variety of 8-bit extended ASCII characters [instead of just one or two copyright symbols] Gscope will probably
+    // behave badly and maybe even crash.  If this happens, the BOM detect-and-skip logic might need to
+    // be normally-off [Default = Treat any file with BOM as binary] and assign a command line argurment to enable
+    // BOM detect-and-skip on a per session basis.
+    if ( (bytes_read > 2) && (check_buf[0] == 0xef) && (check_buf[1] == 0xbb) && (check_buf[2] == 0xbf) )  
+        return(TRUE);
+
+    // Allow UTF8 copyright symbol (2-byte UTF8) by using byte substitution of actual ASCII chars
+    // Warning: Allowing a UTF8 copyright symbol in an ASCII file may cause gscope issues
+    for (i = 0; i < bytes_read - 1; i++)
+    {
+        if ( check_buf[i] == 0xc2 && check_buf[i+1] == 0xa9 )
+        {
+            // patch check_buf with some real ASCII chars
+            check_buf[i]   = '(';
+            check_buf[i+1] = ')';
+        }
+    }
+
+    // Normal ASCII file scan
+    for (i = 0; i < bytes_read; i++)
+    {
+        if ( check_buf[i] > 126 )
+            return(FALSE);
+
+        if ( check_buf[i] > 13 && check_buf[i] < 32 )
+            return(FALSE);
+    }
+
+    return(TRUE);    
+    
+    #if 0
     rewind(filename);
+
     
     for (i = 0; i < bytes_read; i++)
     {
@@ -213,9 +252,9 @@ static gboolean file_is_ascii_text(FILE *filename)
             // Check for UTF-8 encoded Unicode BOM (special "text file" exception)
             if (i == 0              &&  // This is the first byte in the file
                 bytes_read > 2      &&  // The file has at least 3 bytes and they are 0xef, 0xbb and 0xbf
-                check_buf[0] == -17 &&  // 0xef
-                check_buf[1] == -69 &&  // 0xbb
-                check_buf[2] == -65 )   // 0xbf
+                check_buf[0] == 0xef &&  // 0xef
+                check_buf[1] == 0xbb &&  // 0xbb
+                check_buf[2] == 0xbf )   // 0xbf
             {
                 // Warning:  Ugly, INTENTIONAL, function side effect ahead!
                 //=========================================================
@@ -234,13 +273,20 @@ static gboolean file_is_ascii_text(FILE *filename)
                 return(FALSE);
         }
         if (*check_ptr > 126)
-            return(FALSE);
+        {
+            // Allow the UTF8 copyright symbol (2 bytes = 0xC2, 0xA9) as a pair
+            if ( (i < bytes_read - 2) && !(*check_ptr == 0xc2 && *(check_ptr + 1) == 0xa9) )
+                return(FALSE);
+            if ( (i > 0) && !(*check_ptr == 0xa9 && *(check_ptr - 1) == 0xc2) )
+                return(FALSE);
+        }
         if ( (*check_ptr > 13) && (*check_ptr < 32) )
             return(FALSE);
 
         check_ptr++;
     }
     return(TRUE);
+    #endif
 }
 
 
