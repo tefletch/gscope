@@ -343,6 +343,24 @@ static void process_query(search_t query_type)
 //------------------------------ Callback Functions ----------------------------
 //
 
+// Provide a catalog of prominent widgets that enables components with no knowledge
+// of the widget hierarchy to fetch a reference for that widget.
+//
+// The widgets in this catalog are primarily (if not exclusively):
+//      Top level widgets:  Parent windows for messages
+//      Progress Bars:      Progress widgets for incremental status
+
+GtkWidget *CALLBACKS_get_widget(gchar *widget_name)
+{
+    if ( strcmp(widget_name, "gscope_main") == 0 )
+        return(gscope_main);
+    if ( strcmp(widget_name, "progressbar1") == 0 )
+        return(lookup_widget(gscope_main, widget_name));
+
+    return(NULL);
+}
+
+
 void CALLBACKS_init(GtkWidget *main)
 {
 

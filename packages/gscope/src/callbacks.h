@@ -1,7 +1,7 @@
 #include <gtk/gtk.h>
 
-void CALLBACKS_init(GtkWidget *main);
-
+void        CALLBACKS_init(GtkWidget *main);
+GtkWidget   *CALLBACKS_get_widget(gchar *widget_name);
 
 void
 on_window1_destroy                     (GtkWidget        *widget,

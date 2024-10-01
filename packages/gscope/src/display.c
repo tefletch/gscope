@@ -66,10 +66,6 @@ GtkListStore *h_store;
 GtkTreeViewColumn *display_col[4];
 GtkTreeViewColumn *h_col;
 
-// Transient_parent for all message dialogs.   Set to gscope_splash during start-up.
-// After start-up always set to gscope-main
-GtkWidget   *msg_dialog_parent = NULL;
-
 gboolean line_number_info_avail = FALSE;   // Indicates if the most recent query
                                            // produced line number information.
 
@@ -720,12 +716,7 @@ void DISPLAY_message_dialog(GtkWindow *parent, GtkMessageType severity, const gc
     const char *title[5] = {"Info", "Warning", "Question", "Error", "Misc"}; // Message type names indexed by GtkMessageType: severity
 
     if ( !parent )  // Use the 'default' parent
-    {
-        if ( gtk_widget_is_visible(lookup_widget(gscope_splash, "gscope_splash")) )
-            parent = GTK_WINDOW(lookup_widget(gscope_splash, "gscope_splash"));
-        else
-            parent = GTK_WINDOW(lookup_widget(gscope_main, "main"));
-    }
+        parent = GTK_WINDOW(lookup_widget(gscope_main, "main"));
 
     MsgDialog = gtk_message_dialog_new_with_markup(parent,
                                                    GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -775,48 +766,7 @@ void DISPLAY_message_dialog(GtkWindow *parent, GtkMessageType severity, const gc
     #endif
 }
 
-#if 0
- DISPLAY_message_dialog_on_parent(GtkWindow *parent, GtkMessageType severity, const char *message)
-{
-    GtkWidget *MsgDialog;
-    // Message type names indexed by GtkMessageType: severity
-    const char *title[5] = {"Info", "Warning", "Question", "Error", "Misc"};
 
-    #ifndef GTK4_BUILD  // Create, Run and Destroy a MODAL message dialog
-    MsgDialog = gtk_message_dialog_new_with_markup(parent,
-                                                   GGTK_DIALOG_MODAL,
-                                                   severity,
-                                                   GTK_BUTTONS_OK,
-                                                   message);
-
-    // gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(MsgDialog), "%s", message);
-    gtk_window_set_title(GTK_WINDOW(MsgDialog), title[severity]);
-
-    gtk_dialog_run(GTK_DIALOG(MsgDialog));
-    gtk_widget_destroy(GTK_WIDGET(MsgDialog));
-    
-    #else   // GTK4 build: Show a generic MODAL message window (from message.ui)
-    
-    // Icon names indexed by GtkMessageType: severity
-    const char *icon_name[5] = {"dialog-information", "dialog-warning", "dialog-question", "dialog-error", "emblem-important"};
-
-
-// ************* Bug: callers are ALL preferences errors, message window is transient for gscope_main NOT gscope_preferences
-    gtk_window_set_title(message_window, title[severity]);
-    gtk_image_set_from_icon_name(message_image, icon_name[severity]);
-
-    gtk_label_set_markup(message_label, message);
-    gtk_widget_show(GTK_WIDGET(message_window));
-
-    #endif
-}
-#endif
-
-
-void DISPLAY_message_set_transient_parent(GtkWidget *parent)
-{
-    msg_dialog_parent = parent; /* transient parent for message dialogs to associate with */
-}
 
 
 

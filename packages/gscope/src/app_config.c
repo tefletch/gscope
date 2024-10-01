@@ -647,6 +647,8 @@ static void parsing_error(GtkCssProvider* self, GtkCssSection* section, GError* 
     GString     *sect_string;
 
     printf("*** %s ***\n", __func__);
+
+    sect_string = g_string_new(NULL);
     
     gtk_css_section_print(section, sect_string);
     printf("CSS parsing error: Section: %s: ", sect_string->str);

@@ -290,18 +290,12 @@ char *DIR_get_path(get_method_e method)
     //      DIR_SOURCE
     //      FILE_NEW_CREF
 
-    char      *working_ptr;
-
+    char        *working_ptr;
     static char *cwd      = NULL;
     static char *data_dir = NULL;
     static char *src_dir  = NULL;
     static char *new_cref = NULL;
-
-    static char      new_cref_buf[MAX_STRING_ARG_SIZE + 4];   /* Added space is for ".new" suffix */
-    static char full_new_cref_buf[PATHLEN + 1];
-    static char      data_dir_buf[PATHLEN + 1];
-    static char      src_dir_buf [PATHLEN + 1];
-    static char      autogen_cache[PATHLEN + 1];
+    static char *autogen_cache = NULL;
 
     switch (method)
     {
@@ -312,11 +306,12 @@ char *DIR_get_path(get_method_e method)
             //   2. Data-Directory (the directory where cross-reference data is stored -- default is CWD)
             //   3. Source-directory (the directory where source files are found -- default is CWD)
             //   4. The full path name of the "new" cross-reference files
+            //   5. The autogen cache directory path
 
 
             /*** Set CWD ***/
             /***************/
-            if (cwd) free(cwd);  /* avoid memory leak if we DIR_INITIALIZE more than once */
+            if (cwd) free(cwd);  // avoid memory leak if we DIR_INITIALIZE more than once
 
             cwd = getcwd(NULL,0);  /* Get a dynamically allocated CWD string */
             if (!cwd)
@@ -329,55 +324,53 @@ char *DIR_get_path(get_method_e method)
             /*** Set new cref file name ***/
             /******************************/
             /* Note: refFile could be a simple file name or a path */
-            strcpy(new_cref_buf, settings.refFile);
-            strcat(new_cref_buf, ".new");
-            new_cref = new_cref_buf;
+            if (new_cref) free(new_cref);   // Avoid memory leak if we DIR_INITIALIZE more than once
+            my_asprintf(&new_cref, "%s.new", settings.refFile);
 
 
             /*** Set the Data-Directory ***/
             /********************************/
             /* if new_cref_file specifies a path, that is our data_dir path.  If none specified, use CWD */
+            if (data_dir) free(data_dir);   // Avoid memory leak if we DIR_INITIALIZE more than once
+            
             working_ptr = my_basename(new_cref);
-
+            
             if (working_ptr == new_cref)  /* no data-dir path specified, use CWD */
             {
-               data_dir = cwd;
-
-               /* prepend data_dir to the cref file name */
-               strcpy(full_new_cref_buf, data_dir);
-               strcat(full_new_cref_buf, "/");
-               strcat(full_new_cref_buf, new_cref_buf);
-               new_cref = full_new_cref_buf;
+                /* prepend data_dir to the cref file name */
+                data_dir = strdup(cwd);
+                if (new_cref) free(new_cref);
+                my_asprintf(&new_cref, "%s/%s.new", data_dir, settings.refFile);     // data_dir IS cwd
             }
-            else    /* a data-dir path is specified, use it */
+            else    // A data-dir path is specified, use it
             {
-               uint32_t size;
-
-               size = working_ptr - new_cref - 1;       // -1 to drop the trailing '//
-               strncpy(data_dir_buf, new_cref, size);
-               data_dir_buf[size] = '\0';   /* Null-terminate the string */
-               data_dir = data_dir_buf;
+                uint32_t size;
+               
+                size = working_ptr - new_cref - 1;  // -1 to drop the trailing '/' (slash)
+                data_dir = malloc(size + 1);        // +1 for NULL termination
+                strncpy(data_dir, new_cref, size);
+                data_dir[size] = '\0';              // Null-terminate the string
             }
 
             /*** Set the Source-Directory ***/
             /********************************/
             /* if no user-specified value for srcDir, use CWD */
+            if (src_dir) free(src_dir);   // Avoid memory leak if we DIR_INITIALIZE more than once
+
             if ( strcmp(settings.srcDir, "") == 0)
-                src_dir = cwd;
+                src_dir = strdup(cwd);
             else
-            {
-                strcpy(src_dir_buf, settings.srcDir);
-                src_dir = src_dir_buf;
-            }
+                my_asprintf(&src_dir, "%s", settings.srcDir);
+
+            if ( !settings.refOnly )                // When in GUI mode
+                DISPLAY_update_path_label(src_dir); // Update the "path label" on the main window
 
 
             /*** Set the autogen_cache Directory ***/
             /***************************************/
-            snprintf(autogen_cache, PATHLEN, "%s/%s", settings.autoGenPath, getenv("USER"));
+            if (autogen_cache) free(autogen_cache);   // Avoid memory leak if we DIR_INITIALIZE more than once
 
-
-            if ( !settings.refOnly )    // Only update when in GUI mode.
-                DISPLAY_update_path_label(src_dir);     /* Update the "path label" on the main window */
+            my_asprintf(&autogen_cache, "%s%s", settings.autoGenPath, getenv("USER"));
         break;
 
 

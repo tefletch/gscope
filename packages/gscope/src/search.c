@@ -29,6 +29,13 @@
 #include "utils.h"
 #include "display.h"
 #include "app_config.h"
+#include "callbacks.h"
+
+#ifndef GTK4_BUILD
+#ifndef GTK3_BUILD
+#include "support.h"
+#endif
+#endif
 
 
 //===============================================================
@@ -1083,10 +1090,14 @@ static void initprogress()
 /* Periodically display the search progress */
 static void progress(uint32_t n1, uint32_t n2)
 {
-    static time_t   starttime = 0; 
-    time_t          now = 0;
-    char            *msg;
+    static time_t       starttime = 0; 
+    time_t              now = 0;
+    char                *msg;
+    static GtkWidget    *progress_bar = NULL;
     static char format[] = "Searched %ld of %ld files [%ld matches]";
+
+    if ( !progress_bar )
+        progress_bar = CALLBACKS_get_widget("progressbar1");
 
     /* Update every 1 second */
     now = time((time_t *) NULL);
@@ -1096,7 +1107,7 @@ static void progress(uint32_t n1, uint32_t n2)
         starttime = now;
         my_asprintf(&msg, format, n1, n2, imatch_count);
         DISPLAY_status(msg);
-        DISPLAY_progress(lookup_widget(GTK_WIDGET (gscope_main),"progressbar1"), NULL, n1, n2);
+        DISPLAY_progress(progress_bar, NULL, n1, n2);
         g_free(msg);
     }
 }

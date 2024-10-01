@@ -43,9 +43,3 @@ void DISPLAY_message_dialog(GtkWindow *parent, GtkMessageType severity, const gc
 
 /* Update the cross-reference status indicator */
 void DISPLAY_set_cref_current(gboolean up_to_date);
-
-/* Set/change the parent for message dialogs */
-void DISPLAY_message_set_transient_parent(GtkWidget *parent);
-
-/* Select the "active" progress bar widget (splash or rebuild) */
-void DISPLAY_set_active_progress_bar(GtkWidget *progress_bar);

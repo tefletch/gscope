@@ -241,7 +241,6 @@ int main(int argc, char *argv[])
 
         gscope_splash = GTK_WIDGET(gtk_builder_get_object(builder, "gscope_splash"));
         gtk_widget_show(gscope_splash);
-        DISPLAY_message_set_transient_parent(gscope_splash);
 
         // Instead of rendering the splash screen right away, wait until the first progress bar update.
         // Process pending gtk events
@@ -315,7 +314,6 @@ int main(int argc, char *argv[])
     {
         gtk_widget_destroy(gscope_splash);  // Kill the splash screen
         gtk_widget_show(gscope_main);
-        DISPLAY_message_set_transient_parent(gscope_main);
 
         gtk_main();
     }

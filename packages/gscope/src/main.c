@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
     if (settings.refOnly)
     {
         APP_CONFIG_init(NULL);
-        BUILD_initDatabase();
+        BUILD_initDatabase(NULL);
     }
     else
     {
@@ -178,7 +178,6 @@ int main(int argc, char *argv[])
 
         gscope_splash = create_gscope_splash();
         gtk_widget_show(gscope_splash);
-        DISPLAY_message_set_transient_parent(gscope_splash);
 
         // Instead of rendering the splash screen right away, wait until the first progress bar update.
         // Process pending gtk events
@@ -241,16 +240,13 @@ int main(int argc, char *argv[])
 
         gtk_widget_hide(lookup_widget(GTK_WIDGET(gscope_main), "progressbar1"));
 
-        DISPLAY_set_active_progress_bar( lookup_widget(gscope_splash, "splash_progressbar") );
-        BUILD_initDatabase();
-        DISPLAY_set_active_progress_bar( lookup_widget(gscope_main, "rebuild_progressbar") );
+        BUILD_initDatabase(lookup_widget(gscope_splash, "splash_progressbar"));
     }
 
     if (!settings.refOnly)
     {
         gtk_widget_destroy(gscope_splash);  // Kill the splash screen
         gtk_widget_show(gscope_main);
-        DISPLAY_message_set_transient_parent(gscope_main);
 
         gtk_main();
     }
