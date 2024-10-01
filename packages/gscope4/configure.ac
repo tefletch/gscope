@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([gscope],[4.22])
+AC_INIT([gscope],[4.25])
 AC_CONFIG_SRCDIR([src/gscope4.cmb])
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADERS([config.h])
