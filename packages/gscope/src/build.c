@@ -152,6 +152,7 @@ line of the header to the trailer.
 #include "display.h"
 #include "app_config.h"
 #include "auto_gen.h"
+#include "callbacks_pub.h"
 
 
 
@@ -510,7 +511,7 @@ static void initialize_for_new_cref(GtkWidget *progress_bar)
     if (nsrcfiles == 0)
     {
         if ( !settings.refOnly )
-            DISPLAY_message_dialog(NULL, GTK_MESSAGE_ERROR, "<span weight=\"bold\"> No source files found</span>\nGscope will exit.", TRUE);
+            DISPLAY_message_dialog(GTK_WINDOW(CALLBACKS_get_widget("gscope_main")), GTK_MESSAGE_ERROR, "<span weight=\"bold\"> No source files found</span>\nGscope will exit.", TRUE);
         else
             fprintf(stderr,"No source files found. Gscope will exit.\n");
 

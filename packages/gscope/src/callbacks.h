@@ -1,7 +1,5 @@
 #include <gtk/gtk.h>
-
-void        CALLBACKS_init(GtkWidget *main);
-GtkWidget   *CALLBACKS_get_widget(gchar *widget_name);
+#include "callbacks_pub.h"
 
 void
 on_window1_destroy                     (GtkWidget        *widget,

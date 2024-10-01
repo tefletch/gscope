@@ -24,6 +24,7 @@
 #include "search.h"
 #include "display.h"
 #include "app_config.h"
+#include "callbacks_pub.h"
 
 //===============================================================
 //       Defines
@@ -863,7 +864,7 @@ static void _do_garbage_collection()
                          "If you are seeing this message on a regular basis, you may want to increase the CACHE "
                          "GARBAGE COLLECTION THRESHOLD preference value.  See:\n\n(Options-->Preferences-->Cross Reference)";
         if ( !settings.refOnly )
-            DISPLAY_message_dialog(NULL, GTK_MESSAGE_INFO, message, TRUE);
+            DISPLAY_message_dialog(GTK_WINDOW(CALLBACKS_get_widget("gscope_main")), GTK_MESSAGE_INFO, message, TRUE);
         else
             fprintf(stderr,"%s\n", message);
     }

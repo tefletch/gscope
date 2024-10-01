@@ -29,7 +29,7 @@
 #include "utils.h"
 #include "display.h"
 #include "app_config.h"
-#include "callbacks.h"
+#include "callbacks_pub.h"
 
 #ifndef GTK4_BUILD
 #ifndef GTK3_BUILD

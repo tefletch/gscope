@@ -13,6 +13,17 @@ void CALLBACKS_init(GtkWidget *main)
     DISPLAY_init(main);
 }
 
+GtkWidget *CALLBACKS_get_widget(gchar *widget_name)
+{
+    if ( strcmp(widget_name, "gscope_main") == 0 )
+        my_lookup_widget("gscope_main");
+    if ( strcmp(widget_name, "progressbar1") == 0 )
+        return(my_lookup_widget(widget_name));
+
+    return(NULL);
+}
+
+
 // Temporary GTK4 stub functions for SEARCH component
 //===================================================
 

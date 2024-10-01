@@ -28,6 +28,11 @@
 #include "search.h"
 #include "display.h"
 #include "auto_gen.h"
+#ifdef GTK4_BUILD
+#include "callbacks_pub.h"
+#else
+#include "callbacks.h"
+#endif
 
 
 //===============================================================
@@ -971,7 +976,7 @@ static void find_srcfiles_in_tree(gchar *src_dir)
         my_asprintf(&message,"\nG-Scope Error: Recursive File Tree Walk Error: %s", strerror(errno));
 
         if ( !settings.refOnly )  // If we are in GUI mode
-            DISPLAY_message_dialog(NULL, GTK_MESSAGE_ERROR, message, TRUE);
+            DISPLAY_message_dialog(GTK_WINDOW(CALLBACKS_get_widget("gscope_main")), GTK_MESSAGE_ERROR, message, TRUE);
         else
             fprintf(stderr, "%s\n", message);
 
