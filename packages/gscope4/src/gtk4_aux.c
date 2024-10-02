@@ -24,17 +24,6 @@ GtkWidget *CALLBACKS_get_widget(gchar *widget_name)
 }
 
 
-// Temporary GTK4 stub functions for SEARCH component
-//===================================================
-
-void SEARCH_init()
-{
-}
-
-void SEARCH_set_cref_status(gboolean status)
-{
-}
-
 // Temporary GTK4 stub functions for message dialogs
 //===================================================
 

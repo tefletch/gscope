@@ -33,7 +33,7 @@
                     <property name="margin-start">8</property>
                     <property name="margin-top">8</property>
                     <property name="name">search_button_grid</property>
-                    <property name="row-spacing">6</property>
+                    <property name="row-spacing">4</property>
                     <child>
                       <object class="GtkButton" id="find_definition_of_button">
                         <property name="label">Find definition of</property>
