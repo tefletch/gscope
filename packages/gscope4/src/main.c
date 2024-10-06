@@ -291,8 +291,7 @@ static void activate (GtkApplication *app, gpointer *user_data)
     gtk_window_set_transient_for(GTK_WINDOW(gscope_splash), GTK_WINDOW(gscope_main));
     gtk_widget_set_visible(GTK_WIDGET(gscope_splash), TRUE);
 
-
-
+    
     // Settings-conditional startup
     // (Must run AFTER command_line handler)
     //======================================
@@ -315,6 +314,9 @@ static void activate (GtkApplication *app, gpointer *user_data)
     gtk_widget_set_visible (GTK_WIDGET(gscope_main), TRUE);
 
     g_object_unref(builder);
+
+    // Comment out for standard theme, un-comment for stardard-dark theme -- Revisit: make this a view-->checkbox-dark-theme [on/off]
+    // g_object_set(gtk_settings_get_default(), "gtk-application-prefer-dark-theme", TRUE, NULL);
 }
 
 
