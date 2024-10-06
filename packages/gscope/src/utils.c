@@ -124,7 +124,7 @@ void my_add_widget(gpointer widget, gpointer user_data)
 {
     GType       my_type;
 
-    static GType nb1, nb2;
+    static GType nb1, nb2, nb3;
 
     if ( !hash_table )   // Need to initialize
     {
@@ -135,12 +135,12 @@ void my_add_widget(gpointer widget, gpointer user_data)
         // application defines other "non-buildable" objects.
         nb1 = g_type_from_name("GtkAccelGroup");
         nb2 = g_type_from_name("GtkTreeSelection");
-
+        nb3 = g_type_from_name("GMenu");
     }
 
     my_type = G_OBJECT_TYPE(widget);
 
-    if ( my_type == nb1 || my_type == nb2 )     // Brute force Non-Buildable check
+    if ( my_type == nb1 || my_type == nb2 || my_type == nb3 )     // Brute force Non-Buildable check
     {
         /* my_type is a Non-Buildable type : Do nothing */
     }
