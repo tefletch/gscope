@@ -1,8 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.90.4 -->
+<!-- Created with Cambalache 0.92.0 -->
 <interface>
   <!-- interface-name gscope.ui -->
   <requires lib="gtk" version="4.8"/>
+  <requires lib="gio" version="2.0"/>
   <object class="GtkWindow" id="gscope_main">
     <property name="height-request">600</property>
     <property name="title">Gscope</property>
@@ -19,9 +20,21 @@
                 <property name="focus-on-click">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkLabel">
-                    <property name="label">vbox2 top</property>
-                    <property name="name">header_button</property>
+                  <object class="GtkBox">
+                    <child>
+                      <object class="GtkPopoverMenuBar">
+                        <property name="menu-model">top_menu</property>
+                        <property name="name">menubar</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="justify">center</property>
+                        <property name="label">&lt;b&gt;Version 4.0&lt;/b&gt;</property>
+                        <property name="margin-start">30</property>
+                        <property name="use-markup">True</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
                 <child>
@@ -143,6 +156,7 @@
                     <property name="can-focus">False</property>
                     <property name="can-target">False</property>
                     <property name="focus-on-click">False</property>
+                    <property name="has-frame">True</property>
                     <property name="height-request">147</property>
                     <child>
                       <object class="GtkTreeView"/>
@@ -278,4 +292,59 @@
       </object>
     </child>
   </object>
+  <menu id="top_menu">
+    <submenu id="sub_menu1">
+      <attribute name="label">Command</attribute>
+      <item>
+        <attribute name="icon">view-refresh</attribute>
+        <attribute name="label">Rebuild Cross Reference</attribute>
+      </item>
+      <item>
+        <attribute name="icon">application-exit</attribute>
+        <attribute name="label">Quit</attribute>
+      </item>
+    </submenu>
+    <submenu id="sub_menu2">
+      <attribute name="label">Options</attribute>
+      <item>
+        <attribute name="label">Ignore Case During Search</attribute>
+      </item>
+      <item>
+        <attribute name="label">Preferences</attribute>
+      </item>
+    </submenu>
+    <submenu id="sub_menu3">
+      <attribute name="label">View</attribute>
+      <item>
+        <attribute name="label">Session Statistics</attribute>
+      </item>
+    </submenu>
+    <submenu id="sub_menu4">
+      <attribute name="label">Help</attribute>
+      <item>
+        <attribute name="label">Usage</attribute>
+      </item>
+      <item>
+        <attribute name="label">Setup</attribute>
+      </item>
+      <submenu id="sub_menu4a">
+        <attribute name="label">Wiki</attribute>
+        <item>
+          <attribute name="label">Overview</attribute>
+        </item>
+        <item>
+          <attribute name="label">Usage</attribute>
+        </item>
+        <item>
+          <attribute name="label">Configure</attribute>
+        </item>
+        <item>
+          <attribute name="label">Release Notes</attribute>
+        </item>
+      </submenu>
+      <item>
+        <attribute name="label">About</attribute>
+      </item>
+    </submenu>
+  </menu>
 </interface>
