@@ -24,6 +24,9 @@
 #include "dir.h"
 #include "utils.h"
 #include "app_config.h"
+#ifdef GTK4_BUILD
+#include "gtk4_aux.h"
+#endif
 
 // ==== defines ====
 #define MAX_FUNCTION_SIZE       100     /* Max size of function name */
