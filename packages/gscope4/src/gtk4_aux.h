@@ -1,4 +1,7 @@
 
+void SEARCH_init();
+void SEARCH_set_cref_status(gboolean status);
+
 void CALLBACKS_init(GtkWidget *main);
 
 void GTK4_message_dialog(GtkMessageType msg_type, char *message);

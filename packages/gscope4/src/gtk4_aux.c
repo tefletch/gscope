@@ -6,6 +6,18 @@
 #include "display.h"
 
 
+// Temporary GTK4 stub functions for SEARCH component
+//===================================================
+
+void SEARCH_init()
+{
+}
+
+void SEARCH_set_cref_status(gboolean status)
+{
+}
+
+
 // Temporary GTK4 stub functions for CALLBACKS component
 //====================================================
 void CALLBACKS_init(GtkWidget *main)
