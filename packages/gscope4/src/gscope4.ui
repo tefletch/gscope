@@ -296,10 +296,12 @@
     <submenu id="sub_menu1">
       <attribute name="label">Command</attribute>
       <item>
+        <attribute name="action">app.rebuild</attribute>
         <attribute name="icon">view-refresh</attribute>
         <attribute name="label">Rebuild Cross Reference</attribute>
       </item>
       <item>
+        <attribute name="action">app.quit</attribute>
         <attribute name="icon">application-exit</attribute>
         <attribute name="label">Quit</attribute>
       </item>
