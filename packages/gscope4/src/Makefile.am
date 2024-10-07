@@ -36,8 +36,8 @@ gscope_SOURCES = \
 #
 #	browser.c   \
 #	broswer.h   \
-#	callbacks.c \
-#	callbacks.h \
+#	callbacks.c  \
+#	callbacks.h	 \
 #	fileview.c 	\
 #	fileview.h 	\
 #	global.h	\
