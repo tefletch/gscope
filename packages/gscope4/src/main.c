@@ -35,24 +35,22 @@ void print_hello (GtkWidget *widget, gpointer   data)
   printf ("Hello World\n");
 }
 
-
-
-
-// Revisit:  Temporary code (simulated long duration build) to be run on the main-idle loop.
-void testBUILD_initDatabase(GtkWidget *bar)
+// Test action callback
+void rebuild_activated (GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
-    int i;
-
-    for (i = 0; i < 10; i++)
-    {
-        DISPLAY_progress(bar, "Building Cross Reference:", i, 10);
-        sleep(1);
-        printf("%d fraction = %f\n", i, (gdouble)i/(gdouble)10);
-    }
-    // Done building database
-    DISPLAY_progress(bar, "Building Cross Reference:", i, 10);
-    printf("Build complete\n");
+  printf ("Hello from rebuild_activated\n");
 }
+
+// Test action callback
+void quit_activated (GSimpleAction *action, GVariant *parameter, gpointer user_data)
+{
+  printf ("Hello quit_activated\n");
+}
+
+static GActionEntry app_entries[] = {
+    {"rebuild", rebuild_activated, NULL, NULL, NULL },
+    {"quit", quit_activated, NULL, NULL, NULL }
+};
 
 
 
@@ -197,27 +195,20 @@ static gboolean cmd_line_handler(gpointer data)
     return (G_SOURCE_REMOVE);   // Revisit: should no longer be needed since we aren't processing options in another thread.
 }
 
+
+
+
+
 /* WARNING: Do not call any functions from this handler that are affected by command line arguments 
             Place command-line dependent function calls in the 'activate' handler. */
 static void startup (GApplication *app, gpointer *user_data)
 {
-    printf("** %s **\n", __func__);
-}
-
-
-static void activate (GtkApplication *app, gpointer *user_data)
-{
     GtkBuilder  *builder;
     GSList      *list;
     GError      *error = NULL;
+    GAction     *action;
 
     printf("** %s **\n", __func__);
-
-    if (settings.version)
-    {
-        printf("GSCOPE version %s\n", VERSION);
-        exit(EXIT_SUCCESS);
-    }
 
     /* App-Standard location for pixmap files */
     add_pixmap_directory("../pixmaps");
@@ -274,7 +265,7 @@ static void activate (GtkApplication *app, gpointer *user_data)
     // connect it to the top-level application window
     //======================================================
     GObject *gscope_main = gtk_builder_get_object (builder, "gscope_main");
-    gtk_window_set_application (GTK_WINDOW(gscope_main), app);
+    gtk_window_set_application (GTK_WINDOW(gscope_main), GTK_APPLICATION(app));
     gtk_widget_set_visible (GTK_WIDGET(gscope_main), FALSE);
 
     // Instantiate the message window object (message dialog)
@@ -291,6 +282,30 @@ static void activate (GtkApplication *app, gpointer *user_data)
     gtk_window_set_transient_for(GTK_WINDOW(gscope_splash), GTK_WINDOW(gscope_main));
     gtk_widget_set_visible(GTK_WIDGET(gscope_splash), TRUE);
 
+
+    // Configure Menu Actions
+    //=======================
+    g_action_map_add_action_entries(G_ACTION_MAP(app), app_entries, G_N_ELEMENTS(app_entries), app);
+
+    //You can disable a menu item by removing its entry from the action map
+    //g_action_map_remove_action(G_ACTION_MAP(app), "quit");
+
+
+    g_object_unref(builder);
+}
+
+
+static void activate (GtkApplication *app, gpointer *user_data)
+{
+
+    printf("** %s **\n", __func__);
+
+    if (settings.version)
+    {
+        printf("GSCOPE version %s\n", VERSION);
+        exit(EXIT_SUCCESS);
+    }
+
     
     // Settings-conditional startup
     // (Must run AFTER command_line handler)
@@ -303,17 +318,15 @@ static void activate (GtkApplication *app, gpointer *user_data)
     }
     else
     {
-        APP_CONFIG_init(GTK_WIDGET(gscope_splash));
-        CALLBACKS_init(GTK_WIDGET(gscope_main));
-        BUILD_initDatabase(GTK_WIDGET(gtk_builder_get_object(builder, "splash_progressbar")));
+        APP_CONFIG_init(GTK_WIDGET(my_lookup_widget("gscope_splash")));
+        CALLBACKS_init(GTK_WIDGET(my_lookup_widget("gscope_main")));
+        BUILD_initDatabase(GTK_WIDGET(my_lookup_widget("splash_progressbar")));
     }
 
-    // testBUILD_initDatabase( my_lookup_widget("splash_progressbar") );
 
-    gtk_widget_set_visible(GTK_WIDGET(gscope_splash), FALSE);
-    gtk_widget_set_visible (GTK_WIDGET(gscope_main), TRUE);
+    gtk_widget_set_visible(my_lookup_widget("gscope_splash"), FALSE);
+    gtk_widget_set_visible (my_lookup_widget("gscope_main"), TRUE);
 
-    g_object_unref(builder);
 
     // Comment out for standard theme, un-comment for stardard-dark theme -- Revisit: make this a view-->checkbox-dark-theme [on/off]
     // g_object_set(gtk_settings_get_default(), "gtk-application-prefer-dark-theme", TRUE, NULL);
