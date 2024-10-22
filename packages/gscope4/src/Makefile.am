@@ -17,6 +17,8 @@ gscope_SOURCES = \
 	auto_gen.h   \
 	build.c      \
 	build.h      \
+	callbacks.c  \
+	callbacks.h  \
 	crossref.c   \
 	crossref.h   \
 	dir.c        \

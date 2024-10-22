@@ -20,7 +20,7 @@
 #include "app_config.h"
 
 #include "support.h"
-//#include "callbacks.h"
+#include "callbacks.h"
 #include "search.h"
 #include "display.h"
 #include "build.h"

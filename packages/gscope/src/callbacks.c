@@ -53,7 +53,9 @@ typedef struct _SrcFile_stats
 // ---- local function prototypes ----
 static void process_query(search_t query_type);
 static gboolean exit_confirmed(void);
+#ifndef GTK4_BUILD
 static void shutdown(void);
+#endif
 static SrcFile_stats* create_stats_list(SrcFile_stats **si_stats);
 
 
@@ -117,6 +119,9 @@ static void process_query(search_t query_type)
 {
 #define MAX_COMPARISON          256
     gchar *pattern;
+    #ifdef GTK4_BUILD
+    GtkEntryBuffer *buffer;
+    #endif
 
     static gchar *button_label[NUM_FIND_TYPES];
     static gchar *button_active_label[NUM_FIND_TYPES];
@@ -227,9 +232,15 @@ static void process_query(search_t query_type)
             previous_button = query_type;
         }
 
+        #ifndef GTK4_BUILD
         gtk_widget_grab_default(buttons[query_type]);
-
         pattern = strdup(gtk_entry_get_text(GTK_ENTRY(query_entry)));
+        #else
+        buffer = gtk_entry_get_buffer(GTK_ENTRY(query_entry));
+        gtk_window_set_default_widget(GTK_WINDOW(gscope_main), buttons[query_type]);
+        pattern = strdup(gtk_entry_buffer_get_text(buffer));
+        #endif
+
     }
     else
     {
@@ -325,7 +336,11 @@ static void process_query(search_t query_type)
             else
             {
                 /* otherwise clear the entry text if we have a match */
+                #ifndef GTK4_BUILD
                 gtk_entry_set_text(GTK_ENTRY(query_entry), "");
+                #else
+                gtk_entry_buffer_set_text(buffer, "", -1);
+                #endif
             }
         }
 
@@ -397,6 +412,7 @@ void CALLBACKS_init(GtkWidget *main)
 }
 
 
+#ifndef GTK4_BUILD  // GtkMenu evolution
 
 void on_rebuild_database1_activate(GtkMenuItem     *menuitem,
                               gpointer         user_data)
@@ -434,6 +450,15 @@ void on_rebuild_database1_activate(GtkMenuItem     *menuitem,
 }
 
 
+void on_cref_update_button_clicked(GtkButton       *button,
+                                   gpointer         user_data)
+{
+    if (SEARCH_get_cref_status())   // If the cref is marked up-to-date, check for changes
+        SEARCH_check_cref();
+    else
+        on_rebuild_database1_activate(NULL, NULL);  // Otherwise, rebuild the cross reference.
+}
+
 
 void on_list_all_functions1_activate(GtkMenuItem     *menuitem,
                                      gpointer         user_data)
@@ -469,98 +494,6 @@ void on_quit1_activate(GtkMenuItem     *menuitem,
         return;
 }
 
-
-void on_window1_destroy(GtkWidget        *widget,
-                        gpointer         user_data)
-{
-    // Callback is called when on_window1_delete_event returns FALSE
-    shutdown();
-}
-
-
-// Top-level window "Close" or "X" button on window frame pressed.
-gboolean on_window1_delete_event(GtkWidget *widget,
-                                 GdkEvent        *event,
-                                 gpointer         user_data)
-{
-    // Normal Window destroy callback sequence
-    // 1) delete_event
-    // 2) if delete_event() returns FALSE then on_window_destroy()
-
-    if (exit_confirmed())
-        return FALSE;    // Return FALSE to destroy the widget.
-    else
-        return TRUE;     // Return TRUE to cancel the delete_event.
-}
-
-static void shutdown()
-{
-    SEARCH_cleanup();
-
-    // Good-bye !!!
-    gtk_main_quit();
-}
-
-
-static gboolean exit_confirmed()
-{
-    if (settings.exitConfirm)
-    {
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(quit_dialog), "confirm_exit_checkbutton")), TRUE);
-
-        gtk_dialog_run(GTK_DIALOG(quit_dialog));
-        gtk_widget_hide(GTK_WIDGET(quit_dialog));
-    }
-    else
-        ok_to_quit = TRUE;
-
-    return (ok_to_quit);
-}
-
-
-void on_quit_confirm_dialog_response(GtkDialog       *dialog,
-                                     gint             response_id,
-                                     gpointer         user_data)
-{
-    switch (response_id)
-    {
-        case GTK_RESPONSE_OK:
-            ok_to_quit = TRUE;
-            break;
-
-        case GTK_RESPONSE_CANCEL:
-        case GTK_RESPONSE_DELETE_EVENT:
-            ok_to_quit = FALSE;
-            break;
-
-        default:
-        {
-            char *error_string;
-
-            my_asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"Quit Confirmation\" dialog.", response_id);
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
-            g_free(error_string);
-        }
-
-            break;
-    }
-
-    return;
-}
-
-
-
-gboolean on_quit_confirm_dialog_delete_event(GtkWidget *widget,
-                                             GdkEvent *event,
-                                             gpointer user_data)
-{
-    gtk_widget_hide(widget);
-    return TRUE;     // Do not destroy the widget
-}
-
-
-
-//--------------------- End Application Exit Callbacks -----------------------
 
 void on_usage1_activate(GtkMenuItem     *menuitem,
                         gpointer         user_data)
@@ -687,144 +620,6 @@ void on_about1_activate(GtkMenuItem     *menuitem,
     gtk_widget_show(aboutdialog1);
 
 }
-
-
-void on_aboutdialog1_response(GtkDialog       *dialog,
-                              gint             response_id,
-                              gpointer         user_data)
-{
-    switch (response_id)
-    {
-        case GTK_RESPONSE_CLOSE:
-        case GTK_RESPONSE_CANCEL:
-        case GTK_RESPONSE_DELETE_EVENT:
-            gtk_widget_hide(GTK_WIDGET(dialog));
-            break;
-
-        default:
-        {
-            char *error_string;
-
-            my_asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"about\" dialog.", response_id);
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
-            g_free(error_string);
-            gtk_widget_hide(GTK_WIDGET(dialog));
-        }
-
-            break;
-    }
-
-    return;
-}
-
-
-
-gboolean on_aboutdialog1_delete_event(GtkWidget       *widget,
-                                      GdkEvent        *event,
-                                      gpointer         user_data)
-{
-    gtk_widget_hide(widget);
-    return TRUE;     // Do not destroy the widget
-}
-
-
-
-void on_find_c_identifier_button_clicked(GtkButton       *button,
-                                         gpointer         user_data)
-{
-    if (!search_button_lockout)
-    {
-        search_button_lockout = TRUE;
-        process_query(FIND_SYMBOL);
-        search_button_lockout = FALSE;
-    }
-}
-
-
-void on_find_definition_of_button_clicked(GtkButton       *button,
-                                          gpointer         user_data)
-{
-    if (!search_button_lockout)
-    {
-        search_button_lockout = TRUE;
-        process_query(FIND_DEF);
-        search_button_lockout = FALSE;
-    }
-}
-
-
-void on_find_functions_called_by_button_clicked(GtkButton       *button,
-                                                gpointer         user_data)
-{
-    if (!search_button_lockout)
-    {
-        search_button_lockout = TRUE;
-        process_query(FIND_CALLEDBY);
-        search_button_lockout = FALSE;
-    }
-}
-
-
-void on_find_functions_calling_button_clicked(GtkButton       *button,
-                                              gpointer         user_data)
-{
-    if (!search_button_lockout)
-    {
-        search_button_lockout = TRUE;
-        process_query(FIND_CALLING);
-        search_button_lockout = FALSE;
-    }
-}
-
-
-void on_find_text_string_button_clicked(GtkButton       *button,
-                                        gpointer         user_data)
-{
-    if (!search_button_lockout)
-    {
-        search_button_lockout = TRUE;
-        process_query(FIND_STRING);
-        search_button_lockout = FALSE;
-    }
-}
-
-
-void on_find_egrep_pattern_button_clicked(GtkButton       *button,
-                                          gpointer         user_data)
-{
-    if (!search_button_lockout)
-    {
-        search_button_lockout = TRUE;
-        process_query(FIND_REGEXP);
-        search_button_lockout = FALSE;
-    }
-}
-
-
-void on_find_files_button_clicked(GtkButton       *button,
-                                  gpointer         user_data)
-{
-    if (!search_button_lockout)
-    {
-        search_button_lockout = TRUE;
-        process_query(FIND_FILE);
-        search_button_lockout = FALSE;
-    }
-}
-
-
-void on_find_files_including_button_clicked(GtkButton       *button,
-                                            gpointer         user_data)
-{
-    if (!search_button_lockout)
-    {
-        search_button_lockout = TRUE;
-        process_query(FIND_INCLUDING);
-        search_button_lockout = FALSE;
-    }
-}
-
-
 
 void on_preferences_activate(GtkMenuItem     *menuitem,
                              gpointer         user_data)
@@ -1089,327 +884,6 @@ void on_smartquery_activate(GtkMenuItem     *menuitem,
     settings.smartQuery = !settings.smartQuery;
 }
 
-
-void on_cancel_button_clicked(GtkButton       *button,
-                              gpointer         user_data)
-{
-    SEARCH_cancel();           // Signal the search routine to stop
-    cancel_requested = TRUE;   // Set the cancel indicator - UI will report that search results are truncated.
-}
-
-
-gboolean on_history_treeview_button_press_event(GtkWidget       *widget,
-                                                GdkEventButton  *event,
-                                                gpointer         user_data)
-{
-    static GtkWidget *query_entry;
-    static gboolean initialized = FALSE;
-
-    gchar *entry;
-
-
-    if (!initialized)
-    {
-        initialized = TRUE;
-
-        /* Get a pointer to the query entry widget */
-        query_entry = lookup_widget(GTK_WIDGET(gscope_main), "query_entry");
-    }
-
-
-    if (event->type != GDK_BUTTON_PRESS)
-        return FALSE;   // only process single button click events (filter out GDK_[23]BUTTON_PRESS event types)
-
-    if (DISPLAY_get_clicked_entry(event->x, event->y, &entry))
-    {
-        gtk_entry_set_text(GTK_ENTRY(query_entry), entry);
-        g_free(entry);
-    }
-
-    return FALSE;
-}
-
-
-void on_treeview1_row_activated(GtkTreeView     *treeview,
-                                GtkTreePath     *path,
-                                GtkTreeViewColumn *column,
-                                gpointer         user_data)
-{
-    if (!settings.singleClick)
-    {
-        gchar *filename;
-        gchar *linenum;
-
-        if (DISPLAY_get_filename_and_lineinfo(path, &filename, &linenum))
-        {
-            if (settings.useEditor)
-            {
-                my_start_text_editor(filename, linenum);
-            }
-            else
-            {
-                FILEVIEW_create(filename, atoi(linenum));
-            }
-        }
-    }
-}
-
-
-
-void on_open_terminal(GtkWidget *menuitem, gchar *container)
-{
-    gchar *command;
-    gchar *coded_container;
-
-    coded_container = strdup(container);
-    my_space_codec(ENCODE, coded_container);     // Encode any 'space' characters found in the container path
-
-    my_asprintf(&command, settings.terminalApp, coded_container);  // Synthesize the full command line
-    my_system(command);
-
-    free(command);
-    free(coded_container);
-}
-
-
-
-void on_open_file_browser(GtkWidget *menuitem, gchar *container)
-{
-    gchar *command;
-    gchar *coded_container;
-
-    coded_container = strdup(container);
-    my_space_codec(ENCODE, coded_container);     // Encode any 'space' characters found in the container path
-
-    my_asprintf(&command, settings.fileManager, coded_container);
-    my_system(command);
-
-    free(command);
-    free(coded_container);
-}
-
-void on_open_call_browser(GtkWidget *menuitem, gchar *entry)
-{
-    gchar * fname;
-    gchar *linenum;
-    gchar *function;
-    gchar *esc_markup;
-    static gboolean initialized = FALSE;
-
-    if ( !initialized )
-    {
-       initialized = BROWSER_init();
-    }
-
-    fname = entry;
-
-    while (*entry++ != '|');
-    *(entry - 1) = '\0'; // null terminate file name
-    linenum = entry;
-
-    while (*entry++ != '|');
-    *(entry - 1) = '\0'; // null terminate line num
-    function = entry;
-
-    esc_markup = g_markup_escape_text(function, -1);    // Needed when function = "<global>".
-    browser_window = BROWSER_create(esc_markup, fname, linenum);
-    g_free(esc_markup);
-
-    gtk_widget_show(browser_window);
-
-}
-
-
-
-void on_open_quick_view(GtkWidget *menuitem, gchar *file_and_line)
-{
-    gchar *linenum;
-
-    linenum = strchr(file_and_line, '|');
-
-    if (linenum)
-    {
-        *linenum++ = '\0';  // Null-terminate the filename and advance the linenum pointer to start of line number data
-
-        FILEVIEW_create(file_and_line, atoi(linenum));
-    }
-    else
-        fprintf(stderr, "Warning: Unexpected file_and_line parse error in on_open_quick_view()\nFile-view window creation failed.\n");
-}
-
-
-
-void show_context_menu(GtkWidget *treeview, GdkEventButton *event, gchar *filename, gchar *linenum, gchar *symbol)
-{
-    static GtkWidget   *menu = NULL;
-    static GtkWidget   *menu_item;
-    gchar              tmp_path[PATHLEN];
-    static gchar       container[(2 * PATHLEN) + 1];                   // +1 for '/'
-    static gchar       file_and_line[PATHLEN + MAX_LINENUM_SIZE + 2];  // +2 for Field-Delimiter and trailing null
-    static gchar       entry[1024];
-
-    /*** Construct the Context Menu ***/
-    if (!menu)
-    {
-        menu = gtk_menu_new();
-
-        menu_item = gtk_menu_item_new_with_label("Open Containing Folder");
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-        g_signal_connect(menu_item, "activate", (GCallback)on_open_terminal, container);
-
-        menu_item = gtk_separator_menu_item_new();
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-
-        menu_item = gtk_menu_item_new_with_label("Browse Containing Folder");
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-        g_signal_connect(menu_item, "activate", (GCallback)on_open_file_browser, container);
-
-
-        menu_item = gtk_separator_menu_item_new();
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-
-        menu_item = gtk_menu_item_new_with_label("Browse Static Calls");
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-        g_signal_connect(menu_item, "activate", (GCallback)on_open_call_browser, entry);
-
-        menu_item = gtk_separator_menu_item_new();
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-
-        menu_item = gtk_menu_item_new_with_label("Quick-View");
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-        g_signal_connect(menu_item, "activate", (GCallback)on_open_quick_view, file_and_line);
-    }
-
-
-    /*** Update the contents of "container" ***/
-    strcpy(tmp_path, filename);
-    my_dirname(tmp_path);
-
-    if (tmp_path[0] != '/')    // Not an absolute path
-    {
-        if (tmp_path[0] == '\0')
-        {
-            // Null 'dirname' add CWD
-            if ( g_strlcpy(container, DIR_get_path(DIR_CURRENT_WORKING), PATHLEN) >= PATHLEN )
-            {
-                // Do nothing: Quietly truncate the path
-            }
-        }
-        else
-        {
-            // Relative 'dirname' make it absolute
-            snprintf(container, (2 * PATHLEN), "%s/%s", DIR_get_path(DIR_CURRENT_WORKING), tmp_path);
-        }
-    }
-
-    /*** Update the contents of "file_and_line ***/
-    snprintf(file_and_line, PATHLEN + MAX_LINENUM_SIZE + 1, "%s|%s", filename, linenum);
-
-    snprintf(entry, 1023, "%s|%s|%s", filename, linenum, symbol);
-
-    gtk_widget_show_all(menu);
-    /*** Run the context menu (beware of event == NULL) ***/
-    gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
-                   (event != NULL) ? event->button : 0,
-                   gdk_event_get_time((GdkEvent *)event));
-}
-
-
-
-gboolean on_treeview1_button_press_event(GtkWidget       *widget,
-                                         GdkEventButton  *event,
-                                         gpointer         user_data)
-{
-    gchar *filename;
-    gchar *linenum;
-    gchar *symbol;
-
-    GtkTreePath     *path;
-
-    if (event->type == GDK_BUTTON_PRESS)  // Process single button click (ignore GDK_[23]BUTTON_PRESS event types)
-    {
-        switch (event->button)
-        {
-            case 1:     // left-button -- (optional) single click open
-                if (settings.singleClick)     // Single Click mode
-                {
-                    if (gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(widget), event->x, event->y, &path, NULL, NULL, NULL))
-                    {
-                        if (DISPLAY_get_filename_and_lineinfo(path, &filename, &linenum))
-                        {
-                            if (settings.useEditor)
-                            {
-                                my_start_text_editor(filename, linenum);
-                            }
-                            else
-                            {
-                                FILEVIEW_create(filename, atoi(linenum));
-                            }
-                        }
-                        gtk_tree_path_free(path);
-                    }
-                }
-                break;
-
-            case 3:     // right-button -- List item context menu
-
-                // Get the GtkTreePath
-                if (gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(widget), event->x, event->y, &path, NULL, NULL, NULL))
-                {
-                    if (DISPLAY_get_entry_info(path, &filename, &linenum, &symbol)) // Get the selected filename
-                    {
-                        // pass filename into show menu call
-                        show_context_menu(widget, event, filename, linenum, symbol);
-                    }
-                    gtk_tree_path_free(path);
-                }
-
-                break;
-
-            default:
-                // Do nothing
-                break;
-        }
-    }
-    return FALSE;
-}
-
-
-/*** Handle shift-F10 (context menu without a mouse) ***/
-gboolean on_treeview1_popup_menu(GtkWidget       *widget,
-                                 gpointer         user_data)
-{
-    gchar *filename;
-    gchar *linenum;
-    gchar *symbol;
-
-    GtkTreeSelection *selection;
-    GtkTreeModel     *model;
-    GtkTreeIter      iter;
-
-    GtkTreePath     *path;
-
-    selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
-    if (gtk_tree_selection_get_selected(selection, &model, &iter))
-    {
-        path = gtk_tree_model_get_path(model, &iter);
-
-        if (DISPLAY_get_entry_info(path, &filename, &linenum, &symbol)) // Get the selected filename
-        {
-            // pass filename into show menu call
-            show_context_menu(widget, NULL, filename, linenum, symbol);
-        }
-
-        gtk_tree_path_free(path);
-    }
-    // else no row selected.
-
-    return TRUE;
-}
-
-
-
-
 void on_fileview_start_editor_activate(GtkMenuItem *menuitem, gpointer user_data)
 {
     ViewWindow *windowPtr;
@@ -1429,1069 +903,6 @@ void on_fileview_start_editor_activate(GtkMenuItem *menuitem, gpointer user_data
 void on_fileview_close_activate(GtkMenuItem *menuitem, gpointer user_data)
 {
     gtk_widget_destroy(GTK_WIDGET(((ViewWindow *)user_data)->topWidget));
-}
-
-
-
-//----------------- Callbacks from the Preferences Dialog ----------------------
-
-
-void on_preferences_dialog_close_button_clicked(GtkButton *button, gpointer user_data)
-{
-    gtk_widget_hide(GTK_WIDGET(gscope_preferences));
-    preferences_dialog_visible = FALSE;
-}
-
-
-gboolean on_gscope_preferences_delete_event(GtkWidget       *widget,
-                                            GdkEvent        *event,
-                                            gpointer         user_data)
-{
-    // Just hide the widget
-    gtk_widget_hide(GTK_WIDGET(gscope_preferences));
-    preferences_dialog_visible = FALSE;
-
-    return TRUE;   // Don't destroy the widget
-}
-
-
-// The setting managed by this callback interacts with the "options menu" (temporary overrides)
-void on_retain_text_checkbutton_toggled(GtkToggleButton *togglebutton,
-                                        gpointer         user_data)
-{
-    if (!initializing_prefs)
-    {
-        // Toggle the "sticky" setting
-        sticky_settings.retainInput = !(sticky_settings.retainInput);
-
-        // Align the "options menu".  Warning, this "set-active" call toggles this "settings" value;
-        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(GTK_WIDGET(gscope_main), "retaininput_checkmenuitem")),
-                                       sticky_settings.retainInput);
-
-        // Align application behavior with the new "sticky" setting (override any change caused by "set_active" callback)
-        settings.retainInput = sticky_settings.retainInput;
-
-        // Update the preferences file
-        APP_CONFIG_set_boolean("retainInput", settings.retainInput);
-
-        // If retainInput = TRUE, disable the "retain_text_failed_search" checkbutton, otherwise enable the checkbutton
-        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "retain_text_failed_search_checkbutton"), !settings.retainInput);
-        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "retain_text_failed_search_image"), !settings.retainInput);
-        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "retain_text_failed_search_label"), !settings.retainInput);
-    }
-}
-
-
-
-void on_retain_text_failed_search_checkbutton_toggled(GtkToggleButton *togglebutton,
-                                                      gpointer         user_data)
-{
-    if (!initializing_prefs)
-    {
-        // This setting is only implemented as a start-up setting, hence there is no "active" (volatile) setting to match.
-        settings.retainFailed = !(settings.retainFailed);
-
-        // Update the preferences file
-        APP_CONFIG_set_boolean("retainFailed", settings.retainFailed);
-    }
-}
-
-
-
-
-// The setting managed by this callback interacts with the "options menu" (temporary overrides)
-void on_ignore_case_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
-{
-    if (!initializing_prefs)
-    {
-        // Toggle the "sticky" setting
-        sticky_settings.ignoreCase = !(sticky_settings.ignoreCase);
-
-        // Align the "options menu".  Warning, this "set-active" call toggles this "settings" value;
-        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(GTK_WIDGET(gscope_main), "ignorecase_checkmenuitem")),
-                                       sticky_settings.ignoreCase);
-
-        // Align application behavior with the new "sticky" setting (override any change caused by "set_active" callback)
-        settings.ignoreCase = sticky_settings.ignoreCase;
-
-        // Update the preferences file
-        APP_CONFIG_set_boolean("ignoreCase", settings.ignoreCase);
-    }
-}
-
-
-void on_use_viewer_radiobutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
-{
-    // Don't change the useEditor setting - that is handled in on_use_editor_radiobutton_toggled()
-
-    gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "reuse_window_checkbutton"), !settings.useEditor);
-    gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "editor_command_entry"), settings.useEditor);
-    gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "editor_command_label"), settings.useEditor);
-}
-
-
-// The setting managed by this callback interacts with the "options menu" (temporary overrides)
-void on_reuse_window_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
-{
-    if (!initializing_prefs)
-    {
-        // Toggle the "sticky" setting
-        sticky_settings.reuseWin = !(sticky_settings.reuseWin);
-
-        // Align the "options menu".  Warning, this "set-active" call toggles this "settings" value;
-        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(GTK_WIDGET(gscope_main), "reusewin_checkmenuitem")),
-                                       sticky_settings.reuseWin);
-
-        // Align application behavior with the new "sticky" setting (override any change caused by "set_active" callback)
-        settings.reuseWin = sticky_settings.reuseWin;
-
-        // Update the preferences file
-        APP_CONFIG_set_boolean("reuseWin", settings.reuseWin);
-    }
-}
-
-
-// The setting managed by this callback interacts with the "options menu" (temporary overrides)
-void on_use_editor_radiobutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
-{
-    if (!initializing_prefs)
-    {
-        // Toggle the "sticky" setting
-        sticky_settings.useEditor = !(sticky_settings.useEditor);
-
-        // Align the "options menu".  Warning, this "set-active" call toggles this "settings" value;
-        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(GTK_WIDGET(gscope_main), "useeditor_checkmenuitem")),
-                                       sticky_settings.useEditor);
-
-        // Align application behavior with the new "sticky" setting (override any change caused by "set_active" callback)
-        settings.useEditor = sticky_settings.useEditor;  // undo the value change caused by the "set_active" callback
-
-        // Update the preferences file
-        APP_CONFIG_set_boolean("useEditor", settings.useEditor);
-    }
-
-    gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "reuse_window_checkbutton"), !settings.useEditor);
-    gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "editor_command_entry"), settings.useEditor);
-    gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "editor_command_label"), settings.useEditor);
-}
-
-
-void on_editor_command_entry_changed(GtkEditable *editable, gpointer user_data)
-{
-    editor_command_changed = TRUE;
-}
-
-
-gboolean on_editor_command_entry_focus_out_event(GtkWidget       *widget,
-                                                 GdkEventFocus   *event,
-                                                 gpointer         user_data)
-{
-    const gchar *editor_command;
-
-    if (editor_command_changed)
-    {
-        editor_command =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "editor_command_entry")));
-
-        if (strcmp(settings.fileEditor, editor_command) != 0)  // Only update if a real change has been made
-        {
-            // Update the preferences file
-            APP_CONFIG_set_string("fileEditor", editor_command);
-
-            // Update the application setting
-            strcpy(settings.fileEditor, editor_command);
-        }
-
-        editor_command_changed = FALSE;
-    }
-
-    return FALSE;
-}
-
-
-void on_no_rebuild_radiobutton_toggled(GtkToggleButton *togglebutton,
-                                       gpointer         user_data)
-{
-    if (!initializing_prefs)
-    {
-        if (settings.noBuild)
-            // noBuild is being de-selected
-            settings.noBuild = FALSE;
-        else
-        {
-            // noBuild is being selected
-            settings.noBuild = TRUE;
-            settings.updateAll = FALSE;
-        }
-
-        // Update the preferences file
-        APP_CONFIG_set_boolean("noBuild", settings.noBuild);
-    }
-}
-
-
-void on_rebuild_radiobutton_toggled(GtkToggleButton *togglebutton,
-                                    gpointer         user_data)
-{
-    if (!initializing_prefs)
-    {
-        if (settings.updateAll)
-            // Build-if-needed is being selected
-            settings.updateAll = FALSE;
-
-        // Update the preferences file
-        APP_CONFIG_set_boolean("updateAll", settings.updateAll);
-    }
-}
-
-
-void on_force_rebuild_radiobutton_toggled(GtkToggleButton *togglebutton,
-                                          gpointer         user_data)
-{
-    if (!initializing_prefs)
-    {
-        if (settings.updateAll)
-            // Force rebuild is being de-selected
-            settings.updateAll = FALSE;
-        else
-        {
-            // Force rebuild is being selected
-            settings.updateAll = TRUE;
-
-            settings.noBuild = FALSE;
-        }
-
-        // Update the preferences file
-        APP_CONFIG_set_boolean("updateAll", settings.updateAll);
-    }
-}
-
-
-void on_truncate_symbols_checkbutton_toggled(GtkToggleButton *togglebutton,
-                                             gpointer         user_data)
-{
-    if (!initializing_prefs)
-    {
-        settings.truncateSymbols = !(settings.truncateSymbols);
-
-        // Update the preferences file
-        APP_CONFIG_set_boolean("truncateSymbols", settings.truncateSymbols);
-    }
-}
-
-
-void on_compress_symbols_checkbutton_toggled(GtkToggleButton *togglebutton,
-                                             gpointer         user_data)
-{
-    if (!initializing_prefs)
-    {
-        settings.compressDisable = !(settings.compressDisable);
-
-        // Update the preferences file
-        APP_CONFIG_set_boolean("compressDisable", settings.compressDisable);
-    }
-}
-
-
-void on_suffix_entry_changed(GtkEditable *editable, gpointer user_data)
-{
-    suffix_entry_changed = TRUE;
-}
-
-
-gboolean on_suffix_entry_focus_out_event(GtkWidget       *widget,
-                                         GdkEventFocus   *event,
-                                         gpointer         user_data)
-{
-    const gchar *suffix_list;
-
-    if (suffix_entry_changed)
-    {
-        suffix_list = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "suffix_entry")));
-
-        if (strcmp(settings.suffixList, suffix_list) != 0)  // Only update if a real change has been made
-        {
-            if (APP_CONFIG_valid_list("File Suffix List", (char *)suffix_list, &settings.suffixDelim))
-            {
-                // Update the preferences file
-                APP_CONFIG_set_string("suffixList", suffix_list);
-
-                // Update the application setting
-                strcpy(settings.suffixList, suffix_list);
-            }
-            else
-            {
-                gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "suffix_entry")), settings.suffixList);
-            }
-        }
-
-        suffix_entry_changed = FALSE;
-    }
-
-    return FALSE;
-}
-
-
-void on_typeless_entry_changed(GtkEditable     *editable,
-                               gpointer         user_data)
-{
-    typeless_entry_changed = TRUE;
-}
-
-
-gboolean on_typeless_entry_focus_out_event(GtkWidget       *widget,
-                                           GdkEventFocus   *event,
-                                           gpointer         user_data)
-{
-    const gchar *typeless_list;
-
-    if (typeless_entry_changed)
-    {
-        typeless_list = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "typeless_entry")));
-
-        if (strcmp(settings.typelessList, typeless_list) != 0)  // Only update if a real change has been made
-        {
-            if (APP_CONFIG_valid_list("Typeless File List", (char *)typeless_list, &settings.typelessDelim))
-            {
-                // Update the preferences file
-                APP_CONFIG_set_string("typelessList", typeless_list);
-
-                // Update the application setting
-                strcpy(settings.typelessList, typeless_list);
-            }
-            else
-            {
-                gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "typeless_entry")), settings.typelessList);
-            }
-        }
-
-        typeless_entry_changed = FALSE;
-    }
-
-    return FALSE;
-}
-
-
-void on_ignored_entry_changed(GtkEditable     *editable,
-                              gpointer         user_data)
-{
-    ignored_entry_changed = TRUE;
-}
-
-
-gboolean on_ignored_entry_focus_out_event(GtkWidget       *widget,
-                                          GdkEventFocus   *event,
-                                          gpointer         user_data)
-{
-    const gchar *ignored_list;
-
-    if (ignored_entry_changed)
-    {
-        ignored_list = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "ignored_entry")));
-
-        if (strcmp(settings.ignoredList, ignored_list) != 0)  // Only update if a real change has been made
-        {
-            if (APP_CONFIG_valid_list("Ignored Directory List", (char *)ignored_list, &settings.ignoredDelim))
-            {
-                // Update the preferences file
-                APP_CONFIG_set_string("ignoredList", ignored_list);
-
-                // Update the application setting
-                strcpy(settings.ignoredList, ignored_list);
-
-                // Update the master ignored list
-                DIR_list_join(settings.ignoredList, MASTER_IGNORED_LIST);
-            }
-            else
-            {
-                DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_WARNING, "Invalid 'Ignored List' Syntax.\nUpdate aborted.", TRUE);
-                gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "ignored_entry")), settings.ignoredList);
-            }
-        }
-
-        ignored_entry_changed = FALSE;
-    }
-
-    return FALSE;
-}
-
-
-static void open_directory_browser(void)
-{
-    gtk_widget_show(folder_chooser_dialog);
-}
-
-
-void on_source_directory_browse_button_clicked(GtkButton  *button, gpointer user_data)
-{
-    open_directory_browser();
-    active_dir_entry = 0;
-}
-
-
-void on_folder_chooser_dialog_response(GtkDialog       *dialog,
-                                       gint             response_id,
-                                       gpointer         user_data)
-{
-    static GtkWidget *source_entry[3];
-    static gboolean initialized = FALSE;
-    gchar *dirname;
-
-    if (!initialized)
-    {
-        // This is an array of "entry" widgets served by this directory chooser response handler
-        source_entry[0] = lookup_widget(GTK_WIDGET(gscope_preferences), "source_entry");
-        //source_entry[1] = lookup_widget(GTK_WIDGET (gscope_preferences), "autogen_cache_path_entry");
-    }
-
-    switch (response_id)
-    {
-        case GTK_RESPONSE_OK:
-
-            dirname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-            gtk_entry_set_text(GTK_ENTRY(source_entry[active_dir_entry]), dirname);
-
-            // Update the settings structure and the preferences file
-            switch (active_dir_entry)
-            {
-                case 0:    // Source Directory
-                    strcpy(settings.srcDir, dirname);
-                    APP_CONFIG_set_string("srcDir", dirname);
-                    break;
-
-#if 0
-                case 1:    // AutoGen Cache Location
-                    strcpy(settings.autoGenPath, dirname);
-                    APP_CONFIG_set_string("autoGenPath", dirname);
-                    {
-                        gchar       active_path[PATHLEN * 2];
-
-                        snprintf(active_path, PATHLEN * 2, "Active cache path: <span color=\"blue\">%s.%d</span>",
-                                 settings.autoGenPath,
-                                 getpid());
-                        gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(gscope_preferences),"autogen_active_cache_path_label")), active_path);
-                    }
-                    break;
-
-                case 2:    // Include Directory
-                    strcpy(settings.includeDir, dirname);
-                    APP_CONFIG_set_string("includeDir", dirname);
-                    break;
-#endif
-            }
-
-            g_free(dirname);
-            gtk_widget_hide(GTK_WIDGET(dialog));
-
-            break;
-
-        case GTK_RESPONSE_CANCEL:
-        case GTK_RESPONSE_DELETE_EVENT:
-            gtk_widget_hide(GTK_WIDGET(dialog));
-            break;
-
-        default:
-        {
-            char *error_string;
-
-            my_asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"folder chooser\" dialog.", response_id);
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
-            g_free(error_string);
-
-            gtk_widget_hide(GTK_WIDGET(dialog));
-        }
-
-            break;
-    }
-
-    return;
-}
-
-
-
-gboolean on_folder_chooser_dialog_delete_event(GtkWidget       *widget,
-                                               GdkEvent        *event,
-                                               gpointer         user_data)
-{
-    gtk_widget_hide(widget);
-    return TRUE;     // Do not destroy the widget
-}
-
-
-
-
-void on_source_entry_changed(GtkEditable     *editable,
-                             gpointer         user_data)
-{
-    source_entry_changed = TRUE;
-}
-
-
-gboolean on_source_entry_focus_out_event(GtkWidget       *widget,
-                                         GdkEventFocus   *event,
-                                         gpointer         user_data)
-{
-    const gchar *dirname;
-
-    if (source_entry_changed)
-    {
-        dirname = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "source_entry")));
-
-        if (strcmp(settings.srcDir, dirname) != 0)  // Only update if a real change has been made
-        {
-            // Update the preferences file
-            APP_CONFIG_set_string("srcDir", dirname);
-
-            // Update the application setting
-            strcpy(settings.srcDir, dirname);
-        }
-
-        source_entry_changed = FALSE;
-    }
-
-    return FALSE;
-}
-
-
-void on_include_entry_changed(GtkEditable *editable, gpointer user_data)
-{
-    include_entry_changed = TRUE;
-}
-
-
-gboolean on_include_entry_focus_out_event(GtkWidget       *widget,
-                                          GdkEventFocus   *event,
-                                          gpointer         user_data)
-{
-    const gchar *include_list;
-
-    if (include_entry_changed)
-    {
-        include_list = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "include_entry")));
-
-        if (strcmp(settings.includeDir, include_list) != 0)  // Only update if a real change has been made
-        {
-            if (APP_CONFIG_valid_list("Include File Search Path", (char *)include_list, &settings.includeDirDelim))
-            {
-                // Update the preferences file
-                APP_CONFIG_set_string("includeDir", include_list);
-
-                // Update the application setting
-                strcpy(settings.includeDir, include_list);
-            }
-            else
-            {
-                gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "include_entry")), settings.includeDir);
-            }
-        }
-
-        include_entry_changed = FALSE;
-    }
-
-    return FALSE;
-}
-
-
-// ==== Input File Selection ====
-static void open_file_name_browser(void)
-{
-    gtk_widget_show(open_file_chooser_dialog);
-}
-
-
-void on_open_file_chooser_dialog_response(GtkDialog       *dialog,
-                                          gint             response_id,
-                                          gpointer         user_data)
-{
-    static GtkWidget *input_entry[2];
-    static gboolean initialized = FALSE;
-    gchar *filename;
-
-    if (!initialized)
-    {
-        // This is an array of "entry" widgets served by the "open file" chooser response handler
-        input_entry[0] = lookup_widget(GTK_WIDGET(gscope_preferences), "name_entry");
-        //input_entry[1] = lookup_widget(GTK_WIDGET (gscope_preferences), "context_entry");
-    }
-
-    switch (response_id)
-    {
-        case GTK_RESPONSE_OK:
-
-            filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-            gtk_entry_set_text(GTK_ENTRY(input_entry[active_input_entry]), filename);
-
-            // Update the settings structure and the preferences file
-            switch (active_input_entry)
-            {
-                case 0:    // Source file name list
-                    strcpy(settings.nameFile, filename);
-                    APP_CONFIG_set_string("nameFile", filename);
-                    break;
-
-                case 1:    // No longer used
-                    /* do nothing */
-                    break;
-            }
-
-            g_free(filename);
-            gtk_widget_hide(GTK_WIDGET(dialog));
-
-            break;
-
-        case GTK_RESPONSE_CANCEL:
-        case GTK_RESPONSE_DELETE_EVENT:
-            gtk_widget_hide(GTK_WIDGET(dialog));
-            break;
-
-        default:
-        {
-            char *error_string;
-
-            my_asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"file open\" dialog.", response_id);
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
-            g_free(error_string);
-
-            gtk_widget_hide(GTK_WIDGET(dialog));
-        }
-
-            break;
-    }
-
-    return;
-}
-
-
-
-gboolean on_open_file_chooser_dialog_delete_event(GtkWidget *widget,
-                                                  GdkEvent *event,
-                                                  gpointer user_data)
-{
-    gtk_widget_hide(widget);
-    return TRUE;     // Do not destroy the widget
-}
-
-
-
-void on_name_entry_changed(GtkEditable     *editable,
-                           gpointer         user_data)
-{
-    name_entry_changed = TRUE;
-}
-
-
-gboolean on_name_entry_focus_out_event(GtkWidget       *widget,
-                                       GdkEventFocus   *event,
-                                       gpointer        user_data)
-{
-    const gchar *filename;
-
-    if (name_entry_changed)
-    {
-        filename = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "name_entry")));
-
-        if (strcmp(settings.nameFile, filename) != 0)  // Only update if a real change has been made
-        {
-            // Update the preferences file
-            APP_CONFIG_set_string("nameFile", filename);
-
-            // Update the application setting
-            strcpy(settings.nameFile, filename);
-        }
-
-        name_entry_changed = FALSE;
-    }
-
-    return FALSE;
-}
-
-
-void on_file_name_browse_button_clicked(GtkButton *button, gpointer user_data)
-{
-    open_file_name_browser();
-    active_input_entry = 0;
-}
-
-
-// ==== Output file selection ====
-static void open_output_file_name_browser(void)
-{
-    gtk_widget_show(output_file_chooser_dialog);
-}
-
-
-
-void on_output_file_chooser_dialog_response(GtkDialog       *dialog,
-                                            gint             response_id,
-                                            gpointer         user_data)
-{
-    static GtkWidget *output_entry[2];
-    static gboolean initialized = FALSE;
-    gchar *filename;
-
-    if (!initialized)
-    {
-        // This is an array of "entry" widgets served by the "open file" chooser response handler
-        output_entry[0] = lookup_widget(GTK_WIDGET(gscope_preferences), "cref_entry");
-        output_entry[1] = lookup_widget(GTK_WIDGET(gscope_preferences), "search_log_entry");
-    }
-
-    switch (response_id)
-    {
-        case GTK_RESPONSE_OK:
-
-            filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-
-            if (strlen(filename) >= MAX_STRING_ARG_SIZE)
-            {
-                DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_WARNING, "Selected File path is too long.\nUpdate aborted.", TRUE);
-                filename =  (gchar *)gtk_entry_get_text(GTK_ENTRY(output_entry[active_output_entry]));
-            }
-            else
-                gtk_entry_set_text(GTK_ENTRY(output_entry[active_output_entry]), filename);
-
-            // Update the settings structure and the preferences file
-            switch (active_output_entry)
-            {
-                case 0:    // Source file name list
-                    if (strcmp(settings.refFile, filename) != 0)  // Only update if a real change has been made
-                    {
-                        strcpy(settings.refFile, filename);
-                        APP_CONFIG_set_string("refFile", filename);
-                    }
-                    break;
-
-                case 1:    // Initial context file
-                    if (strcmp(settings.searchLogFile, filename) != 0)  // Only update if a real change has been made
-                    {
-                        strcpy(settings.searchLogFile, filename);
-                        APP_CONFIG_set_string("searchLogFile", filename);
-                    }
-                    break;
-            }
-
-            g_free(filename);
-            gtk_widget_hide(GTK_WIDGET(dialog));
-
-            break;
-
-        case GTK_RESPONSE_CANCEL:
-        case GTK_RESPONSE_DELETE_EVENT:
-            gtk_widget_hide(GTK_WIDGET(dialog));
-            break;
-
-        default:
-        {
-            char *error_string;
-
-            my_asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"output file\" dialog.", response_id);
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
-            g_free(error_string);
-
-            gtk_widget_hide(GTK_WIDGET(dialog));
-        }
-
-            break;
-    }
-
-    return;
-}
-
-
-
-gboolean on_output_file_chooser_dialog_delete_event(GtkWidget *widget,
-                                                    GdkEvent *event,
-                                                    gpointer user_data)
-{
-    gtk_widget_hide(widget);
-    return TRUE;     // Do not destroy the widget
-}
-
-
-
-void on_cref_entry_changed(GtkEditable     *editable,
-                           gpointer         user_data)
-{
-    cref_entry_changed = TRUE;
-}
-
-
-gboolean on_cref_entry_focus_out_event(GtkWidget       *widget,
-                                       GdkEventFocus   *event,
-                                       gpointer         user_data)
-{
-    const gchar *filename;
-
-    if (cref_entry_changed)
-    {
-        filename = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "cref_entry")));
-
-        if (strcmp(settings.refFile, filename) != 0)  // Only update if a real change has been made
-        {
-            // Update the preferences file
-            APP_CONFIG_set_string("refFile", filename);
-
-            // Update the application setting
-            strcpy(settings.refFile, filename);
-        }
-
-        cref_entry_changed = FALSE;
-    }
-
-    return FALSE;
-}
-
-
-void on_cross_reference_browse_button_clicked(GtkButton       *button,
-                                              gpointer         user_data)
-{
-    open_output_file_name_browser();
-    active_output_entry = 0;
-}
-
-
-void on_search_log_entry_changed(GtkEditable     *editable,
-                                 gpointer         user_data)
-{
-    search_log_entry_changed = TRUE;
-}
-
-
-gboolean on_search_log_entry_focus_out_event(GtkWidget       *widget,
-                                             GdkEventFocus   *event,
-                                             gpointer         user_data)
-{
-    const gchar *filename;
-
-    if (search_log_entry_changed)
-    {
-        filename = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "search_log_entry")));
-
-        if (strcmp(settings.searchLogFile, filename) != 0)  // Only update if a real change has been made
-        {
-            // Update the preferences file
-            APP_CONFIG_set_string("searchLogFile", filename);
-
-            // Update the application setting
-            strcpy(settings.searchLogFile, filename);
-        }
-
-        search_log_entry_changed = FALSE;
-    }
-
-    return FALSE;
-}
-
-
-void on_search_log_browse_button_clicked(GtkButton       *button,
-                                         gpointer         user_data)
-{
-    open_output_file_name_browser();
-    active_output_entry = 1;
-
-}
-
-
-// Enable/Disable search logging
-void on_search_log_button_clicked(GtkButton       *button,
-                                  gpointer         user_data)
-{
-    settings.searchLogging = !settings.searchLogging;
-
-    gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "search_log_label"), settings.searchLogging);
-    gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "search_log_entry"), settings.searchLogging);
-    gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "search_log_browse_button"), settings.searchLogging);
-
-    APP_CONFIG_set_boolean("searchLogging", settings.searchLogging);
-
-    if (settings.searchLogging)
-    {
-        gtk_button_set_label(GTK_BUTTON(lookup_widget(GTK_WIDGET(gscope_preferences), "search_log_button")), "Disable");
-    }
-    else
-    {
-        gtk_button_set_label(GTK_BUTTON(lookup_widget(GTK_WIDGET(gscope_preferences), "search_log_button")), "Enable");
-    }
-
-}
-
-
-
-//----------------- Start Session Statistics Reporting ---------------
-
-
-// Create a list of source file suffixes and counts for each suffix
-static SrcFile_stats* create_stats_list(SrcFile_stats **si_stats)
-{
-    gchar *suffix_ptr;
-    gchar *wptr;
-    gchar delimiter;
-    gchar working[80];       // Working buffer for constructing each individual suffix string.
-    int f;
-    guint noSuffixCnt = 0;
-    guint si_noSuffixCnt = 0;
-
-    SrcFile_stats *ListBegin = NULL;
-    SrcFile_stats *entry;
-
-    SrcFile_stats *si_ListBegin = NULL;
-    SrcFile_stats *si_entry;
-
-    SrcFile_stats *previous;
-    SrcFile_stats * current,*temp;
-
-    int counter;
-
-    gboolean include_file_path_exists;
-
-    if (strcmp(settings.includeDir, "") == 0)
-        include_file_path_exists = FALSE;
-    else
-        include_file_path_exists = TRUE;
-
-
-    suffix_ptr = &(settings.suffixList[0]);
-
-    if (*suffix_ptr != '\0')    // If we have a non-null suffix list
-    {
-        delimiter = *suffix_ptr++;
-        while (*suffix_ptr != '\0')
-        {
-            wptr = working;
-            *wptr++ = '.';
-            while (*suffix_ptr != delimiter)
-            {
-                *wptr++ = *suffix_ptr++;
-            }
-            suffix_ptr++;
-            *wptr = 0;  // Null-terminate the suffix.
-
-            /* Create the application specific suffix list */
-            entry = g_malloc(sizeof(SrcFile_stats));  // Create the suffix entry
-            entry->next = ListBegin;                  // Add it to the linked list
-            ListBegin = entry;
-            entry->fcount = 0;
-            entry->suffix = strdup(working);
-
-            /* Create the (optional) system include suffix list (/usr/include/...)  */
-            si_entry = g_malloc(sizeof(SrcFile_stats));  // Create the suffix entry
-            si_entry->next = si_ListBegin;               // Add it to the linked list
-            si_ListBegin = si_entry;
-            si_entry->fcount = 0;
-            si_entry->suffix = strdup(working);
-        }
-
-        counter = 0;
-
-        // Now that the list is created, collect the per-suffix statistics
-        for (f = 0; f < nsrcfiles; f++)
-        {
-
-            if ((include_file_path_exists) && (DIR_file_on_include_search_path(DIR_src_files[f])))
-            {
-                /* Count this file in the system include source stats */
-                if (settings.showIncludes)
-                    printf("%d) %s\n", ++counter, DIR_src_files[f]);
-
-                // if the file has a suffix
-                if ((wptr = strrchr(DIR_src_files[f], '.')) != NULL)
-                {
-                    si_entry = si_ListBegin;
-                    // increment the suffix counter corresponding to wptr
-                    while (si_entry != NULL)
-                    {
-                        if (strcmp(si_entry->suffix, wptr) == 0)
-                        {
-                            si_entry->fcount++;
-                            break;
-                        }
-                        si_entry = si_entry->next;
-                    }
-                }
-                else
-                {
-                    // increment the no-suffix counter
-                    si_noSuffixCnt++;
-                }
-            }
-            else /* This is a user source file, not a System Includes (/usr/include...) file */
-            /* Count this file in the user program source stats */
-            {
-                // if the file has a suffix
-                if ((wptr = strrchr(DIR_src_files[f], '.')) != NULL)
-                {
-                    entry = ListBegin;
-                    // increment the suffix counter corresponding to wptr
-                    while (entry != NULL)
-                    {
-                        if (strcmp(entry->suffix, wptr) == 0)
-                        {
-                            //if ( strcmp(wptr, DELSOL_ISINK_FID_INIT) == 0) printf("%s\n", DIR_src_files[f]);
-                            entry->fcount++;
-                            break;
-                        }
-                        entry = entry->next;
-                    }
-                }
-                else
-                {
-                    // increment the no-suffix counter
-                    noSuffixCnt++;
-                }
-            }
-        }
-    }
-
-    // -------- Add the <no-suffix> count to the user sourcelist --------
-    entry = g_malloc(sizeof(SrcFile_stats));
-    entry->next = ListBegin;
-    ListBegin = entry;
-    entry->fcount = noSuffixCnt;
-    entry->suffix = strdup("No Suffix");
-
-    // Add the <no-suffix> count to the system includes sourcelist
-    si_entry = g_malloc(sizeof(SrcFile_stats));
-    si_entry->next = si_ListBegin;
-    si_ListBegin = si_entry;
-    si_entry->fcount = si_noSuffixCnt;
-    si_entry->suffix = strdup("No Suffix");
-
-
-    // -------- Add the TOTAL count to the user list --------
-    entry = g_malloc(sizeof(SrcFile_stats));
-    entry->next = ListBegin;
-    ListBegin = entry;
-    entry->fcount = nsrcfiles;
-    entry->suffix = strdup("Total");
-
-    // Now reverse the entries in the linked list so that the
-    // Suffix counts are displayed in the same order as the suffix
-    // list pattern.
-
-    current = ListBegin;
-    previous = NULL;
-    while (current != NULL)
-    {
-        temp = current->next;
-        current->next = previous;
-        previous = current;
-        current = temp;
-    }
-    ListBegin = previous;
-
-    current = si_ListBegin;
-    previous = NULL;
-    while (current != NULL)
-    {
-        temp = current->next;
-        current->next = previous;
-        previous = current;
-        current = temp;
-    }
-    si_ListBegin = previous;
-
-
-    *si_stats = si_ListBegin;    // Return the pointer to the si_List here
-    return (ListBegin);
 }
 
 
@@ -2740,6 +1151,2080 @@ void on_session_statistics_activate(GtkMenuItem     *menuitem,
     // else "stats_dialog" already visible, do nothing.
 }
 
+void on_save_query_activate(GtkMenuItem     *menuitem,
+                            gpointer         user_data)
+{
+    DISPLAY_history_save();
+
+}
+
+
+void on_load_query_activate(GtkMenuItem     *menuitem,
+                            gpointer         user_data)
+{
+    DISPLAY_history_load();
+}
+
+
+void on_clear_query_activate(GtkMenuItem     *menuitem,
+                             gpointer         user_data)
+{
+    DISPLAY_history_clear();
+
+    /* Reset the record of the last query so that the next query will not be reported as current */
+    process_query(FIND_NULL);
+}
+
+
+void on_delete_history_file_activate(GtkMenuItem     *menuitem,
+                                     gpointer         user_data)
+{
+    unlink(settings.histFile);
+}
+
+
+void on_save_results_activate(GtkMenuItem     *menuitem,
+                              gpointer         user_data)
+{
+    gtk_window_set_transient_for(GTK_WINDOW(save_results_file_chooser_dialog), GTK_WINDOW(gscope_main));
+
+    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(save_results_file_chooser_dialog), "gscope_results");
+
+    gtk_dialog_run(GTK_DIALOG(save_results_file_chooser_dialog));
+    gtk_widget_hide(save_results_file_chooser_dialog);
+}
+
+
+void on_overview_wiki_activate(GtkMenuItem     *menuitem,
+                               gpointer         user_data)
+{
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki", GDK_CURRENT_TIME, NULL);
+}
+
+
+void on_usage_wiki_activate(GtkMenuItem     *menuitem,
+                            gpointer         user_data)
+{
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Using-Gscope", GDK_CURRENT_TIME, NULL);
+}
+
+
+void on_configure_wiki_activate(GtkMenuItem     *menuitem,
+                                gpointer         user_data)
+{
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Configuring-Gscope", GDK_CURRENT_TIME, NULL);
+}
+
+
+
+void on_release_wiki_activate(GtkMenuItem     *menuitem,
+                              gpointer         user_data)
+{
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Gscope-Release-Notes", GDK_CURRENT_TIME, NULL);
+}
+
+#else
+void on_rebuild_database1_activate (GSimpleAction *action, GVariant *parameter, gpointer user_data)
+{
+  printf ("Hello from: %s\n", __func__);
+}
+
+
+void on_quit1_activate (GSimpleAction *action, GVariant *parameter, gpointer user_data)
+{
+  printf ("Hello from: %s\n", __func__);
+}
+
+
+#endif      // GtkMenu evolution
+
+
+#ifndef GTK4_BUILD  //  GTK4 shutdown semantics are different
+
+void on_window1_destroy(GtkWidget        *widget,
+                        gpointer         user_data)
+{
+    // Callback is called when on_window1_delete_event returns FALSE
+    shutdown();
+}
+
+
+// Top-level window "Close" or "X" button on window frame pressed.
+gboolean on_window1_delete_event(GtkWidget *widget,
+                                 GdkEvent        *event,
+                                 gpointer         user_data)
+{
+    // Normal Window destroy callback sequence
+    // 1) delete_event
+    // 2) if delete_event() returns FALSE then on_window_destroy()
+
+    if (exit_confirmed())
+        return FALSE;    // Return FALSE to destroy the widget.
+    else
+        return TRUE;     // Return TRUE to cancel the delete_event.
+}
+
+static void shutdown()
+{
+    SEARCH_cleanup();
+
+    // Good-bye !!!
+    gtk_main_quit();
+}
+
+
+static gboolean exit_confirmed()
+{
+    if (settings.exitConfirm)
+    {
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(quit_dialog), "confirm_exit_checkbutton")), TRUE);
+
+        gtk_dialog_run(GTK_DIALOG(quit_dialog));
+        gtk_widget_hide(GTK_WIDGET(quit_dialog));
+    }
+    else
+        ok_to_quit = TRUE;
+
+    return (ok_to_quit);
+}
+
+
+void on_quit_confirm_dialog_response(GtkDialog       *dialog,
+                                     gint             response_id,
+                                     gpointer         user_data)
+{
+    switch (response_id)
+    {
+        case GTK_RESPONSE_OK:
+            ok_to_quit = TRUE;
+            break;
+
+        case GTK_RESPONSE_CANCEL:
+        case GTK_RESPONSE_DELETE_EVENT:
+            ok_to_quit = FALSE;
+            break;
+
+        default:
+        {
+            char *error_string;
+
+            my_asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"Quit Confirmation\" dialog.", response_id);
+            DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
+            g_free(error_string);
+        }
+
+            break;
+    }
+
+    return;
+}
+
+
+
+gboolean on_quit_confirm_dialog_delete_event(GtkWidget *widget,
+                                             GdkEvent *event,
+                                             gpointer user_data)
+{
+    gtk_widget_hide(widget);
+    return TRUE;     // Do not destroy the widget
+}
+
+#endif
+
+//--------------------- End Application Exit Callbacks -----------------------
+
+
+void on_aboutdialog1_response(GtkDialog       *dialog,
+                              gint             response_id,
+                              gpointer         user_data)
+{
+    switch (response_id)
+    {
+        case GTK_RESPONSE_CLOSE:
+        case GTK_RESPONSE_CANCEL:
+        case GTK_RESPONSE_DELETE_EVENT:
+            gtk_widget_hide(GTK_WIDGET(dialog));
+            break;
+
+        default:
+        {
+            char *error_string;
+
+            my_asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"about\" dialog.", response_id);
+            DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
+            g_free(error_string);
+            gtk_widget_hide(GTK_WIDGET(dialog));
+        }
+
+            break;
+    }
+
+    return;
+}
+
+
+
+gboolean on_aboutdialog1_delete_event(GtkWidget       *widget,
+                                      GdkEvent        *event,
+                                      gpointer         user_data)
+{
+    gtk_widget_hide(widget);
+    return TRUE;     // Do not destroy the widget
+}
+
+
+
+void on_find_c_identifier_button_clicked(GtkButton       *button,
+                                         gpointer         user_data)
+{
+    printf("Hello from CALLBACK: %s\n", __func__);
+
+    if (!search_button_lockout)
+    {
+        search_button_lockout = TRUE;
+        process_query(FIND_SYMBOL);
+        search_button_lockout = FALSE;
+    }
+}
+
+
+void on_find_definition_of_button_clicked(GtkButton       *button,
+                                          gpointer         user_data)
+{
+    if (!search_button_lockout)
+    {
+        search_button_lockout = TRUE;
+        process_query(FIND_DEF);
+        search_button_lockout = FALSE;
+    }
+}
+
+
+void on_find_functions_called_by_button_clicked(GtkButton       *button,
+                                                gpointer         user_data)
+{
+    if (!search_button_lockout)
+    {
+        search_button_lockout = TRUE;
+        process_query(FIND_CALLEDBY);
+        search_button_lockout = FALSE;
+    }
+}
+
+
+void on_find_functions_calling_button_clicked(GtkButton       *button,
+                                              gpointer         user_data)
+{
+    if (!search_button_lockout)
+    {
+        search_button_lockout = TRUE;
+        process_query(FIND_CALLING);
+        search_button_lockout = FALSE;
+    }
+}
+
+
+void on_find_text_string_button_clicked(GtkButton       *button,
+                                        gpointer         user_data)
+{
+    if (!search_button_lockout)
+    {
+        search_button_lockout = TRUE;
+        process_query(FIND_STRING);
+        search_button_lockout = FALSE;
+    }
+}
+
+
+void on_find_egrep_pattern_button_clicked(GtkButton       *button,
+                                          gpointer         user_data)
+{
+    if (!search_button_lockout)
+    {
+        search_button_lockout = TRUE;
+        process_query(FIND_REGEXP);
+        search_button_lockout = FALSE;
+    }
+}
+
+
+void on_find_files_button_clicked(GtkButton       *button,
+                                  gpointer         user_data)
+{
+    if (!search_button_lockout)
+    {
+        search_button_lockout = TRUE;
+        process_query(FIND_FILE);
+        search_button_lockout = FALSE;
+    }
+}
+
+
+void on_find_files_including_button_clicked(GtkButton       *button,
+                                            gpointer         user_data)
+{
+    if (!search_button_lockout)
+    {
+        search_button_lockout = TRUE;
+        process_query(FIND_INCLUDING);
+        search_button_lockout = FALSE;
+    }
+}
+
+
+
+
+void on_cancel_button_clicked(GtkButton       *button,
+                              gpointer         user_data)
+{
+    SEARCH_cancel();           // Signal the search routine to stop
+    cancel_requested = TRUE;   // Set the cancel indicator - UI will report that search results are truncated.
+}
+
+
+void on_open_terminal(GtkWidget *menuitem, gchar *container)
+{
+    gchar *command;
+    gchar *coded_container;
+
+    coded_container = strdup(container);
+    my_space_codec(ENCODE, coded_container);     // Encode any 'space' characters found in the container path
+
+    my_asprintf(&command, settings.terminalApp, coded_container);  // Synthesize the full command line
+    my_system(command);
+
+    free(command);
+    free(coded_container);
+}
+
+
+void on_open_file_browser(GtkWidget *menuitem, gchar *container)
+{
+    gchar *command;
+    gchar *coded_container;
+
+    coded_container = strdup(container);
+    my_space_codec(ENCODE, coded_container);     // Encode any 'space' characters found in the container path
+
+    my_asprintf(&command, settings.fileManager, coded_container);
+    my_system(command);
+
+    free(command);
+    free(coded_container);
+}
+
+
+void on_open_call_browser(GtkWidget *menuitem, gchar *entry)
+{
+    gchar * fname;
+    gchar *linenum;
+    gchar *function;
+    gchar *esc_markup;
+    static gboolean initialized = FALSE;
+
+    if ( !initialized )
+    {
+       initialized = BROWSER_init();
+    }
+
+    fname = entry;
+
+    while (*entry++ != '|');
+    *(entry - 1) = '\0'; // null terminate file name
+    linenum = entry;
+
+    while (*entry++ != '|');
+    *(entry - 1) = '\0'; // null terminate line num
+    function = entry;
+
+    esc_markup = g_markup_escape_text(function, -1);    // Needed when function = "<global>".
+    browser_window = BROWSER_create(esc_markup, fname, linenum);
+    g_free(esc_markup);
+
+    gtk_widget_show(browser_window);
+
+}
+
+
+void on_open_quick_view(GtkWidget *menuitem, gchar *file_and_line)
+{
+    gchar *linenum;
+
+    linenum = strchr(file_and_line, '|');
+
+    if (linenum)
+    {
+        *linenum++ = '\0';  // Null-terminate the filename and advance the linenum pointer to start of line number data
+
+        FILEVIEW_create(file_and_line, atoi(linenum));
+    }
+    else
+        fprintf(stderr, "Warning: Unexpected file_and_line parse error in %s()\nFile-view window creation failed.\n", __func__);
+}
+
+
+
+#ifndef GTK4_BUILD  // GTK4 treeview EventButton handling 
+
+gboolean on_history_treeview_button_press_event(GtkWidget       *widget,
+                                                GdkEventButton  *event,
+                                                gpointer         user_data)
+{
+    static GtkWidget *query_entry;
+    static gboolean initialized = FALSE;
+
+    gchar *entry;
+
+
+    if (!initialized)
+    {
+        initialized = TRUE;
+
+        /* Get a pointer to the query entry widget */
+        query_entry = lookup_widget(GTK_WIDGET(gscope_main), "query_entry");
+    }
+
+
+    if (event->type != GDK_BUTTON_PRESS)
+        return FALSE;   // only process single button click events (filter out GDK_[23]BUTTON_PRESS event types)
+
+    if (DISPLAY_get_clicked_entry(event->x, event->y, &entry))
+    {
+        gtk_entry_set_text(GTK_ENTRY(query_entry), entry);
+        g_free(entry);
+    }
+
+    return FALSE;
+}
+
+
+void show_context_menu(GtkWidget *treeview, GdkEventButton *event, gchar *filename, gchar *linenum, gchar *symbol)
+{
+    static GtkWidget   *menu = NULL;
+    static GtkWidget   *menu_item;
+    gchar              tmp_path[PATHLEN];
+    static gchar       container[(2 * PATHLEN) + 1];                   // +1 for '/'
+    static gchar       file_and_line[PATHLEN + MAX_LINENUM_SIZE + 2];  // +2 for Field-Delimiter and trailing null
+    static gchar       entry[1024];
+
+    /*** Construct the Context Menu ***/
+    if (!menu)
+    {
+        menu = gtk_menu_new();
+
+        menu_item = gtk_menu_item_new_with_label("Open Containing Folder");
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+        g_signal_connect(menu_item, "activate", (GCallback)on_open_terminal, container);
+
+        menu_item = gtk_separator_menu_item_new();
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+
+        menu_item = gtk_menu_item_new_with_label("Browse Containing Folder");
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+        g_signal_connect(menu_item, "activate", (GCallback)on_open_file_browser, container);
+
+
+        menu_item = gtk_separator_menu_item_new();
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+
+        menu_item = gtk_menu_item_new_with_label("Browse Static Calls");
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+        g_signal_connect(menu_item, "activate", (GCallback)on_open_call_browser, entry);
+
+        menu_item = gtk_separator_menu_item_new();
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+
+        menu_item = gtk_menu_item_new_with_label("Quick-View");
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+        g_signal_connect(menu_item, "activate", (GCallback)on_open_quick_view, file_and_line);
+    }
+
+
+    /*** Update the contents of "container" ***/
+    strcpy(tmp_path, filename);
+    my_dirname(tmp_path);
+
+    if (tmp_path[0] != '/')    // Not an absolute path
+    {
+        if (tmp_path[0] == '\0')
+        {
+            // Null 'dirname' add CWD
+            if ( g_strlcpy(container, DIR_get_path(DIR_CURRENT_WORKING), PATHLEN) >= PATHLEN )
+            {
+                // Do nothing: Quietly truncate the path
+            }
+        }
+        else
+        {
+            // Relative 'dirname' make it absolute
+            snprintf(container, (2 * PATHLEN), "%s/%s", DIR_get_path(DIR_CURRENT_WORKING), tmp_path);
+        }
+    }
+
+    /*** Update the contents of "file_and_line ***/
+    snprintf(file_and_line, PATHLEN + MAX_LINENUM_SIZE + 1, "%s|%s", filename, linenum);
+
+    snprintf(entry, 1023, "%s|%s|%s", filename, linenum, symbol);
+
+    gtk_widget_show_all(menu);
+    /*** Run the context menu (beware of event == NULL) ***/
+    gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
+                   (event != NULL) ? event->button : 0,
+                   gdk_event_get_time((GdkEvent *)event));
+}
+
+
+
+gboolean on_treeview1_button_press_event(GtkWidget       *widget,
+                                         GdkEventButton  *event,
+                                         gpointer         user_data)
+{
+    gchar *filename;
+    gchar *linenum;
+    gchar *symbol;
+
+    GtkTreePath     *path;
+
+    if (event->type == GDK_BUTTON_PRESS)  // Process single button click (ignore GDK_[23]BUTTON_PRESS event types)
+    {
+        switch (event->button)
+        {
+            case 1:     // left-button -- (optional) single click open
+                if (settings.singleClick)     // Single Click mode
+                {
+                    if (gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(widget), event->x, event->y, &path, NULL, NULL, NULL))
+                    {
+                        if (DISPLAY_get_filename_and_lineinfo(path, &filename, &linenum))
+                        {
+                            if (settings.useEditor)
+                            {
+                                my_start_text_editor(filename, linenum);
+                            }
+                            else
+                            {
+                                FILEVIEW_create(filename, atoi(linenum));
+                            }
+                        }
+                        gtk_tree_path_free(path);
+                    }
+                }
+                break;
+
+            case 3:     // right-button -- List item context menu
+
+                // Get the GtkTreePath
+                if (gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(widget), event->x, event->y, &path, NULL, NULL, NULL))
+                {
+                    if (DISPLAY_get_entry_info(path, &filename, &linenum, &symbol)) // Get the selected filename
+                    {
+                        // pass filename into show menu call
+                        show_context_menu(widget, event, filename, linenum, symbol);
+                    }
+                    gtk_tree_path_free(path);
+                }
+
+                break;
+
+            default:
+                // Do nothing
+                break;
+        }
+    }
+    return FALSE;
+}
+
+
+/*** Handle shift-F10 (context menu without a mouse) ***/
+gboolean on_treeview1_popup_menu(GtkWidget       *widget,
+                                 gpointer         user_data)
+{
+    gchar *filename;
+    gchar *linenum;
+    gchar *symbol;
+
+    GtkTreeSelection *selection;
+    GtkTreeModel     *model;
+    GtkTreeIter      iter;
+
+    GtkTreePath     *path;
+
+    selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
+    if (gtk_tree_selection_get_selected(selection, &model, &iter))
+    {
+        path = gtk_tree_model_get_path(model, &iter);
+
+        if (DISPLAY_get_entry_info(path, &filename, &linenum, &symbol)) // Get the selected filename
+        {
+            // pass filename into show menu call
+            show_context_menu(widget, NULL, filename, linenum, symbol);
+        }
+
+        gtk_tree_path_free(path);
+    }
+    // else no row selected.
+
+    return TRUE;
+}
+
+
+
+
+
+
+#endif  // GTK4 treeview EventButton handling 
+
+void on_treeview1_row_activated(GtkTreeView     *treeview,
+                                GtkTreePath     *path,
+                                GtkTreeViewColumn *column,
+                                gpointer         user_data)
+{
+    if (!settings.singleClick)
+    {
+        gchar *filename;
+        gchar *linenum;
+
+        if (DISPLAY_get_filename_and_lineinfo(path, &filename, &linenum))
+        {
+            if (settings.useEditor)
+            {
+                my_start_text_editor(filename, linenum);
+            }
+            else
+            {
+                FILEVIEW_create(filename, atoi(linenum));
+            }
+        }
+    }
+}
+
+
+//----------------- Callbacks from the Preferences Dialog ----------------------
+
+
+void on_preferences_dialog_close_button_clicked(GtkButton *button, gpointer user_data)
+{
+    gtk_widget_hide(GTK_WIDGET(gscope_preferences));
+    preferences_dialog_visible = FALSE;
+}
+
+
+gboolean on_gscope_preferences_delete_event(GtkWidget       *widget,
+                                            GdkEvent        *event,
+                                            gpointer         user_data)
+{
+    // Just hide the widget
+    gtk_widget_hide(GTK_WIDGET(gscope_preferences));
+    preferences_dialog_visible = FALSE;
+
+    return TRUE;   // Don't destroy the widget
+}
+
+
+// The setting managed by this callback interacts with the "options menu" (temporary overrides)
+void on_retain_text_checkbutton_toggled(GtkToggleButton *togglebutton,
+                                        gpointer         user_data)
+{
+    if (!initializing_prefs)
+    {
+        // Toggle the "sticky" setting
+        sticky_settings.retainInput = !(sticky_settings.retainInput);
+
+        #ifndef GTK4_BUILD
+        // Align the "options menu".  Warning, this "set-active" call toggles this "settings" value;
+        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(GTK_WIDGET(gscope_main), "retaininput_checkmenuitem")),
+                                       sticky_settings.retainInput);
+        #else
+        printf("Revisit Reminder: need to finish GTK4 mods in function: %s\n", __func__);
+        #endif
+
+        // Align application behavior with the new "sticky" setting (override any change caused by "set_active" callback)
+        settings.retainInput = sticky_settings.retainInput;
+
+        // Update the preferences file
+        APP_CONFIG_set_boolean("retainInput", settings.retainInput);
+
+        // If retainInput = TRUE, disable the "retain_text_failed_search" checkbutton, otherwise enable the checkbutton
+        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "retain_text_failed_search_checkbutton"), !settings.retainInput);
+        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "retain_text_failed_search_image"), !settings.retainInput);
+        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "retain_text_failed_search_label"), !settings.retainInput);
+    }
+}
+
+
+
+void on_retain_text_failed_search_checkbutton_toggled(GtkToggleButton *togglebutton,
+                                                      gpointer         user_data)
+{
+    if (!initializing_prefs)
+    {
+        // This setting is only implemented as a start-up setting, hence there is no "active" (volatile) setting to match.
+        settings.retainFailed = !(settings.retainFailed);
+
+        // Update the preferences file
+        APP_CONFIG_set_boolean("retainFailed", settings.retainFailed);
+    }
+}
+
+
+
+
+// The setting managed by this callback interacts with the "options menu" (temporary overrides)
+void on_ignore_case_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+{
+    if (!initializing_prefs)
+    {
+        // Toggle the "sticky" setting
+        sticky_settings.ignoreCase = !(sticky_settings.ignoreCase);
+
+        #ifndef GTK4_BUILD
+        // Align the "options menu".  Warning, this "set-active" call toggles this "settings" value;
+        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(GTK_WIDGET(gscope_main), "ignorecase_checkmenuitem")),
+                                       sticky_settings.ignoreCase);
+        #else
+        printf("Revisit Reminder: need to finish GTK4 mods in function: %s\n", __func__);
+        #endif
+
+        // Align application behavior with the new "sticky" setting (override any change caused by "set_active" callback)
+        settings.ignoreCase = sticky_settings.ignoreCase;
+
+        // Update the preferences file
+        APP_CONFIG_set_boolean("ignoreCase", settings.ignoreCase);
+    }
+}
+
+
+void on_use_viewer_radiobutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+{
+    // Don't change the useEditor setting - that is handled in on_use_editor_radiobutton_toggled()
+
+    gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "reuse_window_checkbutton"), !settings.useEditor);
+    gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "editor_command_entry"), settings.useEditor);
+    gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "editor_command_label"), settings.useEditor);
+}
+
+
+// The setting managed by this callback interacts with the "options menu" (temporary overrides)
+void on_reuse_window_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+{
+    if (!initializing_prefs)
+    {
+        // Toggle the "sticky" setting
+        sticky_settings.reuseWin = !(sticky_settings.reuseWin);
+
+        #ifndef GTK4_BUILD
+        // Align the "options menu".  Warning, this "set-active" call toggles this "settings" value;
+        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(GTK_WIDGET(gscope_main), "reusewin_checkmenuitem")),
+                                       sticky_settings.reuseWin);
+        #else
+        printf("Revisit Reminder: need to finish GTK4 mods in function: %s\n", __func__);
+        #endif
+
+        // Align application behavior with the new "sticky" setting (override any change caused by "set_active" callback)
+        settings.reuseWin = sticky_settings.reuseWin;
+
+        // Update the preferences file
+        APP_CONFIG_set_boolean("reuseWin", settings.reuseWin);
+    }
+}
+
+
+// The setting managed by this callback interacts with the "options menu" (temporary overrides)
+void on_use_editor_radiobutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+{
+    if (!initializing_prefs)
+    {
+        // Toggle the "sticky" setting
+        sticky_settings.useEditor = !(sticky_settings.useEditor);
+
+        #ifndef GTK4_BUILD
+        // Align the "options menu".  Warning, this "set-active" call toggles this "settings" value;
+        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(GTK_WIDGET(gscope_main), "useeditor_checkmenuitem")),
+                                       sticky_settings.useEditor);
+        #else
+        printf("Revisit Reminder: need to finish GTK4 mods in function: %s\n", __func__);
+        #endif
+
+        // Align application behavior with the new "sticky" setting (override any change caused by "set_active" callback)
+        settings.useEditor = sticky_settings.useEditor;  // undo the value change caused by the "set_active" callback
+
+        // Update the preferences file
+        APP_CONFIG_set_boolean("useEditor", settings.useEditor);
+    }
+
+    gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "reuse_window_checkbutton"), !settings.useEditor);
+    gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "editor_command_entry"), settings.useEditor);
+    gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "editor_command_label"), settings.useEditor);
+}
+
+
+void on_editor_command_entry_changed(GtkEditable *editable, gpointer user_data)
+{
+    editor_command_changed = TRUE;
+}
+
+
+#ifndef GTK4_BUILD  // GTK4 Event Focus handling
+gboolean on_editor_command_entry_focus_out_event(GtkWidget       *widget,
+                                                 GdkEventFocus   *event,
+                                                 gpointer         user_data)
+{
+    const gchar *editor_command;
+
+    if (editor_command_changed)
+    {
+        editor_command =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "editor_command_entry")));
+
+        if (strcmp(settings.fileEditor, editor_command) != 0)  // Only update if a real change has been made
+        {
+            // Update the preferences file
+            APP_CONFIG_set_string("fileEditor", editor_command);
+
+            // Update the application setting
+            strcpy(settings.fileEditor, editor_command);
+        }
+
+        editor_command_changed = FALSE;
+    }
+
+    return FALSE;
+}
+
+
+gboolean on_suffix_entry_focus_out_event(GtkWidget       *widget,
+                                         GdkEventFocus   *event,
+                                         gpointer         user_data)
+{
+    const gchar *suffix_list;
+
+    if (suffix_entry_changed)
+    {
+        suffix_list = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "suffix_entry")));
+
+        if (strcmp(settings.suffixList, suffix_list) != 0)  // Only update if a real change has been made
+        {
+            if (APP_CONFIG_valid_list("File Suffix List", (char *)suffix_list, &settings.suffixDelim))
+            {
+                // Update the preferences file
+                APP_CONFIG_set_string("suffixList", suffix_list);
+
+                // Update the application setting
+                strcpy(settings.suffixList, suffix_list);
+            }
+            else
+            {
+                gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "suffix_entry")), settings.suffixList);
+            }
+        }
+
+        suffix_entry_changed = FALSE;
+    }
+
+    return FALSE;
+}
+
+
+gboolean on_typeless_entry_focus_out_event(GtkWidget       *widget,
+                                           GdkEventFocus   *event,
+                                           gpointer         user_data)
+{
+    const gchar *typeless_list;
+
+    if (typeless_entry_changed)
+    {
+        typeless_list = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "typeless_entry")));
+
+        if (strcmp(settings.typelessList, typeless_list) != 0)  // Only update if a real change has been made
+        {
+            if (APP_CONFIG_valid_list("Typeless File List", (char *)typeless_list, &settings.typelessDelim))
+            {
+                // Update the preferences file
+                APP_CONFIG_set_string("typelessList", typeless_list);
+
+                // Update the application setting
+                strcpy(settings.typelessList, typeless_list);
+            }
+            else
+            {
+                gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "typeless_entry")), settings.typelessList);
+            }
+        }
+
+        typeless_entry_changed = FALSE;
+    }
+
+    return FALSE;
+}
+
+
+gboolean on_ignored_entry_focus_out_event(GtkWidget       *widget,
+                                          GdkEventFocus   *event,
+                                          gpointer         user_data)
+{
+    const gchar *ignored_list;
+
+    if (ignored_entry_changed)
+    {
+        ignored_list = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "ignored_entry")));
+
+        if (strcmp(settings.ignoredList, ignored_list) != 0)  // Only update if a real change has been made
+        {
+            if (APP_CONFIG_valid_list("Ignored Directory List", (char *)ignored_list, &settings.ignoredDelim))
+            {
+                // Update the preferences file
+                APP_CONFIG_set_string("ignoredList", ignored_list);
+
+                // Update the application setting
+                strcpy(settings.ignoredList, ignored_list);
+
+                // Update the master ignored list
+                DIR_list_join(settings.ignoredList, MASTER_IGNORED_LIST);
+            }
+            else
+            {
+                DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_WARNING, "Invalid 'Ignored List' Syntax.\nUpdate aborted.", TRUE);
+                gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "ignored_entry")), settings.ignoredList);
+            }
+        }
+
+        ignored_entry_changed = FALSE;
+    }
+
+    return FALSE;
+}
+
+
+gboolean on_source_entry_focus_out_event(GtkWidget       *widget,
+                                         GdkEventFocus   *event,
+                                         gpointer         user_data)
+{
+    const gchar *dirname;
+
+    if (source_entry_changed)
+    {
+        dirname = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "source_entry")));
+
+        if (strcmp(settings.srcDir, dirname) != 0)  // Only update if a real change has been made
+        {
+            // Update the preferences file
+            APP_CONFIG_set_string("srcDir", dirname);
+
+            // Update the application setting
+            strcpy(settings.srcDir, dirname);
+        }
+
+        source_entry_changed = FALSE;
+    }
+
+    return FALSE;
+}
+
+
+gboolean on_include_entry_focus_out_event(GtkWidget       *widget,
+                                          GdkEventFocus   *event,
+                                          gpointer         user_data)
+{
+    const gchar *include_list;
+
+    if (include_entry_changed)
+    {
+        include_list = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "include_entry")));
+
+        if (strcmp(settings.includeDir, include_list) != 0)  // Only update if a real change has been made
+        {
+            if (APP_CONFIG_valid_list("Include File Search Path", (char *)include_list, &settings.includeDirDelim))
+            {
+                // Update the preferences file
+                APP_CONFIG_set_string("includeDir", include_list);
+
+                // Update the application setting
+                strcpy(settings.includeDir, include_list);
+            }
+            else
+            {
+                gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "include_entry")), settings.includeDir);
+            }
+        }
+
+        include_entry_changed = FALSE;
+    }
+
+    return FALSE;
+}
+
+
+gboolean on_name_entry_focus_out_event(GtkWidget       *widget,
+                                       GdkEventFocus   *event,
+                                       gpointer        user_data)
+{
+    const gchar *filename;
+
+    if (name_entry_changed)
+    {
+        filename = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "name_entry")));
+
+        if (strcmp(settings.nameFile, filename) != 0)  // Only update if a real change has been made
+        {
+            // Update the preferences file
+            APP_CONFIG_set_string("nameFile", filename);
+
+            // Update the application setting
+            strcpy(settings.nameFile, filename);
+        }
+
+        name_entry_changed = FALSE;
+    }
+
+    return FALSE;
+}
+
+
+gboolean on_cref_entry_focus_out_event(GtkWidget       *widget,
+                                       GdkEventFocus   *event,
+                                       gpointer         user_data)
+{
+    const gchar *filename;
+
+    if (cref_entry_changed)
+    {
+        filename = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "cref_entry")));
+
+        if (strcmp(settings.refFile, filename) != 0)  // Only update if a real change has been made
+        {
+            // Update the preferences file
+            APP_CONFIG_set_string("refFile", filename);
+
+            // Update the application setting
+            strcpy(settings.refFile, filename);
+        }
+
+        cref_entry_changed = FALSE;
+    }
+
+    return FALSE;
+}
+
+
+gboolean on_search_log_entry_focus_out_event(GtkWidget       *widget,
+                                             GdkEventFocus   *event,
+                                             gpointer         user_data)
+{
+    const gchar *filename;
+
+    if (search_log_entry_changed)
+    {
+        filename = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "search_log_entry")));
+
+        if (strcmp(settings.searchLogFile, filename) != 0)  // Only update if a real change has been made
+        {
+            // Update the preferences file
+            APP_CONFIG_set_string("searchLogFile", filename);
+
+            // Update the application setting
+            strcpy(settings.searchLogFile, filename);
+        }
+
+        search_log_entry_changed = FALSE;
+    }
+
+    return FALSE;
+}
+
+
+gboolean on_autogen_cache_path_entry_focus_out_event(GtkWidget       *widget,
+                                                     GdkEventFocus   *event,
+                                                     gpointer         user_data)
+{
+    const gchar *autogen_cache_path;
+
+    if (autogen_cache_path_entry_changed)
+    {
+        autogen_cache_path =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cache_path_entry")));
+
+        if (strlen(autogen_cache_path) == 0  ||
+            access(autogen_cache_path, R_OK | W_OK) < 0
+           )
+        {
+            // The user is not allowed to configure a "null" string for the cache path
+            // and the directory must exist and have the required permissions
+
+            DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid local cache path selected, reverting to default path.", TRUE);
+            gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cache_path_entry")), autoGenPathDef);
+            autogen_cache_path =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cache_path_entry")));
+        }
+
+        if (strcmp(settings.autoGenPath, autogen_cache_path) != 0)  // Only update if a real change has been made
+        {
+            // Update the preferences file
+            APP_CONFIG_set_string("autoGenPath", autogen_cache_path);
+
+            // Update the application setting
+            strcpy(settings.autoGenPath, autogen_cache_path);
+        }
+
+        {
+            gchar       active_path[PATHLEN * 2];
+
+            snprintf(active_path, PATHLEN * 2, "My cache path: <span color=\"steelblue\">%s/%s/auto*_*</span>",
+                     settings.autoGenPath,
+                     getenv("USER"));
+            gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_active_cache_path_label")), active_path);
+        }
+
+        autogen_cache_path_entry_changed = FALSE;
+    }
+
+    return FALSE;
+}
+
+
+gboolean on_autogen_search_root_entry1_focus_out_event(GtkWidget       *widget,
+                                                       GdkEventFocus   *event,
+                                                       gpointer         user_data)
+{
+    const gchar *entry_text;
+
+    if (autogen_search_root_entry1_changed)
+    {
+        entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_search_root_entry1")));
+
+        if (strcmp(settings.autoGenRoot, entry_text) != 0)  // Only update if a real change has been made
+        {
+            // Update the preferences file
+            APP_CONFIG_set_string("autoGenRoot", entry_text);
+
+            // Update the application setting
+            strcpy(settings.autoGenRoot, entry_text);
+        }
+
+        autogen_search_root_entry1_changed = FALSE;
+    }
+
+    return FALSE;
+}
+
+
+gboolean on_autogen_suffix_entry1_focus_out_event(GtkWidget       *widget,
+                                                  GdkEventFocus   *event,
+                                                  gpointer         user_data)
+{
+    const gchar *entry_text;
+    gchar       auto_name[PATHLEN * 2];
+
+    if (autogen_suffix_entry_1_changed)
+    {
+        entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_suffix_entry1")));
+
+        if (strlen(entry_text) < 2 || entry_text[0] != '.')
+        {
+            // We always expect .<something>
+
+            DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid Meta-source suffix, reverting to default.", TRUE);
+            gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_suffix_entry1")), autoGenSuffixDef);
+            entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_suffix_entry1")));
+        }
+
+        if (strcmp(settings.autoGenSuffix, entry_text) != 0)  // Only update if a real change has been made
+        {
+            // Update the preferences file
+            APP_CONFIG_set_string("autoGenSuffix", entry_text);
+
+            // Update the application setting
+            strcpy(settings.autoGenSuffix, entry_text);
+
+            // Update conditional content label
+            snprintf(auto_name, PATHLEN * 2, "Generated filename format:  <span weight=\"bold\">foo</span>"
+                     "<span weight=\"bold\" color=\"darkred\">%s</span> ---> "
+                     "<b>foo</b><span weight=\"bold\" color=\"darkblue\">%s.c</span>  AND "
+                     "<b>foo</b><span weight=\"bold\" color=\"darkblue\">%s.h</span>",
+                     settings.autoGenSuffix,
+                     settings.autoGenId,
+                     settings.autoGenId
+                    );
+            gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_generated_filename_label")), auto_name);
+        }
+
+        autogen_suffix_entry_1_changed = FALSE;
+    }
+
+    return FALSE;
+}
+
+
+gboolean on_autogen_cmd_entry1_focus_out_event(GtkWidget       *widget,
+                                               GdkEventFocus   *event,
+                                               gpointer         user_data)
+{
+    const gchar *entry_text;
+
+    if (autogen_cmd_entry1_changed)
+    {
+        entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cmd_entry1")));
+
+        if (strlen(entry_text) < 1)
+        {
+            // We always expect <something>
+
+            DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid Meta-source compile command, reverting to default.", TRUE);
+            gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cmd_entry1")),  autoGenCmdDef);
+            entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cmd_entry1")));
+        }
+
+        if (strcmp(settings.autoGenCmd, entry_text) != 0)  // Only update if a real change has been made
+        {
+            // Update the preferences file
+            APP_CONFIG_set_string("autoGenCmd", entry_text);
+
+            // Update the application setting
+            strcpy(settings.autoGenCmd, entry_text);
+        }
+
+        autogen_cmd_entry1_changed = FALSE;
+    }
+
+    return FALSE;
+}
+
+
+gboolean on_autogen_id_entry1_focus_out_event(GtkWidget       *widget,
+                                              GdkEventFocus   *event,
+                                              gpointer         user_data)
+{
+    const gchar *entry_text;
+    gchar       auto_name[PATHLEN * 2];
+
+    if (autogen_id_entry1_changed)
+    {
+        entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_id_entry1")));
+
+        // ID can be anything, including "" (null string)
+
+        if (strcmp(settings.autoGenId, entry_text) != 0)  // Only update if a real change has been made
+        {
+            // Update the preferences file
+            APP_CONFIG_set_string("autoGenId", entry_text);
+
+            // Update the application setting
+            strcpy(settings.autoGenId, entry_text);
+
+            // Update conditional content label
+            snprintf(auto_name, PATHLEN * 2, "Generated filename format:  <span weight=\"bold\">foo</span>"
+                     "<span weight=\"bold\" color=\"darkred\">%s</span> ---> "
+                     "<b>foo</b><span weight=\"bold\" color=\"darkblue\">%s.c</span>  AND "
+                     "<b>foo</b><span weight=\"bold\" color=\"darkblue\">%s.h</span>",
+                     settings.autoGenSuffix,
+                     settings.autoGenId,
+                     settings.autoGenId
+                    );
+            gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_generated_filename_label")), auto_name);
+        }
+
+        autogen_id_entry1_changed = FALSE;
+    }
+
+    return FALSE;
+}
+
+
+gboolean on_autogen_cache_threshold_spinbutton_focus_out_event(GtkWidget       *widget,
+                                                               GdkEventFocus   *event,
+                                                               gpointer         user_data)
+{
+    guint new_value;
+
+    if (cache_threshold_changed)
+    {
+        new_value = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+
+        if (new_value != settings.autoGenThresh) // Only update the config file is the value has actually changed
+        {
+            // Update the preferences file
+            APP_CONFIG_set_integer("autoGenThresh", new_value);
+
+            // Update the application setting
+            settings.autoGenThresh = new_value;
+        }
+
+        cache_threshold_changed = FALSE;
+    }
+
+    return FALSE;
+}
+
+
+gboolean on_terminal_app_entry_focus_out_event(GtkWidget       *widget,
+                                               GdkEventFocus   *event,
+                                               gpointer         user_data)
+{
+    const gchar *entry_text;
+    gchar       *tmp_ptr;
+
+    if (terminal_app_entry_changed)
+    {
+        entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")));
+
+        if ((strlen(entry_text) < 3) || (strstr(entry_text, "%s") == NULL))
+        {
+            // We always expect something in entry_text and at least one %s format specifier
+            DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid Terminal App command, reverting to default.", TRUE);
+            gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")),  terminalAppDef);
+            entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")));
+        }
+
+        // We always expect a command with one single argument  e.g."terminal <path>"
+        tmp_ptr = strchr(entry_text, ' ');
+        if (tmp_ptr == NULL || strchr(tmp_ptr + 1, ' ') != NULL)   //  if num_args != 1
+        {
+            DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Terminal App command format error, single (1) option required, reverting to default.", TRUE);
+            gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")),  terminalAppDef);
+            entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")));
+        }
+
+        if (strcmp(settings.terminalApp, entry_text) != 0)  // Only update if a real change has been made
+        {
+            // Update the preferences file
+            APP_CONFIG_set_string("terminalApp", entry_text);
+
+            // Update the application setting
+            strcpy(settings.terminalApp, entry_text);
+        }
+
+        terminal_app_entry_changed = FALSE;
+    }
+
+    return FALSE;
+}
+
+
+gboolean on_file_manager_app_entry_focus_out_event(GtkWidget       *widget,
+                                                   GdkEventFocus   *event,
+                                                   gpointer         user_data)
+{
+    const gchar *entry_text;
+    gchar       *tmp_ptr;
+
+    if (file_manager_app_entry_changed)
+    {
+        entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")));
+
+        if ((strlen(entry_text) < 3) || (strstr(entry_text, "%s") == NULL))
+        {
+            // We always expect something in entry_text and at least one %s format specifier
+            DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid File Manager App command, reverting to default.", TRUE);
+            gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")),  fileManagerDef);
+            entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")));
+        }
+
+        // We always expect a command with one single argument  e.g."terminal <path>"
+        tmp_ptr = strchr(entry_text, ' ');
+        if (tmp_ptr == NULL || strchr(tmp_ptr + 1, ' ') != NULL)   //  if num_args != 1
+        {
+            DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "File Manager App command format error, single (1) option required, reverting to default.", TRUE);
+            gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")),  fileManagerDef);
+            entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")));
+        }
+
+        if (strcmp(settings.terminalApp, entry_text) != 0)  // Only update if a real change has been made
+        {
+            // Update the preferences file
+            APP_CONFIG_set_string("fileManager", entry_text);
+
+            // Update the application setting
+            strcpy(settings.fileManager, entry_text);
+        }
+
+        file_manager_app_entry_changed = FALSE;
+    }
+
+    return FALSE;
+}
+
+
+
+#endif  // GTK4 Event Focus handling
+
+void on_no_rebuild_radiobutton_toggled(GtkToggleButton *togglebutton,
+                                       gpointer         user_data)
+{
+    if (!initializing_prefs)
+    {
+        if (settings.noBuild)
+            // noBuild is being de-selected
+            settings.noBuild = FALSE;
+        else
+        {
+            // noBuild is being selected
+            settings.noBuild = TRUE;
+            settings.updateAll = FALSE;
+        }
+
+        // Update the preferences file
+        APP_CONFIG_set_boolean("noBuild", settings.noBuild);
+    }
+}
+
+
+void on_rebuild_radiobutton_toggled(GtkToggleButton *togglebutton,
+                                    gpointer         user_data)
+{
+    if (!initializing_prefs)
+    {
+        if (settings.updateAll)
+            // Build-if-needed is being selected
+            settings.updateAll = FALSE;
+
+        // Update the preferences file
+        APP_CONFIG_set_boolean("updateAll", settings.updateAll);
+    }
+}
+
+
+void on_force_rebuild_radiobutton_toggled(GtkToggleButton *togglebutton,
+                                          gpointer         user_data)
+{
+    if (!initializing_prefs)
+    {
+        if (settings.updateAll)
+            // Force rebuild is being de-selected
+            settings.updateAll = FALSE;
+        else
+        {
+            // Force rebuild is being selected
+            settings.updateAll = TRUE;
+
+            settings.noBuild = FALSE;
+        }
+
+        // Update the preferences file
+        APP_CONFIG_set_boolean("updateAll", settings.updateAll);
+    }
+}
+
+
+void on_truncate_symbols_checkbutton_toggled(GtkToggleButton *togglebutton,
+                                             gpointer         user_data)
+{
+    if (!initializing_prefs)
+    {
+        settings.truncateSymbols = !(settings.truncateSymbols);
+
+        // Update the preferences file
+        APP_CONFIG_set_boolean("truncateSymbols", settings.truncateSymbols);
+    }
+}
+
+
+void on_compress_symbols_checkbutton_toggled(GtkToggleButton *togglebutton,
+                                             gpointer         user_data)
+{
+    if (!initializing_prefs)
+    {
+        settings.compressDisable = !(settings.compressDisable);
+
+        // Update the preferences file
+        APP_CONFIG_set_boolean("compressDisable", settings.compressDisable);
+    }
+}
+
+
+void on_suffix_entry_changed(GtkEditable *editable, gpointer user_data)
+{
+    suffix_entry_changed = TRUE;
+}
+
+
+void on_typeless_entry_changed(GtkEditable     *editable,
+                               gpointer         user_data)
+{
+    typeless_entry_changed = TRUE;
+}
+
+
+void on_ignored_entry_changed(GtkEditable     *editable,
+                              gpointer         user_data)
+{
+    ignored_entry_changed = TRUE;
+}
+
+
+static void open_directory_browser(void)
+{
+    gtk_widget_show(folder_chooser_dialog);
+}
+
+
+void on_source_directory_browse_button_clicked(GtkButton  *button, gpointer user_data)
+{
+    open_directory_browser();
+    active_dir_entry = 0;
+}
+
+
+void on_folder_chooser_dialog_response(GtkDialog       *dialog,
+                                       gint             response_id,
+                                       gpointer         user_data)
+{
+    static GtkWidget *source_entry[3];
+    static gboolean initialized = FALSE;
+    gchar *dirname;
+
+    if (!initialized)
+    {
+        // This is an array of "entry" widgets served by this directory chooser response handler
+        source_entry[0] = lookup_widget(GTK_WIDGET(gscope_preferences), "source_entry");
+        //source_entry[1] = lookup_widget(GTK_WIDGET (gscope_preferences), "autogen_cache_path_entry");
+    }
+
+    switch (response_id)
+    {
+        case GTK_RESPONSE_OK:
+
+            #ifndef GTK4_BUILD
+            dirname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+            gtk_entry_set_text(GTK_ENTRY(source_entry[active_dir_entry]), dirname);
+            #else
+            GFile *file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
+            dirname = g_file_get_path(file);
+            g_free(file);
+
+            GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(source_entry[active_dir_entry]));
+            gtk_entry_buffer_set_text(buffer, dirname, -1);           
+            #endif
+            
+            // Update the settings structure and the preferences file
+            switch (active_dir_entry)
+            {
+                case 0:    // Source Directory
+                    strcpy(settings.srcDir, dirname);
+                    APP_CONFIG_set_string("srcDir", dirname);
+                    break;
+
+#if 0
+                case 1:    // AutoGen Cache Location
+                    strcpy(settings.autoGenPath, dirname);
+                    APP_CONFIG_set_string("autoGenPath", dirname);
+                    {
+                        gchar       active_path[PATHLEN * 2];
+
+                        snprintf(active_path, PATHLEN * 2, "Active cache path: <span color=\"blue\">%s.%d</span>",
+                                 settings.autoGenPath,
+                                 getpid());
+                        gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(gscope_preferences),"autogen_active_cache_path_label")), active_path);
+                    }
+                    break;
+
+                case 2:    // Include Directory
+                    strcpy(settings.includeDir, dirname);
+                    APP_CONFIG_set_string("includeDir", dirname);
+                    break;
+#endif
+            }
+
+            g_free(dirname);
+            gtk_widget_hide(GTK_WIDGET(dialog));
+
+            break;
+
+        case GTK_RESPONSE_CANCEL:
+        case GTK_RESPONSE_DELETE_EVENT:
+            gtk_widget_hide(GTK_WIDGET(dialog));
+            break;
+
+        default:
+        {
+            char *error_string;
+
+            my_asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"folder chooser\" dialog.", response_id);
+            DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
+            g_free(error_string);
+
+            gtk_widget_hide(GTK_WIDGET(dialog));
+        }
+
+            break;
+    }
+
+    return;
+}
+
+
+
+gboolean on_folder_chooser_dialog_delete_event(GtkWidget       *widget,
+                                               GdkEvent        *event,
+                                               gpointer         user_data)
+{
+    gtk_widget_hide(widget);
+    return TRUE;     // Do not destroy the widget
+}
+
+
+
+
+void on_source_entry_changed(GtkEditable     *editable,
+                             gpointer         user_data)
+{
+    source_entry_changed = TRUE;
+}
+
+
+void on_include_entry_changed(GtkEditable *editable, gpointer user_data)
+{
+    include_entry_changed = TRUE;
+}
+
+
+// ==== Input File Selection ====
+static void open_file_name_browser(void)
+{
+    gtk_widget_show(open_file_chooser_dialog);
+}
+
+
+void on_open_file_chooser_dialog_response(GtkDialog       *dialog,
+                                          gint             response_id,
+                                          gpointer         user_data)
+{
+    static GtkWidget *input_entry[2];
+    static gboolean initialized = FALSE;
+    gchar *filename;
+
+    if (!initialized)
+    {
+        // This is an array of "entry" widgets served by the "open file" chooser response handler
+        input_entry[0] = lookup_widget(GTK_WIDGET(gscope_preferences), "name_entry");
+        //input_entry[1] = lookup_widget(GTK_WIDGET (gscope_preferences), "context_entry");
+    }
+
+    switch (response_id)
+    {
+        case GTK_RESPONSE_OK:
+
+            #ifndef GTK4_BUILD
+            filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+            gtk_entry_set_text(GTK_ENTRY(input_entry[active_input_entry]), filename);
+            #else
+            GFile *file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
+            filename = g_file_get_path(file);
+            g_free(file);
+
+            GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(input_entry[active_input_entry]));
+            gtk_entry_buffer_set_text(buffer, filename, -1);           
+            #endif
+
+            // Update the settings structure and the preferences file
+            switch (active_input_entry)
+            {
+                case 0:    // Source file name list
+                    strcpy(settings.nameFile, filename);
+                    APP_CONFIG_set_string("nameFile", filename);
+                    break;
+
+                case 1:    // No longer used
+                    /* do nothing */
+                    break;
+            }
+
+            g_free(filename);
+            gtk_widget_hide(GTK_WIDGET(dialog));
+
+            break;
+
+        case GTK_RESPONSE_CANCEL:
+        case GTK_RESPONSE_DELETE_EVENT:
+            gtk_widget_hide(GTK_WIDGET(dialog));
+            break;
+
+        default:
+        {
+            char *error_string;
+
+            my_asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"file open\" dialog.", response_id);
+            DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
+            g_free(error_string);
+
+            gtk_widget_hide(GTK_WIDGET(dialog));
+        }
+
+            break;
+    }
+
+    return;
+}
+
+
+
+gboolean on_open_file_chooser_dialog_delete_event(GtkWidget *widget,
+                                                  GdkEvent *event,
+                                                  gpointer user_data)
+{
+    gtk_widget_hide(widget);
+    return TRUE;     // Do not destroy the widget
+}
+
+
+
+void on_name_entry_changed(GtkEditable     *editable,
+                           gpointer         user_data)
+{
+    name_entry_changed = TRUE;
+}
+
+
+void on_file_name_browse_button_clicked(GtkButton *button, gpointer user_data)
+{
+    open_file_name_browser();
+    active_input_entry = 0;
+}
+
+
+// ==== Output file selection ====
+static void open_output_file_name_browser(void)
+{
+    gtk_widget_show(output_file_chooser_dialog);
+}
+
+
+
+void on_output_file_chooser_dialog_response(GtkDialog       *dialog,
+                                            gint             response_id,
+                                            gpointer         user_data)
+{
+    static GtkWidget *output_entry[2];
+    static gboolean initialized = FALSE;
+    gchar *filename;
+
+    if (!initialized)
+    {
+        // This is an array of "entry" widgets served by the "open file" chooser response handler
+        output_entry[0] = lookup_widget(GTK_WIDGET(gscope_preferences), "cref_entry");
+        output_entry[1] = lookup_widget(GTK_WIDGET(gscope_preferences), "search_log_entry");
+    }
+
+    switch (response_id)
+    {
+        case GTK_RESPONSE_OK:
+
+            #ifndef GTK4_BUILD
+            filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+            #else
+            GFile *file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
+            filename = g_file_get_path(file);
+            g_free(file);
+            #endif
+
+            if (strlen(filename) >= MAX_STRING_ARG_SIZE)
+            {
+                DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_WARNING, "Selected File path is too long.\nUpdate aborted.", TRUE);
+                #ifndef GTK4_BUILD
+                filename =  (gchar *)gtk_entry_get_text(GTK_ENTRY(output_entry[active_output_entry]));
+                #else
+                GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(output_entry[active_output_entry]));
+                filename = (gchar *) gtk_entry_buffer_get_text(buffer);
+                #endif
+            }
+            else
+            {
+                #ifndef GTK4_BUILD
+                gtk_entry_set_text(GTK_ENTRY(output_entry[active_output_entry]), filename);
+                #else
+                GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(output_entry[active_output_entry]));
+                gtk_entry_buffer_set_text(buffer, filename, -1);           
+                #endif
+            }
+
+            // Update the settings structure and the preferences file
+            switch (active_output_entry)
+            {
+                case 0:    // Source file name list
+                    if (strcmp(settings.refFile, filename) != 0)  // Only update if a real change has been made
+                    {
+                        strcpy(settings.refFile, filename);
+                        APP_CONFIG_set_string("refFile", filename);
+                    }
+                    break;
+
+                case 1:    // Initial context file
+                    if (strcmp(settings.searchLogFile, filename) != 0)  // Only update if a real change has been made
+                    {
+                        strcpy(settings.searchLogFile, filename);
+                        APP_CONFIG_set_string("searchLogFile", filename);
+                    }
+                    break;
+            }
+
+            g_free(filename);
+            gtk_widget_hide(GTK_WIDGET(dialog));
+
+            break;
+
+        case GTK_RESPONSE_CANCEL:
+        case GTK_RESPONSE_DELETE_EVENT:
+            gtk_widget_hide(GTK_WIDGET(dialog));
+            break;
+
+        default:
+        {
+            char *error_string;
+
+            my_asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"output file\" dialog.", response_id);
+            DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
+            g_free(error_string);
+
+            gtk_widget_hide(GTK_WIDGET(dialog));
+        }
+
+            break;
+    }
+
+    return;
+}
+
+
+
+gboolean on_output_file_chooser_dialog_delete_event(GtkWidget *widget,
+                                                    GdkEvent *event,
+                                                    gpointer user_data)
+{
+    gtk_widget_hide(widget);
+    return TRUE;     // Do not destroy the widget
+}
+
+
+
+void on_cref_entry_changed(GtkEditable     *editable,
+                           gpointer         user_data)
+{
+    cref_entry_changed = TRUE;
+}
+
+
+void on_cross_reference_browse_button_clicked(GtkButton       *button,
+                                              gpointer         user_data)
+{
+    open_output_file_name_browser();
+    active_output_entry = 0;
+}
+
+
+void on_search_log_entry_changed(GtkEditable     *editable,
+                                 gpointer         user_data)
+{
+    search_log_entry_changed = TRUE;
+}
+
+
+void on_search_log_browse_button_clicked(GtkButton       *button,
+                                         gpointer         user_data)
+{
+    open_output_file_name_browser();
+    active_output_entry = 1;
+
+}
+
+
+// Enable/Disable search logging
+void on_search_log_button_clicked(GtkButton       *button,
+                                  gpointer         user_data)
+{
+    settings.searchLogging = !settings.searchLogging;
+
+    gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "search_log_label"), settings.searchLogging);
+    gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "search_log_entry"), settings.searchLogging);
+    gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "search_log_browse_button"), settings.searchLogging);
+
+    APP_CONFIG_set_boolean("searchLogging", settings.searchLogging);
+
+    if (settings.searchLogging)
+    {
+        gtk_button_set_label(GTK_BUTTON(lookup_widget(GTK_WIDGET(gscope_preferences), "search_log_button")), "Disable");
+    }
+    else
+    {
+        gtk_button_set_label(GTK_BUTTON(lookup_widget(GTK_WIDGET(gscope_preferences), "search_log_button")), "Enable");
+    }
+
+}
+
+
+
+//----------------- Start Session Statistics Reporting ---------------
+
+
+// Create a list of source file suffixes and counts for each suffix
+static SrcFile_stats* create_stats_list(SrcFile_stats **si_stats)
+{
+    gchar *suffix_ptr;
+    gchar *wptr;
+    gchar delimiter;
+    gchar working[80];       // Working buffer for constructing each individual suffix string.
+    int f;
+    guint noSuffixCnt = 0;
+    guint si_noSuffixCnt = 0;
+
+    SrcFile_stats *ListBegin = NULL;
+    SrcFile_stats *entry;
+
+    SrcFile_stats *si_ListBegin = NULL;
+    SrcFile_stats *si_entry;
+
+    SrcFile_stats *previous;
+    SrcFile_stats * current,*temp;
+
+    int counter;
+
+    gboolean include_file_path_exists;
+
+    if (strcmp(settings.includeDir, "") == 0)
+        include_file_path_exists = FALSE;
+    else
+        include_file_path_exists = TRUE;
+
+
+    suffix_ptr = &(settings.suffixList[0]);
+
+    if (*suffix_ptr != '\0')    // If we have a non-null suffix list
+    {
+        delimiter = *suffix_ptr++;
+        while (*suffix_ptr != '\0')
+        {
+            wptr = working;
+            *wptr++ = '.';
+            while (*suffix_ptr != delimiter)
+            {
+                *wptr++ = *suffix_ptr++;
+            }
+            suffix_ptr++;
+            *wptr = 0;  // Null-terminate the suffix.
+
+            /* Create the application specific suffix list */
+            entry = g_malloc(sizeof(SrcFile_stats));  // Create the suffix entry
+            entry->next = ListBegin;                  // Add it to the linked list
+            ListBegin = entry;
+            entry->fcount = 0;
+            entry->suffix = strdup(working);
+
+            /* Create the (optional) system include suffix list (/usr/include/...)  */
+            si_entry = g_malloc(sizeof(SrcFile_stats));  // Create the suffix entry
+            si_entry->next = si_ListBegin;               // Add it to the linked list
+            si_ListBegin = si_entry;
+            si_entry->fcount = 0;
+            si_entry->suffix = strdup(working);
+        }
+
+        counter = 0;
+
+        // Now that the list is created, collect the per-suffix statistics
+        for (f = 0; f < nsrcfiles; f++)
+        {
+
+            if ((include_file_path_exists) && (DIR_file_on_include_search_path(DIR_src_files[f])))
+            {
+                /* Count this file in the system include source stats */
+                if (settings.showIncludes)
+                    printf("%d) %s\n", ++counter, DIR_src_files[f]);
+
+                // if the file has a suffix
+                if ((wptr = strrchr(DIR_src_files[f], '.')) != NULL)
+                {
+                    si_entry = si_ListBegin;
+                    // increment the suffix counter corresponding to wptr
+                    while (si_entry != NULL)
+                    {
+                        if (strcmp(si_entry->suffix, wptr) == 0)
+                        {
+                            si_entry->fcount++;
+                            break;
+                        }
+                        si_entry = si_entry->next;
+                    }
+                }
+                else
+                {
+                    // increment the no-suffix counter
+                    si_noSuffixCnt++;
+                }
+            }
+            else /* This is a user source file, not a System Includes (/usr/include...) file */
+            /* Count this file in the user program source stats */
+            {
+                // if the file has a suffix
+                if ((wptr = strrchr(DIR_src_files[f], '.')) != NULL)
+                {
+                    entry = ListBegin;
+                    // increment the suffix counter corresponding to wptr
+                    while (entry != NULL)
+                    {
+                        if (strcmp(entry->suffix, wptr) == 0)
+                        {
+                            //if ( strcmp(wptr, DELSOL_ISINK_FID_INIT) == 0) printf("%s\n", DIR_src_files[f]);
+                            entry->fcount++;
+                            break;
+                        }
+                        entry = entry->next;
+                    }
+                }
+                else
+                {
+                    // increment the no-suffix counter
+                    noSuffixCnt++;
+                }
+            }
+        }
+    }
+
+    // -------- Add the <no-suffix> count to the user sourcelist --------
+    entry = g_malloc(sizeof(SrcFile_stats));
+    entry->next = ListBegin;
+    ListBegin = entry;
+    entry->fcount = noSuffixCnt;
+    entry->suffix = strdup("No Suffix");
+
+    // Add the <no-suffix> count to the system includes sourcelist
+    si_entry = g_malloc(sizeof(SrcFile_stats));
+    si_entry->next = si_ListBegin;
+    si_ListBegin = si_entry;
+    si_entry->fcount = si_noSuffixCnt;
+    si_entry->suffix = strdup("No Suffix");
+
+
+    // -------- Add the TOTAL count to the user list --------
+    entry = g_malloc(sizeof(SrcFile_stats));
+    entry->next = ListBegin;
+    ListBegin = entry;
+    entry->fcount = nsrcfiles;
+    entry->suffix = strdup("Total");
+
+    // Now reverse the entries in the linked list so that the
+    // Suffix counts are displayed in the same order as the suffix
+    // list pattern.
+
+    current = ListBegin;
+    previous = NULL;
+    while (current != NULL)
+    {
+        temp = current->next;
+        current->next = previous;
+        previous = current;
+        current = temp;
+    }
+    ListBegin = previous;
+
+    current = si_ListBegin;
+    previous = NULL;
+    while (current != NULL)
+    {
+        temp = current->next;
+        current->next = previous;
+        previous = current;
+        current = temp;
+    }
+    si_ListBegin = previous;
+
+
+    *si_stats = si_ListBegin;    // Return the pointer to the si_List here
+    return (ListBegin);
+}
+
+
 
 gboolean on_stats_dialog_delete_event(GtkWidget       *widget,
                                       GdkEvent        *event,
@@ -2812,38 +3297,6 @@ void on_recursive_search_mode_checkbutton_toggled(GtkToggleButton *togglebutton,
     }
 }
 
-void on_save_query_activate(GtkMenuItem     *menuitem,
-                            gpointer         user_data)
-{
-    DISPLAY_history_save();
-
-}
-
-
-void on_load_query_activate(GtkMenuItem     *menuitem,
-                            gpointer         user_data)
-{
-    DISPLAY_history_load();
-}
-
-
-void on_clear_query_activate(GtkMenuItem     *menuitem,
-                             gpointer         user_data)
-{
-    DISPLAY_history_clear();
-
-    /* Reset the record of the last query so that the next query will not be reported as current */
-    process_query(FIND_NULL);
-}
-
-
-void on_delete_history_file_activate(GtkMenuItem     *menuitem,
-                                     gpointer         user_data)
-{
-    unlink(settings.histFile);
-}
-
-
 
 void on_showicons_checkbutton_toggled(GtkToggleButton *togglebutton,
                                       gpointer         user_data)
@@ -2861,13 +3314,13 @@ void on_showicons_checkbutton_toggled(GtkToggleButton *togglebutton,
 }
 
 
-
+#ifndef GTK4_BUILD  // Revisit: on_session_statistics_activate temporarily disabled for GTK4 migration
 void on_session_info_button_clicked(GtkButton       *button,
                                     gpointer         user_data)
 {
     on_session_statistics_activate(NULL, NULL);
 }
-
+#endif
 
 
 void on_single_click_checkbutton_toggled(GtkToggleButton *togglebutton,
@@ -2884,19 +3337,6 @@ void on_single_click_checkbutton_toggled(GtkToggleButton *togglebutton,
 
 
 
-void on_save_results_activate(GtkMenuItem     *menuitem,
-                              gpointer         user_data)
-{
-    gtk_window_set_transient_for(GTK_WINDOW(save_results_file_chooser_dialog), GTK_WINDOW(gscope_main));
-
-    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(save_results_file_chooser_dialog), "gscope_results");
-
-    gtk_dialog_run(GTK_DIALOG(save_results_file_chooser_dialog));
-    gtk_widget_hide(save_results_file_chooser_dialog);
-}
-
-
-
 
 void on_save_results_file_chooser_dialog_response(GtkDialog       *dialog,
                                                   gint             response_id,
@@ -2906,7 +3346,13 @@ void on_save_results_file_chooser_dialog_response(GtkDialog       *dialog,
     gboolean save_success = FALSE;
     gboolean bad_filename = FALSE;
 
+    #ifndef GTK4_BUILD
     filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+    #else
+    GFile *file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
+    filename = g_file_get_path(file);
+    g_free(file);
+    #endif
 
     switch (response_id)
     {
@@ -2979,77 +3425,59 @@ gboolean on_save_results_file_chooser_dialog_delete_event(GtkWidget       *widge
 
 
 
-void on_overview_wiki_activate(GtkMenuItem     *menuitem,
-                               gpointer         user_data)
-{
-    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki", GDK_CURRENT_TIME, NULL);
-}
-
-
-void on_usage_wiki_activate(GtkMenuItem     *menuitem,
-                            gpointer         user_data)
-{
-    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Using-Gscope", GDK_CURRENT_TIME, NULL);
-}
-
-
-void on_configure_wiki_activate(GtkMenuItem     *menuitem,
-                                gpointer         user_data)
-{
-    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Configuring-Gscope", GDK_CURRENT_TIME, NULL);
-}
-
-
 void on_prefs_help_search_button_clicked(GtkButton       *button,
                                          gpointer         user_data)
 {
+    #ifndef GTK4_BUILD
     gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Configuring-Gscope#Search_and_View_Tab", GDK_CURRENT_TIME, NULL);
+    #else
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Configuring-Gscope#Search_and_View_Tab", GDK_CURRENT_TIME);
+    #endif
 }
 
 
 void on_prefs_help_cross_button_clicked(GtkButton       *button,
                                         gpointer         user_data)
 {
+    #ifndef GTK4_BUILD
     gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Configuring-Gscope#Cross_Reference_Tab", GDK_CURRENT_TIME, NULL);
+    #else
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Configuring-Gscope#Cross_Reference_Tab", GDK_CURRENT_TIME);
+
+    #endif
 }
 
 
 void on_prefs_help_source_button_clicked(GtkButton       *button,
                                          gpointer         user_data)
 {
+    #ifndef GTK4_BUILD
     gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Configuring-Gscope#Source_File_Search_Tab", GDK_CURRENT_TIME, NULL);
+    #else
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Configuring-Gscope#Source_File_Search_Tab", GDK_CURRENT_TIME);
+    #endif
 }
 
 
 void on_prefs_help_file_button_clicked(GtkButton       *button,
                                        gpointer         user_data)
 {
+    #ifndef GTK4_BUILD
     gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Configuring-Gscope#File_Names_Tab", GDK_CURRENT_TIME, NULL);
+    #else
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Configuring-Gscope#File_Names_Tab", GDK_CURRENT_TIME);
+    #endif
 }
 
 
 void on_prefs_help_general_button_clicked(GtkButton       *button,
                                           gpointer         user_data)
 {
+    #ifndef GTK4_BUILD
     gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Configuring-Gscope#General_Tab", GDK_CURRENT_TIME, NULL);
-}
-
-
-
-void on_release_wiki_activate(GtkMenuItem     *menuitem,
-                              gpointer         user_data)
-{
-    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Gscope-Release-Notes", GDK_CURRENT_TIME, NULL);
-}
-
-
-void on_cref_update_button_clicked(GtkButton       *button,
-                                   gpointer         user_data)
-{
-    if (SEARCH_get_cref_status())   // If the cref is marked up-to-date, check for changes
-        SEARCH_check_cref();
-    else
-        on_rebuild_database1_activate(NULL, NULL);  // Otherwise, rebuild the cross reference.
+    #else
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Configuring-Gscope#General_Tab", GDK_CURRENT_TIME);
+    #endif
 }
 
 
@@ -3062,8 +3490,13 @@ void on_clear_query_button_clicked(GtkButton       *button,
     query_entry   = lookup_widget(GTK_WIDGET(gscope_main), "query_entry");
 
     /* Clear the entry text */
-    gtk_entry_set_text(GTK_ENTRY(query_entry), "");
 
+    #ifndef GTK4_BUILD
+    gtk_entry_set_text(GTK_ENTRY(query_entry), "");
+    #else
+    GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(query_entry));
+    gtk_entry_buffer_set_text(buffer, "", -1);           
+    #endif
 }
 
 
@@ -3072,52 +3505,6 @@ void on_autogen_cache_path_entry_changed(GtkEditable *editable, gpointer user_da
     autogen_cache_path_entry_changed = TRUE;
 }
 
-
-gboolean on_autogen_cache_path_entry_focus_out_event(GtkWidget       *widget,
-                                                     GdkEventFocus   *event,
-                                                     gpointer         user_data)
-{
-    const gchar *autogen_cache_path;
-
-    if (autogen_cache_path_entry_changed)
-    {
-        autogen_cache_path =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cache_path_entry")));
-
-        if (strlen(autogen_cache_path) == 0  ||
-            access(autogen_cache_path, R_OK | W_OK) < 0
-           )
-        {
-            // The user is not allowed to configure a "null" string for the cache path
-            // and the directory must exist and have the required permissions
-
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid local cache path selected, reverting to default path.", TRUE);
-            gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cache_path_entry")), autoGenPathDef);
-            autogen_cache_path =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cache_path_entry")));
-        }
-
-        if (strcmp(settings.autoGenPath, autogen_cache_path) != 0)  // Only update if a real change has been made
-        {
-            // Update the preferences file
-            APP_CONFIG_set_string("autoGenPath", autogen_cache_path);
-
-            // Update the application setting
-            strcpy(settings.autoGenPath, autogen_cache_path);
-        }
-
-        {
-            gchar       active_path[PATHLEN * 2];
-
-            snprintf(active_path, PATHLEN * 2, "My cache path: <span color=\"steelblue\">%s/%s/auto*_*</span>",
-                     settings.autoGenPath,
-                     getenv("USER"));
-            gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_active_cache_path_label")), active_path);
-        }
-
-        autogen_cache_path_entry_changed = FALSE;
-    }
-
-    return FALSE;
-}
 
 void on_autogen_enable_checkbutton1_toggled(GtkToggleButton *togglebutton, gpointer user_data)
 {
@@ -3165,82 +3552,9 @@ void on_autogen_search_root_entry1_changed(GtkEditable *editable, gpointer user_
 }
 
 
-gboolean on_autogen_search_root_entry1_focus_out_event(GtkWidget       *widget,
-                                                       GdkEventFocus   *event,
-                                                       gpointer         user_data)
-{
-    const gchar *entry_text;
-
-    if (autogen_search_root_entry1_changed)
-    {
-        entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_search_root_entry1")));
-
-        if (strcmp(settings.autoGenRoot, entry_text) != 0)  // Only update if a real change has been made
-        {
-            // Update the preferences file
-            APP_CONFIG_set_string("autoGenRoot", entry_text);
-
-            // Update the application setting
-            strcpy(settings.autoGenRoot, entry_text);
-        }
-
-        autogen_search_root_entry1_changed = FALSE;
-    }
-
-    return FALSE;
-}
-
-
 void on_autogen_suffix_entry1_changed(GtkEditable *editable, gpointer user_data)
 {
     autogen_suffix_entry_1_changed = TRUE;
-}
-
-
-gboolean on_autogen_suffix_entry1_focus_out_event(GtkWidget       *widget,
-                                                  GdkEventFocus   *event,
-                                                  gpointer         user_data)
-{
-    const gchar *entry_text;
-    gchar       auto_name[PATHLEN * 2];
-
-    if (autogen_suffix_entry_1_changed)
-    {
-        entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_suffix_entry1")));
-
-        if (strlen(entry_text) < 2 || entry_text[0] != '.')
-        {
-            // We always expect .<something>
-
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid Meta-source suffix, reverting to default.", TRUE);
-            gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_suffix_entry1")), autoGenSuffixDef);
-            entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_suffix_entry1")));
-        }
-
-        if (strcmp(settings.autoGenSuffix, entry_text) != 0)  // Only update if a real change has been made
-        {
-            // Update the preferences file
-            APP_CONFIG_set_string("autoGenSuffix", entry_text);
-
-            // Update the application setting
-            strcpy(settings.autoGenSuffix, entry_text);
-
-            // Update conditional content label
-            snprintf(auto_name, PATHLEN * 2, "Generated filename format:  <span weight=\"bold\">foo</span>"
-                     "<span weight=\"bold\" color=\"darkred\">%s</span> ---> "
-                     "<b>foo</b><span weight=\"bold\" color=\"darkblue\">%s.c</span>  AND "
-                     "<b>foo</b><span weight=\"bold\" color=\"darkblue\">%s.h</span>",
-                     settings.autoGenSuffix,
-                     settings.autoGenId,
-                     settings.autoGenId
-                    );
-            gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_generated_filename_label")), auto_name);
-        }
-
-        autogen_suffix_entry_1_changed = FALSE;
-    }
-
-    return FALSE;
 }
 
 
@@ -3250,88 +3564,10 @@ void on_autogen_cmd_entry1_changed(GtkEditable *editable, gpointer user_data)
 }
 
 
-gboolean on_autogen_cmd_entry1_focus_out_event(GtkWidget       *widget,
-                                               GdkEventFocus   *event,
-                                               gpointer         user_data)
-{
-    const gchar *entry_text;
-
-    if (autogen_cmd_entry1_changed)
-    {
-        entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cmd_entry1")));
-
-        if (strlen(entry_text) < 1)
-        {
-            // We always expect <something>
-
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid Meta-source compile command, reverting to default.", TRUE);
-            gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cmd_entry1")),  autoGenCmdDef);
-            entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cmd_entry1")));
-        }
-
-        if (strcmp(settings.autoGenCmd, entry_text) != 0)  // Only update if a real change has been made
-        {
-            // Update the preferences file
-            APP_CONFIG_set_string("autoGenCmd", entry_text);
-
-            // Update the application setting
-            strcpy(settings.autoGenCmd, entry_text);
-        }
-
-        autogen_cmd_entry1_changed = FALSE;
-    }
-
-    return FALSE;
-}
-
-
-
-
 void on_autogen_id_entry1_changed(GtkEditable *editable, gpointer user_data)
 {
     autogen_id_entry1_changed = TRUE;
 }
-
-
-gboolean on_autogen_id_entry1_focus_out_event(GtkWidget       *widget,
-                                              GdkEventFocus   *event,
-                                              gpointer         user_data)
-{
-    const gchar *entry_text;
-    gchar       auto_name[PATHLEN * 2];
-
-    if (autogen_id_entry1_changed)
-    {
-        entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_id_entry1")));
-
-        // ID can be anything, including "" (null string)
-
-        if (strcmp(settings.autoGenId, entry_text) != 0)  // Only update if a real change has been made
-        {
-            // Update the preferences file
-            APP_CONFIG_set_string("autoGenId", entry_text);
-
-            // Update the application setting
-            strcpy(settings.autoGenId, entry_text);
-
-            // Update conditional content label
-            snprintf(auto_name, PATHLEN * 2, "Generated filename format:  <span weight=\"bold\">foo</span>"
-                     "<span weight=\"bold\" color=\"darkred\">%s</span> ---> "
-                     "<b>foo</b><span weight=\"bold\" color=\"darkblue\">%s.c</span>  AND "
-                     "<b>foo</b><span weight=\"bold\" color=\"darkblue\">%s.h</span>",
-                     settings.autoGenSuffix,
-                     settings.autoGenId,
-                     settings.autoGenId
-                    );
-            gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_generated_filename_label")), auto_name);
-        }
-
-        autogen_id_entry1_changed = FALSE;
-    }
-
-    return FALSE;
-}
-
 
 
 void on_autogen_cache_threshold_spinbutton_changed(GtkEditable *editable, gpointer user_data)
@@ -3340,80 +3576,9 @@ void on_autogen_cache_threshold_spinbutton_changed(GtkEditable *editable, gpoint
 }
 
 
-gboolean on_autogen_cache_threshold_spinbutton_focus_out_event(GtkWidget       *widget,
-                                                               GdkEventFocus   *event,
-                                                               gpointer         user_data)
-{
-    guint new_value;
-
-    if (cache_threshold_changed)
-    {
-        new_value = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
-
-        if (new_value != settings.autoGenThresh) // Only update the config file is the value has actually changed
-        {
-            // Update the preferences file
-            APP_CONFIG_set_integer("autoGenThresh", new_value);
-
-            // Update the application setting
-            settings.autoGenThresh = new_value;
-        }
-
-        cache_threshold_changed = FALSE;
-    }
-
-    return FALSE;
-}
-
-
-
 void on_terminal_app_entry_changed(GtkEditable *editable, gpointer user_data)
 {
     terminal_app_entry_changed = TRUE;
-}
-
-
-gboolean on_terminal_app_entry_focus_out_event(GtkWidget       *widget,
-                                               GdkEventFocus   *event,
-                                               gpointer         user_data)
-{
-    const gchar *entry_text;
-    gchar       *tmp_ptr;
-
-    if (terminal_app_entry_changed)
-    {
-        entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")));
-
-        if ((strlen(entry_text) < 3) || (strstr(entry_text, "%s") == NULL))
-        {
-            // We always expect something in entry_text and at least one %s format specifier
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid Terminal App command, reverting to default.", TRUE);
-            gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")),  terminalAppDef);
-            entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")));
-        }
-
-        // We always expect a command with one single argument  e.g."terminal <path>"
-        tmp_ptr = strchr(entry_text, ' ');
-        if (tmp_ptr == NULL || strchr(tmp_ptr + 1, ' ') != NULL)   //  if num_args != 1
-        {
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Terminal App command format error, single (1) option required, reverting to default.", TRUE);
-            gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")),  terminalAppDef);
-            entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")));
-        }
-
-        if (strcmp(settings.terminalApp, entry_text) != 0)  // Only update if a real change has been made
-        {
-            // Update the preferences file
-            APP_CONFIG_set_string("terminalApp", entry_text);
-
-            // Update the application setting
-            strcpy(settings.terminalApp, entry_text);
-        }
-
-        terminal_app_entry_changed = FALSE;
-    }
-
-    return FALSE;
 }
 
 
@@ -3422,47 +3587,4 @@ void on_file_manager_app_entry_changed(GtkEditable *editable, gpointer user_data
     file_manager_app_entry_changed = TRUE;
 }
 
-
-gboolean on_file_manager_app_entry_focus_out_event(GtkWidget       *widget,
-                                                   GdkEventFocus   *event,
-                                                   gpointer         user_data)
-{
-    const gchar *entry_text;
-    gchar       *tmp_ptr;
-
-    if (file_manager_app_entry_changed)
-    {
-        entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")));
-
-        if ((strlen(entry_text) < 3) || (strstr(entry_text, "%s") == NULL))
-        {
-            // We always expect something in entry_text and at least one %s format specifier
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid File Manager App command, reverting to default.", TRUE);
-            gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")),  fileManagerDef);
-            entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")));
-        }
-
-        // We always expect a command with one single argument  e.g."terminal <path>"
-        tmp_ptr = strchr(entry_text, ' ');
-        if (tmp_ptr == NULL || strchr(tmp_ptr + 1, ' ') != NULL)   //  if num_args != 1
-        {
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "File Manager App command format error, single (1) option required, reverting to default.", TRUE);
-            gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")),  fileManagerDef);
-            entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")));
-        }
-
-        if (strcmp(settings.terminalApp, entry_text) != 0)  // Only update if a real change has been made
-        {
-            // Update the preferences file
-            APP_CONFIG_set_string("fileManager", entry_text);
-
-            // Update the application setting
-            strcpy(settings.fileManager, entry_text);
-        }
-
-        file_manager_app_entry_changed = FALSE;
-    }
-
-    return FALSE;
-}
 

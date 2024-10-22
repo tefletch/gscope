@@ -13,27 +13,65 @@ void SEARCH_init()
 {
 }
 
+
+search_results_t *SEARCH_lookup(search_t search_operation, gchar *pattern)
+{
+    printf("hello from Gtk4aux: %s\n", __func__);
+}
+
+void SEARCH_free_results(search_results_t *results)
+{
+    printf("hello from Gtk4aux: %s\n", __func__);
+}
+
+void SEARCH_cancel()
+{
+    printf("hello from Gtk4aux: %s\n", __func__);
+}
+
 void SEARCH_set_cref_status(gboolean status)
 {
+    printf("hello from Gtk4aux: %s\n", __func__);
+}
+
+gboolean SEARCH_save_text(gchar *filename)
+{
+    printf("hello from Gtk4aux: %s\n", __func__);
+}
+
+gboolean SEARCH_save_html(gchar *filename)
+{
+    printf("hello from Gtk4aux: %s\n", __func__);
+}
+
+gboolean SEARCH_save_csv(gchar *filename)
+{
+    printf("hello from Gtk4aux: %s\n", __func__);
 }
 
 
-// Temporary GTK4 stub functions for CALLBACKS component
+
+// Temporary GTK4 stub functions for BROWSER component
 //====================================================
-void CALLBACKS_init(GtkWidget *main)
-{
-    DISPLAY_init(main);
+gboolean BROWSER_init(GtkWidget *main)
+{    
+    printf("hello from Gtk4aux: %s\n", __func__);
 }
 
-GtkWidget *CALLBACKS_get_widget(gchar *widget_name)
-{
-    if ( strcmp(widget_name, "gscope_main") == 0 )
-        my_lookup_widget("gscope_main");
-    if ( strcmp(widget_name, "progressbar1") == 0 )
-        return(my_lookup_widget(widget_name));
-
-    return(NULL);
+GtkWidget* BROWSER_create(gchar *name, gchar *root_file, gchar *line_num)
+{    
+    printf("hello from Gtk4aux: %s\n", __func__);
 }
+
+
+
+// Temporary GTK4 stub functions for FILEVIEW component
+//=====================================================
+void FILEVIEW_create(gchar *file_name, gint line)
+{
+    printf("hello from Gtk4aux: %s\n", __func__);
+}
+
 
 
 // Temporary GTK4 stub functions for message dialogs
@@ -82,12 +120,6 @@ void GTK4_message_dialog(GtkMessageType msg_type, char *message)
     gtk_widget_show(GTK_WIDGET(message_window));
 }
 
-
-void on_find_c_identifier_button_clicked(GtkButton       *button,
-                                         gpointer         user_data)
-{
-    printf("Hello from CALLBACK: %s\n", __func__);
-}
 
 void on_message_button_clicked(GtkButton *button, gpointer user_data)
 {
