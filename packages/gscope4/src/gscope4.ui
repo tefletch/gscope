@@ -177,6 +177,12 @@
                         <child>
                           <object class="GtkEntry" id="query_entry">
                             <property name="hexpand">True</property>
+                            <child>
+                              <object class="GtkEventControllerFocus">
+                                <property name="name">query_entry_controller</property>
+                                <signal name="leave" handler="on_query_entry_focus_out"/>
+                              </object>
+                            </child>
                           </object>
                         </child>
                       </object>
@@ -312,6 +318,8 @@
         <attribute name="label">Ignore Case During Search</attribute>
       </item>
       <item>
+        <attribute name="action">app.preferences</attribute>
+        <attribute name="icon">preferences-desktop</attribute>
         <attribute name="label">Preferences</attribute>
       </item>
     </submenu>
@@ -319,6 +327,12 @@
       <attribute name="label">View</attribute>
       <item>
         <attribute name="label">Session Statistics</attribute>
+      </item>
+      <item>
+        <attribute name="label">All Function Definitions</attribute>
+      </item>
+      <item>
+        <attribute name="label">Autogen Errors</attribute>
       </item>
     </submenu>
     <submenu id="sub_menu4">
