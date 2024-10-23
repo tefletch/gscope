@@ -234,13 +234,11 @@ static void process_query(search_t query_type)
 
         #ifndef GTK4_BUILD
         gtk_widget_grab_default(buttons[query_type]);
-        pattern = strdup(gtk_entry_get_text(GTK_ENTRY(query_entry)));
         #else
-        buffer = gtk_entry_get_buffer(GTK_ENTRY(query_entry));
         gtk_window_set_default_widget(GTK_WINDOW(gscope_main), buttons[query_type]);
-        pattern = strdup(gtk_entry_buffer_get_text(buffer));
         #endif
 
+        pattern = strdup(my_gtk_entry_get_text(GTK_ENTRY(query_entry)));
     }
     else
     {
@@ -336,11 +334,7 @@ static void process_query(search_t query_type)
             else
             {
                 /* otherwise clear the entry text if we have a match */
-                #ifndef GTK4_BUILD
-                gtk_entry_set_text(GTK_ENTRY(query_entry), "");
-                #else
-                gtk_entry_buffer_set_text(buffer, "", -1);
-                #endif
+                my_gtk_entry_set_text(GTK_ENTRY(query_entry), "");
             }
         }
 
@@ -602,7 +596,7 @@ void on_about1_activate(GtkMenuItem     *menuitem,
                     description,
                     based_on,
                     modified_by,
-                    gtk_version, gtk_major_version, gtk_minor_version, gtk_micro_version,
+                    gtk_version, gtk_get_major_version(), gtk_get_minor_version(), gtk_get_micro_version(),
                     build_date);
 
         gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(aboutdialog1), full_comment);
@@ -619,231 +613,6 @@ void on_about1_activate(GtkMenuItem     *menuitem,
 
     gtk_widget_show(aboutdialog1);
 
-}
-
-void on_preferences_activate(GtkMenuItem     *menuitem,
-                             gpointer         user_data)
-{
-    GtkWidget *button1;
-    GtkWidget *prefs_dialog;
-
-    static gboolean initialized = FALSE;
-
-    prefs_dialog = gscope_preferences;
-
-    if (!initialized)
-    {
-        initializing_prefs = TRUE;
-
-
-
-        /*** Initialize the preference dialog settings (tab #1 "Search and View") ***/
-        /****************************************************************************/
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_checkbutton")),
-                                     sticky_settings.retainInput);
-
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_failed_search_checkbutton")),
-                                     settings.retainFailed);
-
-        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_failed_search_checkbutton"), !sticky_settings.retainInput);
-
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "ignore_case_checkbutton")),
-                                     sticky_settings.ignoreCase);
-
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "use_editor_radiobutton")),
-                                     sticky_settings.useEditor);
-
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "reuse_window_checkbutton")),
-                                     sticky_settings.reuseWin);
-
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "editor_command_entry")), MAX_STRING_ARG_SIZE - 1);
-        gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "editor_command_entry")), settings.fileEditor);
-        if (settings.useEditor)
-        {
-            gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "editor_command_entry"), TRUE);
-            gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "editor_command_label"), TRUE);
-            gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "reuse_window_checkbutton"), FALSE);
-        }
-        else
-        {
-            gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "editor_command_entry"), FALSE);
-            gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "editor_command_label"), FALSE);
-            gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "reuse_window_checkbutton"), TRUE);
-        }
-
-
-        /***Initialize the preference dialog settings (tab #2 "Cross Reference") ***/
-        /***************************************************************************/
-        // Start-up build rules:  If conflicting info in config file, use the following
-        // functional precedence:  Force Rebuild, Rebuild if Needed, No Rebuild
-        if (settings.updateAll)
-            // force rebuild
-            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "force_rebuild_radiobutton")), TRUE);
-        else
-        {
-            if (settings.noBuild)
-                // no rebuild
-                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "no_rebuild_radiobutton")), TRUE);
-            else
-                // rebuild if needed
-                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "rebuild_radiobutton")), TRUE);
-        }
-
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "truncate_symbols_checkbutton")),
-                                     settings.truncateSymbols);
-
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "compress_symbols_checkbutton")),
-                                     !settings.compressDisable);
-
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_enable_checkbutton1")),
-                                     settings.autoGenEnable);
-
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_cache_path_entry")),  MAX_STRING_ARG_SIZE - 1);
-        gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_cache_path_entry")),  settings.autoGenPath);
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_suffix_entry1")),     MAX_STRING_ARG_SIZE - 1);
-        gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_suffix_entry1")),     settings.autoGenSuffix);
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_cmd_entry1")),        MAX_STRING_ARG_SIZE - 1);
-        gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_cmd_entry1")),        settings.autoGenCmd);
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_search_root_entry1")), MAX_STRING_ARG_SIZE - 1);
-        gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_search_root_entry1")), settings.autoGenRoot);
-
-        gtk_spin_button_set_value(GTK_SPIN_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_cache_threshold_spinbutton")), settings.autoGenThresh);
-
-        // If/when more than one autogen meta-source type is supported, these elements will need a unique "enable" setting (per type)
-        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_suffix_entry1"),        settings.autoGenEnable);
-        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_cmd_entry1"),           settings.autoGenEnable);
-        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_id_entry1"),            settings.autoGenEnable);
-        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_search_root_entry1"),   settings.autoGenEnable);
-        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_suffix_label"),         settings.autoGenEnable);
-        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_cmd_label"),            settings.autoGenEnable);
-        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_id_label"),            settings.autoGenEnable);
-        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_root_label"),           settings.autoGenEnable);
-
-        // These items will be "composite enabled across multiple enables" if/when more than one autogen meta-source type is supported.
-        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_cache_path_entry"),     settings.autoGenEnable);
-        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_cache_location_label"), settings.autoGenEnable);
-
-        {   // Conditional Content Labels.
-            gchar   active_path[PATHLEN * 2];
-            gchar   auto_name[PATHLEN * 2];
-
-            if (settings.autoGenEnable)
-            {
-                snprintf(active_path, PATHLEN * 2, "My cache path: <span color=\"steelblue\">%s/%s/auto*_*</span>",
-                         settings.autoGenPath,
-                         getenv("USER"));
-                snprintf(auto_name, PATHLEN * 2, "Generated filename format:  <span weight=\"bold\">foo</span>"
-                         "<span weight=\"bold\" color=\"darkred\">%s</span> ---> "
-                         "<b>foo</b><span weight=\"bold\" color=\"darkblue\">%s.c</span>  AND "
-                         "<b>foo</b><span weight=\"bold\" color=\"darkblue\">%s.h</span>",
-                         settings.autoGenSuffix,
-                         settings.autoGenId,
-                         settings.autoGenId
-                        );
-            }
-            else
-            {
-                snprintf(active_path, PATHLEN * 2, "My cache path:");
-                snprintf(auto_name, PATHLEN * 2, "Generated filename format: ");
-            }
-
-            gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_active_cache_path_label")), active_path);
-            gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_generated_filename_label")), auto_name);
-        }
-
-
-
-        /*** Initialize the preference dialog settings (Tab #3 "Source File Search") ***/
-        /*******************************************************************************/
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "suffix_entry")),   MAX_GTK_ENTRY_SIZE - 1);
-        gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "suffix_entry")),   settings.suffixList);
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "typeless_entry")), MAX_GTK_ENTRY_SIZE - 1);
-        gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "typeless_entry")), settings.typelessList);
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "ignored_entry")),  MAX_GTK_ENTRY_SIZE - 1);
-        gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "ignored_entry")),  settings.ignoredList);
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "source_entry")),   MAX_GTK_ENTRY_SIZE - 1);
-        gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "source_entry")),   settings.srcDir);
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "include_entry")),  MAX_GTK_ENTRY_SIZE - 1);
-        gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "include_entry")),  settings.includeDir);
-
-
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "recursive_search_mode_checkbutton")),
-                                     settings.recurseDir);
-
-
-        /*** Initialize the preference dialog settings (Tab #4 "File Names") ***/
-        /***********************************************************************/
-
-        {
-            gchar *markup_buf;
-            my_asprintf(&markup_buf, "<span foreground=\"seagreen\" weight=\"bold\">%s</span>", settings.rcFile);
-            gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(prefs_dialog), "rc_filename_label")), markup_buf);
-            g_free(markup_buf);
-        }
-
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "name_entry")),       MAX_STRING_ARG_SIZE - 1);
-        gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "name_entry")),       settings.nameFile);
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "cref_entry")),       MAX_STRING_ARG_SIZE - 1);
-        gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "cref_entry")),       settings.refFile);
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_entry")), MAX_STRING_ARG_SIZE - 1);
-        gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_entry")), settings.searchLogFile);
-
-        button1 = lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_button");
-
-        // Initialize Search log settings
-        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_label"), settings.searchLogging);
-        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_entry"), settings.searchLogging);
-        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_browse_button"), settings.searchLogging);
-
-        if (settings.searchLogging)
-            gtk_button_set_label(GTK_BUTTON(button1), "Disable");
-        else
-            gtk_button_set_label(GTK_BUTTON(button1), "Enable");
-
-
-        /*** Initialize the preference dialog settings (Tab #5 "General") ***/
-        /********************************************************************/
-
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "terminal_app_entry")), MAX_STRING_ARG_SIZE - 1);
-        gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "terminal_app_entry")), settings.terminalApp);
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "file_manager_app_entry")), MAX_STRING_ARG_SIZE - 1);
-        gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "file_manager_app_entry")), settings.fileManager);
-
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "confirmation_checkbutton")),
-                                     settings.exitConfirm);
-
-
-        if (gtk_major_version > 2 || ((gtk_major_version == 2) && (gtk_minor_version > 15)))
-        {
-            // if the current gtk library does not provide gtk_image_menu_item_set_always_show_image()
-            // We cannot support the "Show Menu Icons" functionality, so disable that preference item.
-            gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "showicons_checkbutton"), FALSE);
-            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "showicons_checkbutton")), FALSE);
-        }
-        else
-        {
-            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "showicons_checkbutton")),
-                                         settings.menuIcons);
-        }
-
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "single_click_checkbutton")),
-                                     settings.singleClick);
-
-
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "show_includes_checkbutton")),
-                                     settings.showIncludes);
-
-        gtk_window_set_transient_for(GTK_WINDOW(prefs_dialog), GTK_WINDOW(gscope_main));
-
-        preferences_dialog_visible = FALSE;
-        initializing_prefs = FALSE;
-        initialized = TRUE;
-    }
-
-    if (!preferences_dialog_visible)
-        gtk_widget_show(prefs_dialog);
-
-    preferences_dialog_visible = TRUE;
 }
 
 
@@ -1224,6 +993,8 @@ void on_release_wiki_activate(GtkMenuItem     *menuitem,
 }
 
 #else
+
+//================= Test Callbacks only
 void on_rebuild_database1_activate (GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
   printf ("Hello from: %s\n", __func__);
@@ -1234,9 +1005,250 @@ void on_quit1_activate (GSimpleAction *action, GVariant *parameter, gpointer use
 {
   printf ("Hello from: %s\n", __func__);
 }
-
-
 #endif      // GtkMenu evolution
+
+
+
+
+// GTK-variant menu handline
+
+#ifndef GTK4_BUILD
+void on_preferences_activate(GtkMenuItem *menuitem, gpointer user_data)
+#else
+void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+#endif
+{
+    GtkWidget *button1;
+    GtkWidget *prefs_dialog;
+
+    static gboolean initialized = FALSE;
+    printf("hello from: %s\n", __func__);
+
+    prefs_dialog = gscope_preferences;
+
+    if (!initialized)
+    {
+        initializing_prefs = TRUE;
+
+        /*** Initialize the preference dialog settings (tab #1 "Search and View") ***/
+        /****************************************************************************/
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_checkbutton")),
+                                     sticky_settings.retainInput);
+
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_failed_search_checkbutton")),
+                                     settings.retainFailed);
+
+        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_failed_search_checkbutton"), !sticky_settings.retainInput);
+
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "ignore_case_checkbutton")),
+                                     sticky_settings.ignoreCase);
+
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "use_editor_radiobutton")),
+                                     sticky_settings.useEditor);
+
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "reuse_window_checkbutton")),
+                                     sticky_settings.reuseWin);
+
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "editor_command_entry")), MAX_STRING_ARG_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "editor_command_entry")), settings.fileEditor);
+        if (settings.useEditor)
+        {
+            gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "editor_command_entry"), TRUE);
+            gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "editor_command_label"), TRUE);
+            gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "reuse_window_checkbutton"), FALSE);
+        }
+        else
+        {
+            gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "editor_command_entry"), FALSE);
+            gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "editor_command_label"), FALSE);
+            gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "reuse_window_checkbutton"), TRUE);
+        }
+
+
+        /***Initialize the preference dialog settings (tab #2 "Cross Reference") ***/
+        /***************************************************************************/
+        // Start-up build rules:  If conflicting info in config file, use the following
+        // functional precedence:  Force Rebuild, Rebuild if Needed, No Rebuild
+        if (settings.updateAll)
+            // force rebuild
+            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "force_rebuild_radiobutton")), TRUE);
+        else
+        {
+            if (settings.noBuild)
+                // no rebuild
+                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "no_rebuild_radiobutton")), TRUE);
+            else
+                // rebuild if needed
+                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "rebuild_radiobutton")), TRUE);
+        }
+
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "truncate_symbols_checkbutton")),
+                                     settings.truncateSymbols);
+
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "compress_symbols_checkbutton")),
+                                     !settings.compressDisable);
+
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_enable_checkbutton1")),
+                                     settings.autoGenEnable);
+
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_cache_path_entry")),  MAX_STRING_ARG_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_cache_path_entry")),  settings.autoGenPath);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_suffix_entry1")),     MAX_STRING_ARG_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_suffix_entry1")),     settings.autoGenSuffix);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_cmd_entry1")),        MAX_STRING_ARG_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_cmd_entry1")),        settings.autoGenCmd);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_search_root_entry1")), MAX_STRING_ARG_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_search_root_entry1")), settings.autoGenRoot);
+
+        gtk_spin_button_set_value(GTK_SPIN_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_cache_threshold_spinbutton")), settings.autoGenThresh);
+
+        // If/when more than one autogen meta-source type is supported, these elements will need a unique "enable" setting (per type)
+        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_suffix_entry1"),        settings.autoGenEnable);
+        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_cmd_entry1"),           settings.autoGenEnable);
+        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_id_entry1"),            settings.autoGenEnable);
+        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_search_root_entry1"),   settings.autoGenEnable);
+        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_suffix_label"),         settings.autoGenEnable);
+        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_cmd_label"),            settings.autoGenEnable);
+        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_id_label"),            settings.autoGenEnable);
+        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_root_label"),           settings.autoGenEnable);
+
+        // These items will be "composite enabled across multiple enables" if/when more than one autogen meta-source type is supported.
+        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_cache_path_entry"),     settings.autoGenEnable);
+        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_cache_location_label"), settings.autoGenEnable);
+
+        {   // Conditional Content Labels.
+            gchar   active_path[PATHLEN * 2];
+            gchar   auto_name[PATHLEN * 2];
+
+            if (settings.autoGenEnable)
+            {
+                snprintf(active_path, PATHLEN * 2, "My cache path: <span color=\"steelblue\">%s/%s/auto*_*</span>",
+                         settings.autoGenPath,
+                         getenv("USER"));
+                snprintf(auto_name, PATHLEN * 2, "Generated filename format:  <span weight=\"bold\">foo</span>"
+                         "<span weight=\"bold\" color=\"darkred\">%s</span> ---> "
+                         "<b>foo</b><span weight=\"bold\" color=\"darkblue\">%s.c</span>  AND "
+                         "<b>foo</b><span weight=\"bold\" color=\"darkblue\">%s.h</span>",
+                         settings.autoGenSuffix,
+                         settings.autoGenId,
+                         settings.autoGenId
+                        );
+            }
+            else
+            {
+                snprintf(active_path, PATHLEN * 2, "My cache path:");
+                snprintf(auto_name, PATHLEN * 2, "Generated filename format: ");
+            }
+
+            gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_active_cache_path_label")), active_path);
+            gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_generated_filename_label")), auto_name);
+        }
+
+
+
+        /*** Initialize the preference dialog settings (Tab #3 "Source File Search") ***/
+        /*******************************************************************************/
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "suffix_entry")),   MAX_GTK_ENTRY_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "suffix_entry")),   settings.suffixList);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "typeless_entry")), MAX_GTK_ENTRY_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "typeless_entry")), settings.typelessList);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "ignored_entry")),  MAX_GTK_ENTRY_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "ignored_entry")),  settings.ignoredList);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "source_entry")),   MAX_GTK_ENTRY_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "source_entry")),   settings.srcDir);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "include_entry")),  MAX_GTK_ENTRY_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "include_entry")),  settings.includeDir);
+
+
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "recursive_search_mode_checkbutton")),
+                                     settings.recurseDir);
+
+
+        /*** Initialize the preference dialog settings (Tab #4 "File Names") ***/
+        /***********************************************************************/
+
+        {
+            gchar *markup_buf;
+            my_asprintf(&markup_buf, "<span foreground=\"seagreen\" weight=\"bold\">%s</span>", settings.rcFile);
+            gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(prefs_dialog), "rc_filename_label")), markup_buf);
+            g_free(markup_buf);
+        }
+
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "name_entry")),       MAX_STRING_ARG_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "name_entry")),       settings.nameFile);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "cref_entry")),       MAX_STRING_ARG_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "cref_entry")),       settings.refFile);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_entry")), MAX_STRING_ARG_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_entry")), settings.searchLogFile);
+
+        button1 = lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_button");
+
+        // Initialize Search log settings
+        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_label"), settings.searchLogging);
+        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_entry"), settings.searchLogging);
+        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_browse_button"), settings.searchLogging);
+
+        if (settings.searchLogging)
+            gtk_button_set_label(GTK_BUTTON(button1), "Disable");
+        else
+            gtk_button_set_label(GTK_BUTTON(button1), "Enable");
+
+
+        /*** Initialize the preference dialog settings (Tab #5 "General") ***/
+        /********************************************************************/
+
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "terminal_app_entry")), MAX_STRING_ARG_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "terminal_app_entry")), settings.terminalApp);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "file_manager_app_entry")), MAX_STRING_ARG_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "file_manager_app_entry")), settings.fileManager);
+
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "confirmation_checkbutton")),
+                                     settings.exitConfirm);
+
+
+        if ( gtk_get_major_version() > 2 || ((gtk_get_major_version() == 2) && (gtk_get_minor_version() > 15)))
+        {
+            // if the current gtk library does not provide gtk_image_menu_item_set_always_show_image()
+            // We cannot support the "Show Menu Icons" functionality, so disable that preference item.
+            gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "showicons_checkbutton"), FALSE);
+            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "showicons_checkbutton")), FALSE);
+        }
+        else
+        {
+            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "showicons_checkbutton")),
+                                         settings.menuIcons);
+        }
+
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "single_click_checkbutton")),
+                                     settings.singleClick);
+
+
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "show_includes_checkbutton")),
+                                     settings.showIncludes);
+
+        gtk_window_set_transient_for(GTK_WINDOW(prefs_dialog), GTK_WINDOW(gscope_main));
+
+        preferences_dialog_visible = FALSE;
+        initializing_prefs = FALSE;
+        initialized = TRUE;
+    }
+
+    if (!preferences_dialog_visible)
+        gtk_widget_show(prefs_dialog);
+
+    preferences_dialog_visible = TRUE;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 #ifndef GTK4_BUILD  //  GTK4 shutdown semantics are different
@@ -1590,7 +1602,7 @@ gboolean on_history_treeview_button_press_event(GtkWidget       *widget,
 
     if (DISPLAY_get_clicked_entry(event->x, event->y, &entry))
     {
-        gtk_entry_set_text(GTK_ENTRY(query_entry), entry);
+        my_gtk_entry_set_text(GTK_ENTRY(query_entry), entry);
         g_free(entry);
     }
 
@@ -1964,32 +1976,6 @@ void on_editor_command_entry_changed(GtkEditable *editable, gpointer user_data)
 
 
 #ifndef GTK4_BUILD  // GTK4 Event Focus handling
-gboolean on_editor_command_entry_focus_out_event(GtkWidget       *widget,
-                                                 GdkEventFocus   *event,
-                                                 gpointer         user_data)
-{
-    const gchar *editor_command;
-
-    if (editor_command_changed)
-    {
-        editor_command =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "editor_command_entry")));
-
-        if (strcmp(settings.fileEditor, editor_command) != 0)  // Only update if a real change has been made
-        {
-            // Update the preferences file
-            APP_CONFIG_set_string("fileEditor", editor_command);
-
-            // Update the application setting
-            strcpy(settings.fileEditor, editor_command);
-        }
-
-        editor_command_changed = FALSE;
-    }
-
-    return FALSE;
-}
-
-
 gboolean on_suffix_entry_focus_out_event(GtkWidget       *widget,
                                          GdkEventFocus   *event,
                                          gpointer         user_data)
@@ -1998,7 +1984,7 @@ gboolean on_suffix_entry_focus_out_event(GtkWidget       *widget,
 
     if (suffix_entry_changed)
     {
-        suffix_list = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "suffix_entry")));
+        suffix_list = my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "suffix_entry")));
 
         if (strcmp(settings.suffixList, suffix_list) != 0)  // Only update if a real change has been made
         {
@@ -2012,7 +1998,7 @@ gboolean on_suffix_entry_focus_out_event(GtkWidget       *widget,
             }
             else
             {
-                gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "suffix_entry")), settings.suffixList);
+                my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "suffix_entry")), settings.suffixList);
             }
         }
 
@@ -2031,7 +2017,7 @@ gboolean on_typeless_entry_focus_out_event(GtkWidget       *widget,
 
     if (typeless_entry_changed)
     {
-        typeless_list = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "typeless_entry")));
+        typeless_list = my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "typeless_entry")));
 
         if (strcmp(settings.typelessList, typeless_list) != 0)  // Only update if a real change has been made
         {
@@ -2045,7 +2031,7 @@ gboolean on_typeless_entry_focus_out_event(GtkWidget       *widget,
             }
             else
             {
-                gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "typeless_entry")), settings.typelessList);
+                my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "typeless_entry")), settings.typelessList);
             }
         }
 
@@ -2064,7 +2050,7 @@ gboolean on_ignored_entry_focus_out_event(GtkWidget       *widget,
 
     if (ignored_entry_changed)
     {
-        ignored_list = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "ignored_entry")));
+        ignored_list = my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "ignored_entry")));
 
         if (strcmp(settings.ignoredList, ignored_list) != 0)  // Only update if a real change has been made
         {
@@ -2082,7 +2068,7 @@ gboolean on_ignored_entry_focus_out_event(GtkWidget       *widget,
             else
             {
                 DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_WARNING, "Invalid 'Ignored List' Syntax.\nUpdate aborted.", TRUE);
-                gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "ignored_entry")), settings.ignoredList);
+                my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "ignored_entry")), settings.ignoredList);
             }
         }
 
@@ -2101,7 +2087,7 @@ gboolean on_source_entry_focus_out_event(GtkWidget       *widget,
 
     if (source_entry_changed)
     {
-        dirname = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "source_entry")));
+        dirname = my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "source_entry")));
 
         if (strcmp(settings.srcDir, dirname) != 0)  // Only update if a real change has been made
         {
@@ -2127,7 +2113,7 @@ gboolean on_include_entry_focus_out_event(GtkWidget       *widget,
 
     if (include_entry_changed)
     {
-        include_list = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "include_entry")));
+        include_list = my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "include_entry")));
 
         if (strcmp(settings.includeDir, include_list) != 0)  // Only update if a real change has been made
         {
@@ -2141,7 +2127,7 @@ gboolean on_include_entry_focus_out_event(GtkWidget       *widget,
             }
             else
             {
-                gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "include_entry")), settings.includeDir);
+                my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "include_entry")), settings.includeDir);
             }
         }
 
@@ -2160,7 +2146,7 @@ gboolean on_name_entry_focus_out_event(GtkWidget       *widget,
 
     if (name_entry_changed)
     {
-        filename = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "name_entry")));
+        filename = my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "name_entry")));
 
         if (strcmp(settings.nameFile, filename) != 0)  // Only update if a real change has been made
         {
@@ -2186,7 +2172,7 @@ gboolean on_cref_entry_focus_out_event(GtkWidget       *widget,
 
     if (cref_entry_changed)
     {
-        filename = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "cref_entry")));
+        filename = my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "cref_entry")));
 
         if (strcmp(settings.refFile, filename) != 0)  // Only update if a real change has been made
         {
@@ -2212,7 +2198,7 @@ gboolean on_search_log_entry_focus_out_event(GtkWidget       *widget,
 
     if (search_log_entry_changed)
     {
-        filename = gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "search_log_entry")));
+        filename = my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "search_log_entry")));
 
         if (strcmp(settings.searchLogFile, filename) != 0)  // Only update if a real change has been made
         {
@@ -2238,7 +2224,7 @@ gboolean on_autogen_cache_path_entry_focus_out_event(GtkWidget       *widget,
 
     if (autogen_cache_path_entry_changed)
     {
-        autogen_cache_path =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cache_path_entry")));
+        autogen_cache_path =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cache_path_entry")));
 
         if (strlen(autogen_cache_path) == 0  ||
             access(autogen_cache_path, R_OK | W_OK) < 0
@@ -2248,8 +2234,8 @@ gboolean on_autogen_cache_path_entry_focus_out_event(GtkWidget       *widget,
             // and the directory must exist and have the required permissions
 
             DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid local cache path selected, reverting to default path.", TRUE);
-            gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cache_path_entry")), autoGenPathDef);
-            autogen_cache_path =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cache_path_entry")));
+            my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cache_path_entry")), autoGenPathDef);
+            autogen_cache_path =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cache_path_entry")));
         }
 
         if (strcmp(settings.autoGenPath, autogen_cache_path) != 0)  // Only update if a real change has been made
@@ -2285,7 +2271,7 @@ gboolean on_autogen_search_root_entry1_focus_out_event(GtkWidget       *widget,
 
     if (autogen_search_root_entry1_changed)
     {
-        entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_search_root_entry1")));
+        entry_text =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_search_root_entry1")));
 
         if (strcmp(settings.autoGenRoot, entry_text) != 0)  // Only update if a real change has been made
         {
@@ -2312,15 +2298,15 @@ gboolean on_autogen_suffix_entry1_focus_out_event(GtkWidget       *widget,
 
     if (autogen_suffix_entry_1_changed)
     {
-        entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_suffix_entry1")));
+        entry_text =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_suffix_entry1")));
 
         if (strlen(entry_text) < 2 || entry_text[0] != '.')
         {
             // We always expect .<something>
 
             DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid Meta-source suffix, reverting to default.", TRUE);
-            gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_suffix_entry1")), autoGenSuffixDef);
-            entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_suffix_entry1")));
+            my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_suffix_entry1")), autoGenSuffixDef);
+            entry_text =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_suffix_entry1")));
         }
 
         if (strcmp(settings.autoGenSuffix, entry_text) != 0)  // Only update if a real change has been made
@@ -2358,15 +2344,15 @@ gboolean on_autogen_cmd_entry1_focus_out_event(GtkWidget       *widget,
 
     if (autogen_cmd_entry1_changed)
     {
-        entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cmd_entry1")));
+        entry_text =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cmd_entry1")));
 
         if (strlen(entry_text) < 1)
         {
             // We always expect <something>
 
             DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid Meta-source compile command, reverting to default.", TRUE);
-            gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cmd_entry1")),  autoGenCmdDef);
-            entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cmd_entry1")));
+            my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cmd_entry1")),  autoGenCmdDef);
+            entry_text =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cmd_entry1")));
         }
 
         if (strcmp(settings.autoGenCmd, entry_text) != 0)  // Only update if a real change has been made
@@ -2394,7 +2380,7 @@ gboolean on_autogen_id_entry1_focus_out_event(GtkWidget       *widget,
 
     if (autogen_id_entry1_changed)
     {
-        entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_id_entry1")));
+        entry_text =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_id_entry1")));
 
         // ID can be anything, including "" (null string)
 
@@ -2460,14 +2446,14 @@ gboolean on_terminal_app_entry_focus_out_event(GtkWidget       *widget,
 
     if (terminal_app_entry_changed)
     {
-        entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")));
+        entry_text =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")));
 
         if ((strlen(entry_text) < 3) || (strstr(entry_text, "%s") == NULL))
         {
             // We always expect something in entry_text and at least one %s format specifier
             DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid Terminal App command, reverting to default.", TRUE);
-            gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")),  terminalAppDef);
-            entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")));
+            my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")),  terminalAppDef);
+            entry_text =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")));
         }
 
         // We always expect a command with one single argument  e.g."terminal <path>"
@@ -2475,8 +2461,8 @@ gboolean on_terminal_app_entry_focus_out_event(GtkWidget       *widget,
         if (tmp_ptr == NULL || strchr(tmp_ptr + 1, ' ') != NULL)   //  if num_args != 1
         {
             DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Terminal App command format error, single (1) option required, reverting to default.", TRUE);
-            gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")),  terminalAppDef);
-            entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")));
+            my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")),  terminalAppDef);
+            entry_text =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")));
         }
 
         if (strcmp(settings.terminalApp, entry_text) != 0)  // Only update if a real change has been made
@@ -2504,14 +2490,14 @@ gboolean on_file_manager_app_entry_focus_out_event(GtkWidget       *widget,
 
     if (file_manager_app_entry_changed)
     {
-        entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")));
+        entry_text =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")));
 
         if ((strlen(entry_text) < 3) || (strstr(entry_text, "%s") == NULL))
         {
             // We always expect something in entry_text and at least one %s format specifier
             DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid File Manager App command, reverting to default.", TRUE);
-            gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")),  fileManagerDef);
-            entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")));
+            my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")),  fileManagerDef);
+            entry_text =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")));
         }
 
         // We always expect a command with one single argument  e.g."terminal <path>"
@@ -2519,8 +2505,8 @@ gboolean on_file_manager_app_entry_focus_out_event(GtkWidget       *widget,
         if (tmp_ptr == NULL || strchr(tmp_ptr + 1, ' ') != NULL)   //  if num_args != 1
         {
             DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "File Manager App command format error, single (1) option required, reverting to default.", TRUE);
-            gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")),  fileManagerDef);
-            entry_text =  gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")));
+            my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")),  fileManagerDef);
+            entry_text =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")));
         }
 
         if (strcmp(settings.terminalApp, entry_text) != 0)  // Only update if a real change has been made
@@ -2538,9 +2524,53 @@ gboolean on_file_manager_app_entry_focus_out_event(GtkWidget       *widget,
     return FALSE;
 }
 
+#else
+
+//*********** This is a temporary test callback, query_entry does not need to track focus-out */
+void on_query_entry_focus_out(GtkEventControllerFocus *controller, gpointer user_data)
+{
+    printf("Hello from: %s\n", __func__);
+}
 
 
 #endif  // GTK4 Event Focus handling
+
+//*** Start multi-Gtk version focus handling *******/
+/***************************************************/
+
+#ifndef GTK4_BUILD
+gboolean on_editor_command_entry_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+#else
+void on_editor_command_entry_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data)
+#endif
+{
+    const gchar *editor_command;
+
+    if (editor_command_changed)
+    {
+        editor_command =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "editor_command_entry")));
+
+        if (strcmp(settings.fileEditor, editor_command) != 0)  // Only update if a real change has been made
+        {
+            // Update the preferences file
+            APP_CONFIG_set_string("fileEditor", editor_command);
+
+            // Update the application setting
+            strcpy(settings.fileEditor, editor_command);
+        }
+        editor_command_changed = FALSE;
+    }
+
+    #ifndef GTK4_BUILD
+    return FALSE;
+    #endif
+}
+
+
+
+//*** End multi-Gtk version focus handling *******/
+
+
 
 void on_no_rebuild_radiobutton_toggled(GtkToggleButton *togglebutton,
                                        gpointer         user_data)
@@ -2677,18 +2707,9 @@ void on_folder_chooser_dialog_response(GtkDialog       *dialog,
     switch (response_id)
     {
         case GTK_RESPONSE_OK:
+            dirname = my_gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+            my_gtk_entry_set_text(GTK_ENTRY(source_entry[active_dir_entry]), dirname);
 
-            #ifndef GTK4_BUILD
-            dirname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-            gtk_entry_set_text(GTK_ENTRY(source_entry[active_dir_entry]), dirname);
-            #else
-            GFile *file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
-            dirname = g_file_get_path(file);
-            g_free(file);
-
-            GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(source_entry[active_dir_entry]));
-            gtk_entry_buffer_set_text(buffer, dirname, -1);           
-            #endif
             
             // Update the settings structure and the preferences file
             switch (active_dir_entry)
@@ -2797,18 +2818,8 @@ void on_open_file_chooser_dialog_response(GtkDialog       *dialog,
     switch (response_id)
     {
         case GTK_RESPONSE_OK:
-
-            #ifndef GTK4_BUILD
-            filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-            gtk_entry_set_text(GTK_ENTRY(input_entry[active_input_entry]), filename);
-            #else
-            GFile *file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
-            filename = g_file_get_path(file);
-            g_free(file);
-
-            GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(input_entry[active_input_entry]));
-            gtk_entry_buffer_set_text(buffer, filename, -1);           
-            #endif
+            filename = my_gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+            my_gtk_entry_set_text(GTK_ENTRY(input_entry[active_input_entry]), filename);
 
             // Update the settings structure and the preferences file
             switch (active_input_entry)
@@ -2914,21 +2925,11 @@ void on_output_file_chooser_dialog_response(GtkDialog       *dialog,
             if (strlen(filename) >= MAX_STRING_ARG_SIZE)
             {
                 DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_WARNING, "Selected File path is too long.\nUpdate aborted.", TRUE);
-                #ifndef GTK4_BUILD
-                filename =  (gchar *)gtk_entry_get_text(GTK_ENTRY(output_entry[active_output_entry]));
-                #else
-                GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(output_entry[active_output_entry]));
-                filename = (gchar *) gtk_entry_buffer_get_text(buffer);
-                #endif
+                filename = (gchar *)my_gtk_entry_get_text(GTK_ENTRY(output_entry[active_output_entry]));
             }
             else
             {
-                #ifndef GTK4_BUILD
-                gtk_entry_set_text(GTK_ENTRY(output_entry[active_output_entry]), filename);
-                #else
-                GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(output_entry[active_output_entry]));
-                gtk_entry_buffer_set_text(buffer, filename, -1);           
-                #endif
+                my_gtk_entry_set_text(GTK_ENTRY(output_entry[active_output_entry]), filename);
             }
 
             // Update the settings structure and the preferences file
@@ -3490,13 +3491,7 @@ void on_clear_query_button_clicked(GtkButton       *button,
     query_entry   = lookup_widget(GTK_WIDGET(gscope_main), "query_entry");
 
     /* Clear the entry text */
-
-    #ifndef GTK4_BUILD
-    gtk_entry_set_text(GTK_ENTRY(query_entry), "");
-    #else
-    GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(query_entry));
-    gtk_entry_buffer_set_text(buffer, "", -1);           
-    #endif
+    my_gtk_entry_set_text(GTK_ENTRY(query_entry), "");
 }
 
 

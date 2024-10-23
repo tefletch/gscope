@@ -33,3 +33,10 @@ void        my_chdir(gchar *path);
 void        my_asprintf(gchar **str_ptr, const char *fmt, ...);
 void        my_start_text_editor(gchar *filename, gchar *linenum);
 
+// GTK Version-variant abstractions
+void my_gtk_entry_set_text(GtkEntry *entry, const gchar *text);
+const gchar *my_gtk_entry_get_text(GtkEntry *entry);
+gchar *my_gtk_file_chooser_get_filename(GtkFileChooser *chooser);
+
+
+

@@ -48,10 +48,6 @@ on_fileview_close_activate             (GtkMenuItem *menuitem,
                                         gpointer user_data);
 
 void
-on_preferences_activate               (GtkMenuItem     *menuitem,
-                                        gpointer         user_data);
-
-void
 on_ignorecase_activate                 (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
@@ -118,11 +114,22 @@ on_list_autogen_errors_activate        (GtkMenuItem     *menuitem,
 
 #else   // GTK4: ================ Use action-triggered menu-item callbacks
 
+//=================== test/temporary callbacks
 void on_quit1_activate (GSimpleAction *action, GVariant *parameter, gpointer user_data);
 
 void on_rebuild_database1_activate (GSimpleAction *action, GVariant *parameter, gpointer user_data);
 
 #endif
+
+
+// Integrated Gtk-variand menu-item callbacks
+//============================================
+#ifndef GTK4_BUILD
+void on_preferences_activate(GtkMenuItem *menuitem, gpointer user_data);
+#else
+void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data);
+#endif
+
 
 void
 on_aboutdialog1_response               (GtkDialog       *dialog,
@@ -236,12 +243,6 @@ on_editor_command_entry_changed        (GtkEditable     *editable,
                                         gpointer         user_data);
 
 #ifndef GTK4_BUILD  // Must create a GtkEventControllFocus object to track focus-out
-gboolean
-on_editor_command_entry_focus_out_event
-                                        (GtkWidget       *widget,
-                                        GdkEventFocus   *event,
-                                        gpointer         user_data);
-
 gboolean
 on_suffix_entry_focus_out_event        (GtkWidget       *widget,
                                         GdkEventFocus   *event,
@@ -371,7 +372,23 @@ on_file_manager_app_entry_focus_out_event
                                         gpointer         user_data);
 #else   // GTK4
 
+// test code only
+void on_query_entry_focus_out(GtkEventControllerFocus *controller, gpointer user_data);
+
 #endif
+
+
+// GTK Version-variant (focus handler) prototypes
+//===============================================
+
+#ifndef GTK4_BUILD
+gboolean on_editor_command_entry_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
+#else
+void on_editor_command_entry_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data);
+#endif
+
+
+
 
 void
 on_no_rebuild_radiobutton_activate     (GtkButton       *button,

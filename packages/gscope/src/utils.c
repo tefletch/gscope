@@ -124,7 +124,7 @@ void my_add_widget(gpointer widget, gpointer user_data)
 {
     GType       my_type;
 
-    static GType nb1, nb2, nb3;
+    static GType nb1, nb2, nb3, nb4;
 
     if ( !hash_table )   // Need to initialize
     {
@@ -133,14 +133,15 @@ void my_add_widget(gpointer widget, gpointer user_data)
         // This is a brute-force method for determining if an object is a "buildable"
         // Additional values may need to be added if the glade file for a specific
         // application defines other "non-buildable" objects.
-        nb1 = g_type_from_name("GtkAccelGroup");
-        nb2 = g_type_from_name("GtkTreeSelection");
-        nb3 = g_type_from_name("GMenu");
+        nb1 = g_type_from_name("GtkAccelGroup");            // Glade-Gtk3
+        nb2 = g_type_from_name("GtkTreeSelection");         // Glade-Gtk3
+        nb3 = g_type_from_name("GMenu");                    // Cambalache-Gtk4
+        nb4 = g_type_from_name("GtkEventControllerFocus");  // Cambalache-Gtk4
     }
 
     my_type = G_OBJECT_TYPE(widget);
 
-    if ( my_type == nb1 || my_type == nb2 || my_type == nb3 )     // Brute force Non-Buildable check
+    if ( my_type == nb1 || my_type == nb2 || my_type == nb3 || my_type == nb4)     // Brute force Non-Buildable check
     {
         /* my_type is a Non-Buildable type : Do nothing */
     }
@@ -424,3 +425,49 @@ int asprintf(char **ret, const char *format, ...)
 #endif
 
 #endif
+
+
+// Gtk version-variant abstractions
+//=================================
+
+void my_gtk_entry_set_text(GtkEntry *entry, const gchar *text)
+{
+    #ifndef GTK4_BUILD
+    gtk_entry_set_text(entry, text);
+    #else
+    GtkEntryBuffer *buffer = gtk_entry_get_buffer(entry);
+    gtk_entry_buffer_set_text(buffer, text, -1);           
+    #endif
+}
+
+
+const gchar *my_gtk_entry_get_text(GtkEntry *entry)
+{
+    const gchar *text;
+
+    #ifndef GTK4_BUILD
+    text = gtk_entry_get_text(GTK_ENTRY(entry));
+    #else
+    GtkEntryBuffer *buffer = gtk_entry_get_buffer(entry);
+    text = gtk_entry_buffer_get_text(buffer);           
+    #endif
+
+    return(text);
+}
+
+
+
+gchar *my_gtk_file_chooser_get_filename(GtkFileChooser *chooser)
+{
+    gchar *filename;
+
+    #ifndef GTK4_BUILD
+    filename =gtk_file_chooser_get_filename(chooser);
+    #else
+    GFile *file = gtk_file_chooser_get_file(chooser);
+    filename = g_file_get_path(file);
+    g_free(file);
+    #endif
+
+    return(filename);
+}
