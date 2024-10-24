@@ -34,18 +34,18 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkCheckButton">
+                  <object class="GtkCheckButton" id="retain_text_checkbutton">
                     <property name="label">Retain text in search field</property>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkCheckButton">
+                  <object class="GtkCheckButton" id="retain_text_failed_search_checkbutton">
                     <property name="label">Retain text when search fails</property>
                     <property name="margin-start">20</property>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkCheckButton">
+                  <object class="GtkCheckButton" id="ignore_case_checkbutton">
                     <property name="label">Ignore case during search</property>
                   </object>
                 </child>
@@ -73,20 +73,20 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkCheckButton">
+                  <object class="GtkCheckButton" id="reuse_window_checkbutton">
                     <property name="label">Reuse the File View window</property>
                     <property name="margin-start">40</property>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkCheckButton">
+                  <object class="GtkCheckButton" id="use_editor_radiobutton">
                     <property name="label">Use text editor</property>
                   </object>
                 </child>
                 <child>
                   <object class="GtkBox">
                     <child>
-                      <object class="GtkLabel">
+                      <object class="GtkLabel" id="editor_command_label">
                         <property name="label">Editor Command</property>
                         <property name="margin-end">8</property>
                         <property name="margin-start">40</property>

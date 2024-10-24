@@ -1064,7 +1064,7 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
             gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "reuse_window_checkbutton"), TRUE);
         }
 
-
+        #if 0
         /***Initialize the preference dialog settings (tab #2 "Cross Reference") ***/
         /***************************************************************************/
         // Start-up build rules:  If conflicting info in config file, use the following
@@ -1227,6 +1227,8 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
                                      settings.showIncludes);
 
         gtk_window_set_transient_for(GTK_WINDOW(prefs_dialog), GTK_WINDOW(gscope_main));
+
+        #endif
 
         preferences_dialog_visible = FALSE;
         initializing_prefs = FALSE;

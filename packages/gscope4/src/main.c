@@ -252,6 +252,13 @@ static void startup (GApplication *app, gpointer *user_data)
             if (error) g_error_free(error);
         }
 
+        const char *prefs_objects[] = {"gscope_preferences", ""};
+        sprintf(ui_file, "%s%s", ui_file_path, "/preferences.ui");
+        if (!gtk_builder_add_objects_from_file(builder, ui_file, prefs_objects, &error))
+        {
+            fprintf(stderr, "UI object merge error: File: %s. Error: %s\n", ui_file, error ? error->message : "Unknown");
+            if (error) g_error_free(error);
+        }
     }
     #else
         builder = gtk_builder_new_from_string(gscope3_glade, gscope3_glade_len);
@@ -282,6 +289,12 @@ static void startup (GApplication *app, gpointer *user_data)
     GObject *gscope_splash = gtk_builder_get_object(builder, "gscope_splash");
     gtk_window_set_transient_for(GTK_WINDOW(gscope_splash), GTK_WINDOW(gscope_main));
     gtk_widget_set_visible(GTK_WIDGET(gscope_splash), TRUE);
+
+    // Instantiate the preferences dialog 'gscope_preferences'
+    //========================================================
+    GObject *gscope_preferences = gtk_builder_get_object(builder, "gscope_preferences");
+    gtk_window_set_transient_for(GTK_WINDOW(gscope_preferences), GTK_WINDOW(gscope_main));
+    gtk_widget_set_visible(GTK_WIDGET(gscope_preferences), FALSE);
 
 
     // Configure Menu Actions
