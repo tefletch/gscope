@@ -150,7 +150,11 @@
 	(4,92,"GtkBox",None,22,None,None,None,8,None,None),
 	(4,93,"GtkLabel",None,92,None,None,None,0,None,None),
 	(4,94,"GtkLabel",None,22,None,"tab",None,9,None,None),
-	(4,95,"GtkLabel",None,87,None,None,None,0,None,None)
+	(4,97,"GtkBox",None,80,None,None,None,0,None,None),
+	(4,98,"GtkLabel",None,97,None,None,None,1,None,None),
+	(4,99,"GtkImage",None,97,None,None,None,0,None,None),
+	(4,100,"GtkLabel",None,87,None,None,None,0,None,None),
+	(4,101,"GtkLabel",None,87,None,None,None,1,None,None)
   </object>
   <object_property>
 	(1,110,"GtkWidget","height-request","600",None,None,None,None,None,None,None,None,None),
@@ -410,7 +414,10 @@
 	(4,92,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
 	(4,93,"GtkLabel","label","Page 5",None,None,None,None,None,None,None,None,None),
 	(4,94,"GtkLabel","label","General",None,None,None,None,None,None,None,None,None),
-	(4,95,"GtkLabel","label","Page 3",None,None,None,None,None,None,None,None,None)
+	(4,98,"GtkLabel","label","Help",None,None,None,None,None,None,None,None,None),
+	(4,99,"GtkImage","icon-name","help-browser",None,None,None,None,None,None,None,None,None),
+	(4,100,"GtkLabel","label","Page 3 top of box",None,None,None,None,None,None,None,None,None),
+	(4,101,"GtkLabel","label","Page 3 second bo xentry",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_layout_property>
 	(1,120,126,"GtkGridLayoutChild","row","1",None,None,None,None),
