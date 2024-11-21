@@ -363,4 +363,5 @@
       </item>
     </submenu>
   </menu>
+  <object class="GtkEventControllerFocus"/>
 </interface>

@@ -17,10 +17,10 @@
                 <child>
                   <object class="GtkBox">
                     <property name="margin-bottom">20</property>
-                    <property name="margin-top">30</property>
+                    <property name="margin-top">10</property>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">&lt;span size="large" weight="bold"&gt;Search&lt;/span&gt;</property>
+                        <property name="label">&lt;span size="large" weight="bold"&gt;Search Settings&lt;/span&gt;</property>
                         <property name="margin-end">6</property>
                         <property name="margin-start">6</property>
                         <property name="use-markup">True</property>
@@ -28,23 +28,41 @@
                     </child>
                     <child>
                       <object class="GtkImage">
-                        <property name="icon-name">edit-find</property>
+                        <property name="file">../share/gscope/pixmaps/icon-search.png</property>
                         <property name="icon-size">large</property>
+                        <property name="pixel-size">45</property>
                       </object>
                     </child>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkCheckButton" id="retain_text_checkbutton">
-                    <property name="label">Retain text in search field</property>
-                    <property name="margin-bottom">8</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkCheckButton" id="retain_text_failed_search_checkbutton">
-                    <property name="label">Retain text when search fails</property>
-                    <property name="margin-bottom">8</property>
-                    <property name="margin-start">30</property>
+                  <object class="GtkBox">
+                    <property name="margin-bottom">4</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">&lt;span color="blue" weight="bold"&gt;Query text retention&lt;/span&gt;</property>
+                        <property name="margin-end">4</property>
+                        <property name="margin-start">4</property>
+                        <property name="use-markup">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="retain_text_checkbutton">
+                        <property name="label">Always retain text</property>
+                        <property name="margin-end">8</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="retain_text_failed_search_checkbutton">
+                        <property name="label">Only retain text when search fails</property>
+                        <property name="margin-end">8</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton">
+                        <property name="label">Never retain text</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
                 <child>
@@ -54,11 +72,11 @@
                 </child>
                 <child>
                   <object class="GtkBox">
-                    <property name="margin-bottom">20</property>
-                    <property name="margin-top">30</property>
+                    <property name="margin-bottom">10</property>
+                    <property name="margin-top">20</property>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">&lt;span size="large" weight="bold"&gt;File View&lt;/span&gt;</property>
+                        <property name="label">&lt;span size="large" weight="bold"&gt;Search Results Viewer&lt;/span&gt;</property>
                         <property name="margin-end">6</property>
                         <property name="margin-start">6</property>
                         <property name="use-markup">True</property>
@@ -66,14 +84,15 @@
                     </child>
                     <child>
                       <object class="GtkImage">
-                        <property name="icon-name">text-x-generic</property>
+                        <property name="file">../share/gscope/pixmaps/stock-find.png</property>
                         <property name="icon-size">large</property>
+                        <property name="pixel-size">45</property>
                       </object>
                     </child>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkCheckButton">
+                  <object class="GtkCheckButton" id="use_viewer_radiobutton">
                     <property name="label">Use built-in file viewer</property>
                     <property name="margin-bottom">8</property>
                   </object>
@@ -101,18 +120,26 @@
                     </child>
                     <child>
                       <object class="GtkEntry" id="editor_command_entry">
+                        <property name="focus-on-click">False</property>
                         <property name="hexpand">True</property>
                         <property name="margin-end">4</property>
+                        <child>
+                          <object class="GtkEventControllerFocus">
+                            <property name="name">editor_entry_controller</property>
+                            <signal name="leave" handler="on_editor_command_entry_focus_out_event"/>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkButton">
+                  <object class="GtkButton" id="prefs_help_search_button">
                     <property name="halign">end</property>
-                    <property name="margin-bottom">6</property>
+                    <property name="margin-bottom">8</property>
                     <property name="margin-end">4</property>
-                    <property name="margin-top">200</property>
+                    <property name="valign">end</property>
+                    <property name="vexpand">True</property>
                     <child>
                       <object class="GtkBox">
                         <child>
@@ -134,8 +161,426 @@
             </child>
             <child type="tab">
               <object class="GtkLabel">
+                <property name="justify">center</property>
                 <property name="label">Search
 and View</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="margin-bottom">4</property>
+                    <property name="margin-top">8</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">&lt;span size="large" weight="bold"&gt;App Startup&lt;/span&gt;</property>
+                        <property name="margin-end">12</property>
+                        <property name="margin-start">4</property>
+                        <property name="use-markup">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="icon-name">start-here</property>
+                        <property name="icon-size">large</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="margin-bottom">4</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">&lt;span  color="blue" weight="bold"&gt;Cref Build Mode&lt;/span&gt;</property>
+                        <property name="margin-start">4</property>
+                        <property name="use-markup">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="rebuild_radiobutton_2">
+                        <property name="active">True</property>
+                        <property name="label">Incremental (as needed)</property>
+                        <property name="margin-start">20</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="force_rebuild_radiobutton">
+                        <property name="label">Force Full Rebuild</property>
+                        <property name="margin-start">20</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="no_rebuild_radiobutton_2">
+                        <property name="label">No Rebuild</property>
+                        <property name="margin-start">20</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="margin-start">4</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">&lt;span  color="blue" weight="bold"&gt;Startup Config File:&lt;/span&gt;</property>
+                        <property name="margin-end">16</property>
+                        <property name="use-markup">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="rc_filename_label">
+                        <property name="label">&lt;span weight="bold"&gt;gscoperc&lt;/span&gt;</property>
+                        <property name="use-markup">True</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkSeparator">
+                    <property name="margin-bottom">8</property>
+                    <property name="margin-top">16</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="margin-bottom">4</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">&lt;span size="large" weight="bold"&gt;Cref Source File Search Settings&lt;/span&gt;</property>
+                        <property name="margin-start">4</property>
+                        <property name="use-markup">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="icon-name">preferences-other</property>
+                        <property name="icon-size">large</property>
+                        <property name="margin-start">10</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="margin-bottom">4</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="halign">start</property>
+                        <property name="label">&lt;span color="blue" weight="bold"&gt;Search Traversal Mode&lt;/span&gt;</property>
+                        <property name="margin-bottom">2</property>
+                        <property name="margin-start">4</property>
+                        <property name="use-markup">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="recursive_search_mode_checkbutton">
+                        <property name="label">Recursive Search Mode</property>
+                        <property name="margin-bottom">4</property>
+                        <property name="margin-start">16</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="halign">start</property>
+                    <property name="label">&lt;span color="blue" weight="bold"&gt;Matching Patterns&lt;/span&gt;</property>
+                    <property name="margin-start">4</property>
+                    <property name="use-markup">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">File Suffix List</property>
+                        <property name="margin-start">56</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="suffix_entry">
+                        <property name="hexpand">True</property>
+                        <property name="margin-bottom">12</property>
+                        <property name="margin-end">4</property>
+                        <property name="margin-start">28</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <child>
+                      <object class="GtkLabel" id="rwar">
+                        <property name="label">Typeless File List</property>
+                        <property name="margin-start">56</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="typeless_entry">
+                        <property name="hexpand">True</property>
+                        <property name="margin-end">4</property>
+                        <property name="margin-start">9</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="halign">start</property>
+                    <property name="label">&lt;span color="blue" weight="bold"&gt;Locations&lt;/span&gt;</property>
+                    <property name="margin-start">4</property>
+                    <property name="use-markup">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">Source (root) Directory</property>
+                        <property name="margin-start">21</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="source_entry">
+                        <property name="hexpand">True</property>
+                        <property name="margin-bottom">12</property>
+                        <property name="margin-start">8</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="source_directory_browse_button">
+                        <property name="margin-bottom">10</property>
+                        <property name="margin-end">4</property>
+                        <property name="margin-start">6</property>
+                        <child>
+                          <object class="GtkImage">
+                            <property name="icon-name">folder</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">Include File Search Path</property>
+                        <property name="margin-end">2</property>
+                        <property name="margin-start">20</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="include_entry">
+                        <property name="hexpand">True</property>
+                        <property name="margin-bottom">12</property>
+                        <property name="margin-end">4</property>
+                        <property name="margin-start">1</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">Ignored Directory List</property>
+                        <property name="margin-end">4</property>
+                        <property name="margin-start">20</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="ignored_entry">
+                        <property name="hexpand">True</property>
+                        <property name="margin-end">4</property>
+                        <property name="margin-start">14</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkSeparator">
+                    <property name="margin-bottom">8</property>
+                    <property name="margin-top">16</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">&lt;span size="large"  weight="bold"&gt;Input File List&lt;/span&gt;</property>
+                        <property name="margin-end">8</property>
+                        <property name="margin-start">4</property>
+                        <property name="use-markup">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="file">../share/gscope/pixmaps/file_input.png</property>
+                        <property name="icon-size">large</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="margin-start">30</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">Source file name list</property>
+                        <property name="margin-end">10</property>
+                        <property name="margin-start">4</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="name_entry">
+                        <property name="hexpand">True</property>
+                        <property name="margin-end">8</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="file_name_browse_button">
+                        <property name="margin-end">4</property>
+                        <child>
+                          <object class="GtkImage">
+                            <property name="icon-name">folder</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkSeparator">
+                    <property name="margin-bottom">8</property>
+                    <property name="margin-top">16</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">&lt;span size="large"  weight="bold"&gt;Output Files&lt;/span&gt;</property>
+                        <property name="margin-end">8</property>
+                        <property name="margin-start">4</property>
+                        <property name="use-markup">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="file">../share/gscope/pixmaps/file_output.png</property>
+                        <property name="icon-size">large</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="margin-bottom">8</property>
+                    <property name="margin-start">4</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">Cross Reference File</property>
+                        <property name="margin-end">36</property>
+                        <property name="margin-start">4</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="cref_entry">
+                        <property name="hexpand">True</property>
+                        <property name="margin-end">8</property>
+                        <property name="placeholder-text">cscope_db.out</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="cross_reference_browse_button">
+                        <property name="margin-end">4</property>
+                        <child>
+                          <object class="GtkImage">
+                            <property name="icon-name">folder</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="margin-bottom">8</property>
+                    <property name="margin-start">4</property>
+                    <child>
+                      <object class="GtkButton" id="search_log_button">
+                        <property name="label">Enable</property>
+                        <property name="margin-end">4</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">Search Log</property>
+                        <property name="margin-end">10</property>
+                        <property name="margin-start">4</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="search_log_entry">
+                        <property name="hexpand">True</property>
+                        <property name="margin-end">8</property>
+                        <property name="placeholder-text">gscope_srch.log</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="search_log_browse_button">
+                        <property name="margin-end">4</property>
+                        <child>
+                          <object class="GtkImage">
+                            <property name="icon-name">folder</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="prefs_help_cross_button">
+                    <property name="halign">end</property>
+                    <property name="icon-name">help-browser</property>
+                    <property name="margin-bottom">8</property>
+                    <property name="margin-end">4</property>
+                    <property name="valign">end</property>
+                    <property name="vexpand">True</property>
+                    <child>
+                      <object class="GtkBox">
+                        <child>
+                          <object class="GtkImage">
+                            <property name="icon-name">help-browser</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label">Help</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel">
+                <property name="justify">center</property>
+                <property name="label">Cross
+Reference</property>
+              </object>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel">
+                <property name="justify">center</property>
+                <property name="label">Cross
+Reference</property>
               </object>
             </child>
             <child>
@@ -147,87 +592,157 @@ and View</property>
                     <property name="margin-top">30</property>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">&lt;span size="large" weight="bold"&gt;Cross Reference Build Defaults&lt;/span&gt;</property>
-                        <property name="margin-end">12</property>
-                        <property name="margin-start">4</property>
+                        <property name="label">&lt;span weight="bold" size="large"&gt;Application Modes&lt;/span&gt;</property>
                         <property name="use-markup">True</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImage">
-                        <property name="file">../share/gscope/pixmaps/reload.png</property>
+                        <property name="icon-name">preferences-other</property>
                         <property name="icon-size">large</property>
                       </object>
                     </child>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkCheckButton">
-                    <property name="label">No Rebuild</property>
-                    <property name="margin-start">30</property>
+                  <object class="GtkCheckButton" id="confirmation_checkbutton">
+                    <property name="label">Present a confirmation dialog before exiting App</property>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkCheckButton">
-                    <property name="label">Rebuild (if needed)</property>
-                    <property name="margin-start">30</property>
+                  <object class="GtkCheckButton" id="showicons_checkbutton">
+                    <property name="label">Show Icons in Menus</property>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkCheckButton">
-                    <property name="label">Force Rebuild</property>
-                    <property name="margin-start">30</property>
+                  <object class="GtkCheckButton" id="single_click_checkbutton">
+                    <property name="label">Single-click open</property>
                   </object>
                 </child>
                 <child>
                   <object class="GtkBox">
-                    <property name="margin-top">30</property>
+                    <property name="margin-bottom">10</property>
+                    <property name="margin-top">20</property>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">&lt;span size="large" weight="bold"&gt;Cross Reference Build Options&lt;/span&gt;</property>
-                        <property name="margin-end">12</property>
-                        <property name="margin-start">4</property>
-                        <property name="margin-top">8</property>
+                        <property name="label">&lt;span weight="bold" size="large"&gt;Debug Settings&lt;/span&gt;</property>
                         <property name="use-markup">True</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImage">
-                        <property name="file">../share/gscope/pixmaps/configure.png</property>
+                        <property name="icon-name">preferences-system</property>
                         <property name="icon-size">large</property>
                       </object>
                     </child>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkBox">
-                    <property name="margin-start">30</property>
-                    <child>
-                      <object class="GtkCheckButton">
-                        <property name="label">Truncate Symbols</property>
-                        <property name="sensitive">False</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkSeparator">
-                        <property name="margin-top">71</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label">&lt;span color="red" weight="bold"&gt;(Deprecated)&lt;/span&gt;</property>
-                        <property name="margin-start">20</property>
-                        <property name="use-markup">True</property>
-                      </object>
-                    </child>
+                  <object class="GtkCheckButton" id="show_includes_checkbutton">
+                    <property name="label">List include files on stdout when "session Statistics" dialog is activated</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="compress_symbols_checkbutton">
+                    <property name="label">Compress Symbol Table  (Normally Enabled, de-select for debugging)</property>
                   </object>
                 </child>
                 <child>
                   <object class="GtkSeparator">
                     <property name="margin-bottom">20</property>
-                    <property name="margin-top">20</property>
+                    <property name="margin-top">40</property>
                   </object>
                 </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="margin-bottom">20</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">&lt;span weight="bold" size="large"&gt;Support Applications&lt;/span&gt;</property>
+                        <property name="use-markup">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="icon-name">applications-other</property>
+                        <property name="icon-size">large</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <child>
+                      <object class="GtkBox">
+                        <property name="margin-bottom">10</property>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label">Terminal App</property>
+                            <property name="margin-end">35</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkEntry" id="terminal_app_entry">
+                            <property name="hexpand">True</property>
+                            <property name="margin-end">4</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">File Manager App</property>
+                        <property name="margin-end">8</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="file_manager_app_entry">
+                        <property name="hexpand">True</property>
+                        <property name="margin-end">4</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="prefs_help_general_button">
+                    <property name="halign">end</property>
+                    <property name="margin-bottom">8</property>
+                    <property name="margin-end">4</property>
+                    <property name="valign">end</property>
+                    <property name="vexpand">True</property>
+                    <child>
+                      <object class="GtkBox">
+                        <child>
+                          <object class="GtkImage">
+                            <property name="icon-name">help-browser</property>
+                            <property name="icon-size">normal</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label">Help</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel">
+                <property name="justify">center</property>
+                <property name="label">General
+Settings</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkBox">
                     <property name="margin-bottom">20</property>
@@ -254,13 +769,15 @@ and View</property>
                   <object class="GtkLabel">
                     <property name="halign">start</property>
                     <property name="label">Local cache storage location</property>
+                    <property name="margin-bottom">4</property>
                     <property name="margin-start">4</property>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="autogen_cache_path_entry">
                     <property name="margin-end">4</property>
-                    <property name="placeholder-text">/temp</property>
+                    <property name="margin-start">8</property>
+                    <property name="placeholder-text">/tmp</property>
                     <property name="primary-icon-name">folder</property>
                   </object>
                 </child>
@@ -273,7 +790,7 @@ and View</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkSpinButton">
+                      <object class="GtkSpinButton" id="autogen_cache_threshold_spinbutton">
                         <property name="margin-end">8</property>
                         <property name="margin-start">8</property>
                         <property name="value">1.0</property>
@@ -288,8 +805,8 @@ and View</property>
                 </child>
                 <child>
                   <object class="GtkSeparator">
-                    <property name="margin-bottom">12</property>
-                    <property name="margin-top">12</property>
+                    <property name="margin-bottom">20</property>
+                    <property name="margin-top">20</property>
                   </object>
                 </child>
                 <child>
@@ -364,7 +881,7 @@ and View</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkEntry">
+                      <object class="GtkEntry" id="autogen_suffix_entry1">
                         <property name="placeholder-text">.proto</property>
                         <layout>
                           <property name="column">1</property>
@@ -373,7 +890,7 @@ and View</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkEntry">
+                      <object class="GtkEntry" id="autogen_cmd_entry1">
                         <property name="placeholder-text">protoc-c_latest</property>
                         <layout>
                           <property name="column">2</property>
@@ -382,7 +899,7 @@ and View</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkEntry">
+                      <object class="GtkEntry" id="autogen_id_entry1">
                         <property name="placeholder-text">.pb-c</property>
                         <layout>
                           <property name="column">3</property>
@@ -391,7 +908,7 @@ and View</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkEntry">
+                      <object class="GtkEntry" id="autogen_search_root_entry1">
                         <property name="margin-end">4</property>
                         <layout>
                           <property name="column">4</property>
@@ -402,30 +919,16 @@ and View</property>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="autogen_generated_filename_label">
-                    <property name="halign">start</property>
-                    <property name="label">Generated filename format:</property>
-                    <property name="margin-top">10</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkButton" id="prefs_help_cross_button">
-                    <property name="halign">end</property>
-                    <property name="icon-name">help-browser</property>
-                    <property name="margin-bottom">8</property>
+                  <object class="GtkBox">
                     <property name="margin-top">20</property>
                     <child>
-                      <object class="GtkBox">
-                        <child>
-                          <object class="GtkImage">
-                            <property name="icon-name">help-browser</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="label">Help</property>
-                          </object>
-                        </child>
+                      <object class="GtkLabel">
+                        <property name="label">Generated filename format: </property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="autogen_generated_filename_label">
+                        <property name="label"> </property>
                       </object>
                     </child>
                   </object>
@@ -434,568 +937,15 @@ and View</property>
             </child>
             <child type="tab">
               <object class="GtkLabel">
-                <property name="label">Cross
-Reference</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkBox">
-                <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkBox">
-                    <property name="orientation">vertical</property>
-                    <child>
-                      <object class="GtkBox">
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="label">&lt;span size="large" weight="bold"&gt;Source File Search Settings&lt;/span&gt;</property>
-                            <property name="margin-bottom">15</property>
-                            <property name="margin-start">4</property>
-                            <property name="margin-top">25</property>
-                            <property name="use-markup">True</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkImage">
-                            <property name="file">../share/gscope/pixmaps/fileexport.png</property>
-                            <property name="icon-size">large</property>
-                            <property name="margin-start">10</property>
-                            <property name="margin-top">16</property>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkSeparator">
-                    <property name="margin-bottom">10</property>
-                    <property name="margin-top">10</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="halign">start</property>
-                    <property name="label">&lt;span color="blue" weight="bold"&gt;Matching Patterns&lt;/span&gt;</property>
-                    <property name="margin-start">4</property>
-                    <property name="use-markup">True</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkBox">
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label">File Suffix List</property>
-                        <property name="margin-start">56</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkEntry">
-                        <property name="hexpand">True</property>
-                        <property name="margin-bottom">12</property>
-                        <property name="margin-end">4</property>
-                        <property name="margin-start">28</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkBox">
-                    <child>
-                      <object class="GtkBox">
-                        <child>
-                          <object class="GtkLabel" id="rwar">
-                            <property name="label">Typeless File List</property>
-                            <property name="margin-start">56</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkEntry">
-                            <property name="hexpand">True</property>
-                            <property name="margin-end">4</property>
-                            <property name="margin-start">9</property>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkSeparator">
-                    <property name="margin-bottom">20</property>
-                    <property name="margin-top">20</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="halign">start</property>
-                    <property name="label">&lt;span color="blue" weight="bold"&gt;Locations&lt;/span&gt;</property>
-                    <property name="margin-start">4</property>
-                    <property name="use-markup">True</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkBox">
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label">Source (root) Directory</property>
-                        <property name="margin-end">3</property>
-                        <property name="margin-start">21</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkEntry">
-                        <property name="hexpand">True</property>
-                        <property name="margin-bottom">12</property>
-                        <property name="margin-start">8</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="source_directory_browse_button">
-                        <property name="margin-bottom">10</property>
-                        <property name="margin-end">4</property>
-                        <property name="margin-start">6</property>
-                        <child>
-                          <object class="GtkImage">
-                            <property name="icon-name">folder</property>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkBox">
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label">Include File Search Path</property>
-                        <property name="margin-end">4</property>
-                        <property name="margin-start">20</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkEntry">
-                        <property name="hexpand">True</property>
-                        <property name="margin-bottom">12</property>
-                        <property name="margin-end">4</property>
-                        <property name="margin-start">1</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkBox">
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label">Ignored Directory List</property>
-                        <property name="margin-end">4</property>
-                        <property name="margin-start">20</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkEntry">
-                        <property name="hexpand">True</property>
-                        <property name="margin-end">4</property>
-                        <property name="margin-start">14</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkSeparator">
-                    <property name="margin-bottom">20</property>
-                    <property name="margin-top">20</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="halign">start</property>
-                    <property name="label">&lt;span color="blue" weight="bold"&gt;Traversal Mode&lt;/span&gt;</property>
-                    <property name="margin-bottom">6</property>
-                    <property name="margin-start">4</property>
-                    <property name="use-markup">True</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkCheckButton">
-                    <property name="label">Recursive Search Mode</property>
-                    <property name="margin-start">16</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkButton">
-                    <property name="halign">end</property>
-                    <property name="margin-bottom">10</property>
-                    <property name="margin-end">4</property>
-                    <property name="margin-top">150</property>
-                    <child>
-                      <object class="GtkBox">
-                        <child>
-                          <object class="GtkImage">
-                            <property name="icon-name">help-browser</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="label">Help</property>
-                            <property name="margin-start">4</property>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child type="tab">
-              <object class="GtkLabel">
-                <property name="label">Source File
-Search</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkBox">
-                <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkBox">
-                    <property name="margin-bottom">30</property>
-                    <property name="margin-top">30</property>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label">&lt;span size="large" color="blue" weight="bold"&gt;Input Files&lt;/span&gt;</property>
-                        <property name="margin-end">8</property>
-                        <property name="margin-start">4</property>
-                        <property name="use-markup">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImage">
-                        <property name="file">../share/gscope/pixmaps/player_rew.png</property>
-                        <property name="icon-size">large</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkBox">
-                    <property name="margin-bottom">12</property>
-                    <property name="margin-start">30</property>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label">Source file name list</property>
-                        <property name="margin-end">10</property>
-                        <property name="margin-start">4</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkEntry">
-                        <property name="hexpand">True</property>
-                        <property name="margin-end">8</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkButton">
-                        <property name="margin-end">4</property>
-                        <child>
-                          <object class="GtkImage">
-                            <property name="icon-name">folder</property>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkBox">
-                    <property name="margin-start">30</property>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label">Start UP preferences File:</property>
-                        <property name="margin-end">8</property>
-                        <property name="margin-start">4</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label">&lt;span weight="bold"&gt;gscoperc&lt;/span&gt;</property>
-                        <property name="use-markup">True</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkSeparator">
-                    <property name="margin-bottom">30</property>
-                    <property name="margin-top">30</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkBox">
-                    <property name="margin-bottom">20</property>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label">&lt;span size="large" color="blue" weight="bold"&gt;Output Files&lt;/span&gt;</property>
-                        <property name="margin-end">8</property>
-                        <property name="margin-start">4</property>
-                        <property name="use-markup">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImage">
-                        <property name="file">../share/gscope/pixmaps/player-fwd.png</property>
-                        <property name="icon-size">large</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkBox">
-                    <property name="margin-bottom">8</property>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label">Cross Reference File</property>
-                        <property name="margin-end">36</property>
-                        <property name="margin-start">4</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkEntry">
-                        <property name="hexpand">True</property>
-                        <property name="margin-end">8</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkButton">
-                        <property name="margin-end">4</property>
-                        <child>
-                          <object class="GtkImage">
-                            <property name="icon-name">folder</property>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkBox">
-                    <child>
-                      <object class="GtkButton">
-                        <property name="label">Enable</property>
-                        <property name="margin-start">4</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label">Search Log</property>
-                        <property name="margin-end">12</property>
-                        <property name="margin-start">4</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkEntry">
-                        <property name="hexpand">True</property>
-                        <property name="margin-end">8</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkButton">
-                        <property name="margin-end">4</property>
-                        <child>
-                          <object class="GtkImage">
-                            <property name="icon-name">folder</property>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkButton">
-                    <property name="halign">end</property>
-                    <property name="margin-end">4</property>
-                    <property name="margin-top">200</property>
-                    <property name="valign">end</property>
-                    <child>
-                      <object class="GtkBox">
-                        <child>
-                          <object class="GtkImage">
-                            <property name="icon-name">help-browser</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="label">Help</property>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child type="tab">
-              <object class="GtkLabel">
-                <property name="label">File Names</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkBox">
-                <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkBox">
-                    <property name="margin-bottom">20</property>
-                    <property name="margin-top">30</property>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label">&lt;span weight="bold" size="large"&gt;Application Modes&lt;/span&gt;</property>
-                        <property name="use-markup">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImage">
-                        <property name="icon-name">preferences-other</property>
-                        <property name="icon-size">large</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkCheckButton">
-                    <property name="label">Present a confirmation dialog before exiting App</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkCheckButton">
-                    <property name="label">Show Icons in Menus</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkCheckButton">
-                    <property name="label">Single-click open</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkBox">
-                    <property name="margin-bottom">10</property>
-                    <property name="margin-top">20</property>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label">&lt;span weight="bold" size="large"&gt;Debug Settings&lt;/span&gt;</property>
-                        <property name="use-markup">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImage">
-                        <property name="icon-name">preferences-system</property>
-                        <property name="icon-size">large</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkCheckButton">
-                    <property name="label">List include files on stdout when "session Statistics" dialog is activated</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkCheckButton">
-                    <property name="label">Compress Symbol Table  (Normally Enabled, de-select for debugging)</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkSeparator">
-                    <property name="margin-bottom">20</property>
-                    <property name="margin-top">40</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkBox">
-                    <property name="margin-bottom">20</property>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label">&lt;span weight="bold" size="large"&gt;Support Applications&lt;/span&gt;</property>
-                        <property name="use-markup">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImage">
-                        <property name="icon-name">applications-other</property>
-                        <property name="icon-size">large</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkBox">
-                    <child>
-                      <object class="GtkBox">
-                        <property name="margin-bottom">10</property>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="label">Terminal app</property>
-                            <property name="margin-end">35</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkEntry">
-                            <property name="hexpand">True</property>
-                            <property name="margin-end">4</property>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkBox">
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label">File Manager App</property>
-                        <property name="margin-end">8</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkEntry">
-                        <property name="hexpand">True</property>
-                        <property name="margin-end">4</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkButton">
-                    <property name="halign">end</property>
-                    <property name="margin-bottom">4</property>
-                    <property name="margin-end">4</property>
-                    <property name="margin-top">60</property>
-                    <child>
-                      <object class="GtkBox">
-                        <child>
-                          <object class="GtkImage">
-                            <property name="icon-name">help-browser</property>
-                            <property name="icon-size">normal</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="label">Help</property>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child type="tab">
-              <object class="GtkLabel">
-                <property name="label">General</property>
+                <property name="justify">center</property>
+                <property name="label">AutoGen
+Settings</property>
               </object>
             </child>
           </object>
         </child>
         <child>
-          <object class="GtkButton">
+          <object class="GtkButton" id="closebutton1">
             <property name="halign">end</property>
             <property name="label">Close</property>
             <property name="margin-bottom">6</property>
