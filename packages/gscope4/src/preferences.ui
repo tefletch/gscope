@@ -306,6 +306,11 @@ and View</property>
                         <property name="margin-bottom">12</property>
                         <property name="margin-end">4</property>
                         <property name="margin-start">28</property>
+                        <child>
+                          <object class="GtkEventControllerFocus">
+                            <property name="name">on_suffix_entry_focus_out_event</property>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>
@@ -323,6 +328,11 @@ and View</property>
                         <property name="hexpand">True</property>
                         <property name="margin-end">4</property>
                         <property name="margin-start">9</property>
+                        <child>
+                          <object class="GtkEventControllerFocus">
+                            <property name="name">on_typeless_entry_focus_out_event</property>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>
@@ -348,6 +358,11 @@ and View</property>
                         <property name="hexpand">True</property>
                         <property name="margin-bottom">12</property>
                         <property name="margin-start">8</property>
+                        <child>
+                          <object class="GtkEventControllerFocus">
+                            <property name="name">on_source_entry_focus_out_event</property>
+                          </object>
+                        </child>
                       </object>
                     </child>
                     <child>
@@ -379,6 +394,11 @@ and View</property>
                         <property name="margin-bottom">12</property>
                         <property name="margin-end">4</property>
                         <property name="margin-start">1</property>
+                        <child>
+                          <object class="GtkEventControllerFocus">
+                            <property name="name">on_include_entry_focus_out_event</property>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>
@@ -397,6 +417,11 @@ and View</property>
                         <property name="hexpand">True</property>
                         <property name="margin-end">4</property>
                         <property name="margin-start">14</property>
+                        <child>
+                          <object class="GtkEventControllerFocus">
+                            <property name="name">on_ignored_entry_focus_out_event</property>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>
@@ -439,6 +464,11 @@ and View</property>
                       <object class="GtkEntry" id="name_entry">
                         <property name="hexpand">True</property>
                         <property name="margin-end">8</property>
+                        <child>
+                          <object class="GtkEventControllerFocus">
+                            <property name="name">on_name_entry_focus_out_event</property>
+                          </object>
+                        </child>
                       </object>
                     </child>
                     <child>
@@ -493,6 +523,11 @@ and View</property>
                         <property name="hexpand">True</property>
                         <property name="margin-end">8</property>
                         <property name="placeholder-text">cscope_db.out</property>
+                        <child>
+                          <object class="GtkEventControllerFocus">
+                            <property name="name">on_cref_entry_focus_out_event</property>
+                          </object>
+                        </child>
                       </object>
                     </child>
                     <child>
@@ -529,6 +564,11 @@ and View</property>
                         <property name="hexpand">True</property>
                         <property name="margin-end">8</property>
                         <property name="placeholder-text">gscope_srch.log</property>
+                        <child>
+                          <object class="GtkEventControllerFocus">
+                            <property name="name">on_search_log_entry_focus_out_event</property>
+                          </object>
+                        </child>
                       </object>
                     </child>
                     <child>
@@ -685,6 +725,11 @@ Reference</property>
                           <object class="GtkEntry" id="terminal_app_entry">
                             <property name="hexpand">True</property>
                             <property name="margin-end">4</property>
+                            <child>
+                              <object class="GtkEventControllerFocus">
+                                <property name="name">on_terminal_app_entry_focus_out_event</property>
+                              </object>
+                            </child>
                           </object>
                         </child>
                       </object>
@@ -703,6 +748,11 @@ Reference</property>
                       <object class="GtkEntry" id="file_manager_app_entry">
                         <property name="hexpand">True</property>
                         <property name="margin-end">4</property>
+                        <child>
+                          <object class="GtkEventControllerFocus">
+                            <property name="name">on_file_manager_app_entry_focus_out_event</property>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>
@@ -779,6 +829,11 @@ Settings</property>
                     <property name="margin-start">8</property>
                     <property name="placeholder-text">/tmp</property>
                     <property name="primary-icon-name">folder</property>
+                    <child>
+                      <object class="GtkEventControllerFocus">
+                        <property name="name">on_autogen_cache_path_entry_focus_out_event</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
                 <child>
@@ -883,6 +938,11 @@ Settings</property>
                     <child>
                       <object class="GtkEntry" id="autogen_suffix_entry1">
                         <property name="placeholder-text">.proto</property>
+                        <child>
+                          <object class="GtkEventControllerFocus">
+                            <property name="name">on_autogen_suffix_entry1_focus_out_event</property>
+                          </object>
+                        </child>
                         <layout>
                           <property name="column">1</property>
                           <property name="row">1</property>
@@ -892,6 +952,11 @@ Settings</property>
                     <child>
                       <object class="GtkEntry" id="autogen_cmd_entry1">
                         <property name="placeholder-text">protoc-c_latest</property>
+                        <child>
+                          <object class="GtkEventControllerFocus">
+                            <property name="name">on_autogen_cmd_entry1_focus_out_event</property>
+                          </object>
+                        </child>
                         <layout>
                           <property name="column">2</property>
                           <property name="row">1</property>
@@ -901,6 +966,11 @@ Settings</property>
                     <child>
                       <object class="GtkEntry" id="autogen_id_entry1">
                         <property name="placeholder-text">.pb-c</property>
+                        <child>
+                          <object class="GtkEventControllerFocus">
+                            <property name="name">on_autogen_id_entry1_focus_out_event</property>
+                          </object>
+                        </child>
                         <layout>
                           <property name="column">3</property>
                           <property name="row">1</property>
@@ -910,6 +980,11 @@ Settings</property>
                     <child>
                       <object class="GtkEntry" id="autogen_search_root_entry1">
                         <property name="margin-end">4</property>
+                        <child>
+                          <object class="GtkEventControllerFocus">
+                            <property name="name">on_autogen_search_root_entry1_focus_out_event</property>
+                          </object>
+                        </child>
                         <layout>
                           <property name="column">4</property>
                           <property name="row">1</property>

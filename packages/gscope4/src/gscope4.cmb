@@ -234,7 +234,22 @@
 	(4,287,"GtkCheckButton","retain_text_checkbutton",285,None,None,None,1,None,None),
 	(4,288,"GtkCheckButton","retain_text_failed_search_checkbutton",285,None,None,None,2,None,None),
 	(4,289,"GtkCheckButton",None,285,None,None,None,3,None,None),
-	(4,293,"GtkEventControllerFocus",None,38,None,None,None,0,None,None)
+	(4,293,"GtkEventControllerFocus",None,38,None,None,None,0,None,None),
+	(4,294,"GtkEventControllerFocus",None,232,None,None,None,0,None,None),
+	(4,295,"GtkEventControllerFocus",None,235,None,None,None,0,None,None),
+	(4,297,"GtkEventControllerFocus",None,244,None,None,None,0,None,None),
+	(4,298,"GtkEventControllerFocus",None,247,None,None,None,0,None,None),
+	(4,299,"GtkEventControllerFocus",None,259,None,None,None,0,None,None),
+	(4,300,"GtkEventControllerFocus",None,270,None,None,None,0,None,None),
+	(4,301,"GtkEventControllerFocus",None,275,None,None,None,0,None,None),
+	(4,302,"GtkEventControllerFocus",None,179,None,None,None,0,None,None),
+	(4,303,"GtkEventControllerFocus",None,182,None,None,None,0,None,None),
+	(4,304,"GtkEventControllerFocus",None,205,None,None,None,0,None,None),
+	(4,309,"GtkEventControllerFocus",None,218,None,None,None,0,None,None),
+	(4,310,"GtkEventControllerFocus",None,219,None,None,None,0,None,None),
+	(4,311,"GtkEventControllerFocus",None,220,None,None,None,0,None,None),
+	(4,312,"GtkEventControllerFocus",None,221,None,None,None,0,None,None),
+	(4,313,"GtkEventControllerFocus",None,239,None,None,None,0,None,None)
   </object>
   <object_property>
 	(1,110,"GtkWidget","height-request","600",None,None,None,None,None,None,None,None,None),
@@ -676,7 +691,22 @@
 	(4,288,"GtkCheckButton","label","Only retain text when search fails",0,None,None,None,None,None,None,None,None),
 	(4,288,"GtkWidget","margin-end","8",None,None,None,None,None,None,None,None,None),
 	(4,289,"GtkCheckButton","label","Never retain text",None,None,None,None,None,None,None,None,None),
-	(4,293,"GtkEventController","name","editor_entry_controller",0,None,None,None,None,None,None,None,None)
+	(4,293,"GtkEventController","name","editor_entry_controller",0,None,None,None,None,None,None,None,None),
+	(4,294,"GtkEventController","name","on_suffix_entry_focus_out_event",None,None,None,None,None,None,None,None,None),
+	(4,295,"GtkEventController","name","on_typeless_entry_focus_out_event",None,None,None,None,None,None,None,None,None),
+	(4,297,"GtkEventController","name","on_include_entry_focus_out_event",None,None,None,None,None,None,None,None,None),
+	(4,298,"GtkEventController","name","on_ignored_entry_focus_out_event",None,None,None,None,None,None,None,None,None),
+	(4,299,"GtkEventController","name","on_name_entry_focus_out_event",None,None,None,None,None,None,None,None,None),
+	(4,300,"GtkEventController","name","on_cref_entry_focus_out_event",None,None,None,None,None,None,None,None,None),
+	(4,301,"GtkEventController","name","on_search_log_entry_focus_out_event",None,None,None,None,None,None,None,None,None),
+	(4,302,"GtkEventController","name","on_terminal_app_entry_focus_out_event",None,None,None,None,None,None,None,None,None),
+	(4,303,"GtkEventController","name","on_file_manager_app_entry_focus_out_event",None,None,None,None,None,None,None,None,None),
+	(4,304,"GtkEventController","name","on_autogen_cache_path_entry_focus_out_event",None,None,None,None,None,None,None,None,None),
+	(4,309,"GtkEventController","name","on_autogen_suffix_entry1_focus_out_event",None,None,None,None,None,None,None,None,None),
+	(4,310,"GtkEventController","name","on_autogen_cmd_entry1_focus_out_event",None,None,None,None,None,None,None,None,None),
+	(4,311,"GtkEventController","name","on_autogen_id_entry1_focus_out_event",None,None,None,None,None,None,None,None,None),
+	(4,312,"GtkEventController","name","on_autogen_search_root_entry1_focus_out_event",None,None,None,None,None,None,None,None,None),
+	(4,313,"GtkEventController","name","on_source_entry_focus_out_event",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_layout_property>
 	(1,120,126,"GtkGridLayoutChild","row","1",None,None,None,None),
