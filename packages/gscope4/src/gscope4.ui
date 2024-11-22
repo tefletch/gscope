@@ -177,12 +177,6 @@
                         <child>
                           <object class="GtkEntry" id="query_entry">
                             <property name="hexpand">True</property>
-                            <child>
-                              <object class="GtkEventControllerFocus">
-                                <property name="name">query_entry_controller</property>
-                                <signal name="leave" handler="on_query_entry_focus_out"/>
-                              </object>
-                            </child>
                           </object>
                         </child>
                       </object>

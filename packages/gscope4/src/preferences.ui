@@ -616,13 +616,6 @@ and View</property>
 Reference</property>
               </object>
             </child>
-            <child type="tab">
-              <object class="GtkLabel">
-                <property name="justify">center</property>
-                <property name="label">Cross
-Reference</property>
-              </object>
-            </child>
             <child>
               <object class="GtkBox">
                 <property name="orientation">vertical</property>
