@@ -471,3 +471,15 @@ gchar *my_gtk_file_chooser_get_filename(GtkFileChooser *chooser)
 
     return(filename);
 }
+
+
+
+void my_gtk_toggle_button_set_active(GtkWidget *button, gboolean is_active)
+{
+
+    #ifndef GTK4_BUILD
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), is_active);
+    #else
+        gtk_check_button_set_active(GTK_CHECK_BUTTON(button), is_active);
+    #endif
+}

@@ -242,82 +242,24 @@ void
 on_editor_command_entry_changed        (GtkEditable     *editable,
                                         gpointer         user_data);
 
-#ifndef GTK4_BUILD  // Must create a GtkEventControllFocus object to track focus-out
-gboolean
-on_suffix_entry_focus_out_event        (GtkWidget       *widget,
-                                        GdkEventFocus   *event,
-                                        gpointer         user_data);
-
 void
 on_typeless_entry_changed              (GtkEditable     *editable,
-                                        gpointer         user_data);
-
-gboolean
-on_typeless_entry_focus_out_event      (GtkWidget       *widget,
-                                        GdkEventFocus   *event,
                                         gpointer         user_data);
 
 void
 on_ignored_entry_changed               (GtkEditable     *editable,
                                         gpointer         user_data);
 
-gboolean
-on_ignored_entry_focus_out_event       (GtkWidget       *widget,
-                                        GdkEventFocus   *event,
-                                        gpointer         user_data);
-
-gboolean
-on_source_entry_focus_out_event        (GtkWidget       *widget,
-                                        GdkEventFocus   *event,
-                                        gpointer         user_data);
-
 void
 on_include_entry_changed               (GtkEditable     *editable,
-                                        gpointer         user_data);
-
-gboolean
-on_include_entry_focus_out_event       (GtkWidget       *widget,
-                                        GdkEventFocus   *event,
                                         gpointer         user_data);
 
 void
 on_name_entry_changed                  (GtkEditable     *editable,
                                         gpointer         user_data);
 
-gboolean
-on_name_entry_focus_out_event          (GtkWidget       *widget,
-                                        GdkEventFocus   *event,
-                                        gpointer         user_data);
-
-gboolean
-on_cref_entry_focus_out_event          (GtkWidget       *widget,
-                                        GdkEventFocus   *event,
-                                        gpointer         user_data);
-
-gboolean
-on_search_log_entry_focus_out_event    (GtkWidget       *widget,
-                                        GdkEventFocus   *event,
-                                        gpointer         user_data);
-
-gboolean
-on_include_dirlist_entry_focus_out_event
-                                        (GtkWidget       *widget,
-                                        GdkEventFocus   *event,
-                                        gpointer         user_data);
-
 void
 on_search_root_entry_changed           (GtkEditable     *editable,
-                                        gpointer         user_data);
-
-gboolean
-on_search_root_entry_focus_out_event   (GtkWidget       *widget,
-                                        GdkEventFocus   *event,
-                                        gpointer         user_data);
-
-gboolean
-on_autogen_cache_path_entry_focus_out_event
-                                        (GtkWidget       *widget,
-                                        GdkEventFocus   *event,
                                         gpointer         user_data);
 
 void
@@ -328,54 +270,9 @@ void
 on_autogen_search_root_entry1_changed  (GtkEditable     *editable,
                                         gpointer         user_data);
 
-gboolean
-on_autogen_search_root_entry1_focus_out_event
-                                        (GtkWidget       *widget,
-                                        GdkEventFocus   *event,
-                                        gpointer         user_data);
-
-gboolean
-on_autogen_suffix_entry1_focus_out_event
-                                        (GtkWidget       *widget,
-                                        GdkEventFocus   *event,
-                                        gpointer         user_data);
-
 void
 on_autogen_cmd_entry1_changed          (GtkEditable     *editable,
                                         gpointer         user_data);
-
-gboolean
-on_autogen_cmd_entry1_focus_out_event  (GtkWidget       *widget,
-                                        GdkEventFocus   *event,
-                                        gpointer         user_data);
-
-gboolean
-on_autogen_id_entry1_focus_out_event   (GtkWidget       *widget,
-                                        GdkEventFocus   *event,
-                                        gpointer         user_data);
-
-gboolean
-on_autogen_cache_threshold_spinbutton_focus_out_event
-                                        (GtkWidget       *widget,
-                                        GdkEventFocus   *event,
-                                        gpointer         user_data);
-
-gboolean
-on_terminal_app_entry_focus_out_event  (GtkWidget       *widget,
-                                        GdkEventFocus   *event,
-                                        gpointer         user_data);
-
-gboolean
-on_file_manager_app_entry_focus_out_event
-                                        (GtkWidget       *widget,
-                                        GdkEventFocus   *event,
-                                        gpointer         user_data);
-#else   // GTK4
-
-// test code only
-void on_query_entry_focus_out(GtkEventControllerFocus *controller, gpointer user_data);
-
-#endif
 
 
 // GTK Version-variant (focus handler) prototypes
@@ -383,11 +280,45 @@ void on_query_entry_focus_out(GtkEventControllerFocus *controller, gpointer user
 
 #ifndef GTK4_BUILD
 gboolean on_editor_command_entry_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
+gboolean on_suffix_entry_focus_out_event        (GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
+gboolean on_typeless_entry_focus_out_event      (GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
+gboolean on_source_entry_focus_out_event        (GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
+gboolean on_ignored_entry_focus_out_event       (GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
+gboolean on_include_entry_focus_out_event       (GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
+gboolean on_name_entry_focus_out_event          (GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
+gboolean on_cref_entry_focus_out_event          (GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
+gboolean on_search_log_entry_focus_out_event    (GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
+gboolean on_include_dirlist_entry_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
+gboolean on_autogen_cache_path_entry_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
+gboolean on_autogen_search_root_entry1_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
+gboolean on_autogen_suffix_entry1_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
+gboolean on_autogen_cmd_entry1_focus_out_event  (GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
+gboolean on_autogen_id_entry1_focus_out_event   (GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
+gboolean on_autogen_cache_threshold_spinbutton_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
+gboolean on_terminal_app_entry_focus_out_event  (GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
+gboolean on_file_manager_app_entry_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
 #else
 void on_editor_command_entry_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data);
+void on_suffix_entry_focus_out_event        (GtkEventControllerFocus *controller, gpointer user_data);
+void on_typeless_entry_focus_out_event      (GtkEventControllerFocus *controller, gpointer user_data);
+void on_ignored_entry_focus_out_event       (GtkEventControllerFocus *controller, gpointer user_data);
+void on_source_entry_focus_out_event        (GtkEventControllerFocus *controller, gpointer user_data);
+void on_include_entry_focus_out_event       (GtkEventControllerFocus *controller, gpointer user_data);
+void on_name_entry_focus_out_event          (GtkEventControllerFocus *controller, gpointer user_data);
+void on_cref_entry_focus_out_event          (GtkEventControllerFocus *controller, gpointer user_data);
+void on_search_log_entry_focus_out_event    (GtkEventControllerFocus *controller, gpointer user_data);
+void on_include_dirlist_entry_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data);
+void on_autogen_cache_path_entry_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data);
+void on_autogen_search_root_entry1_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data);
+void on_autogen_cache_path_entry_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data);
+void on_autogen_search_root_entry1_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data);
+void on_autogen_suffix_entry1_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data);
+void on_autogen_cmd_entry1_focus_out_event  (GtkEventControllerFocus *controller, gpointer user_data);
+void on_autogen_id_entry1_focus_out_event   (GtkEventControllerFocus *controller, gpointer user_data);
+void on_autogen_cache_threshold_spinbutton_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data);
+void on_terminal_app_entry_focus_out_event  (GtkEventControllerFocus *controller, gpointer user_data);
+void on_file_manager_app_entry_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data);
 #endif
-
-
 
 
 void

@@ -1022,7 +1022,6 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
     GtkWidget *prefs_dialog;
 
     static gboolean initialized = FALSE;
-    printf("hello from: %s\n", __func__);
 
     prefs_dialog = gscope_preferences;
 
@@ -1032,21 +1031,21 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
 
         /*** Initialize the preference dialog settings (tab #1 "Search and View") ***/
         /****************************************************************************/
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_checkbutton")),
+        my_gtk_toggle_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_checkbutton"),
                                      sticky_settings.retainInput);
 
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_failed_search_checkbutton")),
+        my_gtk_toggle_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_failed_search_checkbutton"),
                                      settings.retainFailed);
 
         gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_failed_search_checkbutton"), !sticky_settings.retainInput);
 
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "ignore_case_checkbutton")),
+        my_gtk_toggle_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "ignore_case_checkbutton"),
                                      sticky_settings.ignoreCase);
 
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "use_editor_radiobutton")),
+        my_gtk_toggle_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "use_editor_radiobutton"),
                                      sticky_settings.useEditor);
 
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "reuse_window_checkbutton")),
+        my_gtk_toggle_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "reuse_window_checkbutton"),
                                      sticky_settings.reuseWin);
 
         gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "editor_command_entry")), MAX_STRING_ARG_SIZE - 1);
@@ -1977,10 +1976,45 @@ void on_editor_command_entry_changed(GtkEditable *editable, gpointer user_data)
 }
 
 
-#ifndef GTK4_BUILD  // GTK4 Event Focus handling
-gboolean on_suffix_entry_focus_out_event(GtkWidget       *widget,
-                                         GdkEventFocus   *event,
-                                         gpointer         user_data)
+
+//*** Start multi-Gtk version focus handling *******/
+/***************************************************/
+
+#ifndef GTK4_BUILD
+gboolean on_editor_command_entry_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+#else
+void on_editor_command_entry_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data)
+#endif
+{
+    const gchar *editor_command;
+
+    if (editor_command_changed)
+    {
+        editor_command =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "editor_command_entry")));
+
+        if (strcmp(settings.fileEditor, editor_command) != 0)  // Only update if a real change has been made
+        {
+            // Update the preferences file
+            APP_CONFIG_set_string("fileEditor", editor_command);
+
+            // Update the application setting
+            strcpy(settings.fileEditor, editor_command);
+        }
+        editor_command_changed = FALSE;
+    }
+
+    #ifndef GTK4_BUILD
+    return(FALSE);
+    #endif
+}
+
+
+
+#ifndef GTK4_BUILD
+gboolean on_suffix_entry_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+#else
+void on_suffix_entry_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data)
+#endif
 {
     const gchar *suffix_list;
 
@@ -2007,13 +2041,17 @@ gboolean on_suffix_entry_focus_out_event(GtkWidget       *widget,
         suffix_entry_changed = FALSE;
     }
 
-    return FALSE;
+    #ifndef GTK4_BUILD
+    return(FALSE);
+    #endif
 }
 
 
-gboolean on_typeless_entry_focus_out_event(GtkWidget       *widget,
-                                           GdkEventFocus   *event,
-                                           gpointer         user_data)
+#ifndef GTK4_BUILD
+gboolean on_typeless_entry_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+#else
+void on_typeless_entry_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data)
+#endif
 {
     const gchar *typeless_list;
 
@@ -2040,13 +2078,17 @@ gboolean on_typeless_entry_focus_out_event(GtkWidget       *widget,
         typeless_entry_changed = FALSE;
     }
 
-    return FALSE;
+    #ifndef GTK4_BUILD
+    return(FALSE);
+    #endif
 }
 
 
-gboolean on_ignored_entry_focus_out_event(GtkWidget       *widget,
-                                          GdkEventFocus   *event,
-                                          gpointer         user_data)
+#ifndef GTK4_BUILD
+gboolean on_ignored_entry_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+#else
+void on_ignored_entry_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data)
+#endif
 {
     const gchar *ignored_list;
 
@@ -2077,13 +2119,17 @@ gboolean on_ignored_entry_focus_out_event(GtkWidget       *widget,
         ignored_entry_changed = FALSE;
     }
 
-    return FALSE;
+    #ifndef GTK4_BUILD
+    return(FALSE);
+    #endif
 }
 
 
-gboolean on_source_entry_focus_out_event(GtkWidget       *widget,
-                                         GdkEventFocus   *event,
-                                         gpointer         user_data)
+#ifndef GTK4_BUILD
+gboolean on_source_entry_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+#else
+void on_source_entry_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data)
+#endif
 {
     const gchar *dirname;
 
@@ -2103,13 +2149,17 @@ gboolean on_source_entry_focus_out_event(GtkWidget       *widget,
         source_entry_changed = FALSE;
     }
 
-    return FALSE;
+    #ifndef GTK4_BUILD
+    return(FALSE);
+    #endif
 }
 
 
-gboolean on_include_entry_focus_out_event(GtkWidget       *widget,
-                                          GdkEventFocus   *event,
-                                          gpointer         user_data)
+#ifndef GTK4_BUILD
+gboolean on_include_entry_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+#else
+void on_include_entry_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data)
+#endif
 {
     const gchar *include_list;
 
@@ -2136,13 +2186,17 @@ gboolean on_include_entry_focus_out_event(GtkWidget       *widget,
         include_entry_changed = FALSE;
     }
 
-    return FALSE;
+    #ifndef GTK4_BUILD
+    return(FALSE);
+    #endif
 }
 
 
-gboolean on_name_entry_focus_out_event(GtkWidget       *widget,
-                                       GdkEventFocus   *event,
-                                       gpointer        user_data)
+#ifndef GTK4_BUILD
+gboolean on_name_entry_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+#else
+void on_name_entry_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data)
+#endif
 {
     const gchar *filename;
 
@@ -2162,13 +2216,17 @@ gboolean on_name_entry_focus_out_event(GtkWidget       *widget,
         name_entry_changed = FALSE;
     }
 
-    return FALSE;
+    #ifndef GTK4_BUILD
+    return(FALSE);
+    #endif
 }
 
 
-gboolean on_cref_entry_focus_out_event(GtkWidget       *widget,
-                                       GdkEventFocus   *event,
-                                       gpointer         user_data)
+#ifndef GTK4_BUILD
+gboolean on_cref_entry_focus_out_event(GtkWidget   *widget, GdkEventFocus *event, gpointer user_data)
+#else
+void on_cref_entry_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data)
+#endif
 {
     const gchar *filename;
 
@@ -2188,13 +2246,17 @@ gboolean on_cref_entry_focus_out_event(GtkWidget       *widget,
         cref_entry_changed = FALSE;
     }
 
-    return FALSE;
+    #ifndef GTK4_BUILD
+    return(FALSE);
+    #endif
 }
 
 
-gboolean on_search_log_entry_focus_out_event(GtkWidget       *widget,
-                                             GdkEventFocus   *event,
-                                             gpointer         user_data)
+#ifndef GTK4_BUILD
+gboolean on_search_log_entry_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+#else
+void on_search_log_entry_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data)
+#endif
 {
     const gchar *filename;
 
@@ -2214,13 +2276,17 @@ gboolean on_search_log_entry_focus_out_event(GtkWidget       *widget,
         search_log_entry_changed = FALSE;
     }
 
-    return FALSE;
+    #ifndef GTK4_BUILD
+    return(FALSE);
+    #endif
 }
 
 
-gboolean on_autogen_cache_path_entry_focus_out_event(GtkWidget       *widget,
-                                                     GdkEventFocus   *event,
-                                                     gpointer         user_data)
+#ifndef GTK4_BUILD
+gboolean on_autogen_cache_path_entry_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+#else
+void on_autogen_cache_path_entry_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data)
+#endif
 {
     const gchar *autogen_cache_path;
 
@@ -2261,13 +2327,17 @@ gboolean on_autogen_cache_path_entry_focus_out_event(GtkWidget       *widget,
         autogen_cache_path_entry_changed = FALSE;
     }
 
-    return FALSE;
+    #ifndef GTK4_BUILD
+    return(FALSE);
+    #endif
 }
 
 
-gboolean on_autogen_search_root_entry1_focus_out_event(GtkWidget       *widget,
-                                                       GdkEventFocus   *event,
-                                                       gpointer         user_data)
+#ifndef GTK4_BUILD
+gboolean on_autogen_search_root_entry1_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+#else
+void on_autogen_search_root_entry1_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data)
+#endif
 {
     const gchar *entry_text;
 
@@ -2287,13 +2357,17 @@ gboolean on_autogen_search_root_entry1_focus_out_event(GtkWidget       *widget,
         autogen_search_root_entry1_changed = FALSE;
     }
 
-    return FALSE;
+    #ifndef GTK4_BUILD
+    return(FALSE);
+    #endif
 }
 
 
-gboolean on_autogen_suffix_entry1_focus_out_event(GtkWidget       *widget,
-                                                  GdkEventFocus   *event,
-                                                  gpointer         user_data)
+#ifndef GTK4_BUILD
+gboolean on_autogen_suffix_entry1_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+#else
+void on_autogen_suffix_entry1_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data)
+#endif
 {
     const gchar *entry_text;
     gchar       auto_name[PATHLEN * 2];
@@ -2334,13 +2408,17 @@ gboolean on_autogen_suffix_entry1_focus_out_event(GtkWidget       *widget,
         autogen_suffix_entry_1_changed = FALSE;
     }
 
-    return FALSE;
+    #ifndef GTK4_BUILD
+    return(FALSE);
+    #endif
 }
 
 
-gboolean on_autogen_cmd_entry1_focus_out_event(GtkWidget       *widget,
-                                               GdkEventFocus   *event,
-                                               gpointer         user_data)
+#ifndef GTK4_BUILD
+gboolean on_autogen_cmd_entry1_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+#else
+void on_autogen_cmd_entry1_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data)
+#endif
 {
     const gchar *entry_text;
 
@@ -2369,13 +2447,17 @@ gboolean on_autogen_cmd_entry1_focus_out_event(GtkWidget       *widget,
         autogen_cmd_entry1_changed = FALSE;
     }
 
-    return FALSE;
+    #ifndef GTK4_BUILD
+    return(FALSE);
+    #endif
 }
 
 
-gboolean on_autogen_id_entry1_focus_out_event(GtkWidget       *widget,
-                                              GdkEventFocus   *event,
-                                              gpointer         user_data)
+#ifndef GTK4_BUILD
+gboolean on_autogen_id_entry1_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+#else
+void on_autogen_id_entry1_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data)
+#endif
 {
     const gchar *entry_text;
     gchar       auto_name[PATHLEN * 2];
@@ -2409,13 +2491,17 @@ gboolean on_autogen_id_entry1_focus_out_event(GtkWidget       *widget,
         autogen_id_entry1_changed = FALSE;
     }
 
-    return FALSE;
+    #ifndef GTK4_BUILD
+    return(FALSE);
+    #endif
 }
 
 
-gboolean on_autogen_cache_threshold_spinbutton_focus_out_event(GtkWidget       *widget,
-                                                               GdkEventFocus   *event,
-                                                               gpointer         user_data)
+#ifndef GTK4_BUILD
+gboolean on_autogen_cache_threshold_spinbutton_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+#else
+void on_autogen_cache_threshold_spinbutton_focus_out_event(GtkEventControllerFocus *widget, gpointer user_data)
+#endif
 {
     guint new_value;
 
@@ -2435,13 +2521,17 @@ gboolean on_autogen_cache_threshold_spinbutton_focus_out_event(GtkWidget       *
         cache_threshold_changed = FALSE;
     }
 
-    return FALSE;
+    #ifndef GTK4_BUILD
+    return(FALSE);
+    #endif
 }
 
 
-gboolean on_terminal_app_entry_focus_out_event(GtkWidget       *widget,
-                                               GdkEventFocus   *event,
-                                               gpointer         user_data)
+#ifndef GTK4_BUILD
+gboolean on_terminal_app_entry_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+#else
+void on_terminal_app_entry_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data)
+#endif
 {
     const gchar *entry_text;
     gchar       *tmp_ptr;
@@ -2479,13 +2569,17 @@ gboolean on_terminal_app_entry_focus_out_event(GtkWidget       *widget,
         terminal_app_entry_changed = FALSE;
     }
 
-    return FALSE;
+    #ifndef GTK4_BUILD
+    return(FALSE);
+    #endif
 }
 
 
-gboolean on_file_manager_app_entry_focus_out_event(GtkWidget       *widget,
-                                                   GdkEventFocus   *event,
-                                                   gpointer         user_data)
+#ifndef GTK4_BUILD
+gboolean on_file_manager_app_entry_focus_out_event(GtkWidget  *widget, GdkEventFocus *event, gpointer user_data)
+#else
+void on_file_manager_app_entry_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data)
+#endif
 {
     const gchar *entry_text;
     gchar       *tmp_ptr;
@@ -2523,54 +2617,14 @@ gboolean on_file_manager_app_entry_focus_out_event(GtkWidget       *widget,
         file_manager_app_entry_changed = FALSE;
     }
 
-    return FALSE;
-}
-
-#else
-
-//*********** This is a temporary test callback, query_entry does not need to track focus-out */
-void on_query_entry_focus_out(GtkEventControllerFocus *controller, gpointer user_data)
-{
-    printf("Hello from: %s\n", __func__);
-}
-
-
-#endif  // GTK4 Event Focus handling
-
-//*** Start multi-Gtk version focus handling *******/
-/***************************************************/
-
-#ifndef GTK4_BUILD
-gboolean on_editor_command_entry_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
-#else
-void on_editor_command_entry_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data)
-#endif
-{
-    const gchar *editor_command;
-
-    if (editor_command_changed)
-    {
-        editor_command =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "editor_command_entry")));
-
-        if (strcmp(settings.fileEditor, editor_command) != 0)  // Only update if a real change has been made
-        {
-            // Update the preferences file
-            APP_CONFIG_set_string("fileEditor", editor_command);
-
-            // Update the application setting
-            strcpy(settings.fileEditor, editor_command);
-        }
-        editor_command_changed = FALSE;
-    }
-
     #ifndef GTK4_BUILD
-    return FALSE;
+    return(FALSE);
     #endif
 }
 
 
-
-//*** End multi-Gtk version focus handling *******/
+//***** End multi-Gtk version focus handling *******/
+/***************************************************/
 
 
 
