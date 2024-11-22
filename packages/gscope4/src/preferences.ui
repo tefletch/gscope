@@ -309,6 +309,7 @@ and View</property>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_suffix_entry_focus_out_event</property>
+                            <signal name="leave" handler="on_suffix_entry_focus_out_event"/>
                           </object>
                         </child>
                       </object>
@@ -331,6 +332,7 @@ and View</property>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_typeless_entry_focus_out_event</property>
+                            <signal name="leave" handler="on_typeless_entry_focus_out_event"/>
                           </object>
                         </child>
                       </object>
@@ -361,6 +363,7 @@ and View</property>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_source_entry_focus_out_event</property>
+                            <signal name="leave" handler="on_source_entry_focus_out_event"/>
                           </object>
                         </child>
                       </object>
@@ -397,6 +400,7 @@ and View</property>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_include_entry_focus_out_event</property>
+                            <signal name="leave" handler="on_include_entry_focus_out_event"/>
                           </object>
                         </child>
                       </object>
@@ -420,6 +424,7 @@ and View</property>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_ignored_entry_focus_out_event</property>
+                            <signal name="leave" handler="on_ignored_entry_focus_out_event"/>
                           </object>
                         </child>
                       </object>
@@ -467,6 +472,7 @@ and View</property>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_name_entry_focus_out_event</property>
+                            <signal name="leave" handler="on_name_entry_focus_out_event"/>
                           </object>
                         </child>
                       </object>
@@ -526,6 +532,7 @@ and View</property>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_cref_entry_focus_out_event</property>
+                            <signal name="leave" handler="on_cref_entry_focus_out_event"/>
                           </object>
                         </child>
                       </object>
@@ -567,6 +574,7 @@ and View</property>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_search_log_entry_focus_out_event</property>
+                            <signal name="leave" handler="on_search_log_entry_focus_out_event"/>
                           </object>
                         </child>
                       </object>
@@ -721,6 +729,7 @@ Reference</property>
                             <child>
                               <object class="GtkEventControllerFocus">
                                 <property name="name">on_terminal_app_entry_focus_out_event</property>
+                                <signal name="leave" handler="on_terminal_app_entry_focus_out_event"/>
                               </object>
                             </child>
                           </object>
@@ -744,6 +753,7 @@ Reference</property>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_file_manager_app_entry_focus_out_event</property>
+                            <signal name="leave" handler="on_file_manager_app_entry_focus_out_event"/>
                           </object>
                         </child>
                       </object>
@@ -825,6 +835,7 @@ Settings</property>
                     <child>
                       <object class="GtkEventControllerFocus">
                         <property name="name">on_autogen_cache_path_entry_focus_out_event</property>
+                        <signal name="leave" handler="on_autogen_cache_path_entry_focus_out_event"/>
                       </object>
                     </child>
                   </object>
@@ -842,6 +853,11 @@ Settings</property>
                         <property name="margin-end">8</property>
                         <property name="margin-start">8</property>
                         <property name="value">1.0</property>
+                        <child>
+                          <object class="GtkEventControllerFocus">
+                            <signal name="leave" handler="on_autogen_cache_threshold_spinbutton_focus_out_event"/>
+                          </object>
+                        </child>
                       </object>
                     </child>
                     <child>
@@ -934,6 +950,7 @@ Settings</property>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_autogen_suffix_entry1_focus_out_event</property>
+                            <signal name="leave" handler="on_autogen_suffix_entry1_focus_out_event"/>
                           </object>
                         </child>
                         <layout>
@@ -948,6 +965,7 @@ Settings</property>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_autogen_cmd_entry1_focus_out_event</property>
+                            <signal name="leave" handler="on_autogen_cmd_entry1_focus_out_event"/>
                           </object>
                         </child>
                         <layout>
@@ -962,6 +980,7 @@ Settings</property>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_autogen_id_entry1_focus_out_event</property>
+                            <signal name="leave" handler="on_autogen_id_entry1_focus_out_event"/>
                           </object>
                         </child>
                         <layout>
