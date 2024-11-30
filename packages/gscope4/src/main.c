@@ -50,7 +50,9 @@ void quit_activated (GSimpleAction *action, GVariant *parameter, gpointer user_d
 static GActionEntry app_entries[] = {
     {"rebuild", rebuild_activated, NULL, NULL, NULL },
     {"quit", quit_activated, NULL, NULL, NULL },
-    {"preferences", on_preferences_activate, NULL, NULL, NULL }
+    {"preferences", on_preferences_activate, NULL, NULL, NULL },
+    {"ignorecase", NULL, NULL, "false", on_ignorecase_activate},
+    {"smartquery", NULL, NULL, "true", on_smartquery_activate}
 };
 
 

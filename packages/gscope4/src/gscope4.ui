@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.92.2 -->
+<!-- Created with Cambalache 0.94.0 -->
 <interface>
   <!-- interface-name gscope.ui -->
   <requires lib="gtk" version="4.8"/>
@@ -309,13 +309,20 @@
     <submenu id="sub_menu2">
       <attribute name="label">Options</attribute>
       <item>
+        <attribute name="action">app.ignorecase</attribute>
         <attribute name="label">Ignore Case During Search</attribute>
       </item>
       <item>
-        <attribute name="action">app.preferences</attribute>
-        <attribute name="icon">preferences-desktop</attribute>
-        <attribute name="label">Preferences</attribute>
+        <attribute name="action">app.smartquery</attribute>
+        <attribute name="label">Smart Query</attribute>
       </item>
+      <section>
+        <item>
+          <attribute name="action">app.preferences</attribute>
+          <attribute name="icon">preferences-desktop</attribute>
+          <attribute name="label">Preferences</attribute>
+        </item>
+      </section>
     </submenu>
     <submenu id="sub_menu3">
       <attribute name="label">View</attribute>

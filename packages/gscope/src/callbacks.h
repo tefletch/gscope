@@ -35,10 +35,6 @@ void
 on_about1_activate                     (GtkMenuItem     *menuitem,
                                         gpointer         user_data);
 
-void
-on_smartquery_activate                 (GtkMenuItem     *menuitem,
-                                        gpointer         user_data);
-
 void 
 on_fileview_start_editor_activate      (GtkMenuItem *menuitem, 
                                         gpointer user_data);
@@ -46,10 +42,6 @@ on_fileview_start_editor_activate      (GtkMenuItem *menuitem,
 void 
 on_fileview_close_activate             (GtkMenuItem *menuitem, 
                                         gpointer user_data);
-
-void
-on_ignorecase_activate                 (GtkMenuItem     *menuitem,
-                                        gpointer         user_data);
 
 void
 on_useeditor_activate                  (GtkMenuItem     *menuitem,
@@ -129,6 +121,21 @@ void on_preferences_activate(GtkMenuItem *menuitem, gpointer user_data);
 #else
 void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data);
 #endif
+
+#ifndef GTK4_BUILD
+void on_ignorecase_activate(GtkMenuItem *menuitem, gpointer user_data);
+#else
+void on_ignorecase_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data);
+#endif
+
+#ifndef GTK4_BUILD
+void on_smartquery_activate(GtkMenuItem *menuitem, gpointer user_data);
+#else
+void on_smartquery_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data);
+#endif
+
+
+
 
 
 void

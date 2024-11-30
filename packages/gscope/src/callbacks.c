@@ -616,16 +616,6 @@ void on_about1_activate(GtkMenuItem     *menuitem,
 }
 
 
-void on_ignorecase_activate(GtkMenuItem     *menuitem,
-                            gpointer         user_data)
-{
-    settings.ignoreCase = !settings.ignoreCase;
-
-    /* Reset the record of the last query so that the next query will not be reported as current */
-    process_query(FIND_NULL);
-}
-
-
 void on_useeditor_activate(GtkMenuItem     *menuitem,
                            gpointer         user_data)
 {
@@ -646,12 +636,6 @@ void on_retaininput_activate(GtkMenuItem     *menuitem,
     settings.retainInput = !settings.retainInput;
 }
 
-
-void on_smartquery_activate(GtkMenuItem     *menuitem,
-                            gpointer         user_data)
-{
-    settings.smartQuery = !settings.smartQuery;
-}
 
 void on_fileview_start_editor_activate(GtkMenuItem *menuitem, gpointer user_data)
 {
@@ -1010,7 +994,33 @@ void on_quit1_activate (GSimpleAction *action, GVariant *parameter, gpointer use
 
 
 
-// GTK-variant menu handline
+//*** Start GTK multi-variant menu handling ********
+//**************************************************
+
+#ifndef GTK4_BUILD
+void on_ignorecase_activate(GtkMenuItem *menuitem, gpointer user_data)
+#else
+void on_ignorecase_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+#endif
+{
+    printf("hello from: %s\n", __func__);
+    settings.ignoreCase = !settings.ignoreCase;
+
+    /* Reset the record of the last query so that the next query will not be reported as current */
+    process_query(FIND_NULL);
+}
+
+
+#ifndef GTK4_BUILD
+void on_smartquery_activate(GtkMenuItem *menuitem, gpointer user_data)
+#else
+void on_smartquery_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+#endif
+{
+    printf("hello from: %s\n", __func__);
+    settings.smartQuery = !settings.smartQuery;
+}
+
 
 #ifndef GTK4_BUILD
 void on_preferences_activate(GtkMenuItem *menuitem, gpointer user_data)
@@ -1037,8 +1047,10 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
         my_gtk_toggle_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_failed_search_checkbutton"),
                                      settings.retainFailed);
 
+        #if (UI_VERSION == 1)
         gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_failed_search_checkbutton"), !sticky_settings.retainInput);
-
+        #endif
+        
         my_gtk_toggle_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "ignore_case_checkbutton"),
                                      sticky_settings.ignoreCase);
 
@@ -1240,6 +1252,9 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
     preferences_dialog_visible = TRUE;
 }
 
+
+//*** End GTK multi-variant menu handling ***********
+//***************************************************
 
 
 
@@ -1834,21 +1849,12 @@ gboolean on_gscope_preferences_delete_event(GtkWidget       *widget,
 
 
 // The setting managed by this callback interacts with the "options menu" (temporary overrides)
-void on_retain_text_checkbutton_toggled(GtkToggleButton *togglebutton,
-                                        gpointer         user_data)
+void on_retain_text_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
 {
     if (!initializing_prefs)
     {
         // Toggle the "sticky" setting
         sticky_settings.retainInput = !(sticky_settings.retainInput);
-
-        #ifndef GTK4_BUILD
-        // Align the "options menu".  Warning, this "set-active" call toggles this "settings" value;
-        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(GTK_WIDGET(gscope_main), "retaininput_checkmenuitem")),
-                                       sticky_settings.retainInput);
-        #else
-        printf("Revisit Reminder: need to finish GTK4 mods in function: %s\n", __func__);
-        #endif
 
         // Align application behavior with the new "sticky" setting (override any change caused by "set_active" callback)
         settings.retainInput = sticky_settings.retainInput;
@@ -1856,17 +1862,29 @@ void on_retain_text_checkbutton_toggled(GtkToggleButton *togglebutton,
         // Update the preferences file
         APP_CONFIG_set_boolean("retainInput", settings.retainInput);
 
+        #if (UI_VERSION == 1)  // "Options-->Retain Input for next query" deprecated @ UIv2 (GTK4)
+        // Align the "options menu".  Warning, this "set-active" call toggles this "settings" value;
+        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(GTK_WIDGET(gscope_main), "retaininput_checkmenuitem")),
+                                       sticky_settings.retainInput);
+
         // If retainInput = TRUE, disable the "retain_text_failed_search" checkbutton, otherwise enable the checkbutton
         gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "retain_text_failed_search_checkbutton"), !settings.retainInput);
         gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "retain_text_failed_search_image"), !settings.retainInput);
         gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "retain_text_failed_search_label"), !settings.retainInput);
+        #endif
+
+        #if (UI_VERSION > 1)  // UIv2+ Query text retention radiobutton-like semantics Always/Fails/None
+        if ( settings.retainInput && settings.retainFailed )
+        {
+            my_gtk_toggle_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_failed_search_checkbutton"), FALSE);
+        }
+        #endif
     }
 }
 
 
 
-void on_retain_text_failed_search_checkbutton_toggled(GtkToggleButton *togglebutton,
-                                                      gpointer         user_data)
+void on_retain_text_failed_search_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
 {
     if (!initializing_prefs)
     {
@@ -1875,6 +1893,13 @@ void on_retain_text_failed_search_checkbutton_toggled(GtkToggleButton *togglebut
 
         // Update the preferences file
         APP_CONFIG_set_boolean("retainFailed", settings.retainFailed);
+
+        #if (UI_VERSION > 1)
+        if ( settings.retainInput && settings.retainFailed )
+        {
+            my_gtk_toggle_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_checkbutton"), FALSE);
+        }
+        #endif
     }
 }
 
