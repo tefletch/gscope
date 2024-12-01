@@ -210,25 +210,31 @@ on_treeview1_button_press_event        (GtkWidget       *widget,
 #endif
 #endif
 
-void
-on_retain_text_checkbutton_toggled     (GtkToggleButton *togglebutton,
-                                        gpointer         user_data);
 
-void
-on_ignore_case_checkbutton_toggled     (GtkToggleButton *togglebutton,
-                                        gpointer         user_data);
+// Preference->Search and View tab
+//=================================
+void on_retain_text_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data);
 
-void
-on_use_viewer_radiobutton_toggled      (GtkToggleButton *togglebutton,
-                                        gpointer         user_data);
+void on_retain_text_failed_search_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data);
 
-void
-on_reuse_window_checkbutton_toggled    (GtkToggleButton *togglebutton,
-                                        gpointer         user_data);
+#if (UI_VERSION > 1)    // New checkbutton for UIv2+
+void on_never_retain_text_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data);
+#endif
 
-void
-on_use_editor_radiobutton_toggled      (GtkToggleButton *togglebutton,
-                                        gpointer         user_data);
+
+void on_ignore_case_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data);
+
+void on_use_viewer_radiobutton_toggled(GtkToggleButton *togglebutton, gpointer user_data);
+
+void on_reuse_window_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data);
+
+void on_use_editor_radiobutton_toggled(GtkToggleButton *togglebutton, gpointer user_data);
+
+//=====================================
+// End Preference->Search and View tab
+//=====================================
+
+
 
 void
 on_preferences_dialog_close_button_clicked
@@ -470,11 +476,6 @@ on_session_info_button_clicked         (GtkButton       *button,
 
 void
 on_single_click_checkbutton_toggled    (GtkToggleButton *togglebutton,
-                                        gpointer         user_data);
-
-void
-on_retain_text_failed_search_checkbutton_toggled
-                                        (GtkToggleButton *togglebutton,
                                         gpointer         user_data);
 
 void

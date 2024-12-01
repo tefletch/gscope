@@ -1848,20 +1848,21 @@ gboolean on_gscope_preferences_delete_event(GtkWidget       *widget,
 }
 
 
-// The setting managed by this callback interacts with the "options menu" (temporary overrides)
+// UI_VERSION 1: The setting managed by this callback interacts with the "options menu" (temporary overrides)
+// UI_VERSION 2: Top menu Option-->Retain input for next query (deleted menu item)
 void on_retain_text_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
 {
     if (!initializing_prefs)
     {
-        // Toggle the "sticky" setting
-        sticky_settings.retainInput = !(sticky_settings.retainInput);
+        /*** Manage Settings ***/
+        /***********************/
+        sticky_settings.retainInput = !(sticky_settings.retainInput);   // Toggle the "sticky" setting
+        settings.retainInput = sticky_settings.retainInput;             // Align application behavior with the new "sticky" setting
+                                                                        // (override any change caused by "set_active" callback) 
+        APP_CONFIG_set_boolean("retainInput", settings.retainInput);    // Update the preferences file
 
-        // Align application behavior with the new "sticky" setting (override any change caused by "set_active" callback)
-        settings.retainInput = sticky_settings.retainInput;
-
-        // Update the preferences file
-        APP_CONFIG_set_boolean("retainInput", settings.retainInput);
-
+        /*** Manage UI ***/
+        /*****************/
         #if (UI_VERSION == 1)  // "Options-->Retain Input for next query" deprecated @ UIv2 (GTK4)
         // Align the "options menu".  Warning, this "set-active" call toggles this "settings" value;
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(GTK_WIDGET(gscope_main), "retaininput_checkmenuitem")),
@@ -1874,14 +1875,28 @@ void on_retain_text_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer 
         #endif
 
         #if (UI_VERSION > 1)  // UIv2+ Query text retention radiobutton-like semantics Always/Fails/None
-        if ( settings.retainInput && settings.retainFailed )
+        GtkWidget *retain_text = lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_checkbutton");
+        GtkWidget *retain_text_failed_search = lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_failed_search_checkbutton");
+        GtkWidget *never_retain_text = lookup_widget(GTK_WIDGET(prefs_dialog), "never_retain_text_checkbutton");
+
+        if ( gtk_check_button_get_active(GTK_CHECK_BUTTON(retain_text)) )        // if retain: off-to-on transition
         {
-            my_gtk_toggle_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_failed_search_checkbutton"), FALSE);
+            if ( gtk_check_button_get_active(GTK_CHECK_BUTTON(retain_text_failed_search)) ) // failed: if on, force off
+                my_gtk_toggle_button_set_active(retain_text_failed_search, FALSE);
+
+            if ( gtk_check_button_get_active(GTK_CHECK_BUTTON(never_retain_text)) ) // never: if on, force off
+                my_gtk_toggle_button_set_active(never_retain_text, FALSE);
         }
-        #endif
+        else    // else retain: on-to-off transition
+        {
+            if (  !gtk_check_button_get_active(GTK_CHECK_BUTTON(retain_text_failed_search)) &&
+                  !gtk_check_button_get_active(GTK_CHECK_BUTTON(never_retain_text)) )
+                my_gtk_toggle_button_set_active(never_retain_text, TRUE);
+
+        }
+       #endif
     }
 }
-
 
 
 void on_retain_text_failed_search_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
@@ -1889,20 +1904,64 @@ void on_retain_text_failed_search_checkbutton_toggled(GtkToggleButton *togglebut
     if (!initializing_prefs)
     {
         // This setting is only implemented as a start-up setting, hence there is no "active" (volatile) setting to match.
+
+        /*** Manage Settings ***/
+        /***********************/
         settings.retainFailed = !(settings.retainFailed);
+        APP_CONFIG_set_boolean("retainFailed", settings.retainFailed);  // Update the preferences file
 
-        // Update the preferences file
-        APP_CONFIG_set_boolean("retainFailed", settings.retainFailed);
-
+        /*** Manage UI ***/
+        /*****************/
         #if (UI_VERSION > 1)
-        if ( settings.retainInput && settings.retainFailed )
+        GtkWidget *retain_text = lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_checkbutton");
+        GtkWidget *retain_text_failed_search = lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_failed_search_checkbutton");
+        GtkWidget *never_retain_text = lookup_widget(GTK_WIDGET(prefs_dialog), "never_retain_text_checkbutton");
+
+        if ( gtk_check_button_get_active(GTK_CHECK_BUTTON(retain_text_failed_search)) )        // if failed: off-to-on transition
         {
-            my_gtk_toggle_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_checkbutton"), FALSE);
+            if ( gtk_check_button_get_active(GTK_CHECK_BUTTON(retain_text)) )                   // retain: if on, force off
+                my_gtk_toggle_button_set_active(retain_text, FALSE);
+
+            if ( gtk_check_button_get_active(GTK_CHECK_BUTTON(never_retain_text)) ) // never: if on, force off
+                my_gtk_toggle_button_set_active(never_retain_text, FALSE);
+        }
+        else  // else failed: on-to-off transition
+        {
+            if (  !gtk_check_button_get_active(GTK_CHECK_BUTTON(retain_text)) &&
+                  !gtk_check_button_get_active(GTK_CHECK_BUTTON(never_retain_text)) )
+                my_gtk_toggle_button_set_active(never_retain_text, TRUE);
         }
         #endif
     }
 }
 
+
+#if (UI_VERSION > 1)    // New checkbutton for UIv2+
+void on_never_retain_text_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+{
+    GtkWidget *retain_text = lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_checkbutton");
+    GtkWidget *retain_text_failed_search = lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_failed_search_checkbutton");
+    GtkWidget *never_retain_text = lookup_widget(GTK_WIDGET(prefs_dialog), "never_retain_text_checkbutton");
+
+    if (!initializing_prefs)
+    {
+        /*** Manage UI ***/
+        /*****************/
+        if (  gtk_check_button_get_active(GTK_CHECK_BUTTON(never_retain_text)) )            // never: off-to-on transition
+        {
+            if ( gtk_check_button_get_active(GTK_CHECK_BUTTON(retain_text)) )               // retain: if on, force off
+                my_gtk_toggle_button_set_active(retain_text, FALSE);
+
+            if ( gtk_check_button_get_active(GTK_CHECK_BUTTON(retain_text_failed_search)) ) // failed: if on, force off
+                    my_gtk_toggle_button_set_active(retain_text_failed_search, FALSE);
+        }
+        else                                                                                // never: on-to-off transition
+        {
+            // do nothing
+        }
+   }
+}
+#endif
 
 
 

@@ -230,8 +230,6 @@
 	(4,284,"GtkLabel","autogen_generated_filename_label",282,None,None,None,1,None,None),
 	(4,285,"GtkBox",None,23,None,None,None,1,None,None),
 	(4,286,"GtkLabel",None,285,None,None,None,0,None,None),
-	(4,287,"GtkCheckButton","retain_text_checkbutton",285,None,None,None,1,None,None),
-	(4,288,"GtkCheckButton","retain_text_failed_search_checkbutton",285,None,None,None,2,None,None),
 	(4,293,"GtkEventControllerFocus",None,38,None,None,None,0,None,None),
 	(4,294,"GtkEventControllerFocus",None,232,None,None,None,0,None,None),
 	(4,295,"GtkEventControllerFocus",None,235,None,None,None,0,None,None),
@@ -251,7 +249,11 @@
 	(4,314,"GtkEventControllerFocus",None,208,None,None,None,0,None,None),
 	(4,315,"GtkBox",None,23,None,None,None,2,None,None),
 	(4,316,"GtkLabel",None,315,None,None,None,0,None,None),
-	(4,317,"GtkCheckButton","ignore_case_checkbutton",315,None,None,None,1,None,None)
+	(4,317,"GtkCheckButton","ignore_case_checkbutton",315,None,None,None,1,None,None),
+	(4,320,"GtkBox",None,285,None,None,None,1,None,None),
+	(4,321,"GtkCheckButton","retain_text_checkbutton",320,None,None,None,0,None,None),
+	(4,322,"GtkCheckButton","retain_text_failed_search_checkbutton",320,None,None,None,1,None,None),
+	(4,323,"GtkCheckButton","never_retain_text_checkbutton",320,None,None,None,2,None,None)
   </object>
   <object_property>
 	(1,110,"GtkWidget","height-request","600",None,None,None,None,None,None,None,None,None),
@@ -683,14 +685,12 @@
 	(4,282,"GtkWidget","margin-top","20",None,None,None,None,None,None,None,None,None),
 	(4,283,"GtkLabel","label","Generated filename format: ",None,None,None,None,None,None,None,None,None),
 	(4,284,"GtkLabel","label"," ",None,None,None,None,None,None,None,None,None),
-	(4,285,"GtkWidget","margin-bottom","4",None,None,None,None,None,None,None,None,None),
+	(4,285,"GtkWidget","margin-bottom","16",None,None,None,None,None,None,None,None,None),
 	(4,286,"GtkLabel","label","&lt;span color=\"blue\" weight=\"bold\"&gt;Query text retention&lt;/span&gt;",None,None,None,None,None,None,None,None,None),
 	(4,286,"GtkLabel","use-markup","True",None,None,None,None,None,None,None,None,None),
 	(4,286,"GtkWidget","margin-end","4",None,None,None,None,None,None,None,None,None),
 	(4,286,"GtkWidget","margin-start","4",None,None,None,None,None,None,None,None,None),
-	(4,287,"GtkCheckButton","label","Always retain text",0,None,None,None,None,None,None,None,None),
-	(4,288,"GtkCheckButton","label","Only retain text when search fails",0,None,None,None,None,None,None,None,None),
-	(4,288,"GtkWidget","margin-start","8",None,None,None,None,None,None,None,None,None),
+	(4,286,"GtkWidget","valign","start",None,None,None,None,None,None,None,None,None),
 	(4,293,"GtkEventController","name","editor_entry_controller",0,None,None,None,None,None,None,None,None),
 	(4,294,"GtkEventController","name","on_suffix_entry_focus_out_event",None,None,None,None,None,None,None,None,None),
 	(4,295,"GtkEventController","name","on_typeless_entry_focus_out_event",None,None,None,None,None,None,None,None,None),
@@ -711,7 +711,11 @@
 	(4,316,"GtkLabel","use-markup","True",None,None,None,None,None,None,None,None,None),
 	(4,316,"GtkWidget","margin-end","32",None,None,None,None,None,None,None,None,None),
 	(4,316,"GtkWidget","margin-start","4",None,None,None,None,None,None,None,None,None),
-	(4,317,"GtkCheckButton","label","Ignore case during search",0,None,None,None,None,None,None,None,None)
+	(4,317,"GtkCheckButton","label","Ignore case during search",0,None,None,None,None,None,None,None,None),
+	(4,320,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(4,321,"GtkCheckButton","label","Always retain text",0,None,None,None,None,None,None,None,None),
+	(4,322,"GtkCheckButton","label","Retain text when search fails",0,None,None,None,None,None,None,None,None),
+	(4,323,"GtkCheckButton","label","Never retain text",0,None,None,None,None,None,None,None,None)
   </object_property>
   <object_layout_property>
 	(1,120,126,"GtkGridLayoutChild","row","1",None,None,None,None),
@@ -792,7 +796,8 @@
 	(51,4,310,"GtkEventControllerFocus","leave","on_autogen_cmd_entry1_focus_out_event",None,0,0,0,None),
 	(52,4,311,"GtkEventControllerFocus","leave","on_autogen_id_entry1_focus_out_event",None,0,0,0,None),
 	(53,4,314,"GtkEventControllerFocus","leave","on_autogen_cache_threshold_spinbutton_focus_out_event",None,0,0,0,None),
-	(54,4,287,"GtkCheckButton","toggled","on_retain_text_checkbutton_toggled",None,0,0,0,None),
-	(55,4,288,"GtkCheckButton","toggled","on_retain_text_failed_search_checkbutton_toggled",None,0,0,0,None)
+	(57,4,321,"GtkCheckButton","toggled","on_retain_text_checkbutton_toggled",None,None,0,0,None),
+	(58,4,322,"GtkCheckButton","toggled","on_retain_text_failed_search_checkbutton_toggled",None,None,0,0,None),
+	(59,4,323,"GtkCheckButton","toggled","on_never_retain_text_checkbutton_toggled",None,0,0,0,None)
   </object_signal>
 </cambalache-project>
