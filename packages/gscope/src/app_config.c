@@ -90,10 +90,9 @@
 #define     MAX_LIST_SIZE           1023            /* Max size for all lists.  All lists must be the same size */
 #define     MAX_OVERRIDE_PATH_SIZE  256
 
-#ifdef GTK3_BUILD   // GTK3 (gscope.css)
+#if defined(GTK3_BUILD) || defined(GTK4_BUILD)  // GTK3/GTK4 (gscope.css)
 #define     CURRENT_CONFIG_VERSION   "005"
 #define     CONFIG_VERSION_TAG       "/*Version="
-
 #else               // GTK2 (gtkrc)
 #define     CURRENT_CONFIG_VERSION   "005"
 #define     CONFIG_VERSION_TAG       "#!Version="
@@ -227,7 +226,7 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
     snprintf(app_home, MAX_HOME_PATH + 1, "%s%s", home, "/.gscope/");
 
     strncpy(gtk_config_file, app_home, 235);
-    #ifdef GTK3_BUILD
+    #if defined(GTK3_BUILD) || defined(GTK4_BUILD)
         strncat(gtk_config_file, "gscope.css", 20);
     #else   // GTK2
         strncat(gtk_config_file, "gtkrc", 20);
@@ -423,7 +422,7 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
             GtkWidget *update_dialog_vbox;
             #endif
 
-            #ifdef GTK3_BUILD
+            #if defined(GTK3_BUILD) || defined(GTK4_BUILD)
             GtkWidget *update_dialog_content_area;
             #else
             GtkWidget *update_dialog_vbox;
@@ -665,7 +664,7 @@ static void gtk_config_parse(char *gtk_config_file)
 {
     printf("Parsing GTK config: %s\n", gtk_config_file);
 
-    #ifdef GTK3_BUILD
+    #if defined(GTK3_BUILD) || defined(GTK4_BUILD)
     {
         GtkCssProvider  *provider;
         GdkDisplay      *display;
@@ -795,7 +794,7 @@ static void pixmap_path_fixup(char *filename, char *path, GtkWidget *parent)
                 sub_string = strstr(config_file_buf, path);
                 if (sub_string)      // Might be a good path, check delimiters
                 {
-                    #ifdef GTK3_BUILD
+                    #if defined(GTK3_BUILD) || defined(GTK4_BUILD)
                     if ( *(sub_string - 1) == '\'')
                         if ( *(sub_string + strlen(path)) == '/' )
                             path_ok = TRUE;
@@ -1297,7 +1296,7 @@ static void parse_app_config(const char *filename)
     return;
 }
 
-#ifdef GTK3_BUILD
+#if defined(GTK3_BUILD) || defined(GTK4_BUILD)
 static gboolean create_gtk_config_file(const char *filename)
 {
 
@@ -1495,7 +1494,7 @@ gchar *template =
     return( create_template_file(filename, template) );
 }
 
-#else
+#else   // GTK2
 
 static gboolean create_gtk_config_file(const char *filename)
 {
