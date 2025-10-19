@@ -15,7 +15,7 @@
         "/usr/lib/x86_64-linux-gnu/graphene-1.0/include",
         "/usr/include/gtksourceview-5"
       ],
-      "defines": ["GTK3_BUILD", "GTK4_BUILD", "UI_VERSION=2", "PACKAGE_DATA_DIR=\"/usr/local/share\"", "VERSION=\"4.22\"", "PACKAGE=\"gscope\""],
+      "defines": ["GTK4_BUILD", "UI_VERSION=2", "PACKAGE_DATA_DIR=\"/usr/local/share\"", "VERSION=\"4.22\"", "PACKAGE=\"gscope\""],
       "compilerPath": "/usr/bin/gcc",
       "cStandard": "c17",
       "cppStandard": "gnu++17",
