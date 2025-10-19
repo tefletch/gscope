@@ -24,7 +24,9 @@
 #include "auto_gen.h"
 
 
-#ifndef GTK3_BUILD
+#if defined(GTK3_BUILD) || defined(GTK4_BUILD)
+// Do nothing
+#else
 #include "interface.h"
 #endif
 
@@ -380,7 +382,7 @@ void CALLBACKS_init(GtkWidget *main)
     // Instantiate the widgets define by the GUI Builders
     //===================================================
 
-#ifdef GTK3_BUILD
+#if defined(GTK3_BUILD) || defined(GTK4_BUILD)
 
     quit_dialog  = my_lookup_widget("quit_confirm_dialog");
     aboutdialog1 = my_lookup_widget("aboutdialog1");
@@ -391,7 +393,7 @@ void CALLBACKS_init(GtkWidget *main)
     output_file_chooser_dialog = my_lookup_widget("output_file_chooser_dialog");
     save_results_file_chooser_dialog = my_lookup_widget("save_results_file_chooser_dialog2");
 
-#else
+#else   // GTK2
 
     quit_dialog  = create_quit_confirm_dialog();
     aboutdialog1 = create_aboutdialog1();
@@ -401,7 +403,7 @@ void CALLBACKS_init(GtkWidget *main)
     open_file_chooser_dialog = create_open_file_chooser_dialog();
     output_file_chooser_dialog = create_output_file_chooser_dialog();
     save_results_file_chooser_dialog = create_save_results_file_chooser_dialog();
-
+ 
 #endif
 }
 
@@ -1005,6 +1007,10 @@ void on_ignorecase_activate(GSimpleAction *action, GVariant *parameter, gpointer
 {
     printf("hello from: %s\n", __func__);
     settings.ignoreCase = !settings.ignoreCase;
+    printf("new setting = %s\n", settings.ignoreCase ? "TRUE" : "FALSE");
+    
+    //g_action_change_state(G_ACTION(action), g_variant_new_boolean(settings.ignoreCase));
+    g_simple_action_set_state(action, g_variant_new_boolean(settings.ignoreCase));
 
     /* Reset the record of the last query so that the next query will not be reported as current */
     process_query(FIND_NULL);
@@ -1019,6 +1025,8 @@ void on_smartquery_activate(GSimpleAction *action, GVariant *parameter, gpointer
 {
     printf("hello from: %s\n", __func__);
     settings.smartQuery = !settings.smartQuery;
+
+    g_simple_action_set_state(action, g_variant_new_boolean(settings.smartQuery));
 }
 
 

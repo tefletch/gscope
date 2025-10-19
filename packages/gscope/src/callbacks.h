@@ -114,7 +114,7 @@ void on_rebuild_database1_activate (GSimpleAction *action, GVariant *parameter, 
 #endif
 
 
-// Integrated Gtk-variand menu-item callbacks
+// Integrated Gtk-variant menu-item callbacks
 //============================================
 #ifndef GTK4_BUILD
 void on_preferences_activate(GtkMenuItem *menuitem, gpointer user_data);

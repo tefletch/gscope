@@ -51,8 +51,8 @@ static GActionEntry app_entries[] = {
     {"rebuild", rebuild_activated, NULL, NULL, NULL },
     {"quit", quit_activated, NULL, NULL, NULL },
     {"preferences", on_preferences_activate, NULL, NULL, NULL },
-    {"ignorecase", NULL, NULL, "false", on_ignorecase_activate},
-    {"smartquery", NULL, NULL, "true", on_smartquery_activate}
+    {"ignorecase", on_ignorecase_activate, NULL, "false", NULL},
+    {"smartquery", on_smartquery_activate, NULL, "true", NULL}
 };
 
 
@@ -346,6 +346,27 @@ static void activate (GtkApplication *app, gpointer *user_data)
 
     // Comment out for standard theme, un-comment for stardard-dark theme -- Revisit: make this a view-->checkbox-dark-theme [on/off]
     // g_object_set(gtk_settings_get_default(), "gtk-application-prefer-dark-theme", TRUE, NULL);
+
+    // Reconcile start_up settings with UI action states
+    //==================================================
+
+    GAction     *my_action;
+    GVariant    *action_state;
+
+    // *** ignorecase ***
+    my_action = g_action_map_lookup_action(G_ACTION_MAP(app), "ignorecase");
+    action_state = g_action_get_state(my_action);
+    if ( g_variant_get_boolean(action_state) != settings.ignoreCase )
+        g_simple_action_set_state(G_SIMPLE_ACTION(my_action), g_variant_new_boolean(settings.ignoreCase));
+    g_variant_unref(action_state);
+
+    // *** smartquery ***
+    my_action = g_action_map_lookup_action(G_ACTION_MAP(app), "smartquery");
+    action_state = g_action_get_state(my_action);
+    if ( g_variant_get_boolean(action_state) != settings.smartQuery)
+        g_simple_action_set_state(G_SIMPLE_ACTION(my_action), g_variant_new_boolean(settings.smartQuery));
+    g_variant_unref(action_state);
+
 }
 
 
