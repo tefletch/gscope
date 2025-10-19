@@ -1,8 +1,8 @@
 
-#ifdef GTK3_BUILD
+#if defined(GTK3_BUILD) || defined(GTK4_BUILD)
 #include <gtksourceview/gtksource.h>
 #include <gtksourceview/gtksourcemarkattributes.h>
-#else
+#else   // GTK2
 #include <gtksourceview/gtksourceview.h>
 #endif
 
