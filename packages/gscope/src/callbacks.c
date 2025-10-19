@@ -1005,12 +1005,11 @@ void on_ignorecase_activate(GtkMenuItem *menuitem, gpointer user_data)
 void on_ignorecase_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 #endif
 {
-    printf("hello from: %s\n", __func__);
     settings.ignoreCase = !settings.ignoreCase;
-    printf("new setting = %s\n", settings.ignoreCase ? "TRUE" : "FALSE");
-    
-    //g_action_change_state(G_ACTION(action), g_variant_new_boolean(settings.ignoreCase));
+
+    #ifdef GTK4_BUILD
     g_simple_action_set_state(action, g_variant_new_boolean(settings.ignoreCase));
+    #endif
 
     /* Reset the record of the last query so that the next query will not be reported as current */
     process_query(FIND_NULL);
@@ -1023,10 +1022,10 @@ void on_smartquery_activate(GtkMenuItem *menuitem, gpointer user_data)
 void on_smartquery_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 #endif
 {
-    printf("hello from: %s\n", __func__);
     settings.smartQuery = !settings.smartQuery;
-
+    #ifdef GTK4_BUILD
     g_simple_action_set_state(action, g_variant_new_boolean(settings.smartQuery));
+    #endif
 }
 
 
