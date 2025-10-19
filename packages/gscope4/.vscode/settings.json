@@ -70,5 +70,6 @@
   "C_Cpp_Runner.msvcSecureNoWarnings": false,
   "files.associations": {
     "typeinfo": "c"
-  }
+  },
+  "C_Cpp.dimInactiveRegions": false
 }
