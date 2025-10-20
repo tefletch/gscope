@@ -410,42 +410,6 @@ void CALLBACKS_init(GtkWidget *main)
 
 #ifndef GTK4_BUILD  // GtkMenu evolution
 
-void on_rebuild_database1_activate(GtkMenuItem     *menuitem,
-                              gpointer         user_data)
-{
-    static gboolean in_progress_lockout = FALSE;
-
-    if (!in_progress_lockout)
-    {
-        in_progress_lockout = TRUE;
-
-        gtk_widget_show(lookup_widget(gscope_main, "rebuild_progressbar"));
-        gtk_widget_hide(lookup_widget(gscope_main, "status_label"));
-
-        // This widget will not actually appear until the first progress bar update.
-
-        /* Rebuild the cross-reference */
-        settings.noBuild = FALSE;   /* Override the noBuild setting (for this session only - leave preferences file as-is) */
-        BUILD_initDatabase(lookup_widget(gscope_main, "rebuild_progressbar"));  /* Rebuild the cross-reference */
-
-        /* Close results of previous searches */
-        SEARCH_cleanup_prev();
-
-        /*
-         * Reset the record of the last query so that the next query will not
-         * be reported as current.
-         */
-        process_query(FIND_NULL);
-
-        gtk_widget_hide(lookup_widget(gscope_main, "rebuild_progressbar"));
-        gtk_widget_show(lookup_widget(gscope_main, "status_label"));
-
-        DISPLAY_status("<span foreground=\"seagreen\" weight=\"bold\">Cross Reference rebuild complete</span>");
-        in_progress_lockout = FALSE;
-    }
-}
-
-
 void on_cref_update_button_clicked(GtkButton       *button,
                                    gpointer         user_data)
 {
@@ -617,26 +581,6 @@ void on_about1_activate(GtkMenuItem     *menuitem,
 
 }
 
-
-void on_useeditor_activate(GtkMenuItem     *menuitem,
-                           gpointer         user_data)
-{
-    settings.useEditor = !settings.useEditor;
-}
-
-
-void on_reusewin_activate(GtkMenuItem     *menuitem,
-                          gpointer         user_data)
-{
-    settings.reuseWin = !settings.reuseWin;
-}
-
-
-void on_retaininput_activate(GtkMenuItem     *menuitem,
-                             gpointer         user_data)
-{
-    settings.retainInput = !settings.retainInput;
-}
 
 
 void on_fileview_start_editor_activate(GtkMenuItem *menuitem, gpointer user_data)
@@ -906,48 +850,9 @@ void on_session_statistics_activate(GtkMenuItem     *menuitem,
     // else "stats_dialog" already visible, do nothing.
 }
 
-void on_save_query_activate(GtkMenuItem     *menuitem,
-                            gpointer         user_data)
-{
-    DISPLAY_history_save();
-
-}
 
 
-void on_load_query_activate(GtkMenuItem     *menuitem,
-                            gpointer         user_data)
-{
-    DISPLAY_history_load();
-}
 
-
-void on_clear_query_activate(GtkMenuItem     *menuitem,
-                             gpointer         user_data)
-{
-    DISPLAY_history_clear();
-
-    /* Reset the record of the last query so that the next query will not be reported as current */
-    process_query(FIND_NULL);
-}
-
-
-void on_delete_history_file_activate(GtkMenuItem     *menuitem,
-                                     gpointer         user_data)
-{
-    unlink(settings.histFile);
-}
-
-
-void on_save_results_activate(GtkMenuItem     *menuitem,
-                              gpointer         user_data)
-{
-    gtk_window_set_transient_for(GTK_WINDOW(save_results_file_chooser_dialog), GTK_WINDOW(gscope_main));
-
-    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(save_results_file_chooser_dialog), "gscope_results");
-
-    gtk_dialog_run(GTK_DIALOG(save_results_file_chooser_dialog));
-    gtk_widget_hide(save_results_file_chooser_dialog);
-}
 
 
 void on_overview_wiki_activate(GtkMenuItem     *menuitem,
@@ -981,11 +886,6 @@ void on_release_wiki_activate(GtkMenuItem     *menuitem,
 #else
 
 //================= Test Callbacks only
-void on_rebuild_database1_activate (GSimpleAction *action, GVariant *parameter, gpointer user_data)
-{
-  printf ("Hello from: %s\n", __func__);
-}
-
 
 void on_quit1_activate (GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
@@ -998,6 +898,107 @@ void on_quit1_activate (GSimpleAction *action, GVariant *parameter, gpointer use
 
 //*** Start GTK multi-variant menu handling ********
 //**************************************************
+
+#ifndef GTK4_BUILD
+void on_rebuild_database1_activate(GtkMenuItem *menuitem, gpointer user_data)
+#else
+void on_rebuild_database1_activate (GSimpleAction *action, GVariant *parameter, gpointer user_data)
+#endif
+{
+    static gboolean in_progress_lockout = FALSE;
+
+    if (!in_progress_lockout)
+    {
+        in_progress_lockout = TRUE;
+
+        gtk_widget_show(lookup_widget(gscope_main, "rebuild_progressbar"));
+        gtk_widget_hide(lookup_widget(gscope_main, "status_label"));
+
+        // This widget will not actually appear until the first progress bar update.
+
+        /* Rebuild the cross-reference */
+        settings.noBuild = FALSE;   /* Override the noBuild setting (for this session only - leave preferences file as-is) */
+        BUILD_initDatabase(lookup_widget(gscope_main, "rebuild_progressbar"));  /* Rebuild the cross-reference */
+
+        /* Close results of previous searches */
+        SEARCH_cleanup_prev();
+
+        /*
+         * Reset the record of the last query so that the next query will not
+         * be reported as current.
+         */
+        process_query(FIND_NULL);
+
+        gtk_widget_hide(lookup_widget(gscope_main, "rebuild_progressbar"));
+        gtk_widget_show(lookup_widget(gscope_main, "status_label"));
+
+        DISPLAY_status("<span foreground=\"seagreen\" weight=\"bold\">Cross Reference rebuild complete</span>");
+        in_progress_lockout = FALSE;
+    }
+}
+
+
+#ifndef GTK4_BUILD
+void on_save_results_activate(GtkMenuItem *menuitem, gpointer  user_data)
+#else
+void on_save_results_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+#endif
+{
+    gtk_window_set_transient_for(GTK_WINDOW(save_results_file_chooser_dialog), GTK_WINDOW(gscope_main));
+
+    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(save_results_file_chooser_dialog), "gscope_results");
+
+    #ifdef GTK4_BUILD
+    printf("Incomplete GTK4 callback migration: %s\n", __func__);
+    #else
+    (GTK_DIALOG(save_results_file_chooser_dialog));
+    #endif
+    gtk_widget_hide(save_results_file_chooser_dialog);
+}
+
+
+#ifndef GTK4_BUILD
+void on_clear_query_activate(GtkMenuItem *menuitem, gpointer user_data)
+#else
+void on_clear_query_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+#endif
+{
+    DISPLAY_history_clear();
+
+    /* Reset the record of the last query so that the next query will not be reported as current */
+    process_query(FIND_NULL);
+}
+
+
+#ifndef GTK4_BUILD
+void on_save_query_activate(GtkMenuItem  *menuitem, gpointer user_data)
+#else
+void on_save_query_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+#endif
+{
+    DISPLAY_history_save();
+}
+
+
+#ifndef GTK4_BUILD
+void on_load_query_activate(GtkMenuItem *menuitem, gpointer user_data)
+#else
+void on_load_query_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+#endif
+{
+    DISPLAY_history_load();
+}
+
+
+#ifndef GTK4_BUILD
+void on_delete_history_file_activate(GtkMenuItem *menuitem, gpointer user_data)
+#else
+void on_delete_history_file_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+#endif
+{
+    unlink(settings.histFile);
+}
+
 
 #ifndef GTK4_BUILD
 void on_ignorecase_activate(GtkMenuItem *menuitem, gpointer user_data)
@@ -1014,6 +1015,49 @@ void on_ignorecase_activate(GSimpleAction *action, GVariant *parameter, gpointer
     /* Reset the record of the last query so that the next query will not be reported as current */
     process_query(FIND_NULL);
 }
+
+
+#ifndef GTK4_BUILD
+void on_useeditor_activate(GtkMenuItem *menuitem, gpointer user_data)
+#else
+void on_useeditor_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+#endif
+{
+    settings.useEditor = !settings.useEditor;
+
+    #ifdef GTK4_BUILD
+    g_simple_action_set_state(action, g_variant_new_boolean(settings.useEditor));
+    #endif
+}
+
+
+#ifndef GTK4_BUILD
+void on_reusewin_activate(GtkMenuItem *menuitem, gpointer user_data)
+#else
+void on_reusewin_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+#endif
+{
+    settings.reuseWin = !settings.reuseWin;
+
+    #ifdef GTK4_BUILD
+    g_simple_action_set_state(action, g_variant_new_boolean(settings.reuseWin));
+    #endif
+}
+
+
+#ifndef GTK4_BUILD
+void on_retaininput_activate(GtkMenuItem *menuitem, gpointer user_data)
+#else
+void on_retaininput_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+#endif
+{
+    settings.retainInput = !settings.retainInput;
+    #ifdef GTK4_BUILD
+    g_simple_action_set_state(action, g_variant_new_boolean(settings.retainInput));
+    #endif
+}
+
+
 
 
 #ifndef GTK4_BUILD

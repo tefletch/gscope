@@ -36,22 +36,24 @@ void print_hello (GtkWidget *widget, gpointer   data)
 }
 
 // Test action callback
-void rebuild_activated (GSimpleAction *action, GVariant *parameter, gpointer user_data)
-{
-  printf ("Hello from rebuild_activated\n");
-}
-
-// Test action callback
 void quit_activated (GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
   printf ("Hello quit_activated\n");
 }
 
 static GActionEntry app_entries[] = {
-    {"rebuild", rebuild_activated, NULL, NULL, NULL },
+    {"rebuild", on_rebuild_database1_activate, NULL, NULL, NULL },
+    {"save_results", on_save_results_activate, NULL, NULL, NULL },
+    {"clear_query", on_clear_query_activate, NULL, NULL, NULL },
+    {"save_query", on_save_query_activate, NULL, NULL, NULL },
+    {"load_query", on_load_query_activate, NULL, NULL, NULL },
+    {"delete_history", on_delete_history_file_activate, NULL, NULL, NULL },
     {"quit", quit_activated, NULL, NULL, NULL },
-    {"preferences", on_preferences_activate, NULL, NULL, NULL },
     {"ignorecase", on_ignorecase_activate, NULL, "false", NULL},
+    {"useeditor", on_useeditor_activate, NULL, "false", NULL },
+    {"reusewin", on_reusewin_activate, NULL, "false", NULL },
+    {"retaininput", on_retaininput_activate, NULL, "false", NULL },
+    {"preferences", on_preferences_activate, NULL, "false", NULL },
     {"smartquery", on_smartquery_activate, NULL, "true", NULL}
 };
 
@@ -360,12 +362,34 @@ static void activate (GtkApplication *app, gpointer *user_data)
         g_simple_action_set_state(G_SIMPLE_ACTION(my_action), g_variant_new_boolean(settings.ignoreCase));
     g_variant_unref(action_state);
 
-    // *** smartquery ***
+    // *** useeditor ***
+    my_action = g_action_map_lookup_action(G_ACTION_MAP(app), "useeditor");
+    action_state = g_action_get_state(my_action);
+    if ( g_variant_get_boolean(action_state) != settings.useEditor)
+        g_simple_action_set_state(G_SIMPLE_ACTION(my_action), g_variant_new_boolean(settings.useEditor));
+    g_variant_unref(action_state);
+
+    // *** reusewin***
+    my_action = g_action_map_lookup_action(G_ACTION_MAP(app), "reusewin");
+    action_state = g_action_get_state(my_action);
+    if ( g_variant_get_boolean(action_state) != settings.reuseWin)
+        g_simple_action_set_state(G_SIMPLE_ACTION(my_action), g_variant_new_boolean(settings.reuseWin));
+    g_variant_unref(action_state);
+
+     // *** retaininput ***
+    my_action = g_action_map_lookup_action(G_ACTION_MAP(app), "retaininput");
+    action_state = g_action_get_state(my_action);
+    if ( g_variant_get_boolean(action_state) != settings.retainInput)
+        g_simple_action_set_state(G_SIMPLE_ACTION(my_action), g_variant_new_boolean(settings.retainInput));
+    g_variant_unref(action_state);
+
+     // *** smartquery ***
     my_action = g_action_map_lookup_action(G_ACTION_MAP(app), "smartquery");
     action_state = g_action_get_state(my_action);
     if ( g_variant_get_boolean(action_state) != settings.smartQuery)
         g_simple_action_set_state(G_SIMPLE_ACTION(my_action), g_variant_new_boolean(settings.smartQuery));
     g_variant_unref(action_state);
+
 
 }
 

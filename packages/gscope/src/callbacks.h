@@ -53,6 +53,7 @@ void on_rebuild_database1_activate(GSimpleAction *action, GVariant *parameter, g
 void on_save_results_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data);
 void on_clear_query_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data);
 void on_save_query_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data);
+void on_load_query_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data);
 void on_delete_history_file_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data);
 void on_quit1_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data);
 

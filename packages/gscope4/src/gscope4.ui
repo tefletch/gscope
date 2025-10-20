@@ -2,8 +2,8 @@
 <!-- Created with Cambalache 0.96.1 -->
 <interface>
   <!-- interface-name gscope.ui -->
-  <requires lib="gtk" version="4.8"/>
   <requires lib="gio" version="2.0"/>
+  <requires lib="gtk" version="4.8"/>
   <object class="GtkWindow" id="gscope_main">
     <property name="height-request">600</property>
     <property name="title">Gscope</property>
@@ -301,6 +301,26 @@
         <attribute name="label">Rebuild Cross Reference</attribute>
       </item>
       <item>
+        <attribute name="action">app.save_results</attribute>
+        <attribute name="label">Save Results As</attribute>
+      </item>
+      <item>
+        <attribute name="action">app.clear_query</attribute>
+        <attribute name="label">Clear Query History Pane</attribute>
+      </item>
+      <item>
+        <attribute name="action">app.save_query</attribute>
+        <attribute name="label">Save Query Snapshot</attribute>
+      </item>
+      <item>
+        <attribute name="action">app.load_query</attribute>
+        <attribute name="label">Load Query Snapshot</attribute>
+      </item>
+      <item>
+        <attribute name="action">app.delete_history</attribute>
+        <attribute name="label">Delete Query Snapshot</attribute>
+      </item>
+      <item>
         <attribute name="action">app.quit</attribute>
         <attribute name="icon">application-exit</attribute>
         <attribute name="label">Quit</attribute>
@@ -311,7 +331,19 @@
       <item>
         <attribute name="action">app.ignorecase</attribute>
         <attribute name="label">Ignore Case During Search</attribute>
-       </item>
+      </item>
+      <item>
+        <attribute name="action">app.useeditor</attribute>
+        <attribute name="label">Use Editor to View Files</attribute>
+      </item>
+      <item>
+        <attribute name="action">app.reusewin</attribute>
+        <attribute name="label">Reuse the File View Window</attribute>
+      </item>
+      <item>
+        <attribute name="action">app.retaininput</attribute>
+        <attribute name="label">Retain Input for Next Query</attribute>
+      </item>
       <item>
         <attribute name="action">app.smartquery</attribute>
         <attribute name="label">Smart Query</attribute>

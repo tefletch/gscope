@@ -1,5 +1,6 @@
 
 void SEARCH_init();
+void SEARCH_cleanup_prev();
 void SEARCH_set_cref_status(gboolean status);
 
 void GTK4_message_dialog(GtkMessageType msg_type, char *message);
