@@ -18,6 +18,7 @@
 #define lookup_widget(wiget, name) my_lookup_widget(name)
 #endif
 
+
 //===============================================================
 // Public Functions
 //===============================================================
@@ -38,6 +39,7 @@ void        my_gtk_entry_set_text(GtkEntry *entry, const gchar *text);
 const gchar *my_gtk_entry_get_text(GtkEntry *entry);
 gchar       *my_gtk_file_chooser_get_filename(GtkFileChooser *chooser);
 void        my_gtk_toggle_button_set_active(GtkWidget *button, gboolean is_active);
+void        my_gtk_box_pack_start (GtkBox* box,   GtkWidget* child,   gboolean expand,   gboolean fill,  guint padding);
 
 
 

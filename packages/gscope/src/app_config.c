@@ -72,6 +72,7 @@
 #include "utils.h"
 
 #ifdef GTK4_BUILD
+#include "search.h"
 #include "gtk4_aux.h"
 #endif
 
