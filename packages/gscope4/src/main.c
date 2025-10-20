@@ -54,7 +54,8 @@ static GActionEntry app_entries[] = {
     {"reusewin", on_reusewin_activate, NULL, "false", NULL },
     {"retaininput", on_retaininput_activate, NULL, "false", NULL },
     {"preferences", on_preferences_activate, NULL, "false", NULL },
-    {"smartquery", on_smartquery_activate, NULL, "true", NULL}
+    {"smartquery", on_smartquery_activate, NULL, "true", NULL},
+    {"session_statistics", on_session_statistics_activate, NULL, NULL, NULL}
 };
 
 
@@ -349,8 +350,9 @@ static void activate (GtkApplication *app, gpointer *user_data)
     // Comment out for standard theme, un-comment for stardard-dark theme -- Revisit: make this a view-->checkbox-dark-theme [on/off]
     // g_object_set(gtk_settings_get_default(), "gtk-application-prefer-dark-theme", TRUE, NULL);
 
-    // Reconcile start_up settings with UI action states
-    //==================================================
+    //=====================================================
+    // Reconcile start-up settings with stateful UI actions
+    //=====================================================
 
     GAction     *my_action;
     GVariant    *action_state;

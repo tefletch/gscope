@@ -606,251 +606,6 @@ void on_fileview_close_activate(GtkMenuItem *menuitem, gpointer user_data)
 
 
 
-void on_session_statistics_activate(GtkMenuItem     *menuitem,
-                                    gpointer         user_data)
-{
-#define MAX_STAT_STRING     1024
-
-    static SrcFile_stats  *sft_list = NULL;
-    static SrcFile_stats  *si_sft_list = NULL;
-    static stats_struct_t symbol_stats;
-
-    gchar tmp_str[MAX_STAT_STRING + 1];
-    GtkWidget *header_hbox;
-    GtkWidget *value_hbox;
-    GtkWidget *system_files_stats_label;
-    GtkWidget *path_warning_label;
-
-    SrcFile_stats  *entry;
-    SrcFile_stats  *tmp_ptr;
-
-    GtkWidget *user_files_stats_label;
-    gchar cwd[PATHLEN + 1];
-    unsigned int length;
-    gchar working[MAX_STATS_PATH + 1];
-    gchar *offset_ptr;
-    char  *cwd_ptr;
-
-
-    if (!stats_visible)
-    {
-        /* Free up any old user source data */
-        /************************************/
-        if (sft_list != NULL)
-        {
-            entry = sft_list;
-
-            while (entry != NULL)
-            {
-                g_free(entry->suffix);  // free the suffix entry
-                gtk_widget_destroy(entry->col_label);
-                gtk_widget_destroy(entry->col_value);
-                gtk_widget_destroy(entry->vseparator_l);
-                gtk_widget_destroy(entry->vseparator_v);
-                tmp_ptr = entry;
-                entry = entry->next;
-                g_free(tmp_ptr);          // free the list entry
-            }
-
-            sft_list = NULL;
-        }
-
-        /* Free up any old /usr/include/... data */
-        /************************************/
-        if (si_sft_list != NULL)
-        {
-            entry = si_sft_list;
-
-            while (entry != NULL)
-            {
-                g_free(entry->suffix);  // free the suffix entry
-                if (strcmp(settings.includeDir, "") != 0)    // If the include directory list is not "null"
-                {
-                    gtk_widget_destroy(entry->col_label);
-                    gtk_widget_destroy(entry->col_value);
-                    gtk_widget_destroy(entry->vseparator_l);
-                    gtk_widget_destroy(entry->vseparator_v);
-                }
-                tmp_ptr = entry;
-                entry = entry->next;
-                g_free(tmp_ptr);          // free the list entry
-            }
-
-            si_sft_list = NULL;
-        }
-
-
-        /* Get the source file directory path */
-        cwd_ptr = DIR_get_path(DIR_SOURCE);
-        if (cwd_ptr)
-        {
-            strncpy(cwd, cwd_ptr, PATHLEN + 1);
-            cwd[PATHLEN] = '\0';   // make sure we are null-terminated
-        }
-        else
-        {
-            strcpy(cwd, "<Error: path unknown>");
-        }
-
-
-        // if the CWD path is greater than MAX_STATS_PATH characters, truncate it
-        length = strlen(cwd);
-        if (length > MAX_STATS_PATH)
-        {
-            // Trim off excess chars from the beginning of the string [and leave 3 bytes for the ellipsis]
-            offset_ptr = (&(cwd[0]) + (length - (MAX_STATS_PATH - 3)));
-            // move forward to the first '/' character AFTER the offset
-            offset_ptr = strchr(offset_ptr, '/');
-            if (offset_ptr == NULL)
-                strcpy(working, "<NULL>");
-            else
-                sprintf(working, "...%s", offset_ptr);
-        }
-        else
-            strcpy(working, cwd);
-
-        // Add an informative table header to the User Application Files statistics.
-        sprintf(cwd, "<span size=\"large\" weight=\"bold\">Source File Type Statistics:  User Application Files.\nDirectory:  </span>"
-                "<span size=\"large\" color=\"dark red\">(%s/...)</span>", working);
-
-        user_files_stats_label = lookup_widget(GTK_WIDGET(stats_dialog), "user_files_stats_label");
-        gtk_label_set_markup(GTK_LABEL(user_files_stats_label), cwd);
-
-
-
-        /* Get fresh statistics */
-        /************************/
-        sft_list  = create_stats_list(&si_sft_list); /* Construct a list of source file suffixes and per-suffix file-counts */
-        SEARCH_stats(&symbol_stats);         /* get the overall xref symbol type counts */
-
-
-        /* Now update the dynamic portion of the Dialog */
-        /***************************************************/
-
-        path_warning_label = lookup_widget(GTK_WIDGET(stats_dialog), "path_warning_label");
-
-        if (strcmp(settings.includeDir, "") != 0)    // If the include directory list is not "null"
-        {
-            header_hbox = lookup_widget(GTK_WIDGET(stats_dialog), "si_header_hbox");
-            value_hbox =  lookup_widget(GTK_WIDGET(stats_dialog), "si_value_hbox");
-            entry = si_sft_list;
-
-            while (entry != NULL)
-            {
-                entry->col_label = gtk_label_new(entry->suffix);
-                gtk_box_pack_start(GTK_BOX(header_hbox), entry->col_label, FALSE, TRUE, 0);
-                gtk_widget_set_size_request(entry->col_label, 60, -1);
-
-#ifdef GTK3_BUILD
-                entry->vseparator_l = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
-                entry->vseparator_v = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
-#else
-                entry->vseparator_l = gtk_vseparator_new();
-                entry->vseparator_v = gtk_vseparator_new();
-
-#endif
-
-                gtk_box_pack_start(GTK_BOX(header_hbox), entry->vseparator_l, FALSE, TRUE, 0);
-
-
-                sprintf(tmp_str, "<span color=\"blue\">%d</span>", entry->fcount);
-                entry->col_value = gtk_label_new(tmp_str);
-                gtk_box_pack_start(GTK_BOX(value_hbox), entry->col_value, FALSE, FALSE, 0);
-                gtk_widget_set_size_request(entry->col_value, 60, -1);
-                gtk_label_set_use_markup(GTK_LABEL(entry->col_value), TRUE);
-
-                gtk_box_pack_start(GTK_BOX(value_hbox), entry->vseparator_v, FALSE, TRUE, 0);
-
-
-                entry = entry->next;
-            }
-
-            system_files_stats_label = lookup_widget(GTK_WIDGET(stats_dialog), "system_files_stats_label");
-
-            sprintf(tmp_str, "<span size=\"large\" weight=\"bold\">\nSource File Type Statistics: Files found on the "
-                    "Include-file-search path.\nPath: </span><span size=\"large\" color=\"dark red\">"
-                    "(%s)</span>", settings.includeDir);
-            gtk_label_set_text(GTK_LABEL(system_files_stats_label), tmp_str);
-            gtk_label_set_use_markup(GTK_LABEL(system_files_stats_label), TRUE);
-
-            /* Set the (dynamic) path warning label text */
-            sprintf(tmp_str, "<span size=\"large\" weight=\"bold\" color=\"Red\">Note :</span> If your Include File Search Path overlaps with the User Application "
-                    "source tree, files that reside in an\noverlapping directory will only be counted in "
-                    "the \"Files found on the Include-file-search path\" statistics.");
-            gtk_label_set_text(GTK_LABEL(path_warning_label), tmp_str);
-            gtk_label_set_use_markup(GTK_LABEL(path_warning_label), TRUE);
-        }
-        else
-        {
-            /* Set the (dynamic) path warning label text */
-            sprintf(tmp_str, "<span size=\"large\" weight=\"bold\">Note: <span weight=\"normal\">No <span color =\"dark red\">Include "
-                    "File Search Path</span> specified, so no\nadditional include files have been cross-referenced.</span></span>");
-            gtk_label_set_text(GTK_LABEL(path_warning_label), tmp_str);
-            gtk_label_set_use_markup(GTK_LABEL(path_warning_label), TRUE);
-        }
-
-
-
-        header_hbox = lookup_widget(GTK_WIDGET(stats_dialog), "header_hbox");
-        value_hbox =  lookup_widget(GTK_WIDGET(stats_dialog), "value_hbox");
-        entry = sft_list;
-
-        while (entry != NULL)
-        {
-            entry->col_label = gtk_label_new(entry->suffix);
-            gtk_box_pack_start(GTK_BOX(header_hbox), entry->col_label, FALSE, TRUE, 0);
-            gtk_widget_set_size_request(entry->col_label, 60, -1);
-
-#ifdef GTK3_BUILD
-            entry->vseparator_l = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
-            entry->vseparator_v = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
-#else
-            entry->vseparator_l = gtk_vseparator_new();
-            entry->vseparator_v = gtk_vseparator_new();
-#endif
-
-            gtk_box_pack_start(GTK_BOX(header_hbox), entry->vseparator_l, FALSE, TRUE, 0);
-
-
-            sprintf(tmp_str, "<span color=\"blue\">%d</span>", entry->fcount);
-            entry->col_value = gtk_label_new(tmp_str);
-            gtk_box_pack_start(GTK_BOX(value_hbox), entry->col_value, FALSE, FALSE, 0);
-            gtk_widget_set_size_request(entry->col_value, 60, -1);
-            gtk_label_set_use_markup(GTK_LABEL(entry->col_value), TRUE);
-
-            gtk_box_pack_start(GTK_BOX(value_hbox), entry->vseparator_v, FALSE, TRUE, 0);
-
-
-            entry = entry->next;
-        }
-
-        sprintf(tmp_str, "<span size=\"large\" color=\"blue\">%d</span>", symbol_stats.define_cnt);
-        gtk_label_set_label(GTK_LABEL(lookup_widget(GTK_WIDGET(stats_dialog), "definition_count_label")), tmp_str);
-
-        sprintf(tmp_str, "<span size=\"large\" color=\"blue\">%d</span>", symbol_stats.identifier_cnt);
-        gtk_label_set_label(GTK_LABEL(lookup_widget(GTK_WIDGET(stats_dialog), "identifier_count_label")), tmp_str);
-
-        sprintf(tmp_str, "<span size=\"large\" color=\"blue\">%d</span>", symbol_stats.fn_cnt);
-        gtk_label_set_label(GTK_LABEL(lookup_widget(GTK_WIDGET(stats_dialog), "function_count_label")), tmp_str);
-
-        sprintf(tmp_str, "<span size=\"large\" color=\"blue\">%d</span>", symbol_stats.class_cnt);
-        gtk_label_set_label(GTK_LABEL(lookup_widget(GTK_WIDGET(stats_dialog), "class_definition_count_label")), tmp_str);
-
-        sprintf(tmp_str, "<span size=\"large\" color=\"blue\">%d</span>", symbol_stats.fn_calls_cnt);
-        gtk_label_set_label(GTK_LABEL(lookup_widget(GTK_WIDGET(stats_dialog), "function_calls_count_label")), tmp_str);
-
-        sprintf(tmp_str, "<span size=\"large\" color=\"blue\">%d</span>", symbol_stats.include_cnt);
-        gtk_label_set_label(GTK_LABEL(lookup_widget(GTK_WIDGET(stats_dialog), "include_file_count_label")), tmp_str);
-
-        gtk_window_set_transient_for(GTK_WINDOW(stats_dialog), GTK_WINDOW(gscope_main));
-
-        gtk_widget_show_all(stats_dialog);
-        stats_visible = TRUE;
-    }
-    // else "stats_dialog" already visible, do nothing.
-}
-
-
 
 
 
@@ -1302,6 +1057,257 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
 
     preferences_dialog_visible = TRUE;
 }
+
+
+#ifndef GTK4_BUILD
+void on_session_statistics_activate(GtkMenuItem  *menuitem, gpointer user_data)
+#else
+void on_session_statistics_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+#endif
+{
+    #define MAX_STAT_STRING     1024
+
+    static SrcFile_stats  *sft_list = NULL;
+    static SrcFile_stats  *si_sft_list = NULL;
+    static stats_struct_t symbol_stats;
+
+    gchar tmp_str[MAX_STAT_STRING + 1];
+    GtkWidget *header_hbox;
+    GtkWidget *value_hbox;
+    GtkWidget *system_files_stats_label;
+    GtkWidget *path_warning_label;
+
+    SrcFile_stats  *entry;
+    SrcFile_stats  *tmp_ptr;
+
+    GtkWidget *user_files_stats_label;
+    gchar cwd[PATHLEN + 1];
+    unsigned int length;
+    gchar working[MAX_STATS_PATH + 1];
+    gchar *offset_ptr;
+    char  *cwd_ptr;
+
+
+    if (!stats_visible)
+    {
+        /* Free up any old user source data */
+        /************************************/
+        if (sft_list != NULL)
+        {
+            entry = sft_list;
+
+            while (entry != NULL)
+            {
+                g_free(entry->suffix);  // free the suffix entry
+                g_object_unref(entry->col_label);
+                g_object_unref(entry->col_value);
+                g_object_unref(entry->vseparator_l);
+                g_object_unref(entry->vseparator_v);
+                tmp_ptr = entry;
+                entry = entry->next;
+                g_free(tmp_ptr);          // free the list entry
+            }
+
+            sft_list = NULL;
+        }
+
+        /* Free up any old /usr/include/... data */
+        /************************************/
+        if (si_sft_list != NULL)
+        {
+            entry = si_sft_list;
+
+            while (entry != NULL)
+            {
+                g_free(entry->suffix);  // free the suffix entry
+                if (strcmp(settings.includeDir, "") != 0)    // If the include directory list is not "null"
+                {
+                    g_object_unref(entry->col_label);
+                    g_object_unref(entry->col_value);
+                    g_object_unref(entry->vseparator_l);
+                    g_object_unref(entry->vseparator_v);
+                }
+                tmp_ptr = entry;
+                entry = entry->next;
+                g_free(tmp_ptr);          // free the list entry
+            }
+
+            si_sft_list = NULL;
+        }
+
+
+        /* Get the source file directory path */
+        cwd_ptr = DIR_get_path(DIR_SOURCE);
+        if (cwd_ptr)
+        {
+            strncpy(cwd, cwd_ptr, PATHLEN + 1);
+            cwd[PATHLEN] = '\0';   // make sure we are null-terminated
+        }
+        else
+        {
+            strcpy(cwd, "<Error: path unknown>");
+        }
+
+
+        // if the CWD path is greater than MAX_STATS_PATH characters, truncate it
+        length = strlen(cwd);
+        if (length > MAX_STATS_PATH)
+        {
+            // Trim off excess chars from the beginning of the string [and leave 3 bytes for the ellipsis]
+            offset_ptr = (&(cwd[0]) + (length - (MAX_STATS_PATH - 3)));
+            // move forward to the first '/' character AFTER the offset
+            offset_ptr = strchr(offset_ptr, '/');
+            if (offset_ptr == NULL)
+                strcpy(working, "<NULL>");
+            else
+                sprintf(working, "...%s", offset_ptr);
+        }
+        else
+            strcpy(working, cwd);
+
+        // Add an informative table header to the User Application Files statistics.
+        sprintf(cwd, "<span size=\"large\" weight=\"bold\">Source File Type Statistics:  User Application Files.\nDirectory:  </span>"
+                "<span size=\"large\" color=\"dark red\">(%s/...)</span>", working);
+
+        user_files_stats_label = lookup_widget(GTK_WIDGET(stats_dialog), "user_files_stats_label");
+        gtk_label_set_markup(GTK_LABEL(user_files_stats_label), cwd);
+
+
+
+        /* Get fresh statistics */
+        /************************/
+        sft_list  = create_stats_list(&si_sft_list); /* Construct a list of source file suffixes and per-suffix file-counts */
+        SEARCH_stats(&symbol_stats);         /* get the overall xref symbol type counts */
+
+
+        /* Now update the dynamic portion of the Dialog */
+        /***************************************************/
+
+        path_warning_label = lookup_widget(GTK_WIDGET(stats_dialog), "path_warning_label");
+
+        if (strcmp(settings.includeDir, "") != 0)    // If the include directory list is not "null"
+        {
+            header_hbox = lookup_widget(GTK_WIDGET(stats_dialog), "si_header_hbox");
+            value_hbox =  lookup_widget(GTK_WIDGET(stats_dialog), "si_value_hbox");
+            entry = si_sft_list;
+
+            while (entry != NULL)
+            {
+                entry->col_label = gtk_label_new(entry->suffix);
+                
+                my_gtk_box_pack_start(GTK_BOX(header_hbox), entry->col_label, FALSE, TRUE, 0);
+                
+                gtk_widget_set_size_request(entry->col_label, 60, -1);
+
+                #if defined(GTK4_BUILD) || defined(GTK3_BUILD)
+                entry->vseparator_l = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
+                entry->vseparator_v = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
+                
+                #else
+                entry->vseparator_l = gtk_vseparator_new();
+                entry->vseparator_v = gtk_vseparator_new();
+                #endif
+
+                my_gtk_box_pack_start(GTK_BOX(header_hbox), entry->vseparator_l, FALSE, TRUE, 0);
+                
+                sprintf(tmp_str, "<span color=\"blue\">%d</span>", entry->fcount);
+                entry->col_value = gtk_label_new(tmp_str);
+                
+                my_gtk_box_pack_start(GTK_BOX(value_hbox), entry->col_value, FALSE, FALSE, 0);
+                gtk_widget_set_size_request(entry->col_value, 60, -1);
+                gtk_label_set_use_markup(GTK_LABEL(entry->col_value), TRUE);
+
+                my_gtk_box_pack_start(GTK_BOX(value_hbox), entry->vseparator_v, FALSE, TRUE, 0);
+
+
+                entry = entry->next;
+            }
+
+            system_files_stats_label = lookup_widget(GTK_WIDGET(stats_dialog), "system_files_stats_label");
+
+            sprintf(tmp_str, "<span size=\"large\" weight=\"bold\">\nSource File Type Statistics: Files found on the "
+                    "Include-file-search path.\nPath: </span><span size=\"large\" color=\"dark red\">"
+                    "(%s)</span>", settings.includeDir);
+            gtk_label_set_text(GTK_LABEL(system_files_stats_label), tmp_str);
+            gtk_label_set_use_markup(GTK_LABEL(system_files_stats_label), TRUE);
+
+            /* Set the (dynamic) path warning label text */
+            sprintf(tmp_str, "<span size=\"large\" weight=\"bold\" color=\"Red\">Note :</span> If your Include File Search Path overlaps with the User Application "
+                    "source tree, files that reside in an\noverlapping directory will only be counted in "
+                    "the \"Files found on the Include-file-search path\" statistics.");
+            gtk_label_set_text(GTK_LABEL(path_warning_label), tmp_str);
+            gtk_label_set_use_markup(GTK_LABEL(path_warning_label), TRUE);
+        }
+        else
+        {
+            /* Set the (dynamic) path warning label text */
+            sprintf(tmp_str, "<span size=\"large\" weight=\"bold\">Note: <span weight=\"normal\">No <span color =\"dark red\">Include "
+                    "File Search Path</span> specified, so no\nadditional include files have been cross-referenced.</span></span>");
+            gtk_label_set_text(GTK_LABEL(path_warning_label), tmp_str);
+            gtk_label_set_use_markup(GTK_LABEL(path_warning_label), TRUE);
+        }
+
+
+
+        header_hbox = lookup_widget(GTK_WIDGET(stats_dialog), "header_hbox");
+        value_hbox =  lookup_widget(GTK_WIDGET(stats_dialog), "value_hbox");
+        entry = sft_list;
+
+        while (entry != NULL)
+        {
+            entry->col_label = gtk_label_new(entry->suffix);
+            my_gtk_box_pack_start(GTK_BOX(header_hbox), entry->col_label, FALSE, TRUE, 0);
+            gtk_widget_set_size_request(entry->col_label, 60, -1);
+
+            #if defined(GTK3_BUILD) || defined(GTK4_BUILD)
+            entry->vseparator_l = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
+            entry->vseparator_v = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
+            
+            #else
+            entry->vseparator_l = gtk_vseparator_new();
+            entry->vseparator_v = gtk_vseparator_new();
+            #endif
+
+            my_gtk_box_pack_start(GTK_BOX(header_hbox), entry->vseparator_l, FALSE, TRUE, 0);
+
+
+            sprintf(tmp_str, "<span color=\"blue\">%d</span>", entry->fcount);
+            entry->col_value = gtk_label_new(tmp_str);
+            my_gtk_box_pack_start(GTK_BOX(value_hbox), entry->col_value, FALSE, FALSE, 0);
+            gtk_widget_set_size_request(entry->col_value, 60, -1);
+            gtk_label_set_use_markup(GTK_LABEL(entry->col_value), TRUE);
+
+            my_gtk_box_pack_start(GTK_BOX(value_hbox), entry->vseparator_v, FALSE, TRUE, 0);
+
+            entry = entry->next;
+        }
+
+        sprintf(tmp_str, "<span size=\"large\" color=\"blue\">%d</span>", symbol_stats.define_cnt);
+        gtk_label_set_label(GTK_LABEL(lookup_widget(GTK_WIDGET(stats_dialog), "definition_count_label")), tmp_str);
+
+        sprintf(tmp_str, "<span size=\"large\" color=\"blue\">%d</span>", symbol_stats.identifier_cnt);
+        gtk_label_set_label(GTK_LABEL(lookup_widget(GTK_WIDGET(stats_dialog), "identifier_count_label")), tmp_str);
+
+        sprintf(tmp_str, "<span size=\"large\" color=\"blue\">%d</span>", symbol_stats.fn_cnt);
+        gtk_label_set_label(GTK_LABEL(lookup_widget(GTK_WIDGET(stats_dialog), "function_count_label")), tmp_str);
+
+        sprintf(tmp_str, "<span size=\"large\" color=\"blue\">%d</span>", symbol_stats.class_cnt);
+        gtk_label_set_label(GTK_LABEL(lookup_widget(GTK_WIDGET(stats_dialog), "class_definition_count_label")), tmp_str);
+
+        sprintf(tmp_str, "<span size=\"large\" color=\"blue\">%d</span>", symbol_stats.fn_calls_cnt);
+        gtk_label_set_label(GTK_LABEL(lookup_widget(GTK_WIDGET(stats_dialog), "function_calls_count_label")), tmp_str);
+
+        sprintf(tmp_str, "<span size=\"large\" color=\"blue\">%d</span>", symbol_stats.include_cnt);
+        gtk_label_set_label(GTK_LABEL(lookup_widget(GTK_WIDGET(stats_dialog), "include_file_count_label")), tmp_str);
+
+        gtk_window_set_transient_for(GTK_WINDOW(stats_dialog), GTK_WINDOW(gscope_main));
+
+        gtk_widget_show(stats_dialog);
+        stats_visible = TRUE;
+    }
+    // else "stats_dialog" already visible, do nothing.
+}
+
 
 
 //*** End GTK multi-variant menu handling ***********

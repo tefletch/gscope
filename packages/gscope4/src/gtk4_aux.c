@@ -14,13 +14,15 @@ void SEARCH_init()
     printf("hello from Gtk4aux: %s\n", __func__);
 }
 
-
 void SEARCH_cleanup_prev()
 {
     printf("hello from Gtk4aux: %s\n", __func__);
 }
 
-
+void SEARCH_stats(stats_struct_t *sptr)
+{
+    printf("hello from Gtk4aux: %s\n", __func__);
+}
 
 search_results_t *SEARCH_lookup(search_t search_operation, gchar *pattern)
 {

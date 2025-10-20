@@ -359,6 +359,7 @@
     <submenu id="sub_menu3">
       <attribute name="label">View</attribute>
       <item>
+        <attribute name="action">app.session_statistics</attribute>
         <attribute name="label">Session Statistics</attribute>
       </item>
       <item>
