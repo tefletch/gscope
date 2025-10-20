@@ -55,7 +55,9 @@ static GActionEntry app_entries[] = {
     {"retaininput", on_retaininput_activate, NULL, "false", NULL },
     {"preferences", on_preferences_activate, NULL, "false", NULL },
     {"smartquery", on_smartquery_activate, NULL, "true", NULL},
-    {"session_statistics", on_session_statistics_activate, NULL, NULL, NULL}
+    {"session_statistics", on_session_statistics_activate, NULL, NULL, NULL},
+    {"list_all_functions", on_list_all_functions1_activate, NULL, NULL, NULL },
+    {"list_autogen_errors", on_list_autogen_errors_activate, NULL, NULL, NULL }
 };
 
 

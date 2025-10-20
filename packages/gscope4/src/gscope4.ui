@@ -363,9 +363,11 @@
         <attribute name="label">Session Statistics</attribute>
       </item>
       <item>
+        <attribute name="action">app.list_all_functions</attribute>
         <attribute name="label">All Function Definitions</attribute>
       </item>
       <item>
+        <attribute name="action">app.list_autogen_errors</attribute>
         <attribute name="label">Autogen Errors</attribute>
       </item>
     </submenu>

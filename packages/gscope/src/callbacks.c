@@ -420,29 +420,6 @@ void on_cref_update_button_clicked(GtkButton       *button,
 }
 
 
-void on_list_all_functions1_activate(GtkMenuItem     *menuitem,
-                                     gpointer         user_data)
-{
-    if (!search_button_lockout)
-    {
-        search_button_lockout = TRUE;
-        process_query(FIND_ALL_FUNCTIONS);
-        search_button_lockout = FALSE;
-    }
-}
-
-
-
-void on_list_autogen_errors_activate(GtkMenuItem *menuitem, gpointer user_data)
-{
-    if ( !search_button_lockout )
-    {
-        search_button_lockout = TRUE;
-        process_query(FIND_AUTOGEN_ERRORS);
-        search_button_lockout = FALSE;
-    }
-}
-
 
 //------------------------- Application Exit Callbacks ----------------------
 void on_quit1_activate(GtkMenuItem     *menuitem,
@@ -650,9 +627,9 @@ void on_quit1_activate (GSimpleAction *action, GVariant *parameter, gpointer use
 
 
 
-
-//*** Start GTK multi-variant menu handling ********
-//**************************************************
+//====================================================
+//      Start GTK multi-variant menu handling
+//************************************************==**
 
 #ifndef GTK4_BUILD
 void on_rebuild_database1_activate(GtkMenuItem *menuitem, gpointer user_data)
@@ -1059,6 +1036,7 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
 }
 
 
+// Revisit: This callback works with a statistics dialog that has not yet been created for gtk4
 #ifndef GTK4_BUILD
 void on_session_statistics_activate(GtkMenuItem  *menuitem, gpointer user_data)
 #else
@@ -1309,9 +1287,39 @@ void on_session_statistics_activate(GSimpleAction *action, GVariant *parameter, 
 }
 
 
+#ifndef GTK4_BUILD
+void on_list_all_functions1_activate(GtkMenuItem *menuitem, gpointer  user_data)
+#else
+void on_list_all_functions1_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+#endif
+{
+    if (!search_button_lockout)
+    {
+        search_button_lockout = TRUE;
+        process_query(FIND_ALL_FUNCTIONS);
+        search_button_lockout = FALSE;
+    }
+}
 
-//*** End GTK multi-variant menu handling ***********
-//***************************************************
+
+#ifndef GTK4_BUILD
+void on_list_autogen_errors_activate(GtkMenuItem *menuitem, gpointer user_data)
+#else
+void on_list_autogen_errors_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+#endif
+{
+    if ( !search_button_lockout )
+    {
+        search_button_lockout = TRUE;
+        process_query(FIND_AUTOGEN_ERRORS);
+        search_button_lockout = FALSE;
+    }
+}
+
+
+//===================================================
+//      End GTK multi-variant MENU handling
+//===================================================
 
 
 

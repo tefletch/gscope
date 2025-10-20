@@ -26,7 +26,9 @@ void SEARCH_stats(stats_struct_t *sptr)
 
 search_results_t *SEARCH_lookup(search_t search_operation, gchar *pattern)
 {
+    static search_results_t results = { NULL, NULL, 0 };
     printf("hello from Gtk4aux: %s\n", __func__);
+    return(&results);
 }
 
 void SEARCH_free_results(search_results_t *results)

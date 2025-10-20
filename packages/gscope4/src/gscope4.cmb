@@ -2,7 +2,7 @@
 <!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
 <!-- Created with Cambalache 0.96.1 -->
 <cambalache-project version="0.96.0" target_tk="gtk-4.0">
-  <ui filename="gscope4.ui" sha256="2f9a0d4c7fdebcf568da5683891cdb6097adb557af24775fa9e339a9bc6a045d"/>
+  <ui filename="gscope4.ui" sha256="c8f4c75eaf98c88dd19a4c9b45accb51c78874cef7da0a70aa6c9b86a08a8002"/>
   <ui filename="message.ui" sha256="7a854839e144e94d0251771d8f8102db83f9abc8173301ee9beee164e9fa710e"/>
   <ui filename="splash.ui" sha256="5efdf8235f0f02a99e1e0c65218a1f6d6a16623473108390ea945fad1919cec8"/>
   <ui filename="preferences.ui" sha256="ca0e493b0a5ba76bfea57a31db91132898cdcad3f6e422fea4f6edc8bccd0bf0"/>
