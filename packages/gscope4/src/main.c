@@ -57,7 +57,9 @@ static GActionEntry app_entries[] = {
     {"smartquery", on_smartquery_activate, NULL, "true", NULL},
     {"session_statistics", on_session_statistics_activate, NULL, NULL, NULL},
     {"list_all_functions", on_list_all_functions1_activate, NULL, NULL, NULL },
-    {"list_autogen_errors", on_list_autogen_errors_activate, NULL, NULL, NULL }
+    {"list_autogen_errors", on_list_autogen_errors_activate, NULL, NULL, NULL },
+    {"usage_activate", on_usage1_activate, NULL, NULL, NULL },
+    {"setup", on_setup1_activate, NULL, NULL, NULL }
 };
 
 
