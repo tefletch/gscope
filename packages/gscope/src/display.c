@@ -716,23 +716,22 @@ void DISPLAY_set_cref_current(gboolean up_to_date)
 void DISPLAY_message_dialog(GtkWindow *parent, GtkMessageType severity, const gchar *message, gboolean modal)
 {
     GtkWidget *MsgDialog;
-    const char *title[5] = {"Info", "Warning", "Question", "Error", "Misc"}; // Message type names indexed by GtkMessageType: severity
 
+    #ifndef GTK4_BUILD
     if ( !parent )  // Use the 'default' parent
         parent = GTK_WINDOW(lookup_widget(gscope_main, "main"));
 
     MsgDialog = gtk_message_dialog_new_with_markup(parent,
                                                    GTK_DIALOG_DESTROY_WITH_PARENT,
                                                    severity,
-                                                   GTK_BUTTONS_OK,
-                                                   NULL);
+                                                   GTK_BUTTONS_NONE,
+                                                   message);
 
 
- // Pango markup example:
- //    _("<span foreground=\"blue\" size=\"x-large\" weight=\"bold\">Build Monitor 0.1</span>\nA panel application for monitoring print build status\n2007 Tom Fletcher")
+    // Pango markup example:
+    //    _("<span foreground=\"blue\" size=\"x-large\" weight=\"bold\">Build Monitor 0.1</span>\nA panel application for monitoring print build status\n2007 Tom Fletcher")
 
-    #ifndef GTK4_BUILD
-    gtk_window_set_title(GTK_WINDOW(MsgDialog), title[severity]);
+    gtk_window_set_title(GTK_WINDOW(MsgDialog), "gscope-message");
 
     if (modal)
     {
@@ -748,24 +747,59 @@ void DISPLAY_message_dialog(GtkWindow *parent, GtkMessageType severity, const gc
                                G_CALLBACK (gtk_widget_destroy),
                                MsgDialog);
     }
+    
     #else   // GTK4 build
+
+    MsgDialog = gtk_message_dialog_new_with_markup(parent,
+                                                   GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                   severity,
+                                                   GTK_BUTTONS_NONE,
+                                                   message);
+
+
 
     GtkWindow   *message_window;
     GtkLabel    *message_label;
-    GtkImage    *message_image;
+    GtkWidget   *message_box;
+    GtkImage    *message_icon = NULL;
     const char *icon_name[5] = {"dialog-information", "dialog-warning", "dialog-question", "dialog-error", "emblem-important"};
 
+    message_window = GTK_WINDOW(gtk_window_new());
+    message_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    message_label  = GTK_LABEL(gtk_label_new(NULL));
 
-    message_window = GTK_WINDOW(my_lookup_widget("message_window"));
-    message_label  = GTK_LABEL(my_lookup_widget("message_label"));
-    message_image  = GTK_IMAGE(my_lookup_widget("message_image"));
 
-    gtk_window_set_modal(message_window, modal);
+    gtk_window_set_child(message_window, message_box);
     gtk_window_set_transient_for(message_window, parent);
-    gtk_window_set_title(message_window, title[severity]);
-    gtk_image_set_from_icon_name(message_image, icon_name[severity]);
+    gtk_window_set_title(message_window, "gscope-message");
+    gtk_window_set_resizable(message_window, FALSE);
+
+    
     gtk_label_set_markup(message_label, message);
-    gtk_widget_show(GTK_WIDGET(message_window));
+    gtk_widget_set_margin_start(GTK_WIDGET(message_label), 20);
+    gtk_widget_set_margin_end(GTK_WIDGET(message_label), 20);
+    gtk_widget_set_margin_bottom(GTK_WIDGET(message_label), 20);
+
+    
+
+    gtk_label_set_markup(message_label, message);
+    if ( severity < GTK_MESSAGE_OTHER)
+    {
+        message_icon = GTK_IMAGE(gtk_image_new());
+        gtk_image_set_from_icon_name(message_icon, icon_name[severity]);
+        gtk_image_set_icon_size(message_icon, GTK_ICON_SIZE_LARGE);
+        gtk_widget_set_margin_top(GTK_WIDGET(message_icon), 20);
+        gtk_widget_set_margin_bottom(GTK_WIDGET(message_icon), 0);
+        gtk_widget_set_margin_start(GTK_WIDGET(message_icon), 20);
+        gtk_widget_set_margin_end(GTK_WIDGET(message_icon), 20);
+    gtk_box_append(GTK_BOX(message_box), GTK_WIDGET(message_icon));
+    }
+    gtk_window_set_modal(message_window, modal);
+
+    gtk_box_append(GTK_BOX(message_box), GTK_WIDGET(message_label));
+    gtk_label_set_markup(message_label, message);
+
+     gtk_widget_show(GTK_WIDGET(message_window));
     #endif
 }
 

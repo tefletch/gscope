@@ -374,9 +374,11 @@
     <submenu id="sub_menu4">
       <attribute name="label">Help</attribute>
       <item>
+        <attribute name="action">app.usage_activate</attribute>
         <attribute name="label">Usage</attribute>
       </item>
       <item>
+        <attribute name="action">app.setup</attribute>
         <attribute name="label">Setup</attribute>
       </item>
       <submenu id="sub_menu4a">
