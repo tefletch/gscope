@@ -2,7 +2,6 @@
 #include "callbacks_pub.h"
 
 void on_window1_destroy (GtkWidget *widget, gpointer user_data);
-gboolean on_window1_delete_event(GtkWidget *widget, GdkEvent *event, gpointer  user_data);
 
 #ifndef GTK4_BUILD
 void on_fileview_start_editor_activate(GtkMenuItem *menuitem, gpointer user_data);
@@ -46,6 +45,9 @@ void on_configure_wiki_activate(GtkMenuItem *menuitem, gpointer user_data);
 void on_release_wiki_activate(GtkMenuItem *menuitem, gpointer user_data);
 void on_about1_activate(GtkMenuItem *menuitem, gpointer user_data);
 
+gboolean on_window1_delete_event(GtkWidget *widget, GdkEvent *event, gpointer  user_data);
+
+
 #else   // GTK4 menu-item (action) callbacks
 
 // "command" sub-menu
@@ -78,6 +80,8 @@ void on_usage_wiki_activate(GSimpleAction *action, GVariant *parameter, gpointer
 void on_configure_wiki_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data);
 void on_release_wiki_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data);
 void on_about1_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data);
+
+gboolean on_window1_close_request(GtkWidget *widget, GdkEvent *event, gpointer user_data);
 
 #endif
 

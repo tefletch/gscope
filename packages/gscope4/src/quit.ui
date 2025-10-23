@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.99.1 -->
+<interface>
+  <!-- interface-name quit.ui -->
+  <requires lib="gtk" version="4.6"/>
+  <object class="GtkDialog" id="gscope_quit">
+    <child internal-child="content_area">
+      <object class="GtkBox">
+        <property name="orientation">horizontal</property>
+        <child>
+          <object class="GtkImage">
+            <property name="icon-name">gtk-dialog-question</property>
+            <property name="margin-end">10</property>
+            <property name="margin-start">10</property>
+            <property name="pixel-size">75</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">You are about to exit GScope.  Are you sure you want to continue?</property>
+                <property name="margin-end">15</property>
+                <property name="margin-top">15</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkCheckButton">
+                <property name="label">Warn me when I attempt to exit Gscope</property>
+                <property name="margin-bottom">15</property>
+                <property name="margin-start">10</property>
+                <property name="margin-top">15</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child internal-child="action_area">
+      <object class="GtkBox">
+        <child>
+          <object class="GtkButton" id="cancel_exit_button">
+            <property name="margin-bottom">10</property>
+            <child>
+              <object class="GtkBox">
+                <child>
+                  <object class="GtkImage">
+                    <property name="icon-name">gtk-cancel</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">Cancel</property>
+                    <property name="margin-bottom">0</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="exit_ok_button">
+            <property name="margin-bottom">10</property>
+            <property name="margin-end">10</property>
+            <property name="margin-start">10</property>
+            <child>
+              <object class="GtkBox">
+                <child>
+                  <object class="GtkImage">
+                    <property name="icon-name">gtk-quit</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">Quit</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

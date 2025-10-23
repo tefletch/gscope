@@ -46,18 +46,7 @@ typedef struct _SrcFile_stats
 } SrcFile_stats;
 
 
-
-
-//
-//---------------- Support Functions (for callbacks) ----------------
-//
-
 // ---- local function prototypes ----
-static void process_query(search_t query_type);
-static gboolean exit_confirmed(void);
-#ifndef GTK4_BUILD
-static void shutdown(void);
-#endif
 static SrcFile_stats* create_stats_list(SrcFile_stats **si_stats);
 
 
@@ -98,6 +87,7 @@ static GtkWidget    *gscope_main = NULL;
 static GtkWidget    *quit_dialog = NULL;
 static GtkWidget    *aboutdialog1 = NULL;
 static GtkWidget    *gscope_preferences = NULL;
+static GtkWidget    *gscope_quit = NULL;
 static GtkWidget    *stats_dialog = NULL;
 static GtkWidget    *folder_chooser_dialog = NULL;
 static GtkWidget    *open_file_chooser_dialog = NULL;
@@ -107,6 +97,11 @@ static GtkWidget    *browser_window = NULL;
 
 //---Public Globals (Try to keep this section empty)----
 
+
+
+//=============================================================================================
+//         Private Callback-Support  Functions
+//=============================================================================================
 
 
 //---------------------------------------------------------------------------
@@ -350,9 +345,221 @@ static void process_query(search_t query_type)
 }
 
 
-//
-//------------------------------ Callback Functions ----------------------------
-//
+static gboolean exit_confirmed()
+{
+    if (settings.exitConfirm)
+    {
+        #ifndef GTK4_BUILD
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(quit_dialog), "confirm_exit_checkbutton")), TRUE);
+
+        gtk_dialog_run(GTK_DIALOG(quit_dialog));
+        gtk_widget_hide(GTK_WIDGET(quit_dialog));
+        #else
+        gtk_widget_set_visible(gscope_quit, TRUE);
+        printf("QUIT DIALOG for GTK 4 not yet implemented...\n");
+        #endif
+    }
+    else
+        ok_to_quit = TRUE;
+
+    return (ok_to_quit);
+}
+
+
+// Create a list of source file suffixes and counts for each suffix
+static SrcFile_stats* create_stats_list(SrcFile_stats **si_stats)
+{
+    gchar *suffix_ptr;
+    gchar *wptr;
+    gchar delimiter;
+    gchar working[80];       // Working buffer for constructing each individual suffix string.
+    int f;
+    guint noSuffixCnt = 0;
+    guint si_noSuffixCnt = 0;
+
+    SrcFile_stats *ListBegin = NULL;
+    SrcFile_stats *entry;
+
+    SrcFile_stats *si_ListBegin = NULL;
+    SrcFile_stats *si_entry;
+
+    SrcFile_stats *previous;
+    SrcFile_stats * current,*temp;
+
+    int counter;
+
+    gboolean include_file_path_exists;
+
+    if (strcmp(settings.includeDir, "") == 0)
+        include_file_path_exists = FALSE;
+    else
+        include_file_path_exists = TRUE;
+
+
+    suffix_ptr = &(settings.suffixList[0]);
+
+    if (*suffix_ptr != '\0')    // If we have a non-null suffix list
+    {
+        delimiter = *suffix_ptr++;
+        while (*suffix_ptr != '\0')
+        {
+            wptr = working;
+            *wptr++ = '.';
+            while (*suffix_ptr != delimiter)
+            {
+                *wptr++ = *suffix_ptr++;
+            }
+            suffix_ptr++;
+            *wptr = 0;  // Null-terminate the suffix.
+
+            /* Create the application specific suffix list */
+            entry = g_malloc(sizeof(SrcFile_stats));  // Create the suffix entry
+            entry->next = ListBegin;                  // Add it to the linked list
+            ListBegin = entry;
+            entry->fcount = 0;
+            entry->suffix = strdup(working);
+
+            /* Create the (optional) system include suffix list (/usr/include/...)  */
+            si_entry = g_malloc(sizeof(SrcFile_stats));  // Create the suffix entry
+            si_entry->next = si_ListBegin;               // Add it to the linked list
+            si_ListBegin = si_entry;
+            si_entry->fcount = 0;
+            si_entry->suffix = strdup(working);
+        }
+
+        counter = 0;
+
+        // Now that the list is created, collect the per-suffix statistics
+        for (f = 0; f < nsrcfiles; f++)
+        {
+
+            if ((include_file_path_exists) && (DIR_file_on_include_search_path(DIR_src_files[f])))
+            {
+                /* Count this file in the system include source stats */
+                if (settings.showIncludes)
+                    printf("%d) %s\n", ++counter, DIR_src_files[f]);
+
+                // if the file has a suffix
+                if ((wptr = strrchr(DIR_src_files[f], '.')) != NULL)
+                {
+                    si_entry = si_ListBegin;
+                    // increment the suffix counter corresponding to wptr
+                    while (si_entry != NULL)
+                    {
+                        if (strcmp(si_entry->suffix, wptr) == 0)
+                        {
+                            si_entry->fcount++;
+                            break;
+                        }
+                        si_entry = si_entry->next;
+                    }
+                }
+                else
+                {
+                    // increment the no-suffix counter
+                    si_noSuffixCnt++;
+                }
+            }
+            else /* This is a user source file, not a System Includes (/usr/include...) file */
+            /* Count this file in the user program source stats */
+            {
+                // if the file has a suffix
+                if ((wptr = strrchr(DIR_src_files[f], '.')) != NULL)
+                {
+                    entry = ListBegin;
+                    // increment the suffix counter corresponding to wptr
+                    while (entry != NULL)
+                    {
+                        if (strcmp(entry->suffix, wptr) == 0)
+                        {
+                            //if ( strcmp(wptr, DELSOL_ISINK_FID_INIT) == 0) printf("%s\n", DIR_src_files[f]);
+                            entry->fcount++;
+                            break;
+                        }
+                        entry = entry->next;
+                    }
+                }
+                else
+                {
+                    // increment the no-suffix counter
+                    noSuffixCnt++;
+                }
+            }
+        }
+    }
+
+    // -------- Add the <no-suffix> count to the user sourcelist --------
+    entry = g_malloc(sizeof(SrcFile_stats));
+    entry->next = ListBegin;
+    ListBegin = entry;
+    entry->fcount = noSuffixCnt;
+    entry->suffix = strdup("No Suffix");
+
+    // Add the <no-suffix> count to the system includes sourcelist
+    si_entry = g_malloc(sizeof(SrcFile_stats));
+    si_entry->next = si_ListBegin;
+    si_ListBegin = si_entry;
+    si_entry->fcount = si_noSuffixCnt;
+    si_entry->suffix = strdup("No Suffix");
+
+
+    // -------- Add the TOTAL count to the user list --------
+    entry = g_malloc(sizeof(SrcFile_stats));
+    entry->next = ListBegin;
+    ListBegin = entry;
+    entry->fcount = nsrcfiles;
+    entry->suffix = strdup("Total");
+
+    // Now reverse the entries in the linked list so that the
+    // Suffix counts are displayed in the same order as the suffix
+    // list pattern.
+
+    current = ListBegin;
+    previous = NULL;
+    while (current != NULL)
+    {
+        temp = current->next;
+        current->next = previous;
+        previous = current;
+        current = temp;
+    }
+    ListBegin = previous;
+
+    current = si_ListBegin;
+    previous = NULL;
+    while (current != NULL)
+    {
+        temp = current->next;
+        current->next = previous;
+        previous = current;
+        current = temp;
+    }
+    si_ListBegin = previous;
+
+
+    *si_stats = si_ListBegin;    // Return the pointer to the si_List here
+    return (ListBegin);
+}
+
+
+static void shutdown()
+{
+    printf("hello from: %s\n",__func__);
+    SEARCH_cleanup();
+
+    // Good-bye !!!
+    #ifndef GTK4_BUILD
+    gtk_main_quit();
+    #else   //gtk4
+    printf("GTK4 shutdown helper app not implemented\n");
+    ///////g_application_quit(G_APPLICATION(app));
+    #endif
+}
+
+
+//=============================================================================================
+//          Public Callback Functions
+//=============================================================================================
 
 // Provide a catalog of prominent widgets that enables components with no knowledge
 // of the widget hierarchy to fetch a reference for that widget.
@@ -372,6 +579,13 @@ GtkWidget *CALLBACKS_get_widget(gchar *widget_name)
 }
 
 
+
+
+
+//====================================================
+//    Non GTK-version dependent callbacks
+//====================================================
+
 void CALLBACKS_init(GtkWidget *main)
 {
 
@@ -387,6 +601,7 @@ void CALLBACKS_init(GtkWidget *main)
     quit_dialog  = my_lookup_widget("quit_confirm_dialog");
     aboutdialog1 = my_lookup_widget("aboutdialog1");
     gscope_preferences = my_lookup_widget("gscope_preferences");
+    gscope_quit = my_lookup_widget("gscope_quit");
     stats_dialog = my_lookup_widget("stats_dialog");
     folder_chooser_dialog = my_lookup_widget("folder_chooser_dialog");
     open_file_chooser_dialog = my_lookup_widget("open_file_chooser_dialog");
@@ -408,79 +623,52 @@ void CALLBACKS_init(GtkWidget *main)
 }
 
 
-#ifndef GTK4_BUILD  // GtkMenu evolution
-
-void on_cref_update_button_clicked(GtkButton       *button,
-                                   gpointer         user_data)
+void on_cref_update_button_clicked(GtkButton *button, gpointer user_data)
 {
-    if (SEARCH_get_cref_status())   // If the cref is marked up-to-date, check for changes
+    if ( SEARCH_get_cref_status() )   // If the cref is marked up-to-date, check for changes
         SEARCH_check_cref();
     else
-        on_rebuild_database1_activate(NULL, NULL);  // Otherwise, rebuild the cross reference.
+        #ifndef GTK4_BUILD
+        on_rebuild_database1_activate(NULL, NULL);
+        #else   // GTK2 and GTK3
+        on_rebuild_database1_activate(NULL, NULL, NULL);  // Otherwise, rebuild the cross reference
+        #endif
 }
 
 
-
-//------------------------- Application Exit Callbacks ----------------------
-void on_quit1_activate(GtkMenuItem     *menuitem,
-                       gpointer         user_data)
+void on_window1_destroy(GtkWidget *widget, gpointer user_data)
 {
-    if (exit_confirmed())
-        shutdown();
+    // Callback is called when on_window1_delete_event returns FALSE
+    printf("Hello from: %s\n", __func__);
+    shutdown();
+}
+
+
+// Top-level window "Close" or "X" button on window frame pressed.
+// In GTK4, the ::delete-event signal from GTK3 is replaced by the GtkWindow::close-request signal
+#ifndef GTK4_BUILD
+gboolean on_window1_delete_event(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+#else
+gboolean on_window1_close_request(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+#endif
+{
+    printf("Hello from: %s\n", __func__);
+
+    // Normal Window destroy callback sequence
+    // 1) delete_event
+    // 2) if delete_event() returns FALSE then on_window_destroy()
+
+    if ( exit_confirmed() )
+        return FALSE;    // Return FALSE to destroy the widget.
     else
-        return;
+        return TRUE;     // Return TRUE to cancel the delete_event.
 }
 
 
 
-void on_about1_activate(GtkMenuItem     *menuitem,
-                        gpointer         user_data)
-{
-    GdkPixbuf *pixbuf;
 
-    static gboolean customized = FALSE;
+#ifndef GTK4_BUILD  // GtkMenu evolution
 
-    if (!customized)
-    {
-        gchar description[] = "Interactive C source code browser";
-        gchar based_on[] = "\n\nOriginally derived from CSCOPE version 15.5";
-        gchar modified_by[] = "\nPorted to Linux and GTK (2.11) by HP (July 2007)";
-        gchar gtk_version[] = "\n\nLoaded GTK Version: ";
-        gchar build_date[] = "\n\nBuild Date: "__DATE__;
-
-        gchar *full_comment;
-
-        pixbuf = create_pixbuf("gnome-stock-about.png");
-        if (pixbuf)
-        {
-            gtk_window_set_icon(GTK_WINDOW(aboutdialog1), pixbuf);
-            g_object_unref(pixbuf);
-        }
-
-        gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(aboutdialog1), VERSION);
-
-        my_asprintf(&full_comment, "%s%s%s%s%d.%d.%d%s",
-                    description,
-                    based_on,
-                    modified_by,
-                    gtk_version, gtk_get_major_version(), gtk_get_minor_version(), gtk_get_micro_version(),
-                    build_date);
-
-        gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(aboutdialog1), full_comment);
-        g_free(full_comment);
-
-        gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(aboutdialog1), "https://github.com/tefletch/gscope/wiki");
-        gtk_about_dialog_set_website_label(GTK_ABOUT_DIALOG(aboutdialog1), "Gscope Wiki");
-
-        gtk_window_set_transient_for(GTK_WINDOW(aboutdialog1), GTK_WINDOW(gscope_main));
-
-        customized = TRUE;
-    }
-
-
-    gtk_widget_show(aboutdialog1);
-
-}
 
 
 
@@ -539,21 +727,12 @@ void on_release_wiki_activate(GtkMenuItem     *menuitem,
     gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Gscope-Release-Notes", GDK_CURRENT_TIME, NULL);
 }
 
-#else
-
-//================= Test Callbacks only
-
-void on_quit1_activate (GSimpleAction *action, GVariant *parameter, gpointer user_data)
-{
-  printf ("Hello from: %s\n", __func__);
-}
-#endif      // GtkMenu evolution
-
+#endif
 
 
 //====================================================
-//      Start GTK multi-variant menu handling
-//************************************************==**
+//      GTK multi-variant MENU ITEM handling
+//====================================================
 
 #ifndef GTK4_BUILD
 void on_rebuild_database1_activate(GtkMenuItem *menuitem, gpointer user_data)
@@ -653,6 +832,20 @@ void on_delete_history_file_activate(GSimpleAction *action, GVariant *parameter,
 #endif
 {
     unlink(settings.histFile);
+}
+
+
+#ifndef GTK4_BUILD
+void on_quit1_activate(GtkMenuItem *menuitem, gpointer user_data)
+#else
+void on_quit1_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+#endif
+{
+    printf("hello from: %s\n", __func__);
+    if ( exit_confirmed() )
+        shutdown();
+    else
+        return;
 }
 
 
@@ -1328,8 +1521,71 @@ void on_setup1_activate(GSimpleAction *action, GVariant *parameter, gpointer use
 }
 
 
+#ifndef GTK4_BUILD
+void on_about1_activate(GtkMenuItem *menuitem, gpointer user_data)
+#else
+void on_about1_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+#endif
+{
+    static gboolean customized = FALSE;
+
+    printf("Hello from: %s\n", __func__);
+
+    if (!customized)
+    {
+        gchar description[] = "Interactive C source code browser";
+        gchar based_on[] =    "\n\nDerived from CSCOPE version 15.5";
+        gchar modified_by[] = "\nPorted to Linux and GTK (2.11) by HP Inc";
+        gchar gtk_version[] = "\n\nCurrent System GTK Version: ";
+        gchar build_date[] =  "\n\nBuild Date: "__DATE__;
+
+        gchar *full_comment;
+
+        #ifndef GTK4_BUILD
+        GdkPixbuf *pixbuf = create_pixbuf("gnome-stock-about.png");
+        if (pixbuf)
+        {
+            gtk_window_set_icon(GTK_WINDOW(aboutdialog1), pixbuf);
+            g_object_unref(pixbuf);
+        }
+        #endif
+
+        // The UI maker for GTK4 does not allow direct configuration of the program icon using a custom image (only allows icons)
+        #if defined(GTK4_BUILD)
+        GFile *logo_file = g_file_new_for_path("../share/gscope/pixmaps/gscope_globe3.png");
+        GdkTexture *gscope_logo = gdk_texture_new_from_file(logo_file, NULL);
+        g_object_unref(logo_file);
+        gtk_about_dialog_set_logo(GTK_ABOUT_DIALOG(aboutdialog1), GDK_PAINTABLE(gscope_logo));
+        #endif
+
+        gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(aboutdialog1), VERSION);
+
+        my_asprintf(&full_comment, "%s%s%s%s%d.%d.%d%s",
+                    description,
+                    based_on,
+                    modified_by,
+                    gtk_version, gtk_get_major_version(), gtk_get_minor_version(), gtk_get_micro_version(),
+                    build_date);
+
+        gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(aboutdialog1), full_comment);
+        g_free(full_comment);
+
+        gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(aboutdialog1), "https://github.com/tefletch/gscope/wiki");
+        gtk_about_dialog_set_website_label(GTK_ABOUT_DIALOG(aboutdialog1), "Gscope Wiki");
+
+        gtk_window_set_transient_for(GTK_WINDOW(aboutdialog1), GTK_WINDOW(gscope_main));
+
+        customized = TRUE;
+    }
+
+
+    gtk_widget_show(aboutdialog1);
+
+}
+
+
 //===================================================
-//      End GTK multi-variant MENU handling
+//     End GTK multi-variant MENU ITEM handling
 //===================================================
 
 
@@ -1337,60 +1593,13 @@ void on_setup1_activate(GSimpleAction *action, GVariant *parameter, gpointer use
 
 
 
-
+//--------------------- Application Exit Callbacks -----------------------
 
 
 
 
 
 #ifndef GTK4_BUILD  //  GTK4 shutdown semantics are different
-
-void on_window1_destroy(GtkWidget        *widget,
-                        gpointer         user_data)
-{
-    // Callback is called when on_window1_delete_event returns FALSE
-    shutdown();
-}
-
-
-// Top-level window "Close" or "X" button on window frame pressed.
-gboolean on_window1_delete_event(GtkWidget *widget,
-                                 GdkEvent        *event,
-                                 gpointer         user_data)
-{
-    // Normal Window destroy callback sequence
-    // 1) delete_event
-    // 2) if delete_event() returns FALSE then on_window_destroy()
-
-    if (exit_confirmed())
-        return FALSE;    // Return FALSE to destroy the widget.
-    else
-        return TRUE;     // Return TRUE to cancel the delete_event.
-}
-
-static void shutdown()
-{
-    SEARCH_cleanup();
-
-    // Good-bye !!!
-    gtk_main_quit();
-}
-
-
-static gboolean exit_confirmed()
-{
-    if (settings.exitConfirm)
-    {
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(quit_dialog), "confirm_exit_checkbutton")), TRUE);
-
-        gtk_dialog_run(GTK_DIALOG(quit_dialog));
-        gtk_widget_hide(GTK_WIDGET(quit_dialog));
-    }
-    else
-        ok_to_quit = TRUE;
-
-    return (ok_to_quit);
-}
 
 
 void on_quit_confirm_dialog_response(GtkDialog       *dialog,
@@ -3264,182 +3473,6 @@ void on_search_log_button_clicked(GtkButton       *button,
 
 
 //----------------- Start Session Statistics Reporting ---------------
-
-
-// Create a list of source file suffixes and counts for each suffix
-static SrcFile_stats* create_stats_list(SrcFile_stats **si_stats)
-{
-    gchar *suffix_ptr;
-    gchar *wptr;
-    gchar delimiter;
-    gchar working[80];       // Working buffer for constructing each individual suffix string.
-    int f;
-    guint noSuffixCnt = 0;
-    guint si_noSuffixCnt = 0;
-
-    SrcFile_stats *ListBegin = NULL;
-    SrcFile_stats *entry;
-
-    SrcFile_stats *si_ListBegin = NULL;
-    SrcFile_stats *si_entry;
-
-    SrcFile_stats *previous;
-    SrcFile_stats * current,*temp;
-
-    int counter;
-
-    gboolean include_file_path_exists;
-
-    if (strcmp(settings.includeDir, "") == 0)
-        include_file_path_exists = FALSE;
-    else
-        include_file_path_exists = TRUE;
-
-
-    suffix_ptr = &(settings.suffixList[0]);
-
-    if (*suffix_ptr != '\0')    // If we have a non-null suffix list
-    {
-        delimiter = *suffix_ptr++;
-        while (*suffix_ptr != '\0')
-        {
-            wptr = working;
-            *wptr++ = '.';
-            while (*suffix_ptr != delimiter)
-            {
-                *wptr++ = *suffix_ptr++;
-            }
-            suffix_ptr++;
-            *wptr = 0;  // Null-terminate the suffix.
-
-            /* Create the application specific suffix list */
-            entry = g_malloc(sizeof(SrcFile_stats));  // Create the suffix entry
-            entry->next = ListBegin;                  // Add it to the linked list
-            ListBegin = entry;
-            entry->fcount = 0;
-            entry->suffix = strdup(working);
-
-            /* Create the (optional) system include suffix list (/usr/include/...)  */
-            si_entry = g_malloc(sizeof(SrcFile_stats));  // Create the suffix entry
-            si_entry->next = si_ListBegin;               // Add it to the linked list
-            si_ListBegin = si_entry;
-            si_entry->fcount = 0;
-            si_entry->suffix = strdup(working);
-        }
-
-        counter = 0;
-
-        // Now that the list is created, collect the per-suffix statistics
-        for (f = 0; f < nsrcfiles; f++)
-        {
-
-            if ((include_file_path_exists) && (DIR_file_on_include_search_path(DIR_src_files[f])))
-            {
-                /* Count this file in the system include source stats */
-                if (settings.showIncludes)
-                    printf("%d) %s\n", ++counter, DIR_src_files[f]);
-
-                // if the file has a suffix
-                if ((wptr = strrchr(DIR_src_files[f], '.')) != NULL)
-                {
-                    si_entry = si_ListBegin;
-                    // increment the suffix counter corresponding to wptr
-                    while (si_entry != NULL)
-                    {
-                        if (strcmp(si_entry->suffix, wptr) == 0)
-                        {
-                            si_entry->fcount++;
-                            break;
-                        }
-                        si_entry = si_entry->next;
-                    }
-                }
-                else
-                {
-                    // increment the no-suffix counter
-                    si_noSuffixCnt++;
-                }
-            }
-            else /* This is a user source file, not a System Includes (/usr/include...) file */
-            /* Count this file in the user program source stats */
-            {
-                // if the file has a suffix
-                if ((wptr = strrchr(DIR_src_files[f], '.')) != NULL)
-                {
-                    entry = ListBegin;
-                    // increment the suffix counter corresponding to wptr
-                    while (entry != NULL)
-                    {
-                        if (strcmp(entry->suffix, wptr) == 0)
-                        {
-                            //if ( strcmp(wptr, DELSOL_ISINK_FID_INIT) == 0) printf("%s\n", DIR_src_files[f]);
-                            entry->fcount++;
-                            break;
-                        }
-                        entry = entry->next;
-                    }
-                }
-                else
-                {
-                    // increment the no-suffix counter
-                    noSuffixCnt++;
-                }
-            }
-        }
-    }
-
-    // -------- Add the <no-suffix> count to the user sourcelist --------
-    entry = g_malloc(sizeof(SrcFile_stats));
-    entry->next = ListBegin;
-    ListBegin = entry;
-    entry->fcount = noSuffixCnt;
-    entry->suffix = strdup("No Suffix");
-
-    // Add the <no-suffix> count to the system includes sourcelist
-    si_entry = g_malloc(sizeof(SrcFile_stats));
-    si_entry->next = si_ListBegin;
-    si_ListBegin = si_entry;
-    si_entry->fcount = si_noSuffixCnt;
-    si_entry->suffix = strdup("No Suffix");
-
-
-    // -------- Add the TOTAL count to the user list --------
-    entry = g_malloc(sizeof(SrcFile_stats));
-    entry->next = ListBegin;
-    ListBegin = entry;
-    entry->fcount = nsrcfiles;
-    entry->suffix = strdup("Total");
-
-    // Now reverse the entries in the linked list so that the
-    // Suffix counts are displayed in the same order as the suffix
-    // list pattern.
-
-    current = ListBegin;
-    previous = NULL;
-    while (current != NULL)
-    {
-        temp = current->next;
-        current->next = previous;
-        previous = current;
-        current = temp;
-    }
-    ListBegin = previous;
-
-    current = si_ListBegin;
-    previous = NULL;
-    while (current != NULL)
-    {
-        temp = current->next;
-        current->next = previous;
-        previous = current;
-        current = temp;
-    }
-    si_ListBegin = previous;
-
-
-    *si_stats = si_ListBegin;    // Return the pointer to the si_List here
-    return (ListBegin);
-}
 
 
 

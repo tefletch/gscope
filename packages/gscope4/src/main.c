@@ -35,12 +35,6 @@ void print_hello (GtkWidget *widget, gpointer   data)
   printf ("Hello World\n");
 }
 
-// Test action callback
-void quit_activated (GSimpleAction *action, GVariant *parameter, gpointer user_data)
-{
-  printf ("Hello quit_activated\n");
-}
-
 static GActionEntry app_entries[] = {
     {"rebuild", on_rebuild_database1_activate, NULL, NULL, NULL },
     {"save_results", on_save_results_activate, NULL, NULL, NULL },
@@ -48,7 +42,7 @@ static GActionEntry app_entries[] = {
     {"save_query", on_save_query_activate, NULL, NULL, NULL },
     {"load_query", on_load_query_activate, NULL, NULL, NULL },
     {"delete_history", on_delete_history_file_activate, NULL, NULL, NULL },
-    {"quit", quit_activated, NULL, NULL, NULL },
+    {"quit", on_quit1_activate, NULL, NULL, NULL },
     {"ignorecase", on_ignorecase_activate, NULL, "false", NULL},
     {"useeditor", on_useeditor_activate, NULL, "false", NULL },
     {"reusewin", on_reusewin_activate, NULL, "false", NULL },
@@ -59,7 +53,9 @@ static GActionEntry app_entries[] = {
     {"list_all_functions", on_list_all_functions1_activate, NULL, NULL, NULL },
     {"list_autogen_errors", on_list_autogen_errors_activate, NULL, NULL, NULL },
     {"usage_activate", on_usage1_activate, NULL, NULL, NULL },
-    {"setup", on_setup1_activate, NULL, NULL, NULL }
+    {"setup", on_setup1_activate, NULL, NULL, NULL },
+    /* wiki sub-menu entries*/
+    {"about", on_about1_activate, NULL, NULL, NULL }
 };
 
 
@@ -245,14 +241,6 @@ static void startup (GApplication *app, gpointer *user_data)
 
         // Read supplemental UI definitions
         //=================================
-        const char *msg_objects[] = {"message_window", ""};
-        sprintf(ui_file,"%s%s", ui_file_path, "/message.ui");
-        if (!gtk_builder_add_objects_from_file(builder, ui_file, msg_objects, &error))
-        {
-            fprintf(stderr, "UI object merge error: File: %s. Error: %s\n", ui_file, error ? error->message : "Unknown");
-            if (error) g_error_free(error);
-        }
-
         const char *splash_objects[] = {"gscope_splash", ""};
         sprintf(ui_file, "%s%s", ui_file_path, "/splash.ui");
         if (!gtk_builder_add_objects_from_file(builder, ui_file, splash_objects, &error))
@@ -264,6 +252,14 @@ static void startup (GApplication *app, gpointer *user_data)
         const char *prefs_objects[] = {"gscope_preferences", ""};
         sprintf(ui_file, "%s%s", ui_file_path, "/preferences.ui");
         if (!gtk_builder_add_objects_from_file(builder, ui_file, prefs_objects, &error))
+        {
+            fprintf(stderr, "UI object merge error: File: %s. Error: %s\n", ui_file, error ? error->message : "Unknown");
+            if (error) g_error_free(error);
+        }
+
+        const char *quit_objects[] = {"gscope_quit", ""};
+        sprintf(ui_file, "%s%s", ui_file_path, "/quit.ui");
+        if (!gtk_builder_add_objects_from_file(builder, ui_file, quit_objects, &error))
         {
             fprintf(stderr, "UI object merge error: File: %s. Error: %s\n", ui_file, error ? error->message : "Unknown");
             if (error) g_error_free(error);
@@ -285,14 +281,6 @@ static void startup (GApplication *app, gpointer *user_data)
     gtk_window_set_application (GTK_WINDOW(gscope_main), GTK_APPLICATION(app));
     gtk_widget_set_visible (GTK_WIDGET(gscope_main), FALSE);
 
-    // Instantiate the message window object (message dialog)
-    //=======================================================
-    GObject *message_window = gtk_builder_get_object(builder, "message_window");
-    gtk_window_set_transient_for(GTK_WINDOW(message_window), GTK_WINDOW(gscope_main));
-    g_signal_connect(my_lookup_widget("message_button"), "clicked", G_CALLBACK(on_message_button_clicked), NULL);
-    g_signal_connect(my_lookup_widget("message_window"), "close-request", G_CALLBACK(on_message_window_close_request), NULL);
-    gtk_widget_set_visible(GTK_WIDGET(message_window), FALSE);
-
     // Instantiate the splash screen 'gscope_splash'
     //==============================================
     GObject *gscope_splash = gtk_builder_get_object(builder, "gscope_splash");
@@ -304,6 +292,12 @@ static void startup (GApplication *app, gpointer *user_data)
     GObject *gscope_preferences = gtk_builder_get_object(builder, "gscope_preferences");
     gtk_window_set_transient_for(GTK_WINDOW(gscope_preferences), GTK_WINDOW(gscope_main));
     gtk_widget_set_visible(GTK_WIDGET(gscope_preferences), FALSE);
+
+    // Instantiate the quit dialog 'gscope_quit'
+    //========================================================
+    GObject *gscope_quit = gtk_builder_get_object(builder, "gscope_quit");
+    gtk_window_set_transient_for(GTK_WINDOW(gscope_quit), GTK_WINDOW(gscope_main));
+    gtk_widget_set_visible(GTK_WIDGET(gscope_quit), FALSE);
 
 
     // Configure Menu Actions
@@ -427,10 +421,9 @@ static int command_line(GApplication *app, GApplicationCommandLine *cmdline)
 
 static void shutdown(GApplication *app, gpointer *user_data)
 {
-    printf("** Shutdown **\n");
+    printf("** Main: GTK4 Shutdown **\nDoes nothing right now.\n");
     // Perform all shutdown cleanup (save/close files)
 }
-
 
 
 int main(int argc, char *argv[])
@@ -481,10 +474,10 @@ int main(int argc, char *argv[])
     printf("\n%s: run application\n", __func__);
     status = g_application_run (G_APPLICATION(app), argc, argv);
 
-    printf("%s: application_run complete\n", __func__);
+    printf("hello from %s: application_run complete\n", __func__);
     g_object_unref (app);
 
-    printf("%s: done\n", __func__);
+    printf("hello from %s: done\n", __func__);
 
 #if 0 // GTK4 bootstrap: Migrate later (build spash screen next -- see below)
     GtkWidget   *gscope_main;

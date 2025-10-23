@@ -1,13 +1,16 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.96.1 -->
+<!-- Created with Cambalache 0.99.1 -->
 <interface>
   <!-- interface-name gscope.ui -->
   <requires lib="gio" version="2.0"/>
   <requires lib="gtk" version="4.8"/>
   <object class="GtkWindow" id="gscope_main">
     <property name="height-request">600</property>
+    <property name="icon-name">system-search</property>
     <property name="title">Gscope</property>
     <property name="width-request">750</property>
+    <signal name="destroy" handler="on_window1_destroy"/>
+    <signal name="close-request" handler="on_window1_close_request"/>
     <child>
       <object class="GtkBox" id="vbox1">
         <property name="orientation">vertical</property>
@@ -245,7 +248,9 @@
               </object>
             </child>
             <child>
-              <object class="GtkButton" id="cref_update_button"/>
+              <object class="GtkButton" id="cref_update_button">
+                <signal name="clicked" handler="on_cref_update_button_clicked"/>
+              </object>
             </child>
             <child>
               <object class="GtkLabel" id="path_label">
@@ -397,9 +402,15 @@
         </item>
       </submenu>
       <item>
+        <attribute name="action">app.about</attribute>
         <attribute name="label">About</attribute>
       </item>
     </submenu>
   </menu>
   <object class="GtkEventControllerFocus"/>
+  <object class="GtkAboutDialog" id="aboutdialog1">
+    <property name="decorated">True</property>
+    <property name="icon-name">gtk-about</property>
+    <property name="program-name">G-Scope</property>
+  </object>
 </interface>

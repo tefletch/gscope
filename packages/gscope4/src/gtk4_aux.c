@@ -14,7 +14,23 @@ void SEARCH_init()
     printf("hello from Gtk4aux: %s\n", __func__);
 }
 
+void SEARCH_cleanup()
+{
+    printf("hello from Gtk4aux: %s\n", __func__);
+}
+
 void SEARCH_cleanup_prev()
+{
+    printf("hello from Gtk4aux: %s\n", __func__);
+}
+
+gboolean SEARCH_get_cref_status()
+{
+    printf("hello from Gtk4aux: %s\n", __func__);
+    return(FALSE);
+}
+
+void SEARCH_check_cref(void)
 {
     printf("hello from Gtk4aux: %s\n", __func__);
 }
