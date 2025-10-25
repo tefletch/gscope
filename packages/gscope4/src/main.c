@@ -220,8 +220,8 @@ static void startup (GApplication *app, gpointer *user_data)
     add_pixmap_directory("../pixmaps");
     add_pixmap_directory(PACKAGE_DATA_DIR "/" PACKAGE "/pixmaps");  // The pixmap directory "added" last is the firt to be checked
 
-    // Construct a builder
-    //====================
+    // Parse the application UI file(s) and add the requested object(s) to the widget database "builder"
+    //==================================================================================================
     #if (BUILD_WIDGETS_FROM_FILE)
     {
         gchar ui_file_path[256];    // Revisit: Buffer overrun risk
@@ -257,7 +257,7 @@ static void startup (GApplication *app, gpointer *user_data)
             if (error) g_error_free(error);
         }
 
-        const char *quit_objects[] = {"gscope_quit", ""};
+        const char *quit_objects[] = {"quit_confirm_dialog", ""};
         sprintf(ui_file, "%s%s", ui_file_path, "/quit.ui");
         if (!gtk_builder_add_objects_from_file(builder, ui_file, quit_objects, &error))
         {
@@ -293,13 +293,14 @@ static void startup (GApplication *app, gpointer *user_data)
     gtk_window_set_transient_for(GTK_WINDOW(gscope_preferences), GTK_WINDOW(gscope_main));
     gtk_widget_set_visible(GTK_WIDGET(gscope_preferences), FALSE);
 
-    // Instantiate the quit dialog 'gscope_quit'
-    //========================================================
-    GObject *gscope_quit = gtk_builder_get_object(builder, "gscope_quit");
-    gtk_window_set_transient_for(GTK_WINDOW(gscope_quit), GTK_WINDOW(gscope_main));
-    gtk_widget_set_visible(GTK_WIDGET(gscope_quit), FALSE);
-
-
+    // Instantiate the 'quit_confirm_dialog'
+    //=====================================
+    GObject *quit_confirm_dialog = gtk_builder_get_object(builder, "quit_confirm_dialog");
+    gtk_window_set_transient_for(GTK_WINDOW(quit_confirm_dialog), GTK_WINDOW(gscope_main));
+    gtk_widget_set_visible(GTK_WIDGET(quit_confirm_dialog), FALSE);
+    gtk_window_set_hide_on_close(GTK_WINDOW(quit_confirm_dialog), TRUE);
+ 
+    
     // Configure Menu Actions
     //=======================
     g_action_map_add_action_entries(G_ACTION_MAP(app), app_entries, G_N_ELEMENTS(app_entries), app);

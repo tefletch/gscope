@@ -3,7 +3,8 @@
 <interface>
   <!-- interface-name quit.ui -->
   <requires lib="gtk" version="4.6"/>
-  <object class="GtkDialog" id="gscope_quit">
+  <object class="GtkDialog" id="quit_confirm_dialog">
+    <signal name="response" handler="on_quit_confirm_dialog_response"/>
     <child internal-child="content_area">
       <object class="GtkBox">
         <property name="orientation">horizontal</property>
@@ -82,5 +83,9 @@
         </child>
       </object>
     </child>
+    <action-widgets>
+      <action-widget response="-5">exit_ok_button</action-widget>
+      <action-widget response="-6">cancel_exit_button</action-widget>
+    </action-widgets>
   </object>
 </interface>

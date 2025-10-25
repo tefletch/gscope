@@ -5,5 +5,5 @@
   <ui filename="gscope4.ui" sha256="6d5096a8b05d68739748874c9addcc26fc5f7e3f1f8f4cbf8250a49088345a32"/>
   <ui filename="splash.ui" sha256="5efdf8235f0f02a99e1e0c65218a1f6d6a16623473108390ea945fad1919cec8"/>
   <ui filename="preferences.ui" sha256="ca0e493b0a5ba76bfea57a31db91132898cdcad3f6e422fea4f6edc8bccd0bf0"/>
-  <ui filename="quit.ui" sha256="cc45f5516e0f0de6f7cfe1eaf544bf7abba57f54ef35ff88e654d2faed6b42c8"/>
+  <ui filename="quit.ui" sha256="65ab861bba09e0d049fb7030db89d43d12271a2a71eea8a2060678b2e95632f5"/>
 </cambalache-project>

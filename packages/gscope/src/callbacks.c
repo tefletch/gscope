@@ -87,7 +87,7 @@ static GtkWidget    *gscope_main = NULL;
 static GtkWidget    *quit_dialog = NULL;
 static GtkWidget    *aboutdialog1 = NULL;
 static GtkWidget    *gscope_preferences = NULL;
-static GtkWidget    *gscope_quit = NULL;
+static GtkWidget    *quit_confirm_dialog = NULL;
 static GtkWidget    *stats_dialog = NULL;
 static GtkWidget    *folder_chooser_dialog = NULL;
 static GtkWidget    *open_file_chooser_dialog = NULL;
@@ -347,16 +347,21 @@ static void process_query(search_t query_type)
 
 static gboolean exit_confirmed()
 {
+    printf("Hello from: %s\n", __func__);
+
     if (settings.exitConfirm)
     {
         #ifndef GTK4_BUILD
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(quit_dialog), "confirm_exit_checkbutton")), TRUE);
-
         gtk_dialog_run(GTK_DIALOG(quit_dialog));
         gtk_widget_hide(GTK_WIDGET(quit_dialog));
         #else
-        gtk_widget_set_visible(gscope_quit, TRUE);
-        printf("QUIT DIALOG for GTK 4 not yet implemented...\n");
+
+        // Show the 'quit_confirm_dialog'
+        //=====================================
+        gtk_window_set_modal(GTK_WINDOW(quit_confirm_dialog),TRUE);
+        gtk_widget_set_visible(quit_confirm_dialog, TRUE);
+        printf("finish exit\n-");
         #endif
     }
     else
@@ -601,7 +606,7 @@ void CALLBACKS_init(GtkWidget *main)
     quit_dialog  = my_lookup_widget("quit_confirm_dialog");
     aboutdialog1 = my_lookup_widget("aboutdialog1");
     gscope_preferences = my_lookup_widget("gscope_preferences");
-    gscope_quit = my_lookup_widget("gscope_quit");
+    quit_confirm_dialog = my_lookup_widget("quit_confirm_dialog");
     stats_dialog = my_lookup_widget("stats_dialog");
     folder_chooser_dialog = my_lookup_widget("folder_chooser_dialog");
     open_file_chooser_dialog = my_lookup_widget("open_file_chooser_dialog");
@@ -664,6 +669,54 @@ gboolean on_window1_close_request(GtkWidget *widget, GdkEvent *event, gpointer u
         return TRUE;     // Return TRUE to cancel the delete_event.
 }
 
+
+// Top-level window "Close" or "X" button on window frame pressed.
+// In GTK4, the ::delete-event signal from GTK3 is replaced by the GtkWindow::close-request signal
+#ifndef GTK4_BUILD
+gboolean on_quit_confirm_dialog_delete_event(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+#else
+gboolean on_quit_confirm_dialog_test(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+#endif
+{
+    printf("Hello from: %s\n", __func__);
+    gtk_widget_hide(widget);
+    //return TRUE;     // Do not destroy the widget
+}
+
+
+void on_quit_confirm_dialog_response(GtkDialog *dialog, gint response_id, gpointer user_data)
+{
+    printf("Hello from: %s, response = %d\n", __func__, response_id);
+    switch (response_id)
+    {
+        case GTK_RESPONSE_OK:
+            ok_to_quit = TRUE;
+            break;
+
+        case GTK_RESPONSE_CANCEL:
+        case GTK_RESPONSE_DELETE_EVENT:
+            ok_to_quit = FALSE;
+            break;
+
+        default:
+        {
+            char *error_string;
+
+            my_asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"Quit Confirmation\" dialog.", response_id);
+            DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
+            g_free(error_string);
+        }
+
+            break;
+    }
+    
+    #if defined(GTK4_BUILD)
+    gtk_widget_set_visible(GTK_WIDGET(dialog), FALSE);
+    #endif
+
+
+    return;
+}
 
 
 
@@ -1599,50 +1652,27 @@ void on_about1_activate(GSimpleAction *action, GVariant *parameter, gpointer use
 
 
 
-#ifndef GTK4_BUILD  //  GTK4 shutdown semantics are different
-
-
-void on_quit_confirm_dialog_response(GtkDialog       *dialog,
-                                     gint             response_id,
-                                     gpointer         user_data)
+//#ifndef GTK4_BUILD  //  GTK4 shutdown semantics are different
+#if 0
+void on_quit_close(GtkDialog *dialog, gpointer user_data)
 {
-    switch (response_id)
-    {
-        case GTK_RESPONSE_OK:
-            ok_to_quit = TRUE;
-            break;
-
-        case GTK_RESPONSE_CANCEL:
-        case GTK_RESPONSE_DELETE_EVENT:
-            ok_to_quit = FALSE;
-            break;
-
-        default:
-        {
-            char *error_string;
-
-            my_asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"Quit Confirmation\" dialog.", response_id);
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
-            g_free(error_string);
-        }
-
-            break;
-    }
-
-    return;
+    printf("Test hello: %s\n", __func__);
 }
-
-
-
-gboolean on_quit_confirm_dialog_delete_event(GtkWidget *widget,
-                                             GdkEvent *event,
-                                             gpointer user_data)
+void on_quit_close_request(GtkWindow *window, gpointer user_data)
 {
-    gtk_widget_hide(widget);
-    return TRUE;     // Do not destroy the widget
+    printf("Test hello: %s\n", __func__);
 }
-
+void on_quit_destroy(GtkWindow *window)
+{
+    printf("Test hello: %s\n", __func__);
+}
 #endif
+
+
+
+
+
+//#endif
 
 //--------------------- End Application Exit Callbacks -----------------------
 
