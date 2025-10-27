@@ -4,7 +4,17 @@
   <!-- interface-name quit.ui -->
   <requires lib="gtk" version="4.6"/>
   <object class="GtkDialog" id="quit_confirm_dialog">
+    <property name="height-request">-1</property>
+    <property name="hexpand">False</property>
     <signal name="response" handler="on_quit_confirm_dialog_response"/>
+    <child internal-child="action_area">
+      <object class="GtkBox">
+        <property name="height-request">-1</property>
+        <property name="margin-bottom">25</property>
+        <property name="vexpand">False</property>
+        <property name="vexpand-set">False</property>
+      </object>
+    </child>
     <child internal-child="content_area">
       <object class="GtkBox">
         <property name="orientation">horizontal</property>
@@ -27,7 +37,7 @@
               </object>
             </child>
             <child>
-              <object class="GtkCheckButton">
+              <object class="GtkCheckButton" id="confirm_exit_checkbutton">
                 <property name="label">Warn me when I attempt to exit Gscope</property>
                 <property name="margin-bottom">15</property>
                 <property name="margin-start">10</property>
@@ -40,9 +50,13 @@
     </child>
     <child internal-child="action_area">
       <object class="GtkBox">
+        <property name="homogeneous">False</property>
+        <property name="margin-bottom">5</property>
+        <property name="spacing">-1</property>
         <child>
           <object class="GtkButton" id="cancel_exit_button">
-            <property name="margin-bottom">10</property>
+            <property name="margin-bottom">0</property>
+            <property name="margin-end">5</property>
             <child>
               <object class="GtkBox">
                 <child>
@@ -62,9 +76,9 @@
         </child>
         <child>
           <object class="GtkButton" id="exit_ok_button">
-            <property name="margin-bottom">10</property>
-            <property name="margin-end">10</property>
-            <property name="margin-start">10</property>
+            <property name="margin-bottom">0</property>
+            <property name="margin-end">5</property>
+            <property name="margin-start">0</property>
             <child>
               <object class="GtkBox">
                 <child>

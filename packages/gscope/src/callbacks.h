@@ -255,9 +255,13 @@ void on_output_file_chooser_dialog_response(GtkDialog *dialog, gint response_id,
 
 void on_quit_confirm_dialog_response(GtkDialog *dialog, gint response_id, gpointer user_data);
 
-void on_confirmation_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data);
-
-void on_confirm_exit_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data);
+#ifndef GTK4_BUILD
+void on_confirmation_checkbutton_toggled(GtkToggleButton *checkbutton, gpointer user_data);
+void on_confirm_exit_checkbutton_toggled(GtkToggleButton *checkbutton, gpointer user_data);
+#else
+void on_confirmation_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data);
+void on_confirm_exit_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data);
+#endif
 
 gboolean on_stats_dialog_delete_event(GtkWidget *widget, GdkEvent *event, gpointer user_data);
 

@@ -95,6 +95,8 @@ static GtkWidget    *output_file_chooser_dialog = NULL;
 static GtkWidget    *save_results_file_chooser_dialog = NULL;
 static GtkWidget    *browser_window = NULL;
 
+static GtkApplication *gscope_app = NULL;  
+
 //---Public Globals (Try to keep this section empty)----
 
 
@@ -345,32 +347,6 @@ static void process_query(search_t query_type)
 }
 
 
-static gboolean exit_confirmed()
-{
-    printf("Hello from: %s\n", __func__);
-
-    if (settings.exitConfirm)
-    {
-        #ifndef GTK4_BUILD
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(quit_dialog), "confirm_exit_checkbutton")), TRUE);
-        gtk_dialog_run(GTK_DIALOG(quit_dialog));
-        gtk_widget_hide(GTK_WIDGET(quit_dialog));
-        #else
-
-        // Show the 'quit_confirm_dialog'
-        //=====================================
-        gtk_window_set_modal(GTK_WINDOW(quit_confirm_dialog),TRUE);
-        gtk_widget_set_visible(quit_confirm_dialog, TRUE);
-        printf("finish exit\n-");
-        #endif
-    }
-    else
-        ok_to_quit = TRUE;
-
-    return (ok_to_quit);
-}
-
-
 // Create a list of source file suffixes and counts for each suffix
 static SrcFile_stats* create_stats_list(SrcFile_stats **si_stats)
 {
@@ -547,21 +523,6 @@ static SrcFile_stats* create_stats_list(SrcFile_stats **si_stats)
 }
 
 
-static void shutdown()
-{
-    printf("hello from: %s\n",__func__);
-    SEARCH_cleanup();
-
-    // Good-bye !!!
-    #ifndef GTK4_BUILD
-    gtk_main_quit();
-    #else   //gtk4
-    printf("GTK4 shutdown helper app not implemented\n");
-    ///////g_application_quit(G_APPLICATION(app));
-    #endif
-}
-
-
 //=============================================================================================
 //          Public Callback Functions
 //=============================================================================================
@@ -593,13 +554,14 @@ GtkWidget *CALLBACKS_get_widget(gchar *widget_name)
 
 void CALLBACKS_init(GtkWidget *main)
 {
+    printf("Hello from: %s\n", __func__);
 
     // Initialize a private global that references the main window widget for all callbacks to use.
     gscope_main = main;
     DISPLAY_init(main);
 
-    // Instantiate the widgets define by the GUI Builders
-    //===================================================
+    // Instantiate the widgets defined by the GUI Builders
+    //====================================================
 
 #if defined(GTK3_BUILD) || defined(GTK4_BUILD)
 
@@ -625,7 +587,34 @@ void CALLBACKS_init(GtkWidget *main)
     save_results_file_chooser_dialog = create_save_results_file_chooser_dialog();
  
 #endif
+
+// Reconcile widget states with startup configuration settings
+//============================================================
+
+#ifndef GTK4_BUILD
+gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(quit_confirm_dialog),
+                            "confirm_exit_checkbutton")), settings.exitConfirm);
+#else
+if ( gtk_check_button_get_active(GTK_CHECK_BUTTON(my_lookup_widget("confirm_exit_checkbutton")))!= settings.exitConfirm )
+{
+    printf("%s: Synchronize confirm_exit_checkbutton to settings.exitConfirm = %s\n", __func__, settings.exitConfirm ? "TRUE" : "FALSE");
+    gtk_check_button_set_active(GTK_CHECK_BUTTON(my_lookup_widget("confirm_exit_checkbutton")), settings.exitConfirm);
 }
+#endif
+
+
+
+}
+
+
+#if defined(GTK4_BUILD)
+// Needed by callbacks For g_application_quit() when processing shutdown
+void CALLBACKS_register_app(GtkApplication *app)
+{
+    gscope_app = app;
+}
+#endif
+
 
 
 void on_cref_update_button_clicked(GtkButton *button, gpointer user_data)
@@ -640,12 +629,87 @@ void on_cref_update_button_clicked(GtkButton *button, gpointer user_data)
         #endif
 }
 
+//===================================================================================================
+//  Application exit logic
+//
+//  Immediate application exit logic can be simple (and straightforward).  Close the app window or
+//  select the menue item Commands-->quit. Either transaction performs the same functionality:
+//  Perform any application cleanup and quit-the-app.
+//
+//  Things get more convoluted when an "exit confirmation dialog" is introduced.
+//  Pre-GTK4:
+//  A relatively simple gtk_dialog_run() is inserted into the exit logic execution path and the
+//  choice of exit pathway is followed based on in-dialog selections and subsequent to the 
+//  completion of the dialog run.
+//  GTK4:
+//  The gods of GTK4 decided that nested/recursive run loops (like gtk_dialog_run) are bad and have
+//  removed the gtk_dialog_run() API.  I'm not sure I buy their logic, but it is what it is.
+//  For GTK4 (and beyond) the exit logic execution path must be gtk_main_loop event driven.  This
+//  is not a bad thing, but it is hostile to Multi-GTK version backwards compatibility (which is 
+//  clearly not a priority of the GTK gods)
+//===================================================================================================
+
+static gboolean exit_confirmed()
+{
+    printf("Hello from: %s\n", __func__);
+
+    if (settings.exitConfirm)
+    {
+        #ifndef GTK4_BUILD
+        if ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(quit_dialog), "confirm_exit_checkbutton"))) != settings.exitConfirm )
+            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(quit_dialog), "confirm_exit_checkbutton")), settings.exitConfirm);
+        gtk_dialog_run(GTK_DIALOG(quit_dialog));
+        gtk_widget_hide(GTK_WIDGET(quit_dialog));
+        #else
+
+        // Show the 'quit_confirm_dialog'
+        //=====================================
+        //gtk_window_set_modal(GTK_WINDOW(quit_confirm_dialog),TRUE);  --set in main.c
+        gtk_widget_set_visible(quit_confirm_dialog, TRUE);
+        printf("finish exit\n-");  //---- need to collect response from dialog before deciding ok_to_quit
+        #endif
+    }
+    else
+        ok_to_quit = TRUE;
+
+    printf("%s returns: %s\n", __func__, ok_to_quit ? "TRUE" : "FALSE");
+    return (ok_to_quit);
+}
+
+
+static void app_shutdown()
+{
+    printf("hello from: %s\n",__func__);
+    SEARCH_cleanup();
+
+    // Good-bye !!!
+    #ifndef GTK4_BUILD
+    gtk_main_quit();
+    #else   //gtk4
+    g_application_quit(G_APPLICATION(gscope_app));
+    #endif
+}
+
+
+#ifndef GTK4_BUILD
+void on_quit1_activate(GtkMenuItem *menuitem, gpointer user_data)
+#else
+void on_quit1_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+#endif
+{
+    printf("hello from: %s\n", __func__);
+    if ( exit_confirmed() )
+        app_shutdown();
+    else
+        return;
+}
+
 
 void on_window1_destroy(GtkWidget *widget, gpointer user_data)
 {
     // Callback is called when on_window1_delete_event returns FALSE
     printf("Hello from: %s\n", __func__);
-    shutdown();
+    app_shutdown();
 }
 
 
@@ -711,13 +775,54 @@ void on_quit_confirm_dialog_response(GtkDialog *dialog, gint response_id, gpoint
     }
     
     #if defined(GTK4_BUILD)
-    gtk_widget_set_visible(GTK_WIDGET(dialog), FALSE);
-    #endif
+    if ( ok_to_quit )
+        app_shutdown();
+    else
+       gtk_widget_set_visible(GTK_WIDGET(dialog), FALSE);
 
+    #endif
 
     return;
 }
 
+
+// Exit confirm setting toggled from quit_confirm_dialog
+#ifndef GTK4_BUILD
+void on_confirm_exit_checkbutton_toggled(GtkToggleButton *checkbutton, gpointer user_data)
+{
+    printf("Hello from %s entry: exitConfirm = %s\n", __func__, settings.exitConfirm ? "True" : "False");
+    if ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(checkbutton)) != settings.exitConfirm )
+    {
+        settings.exitConfirm = !settings.exitConfirm;
+        APP_CONFIG_set_boolean("exitConfirm", settings.exitConfirm);
+
+        // Synch the checkbutton in the preferences dialog.
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(preferences_dialog),
+        "confirmation_checkbutton")), settings.exitConfirm);
+    }
+}
+#else
+void on_confirm_exit_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data)
+{
+    printf("Hello from %s entry: exitConfirm = %s\n", __func__, settings.exitConfirm ? "True" : "False");
+    if ( gtk_check_button_get_active(GTK_CHECK_BUTTON(checkbutton)) != settings.exitConfirm)
+    {
+        settings.exitConfirm = !settings.exitConfirm;
+        APP_CONFIG_set_boolean("exitConfirm", settings.exitConfirm);
+
+        // Synch the checkbutton in the preferences dialog.
+        gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(preferences_dialog),
+        "confirmation_checkbutton")), settings.exitConfirm);
+    }
+}
+#endif
+
+
+
+
+//===================================================================================================
+//  End Application exit logic
+//===================================================================================================
 
 
 #ifndef GTK4_BUILD  // GtkMenu evolution
@@ -889,20 +994,6 @@ void on_delete_history_file_activate(GSimpleAction *action, GVariant *parameter,
 
 
 #ifndef GTK4_BUILD
-void on_quit1_activate(GtkMenuItem *menuitem, gpointer user_data)
-#else
-void on_quit1_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
-#endif
-{
-    printf("hello from: %s\n", __func__);
-    if ( exit_confirmed() )
-        shutdown();
-    else
-        return;
-}
-
-
-#ifndef GTK4_BUILD
 void on_ignorecase_activate(GtkMenuItem *menuitem, gpointer user_data)
 #else
 void on_ignorecase_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
@@ -1027,6 +1118,25 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
             gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "editor_command_label"), FALSE);
             gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "reuse_window_checkbutton"), TRUE);
         }
+
+
+
+        /*** Initialize the preference dialog settings (Tab #5 "General") ***/
+        /********************************************************************/
+        #ifndef GTK4_BUILD
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog),
+                                    "confirmation_checkbutton")), settings.exitConfirm);
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(quit_confirm_dialog),
+                                    "confirm_exit_checkbutton")), settings.exitConfirm);
+        #else
+        gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog),
+                                    "confirmation_checkbutton")), settings.exitConfirm);
+        gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(quit_confirm_dialog),
+                                    "confirm_exit_checkbutton")), settings.exitConfirm);
+        #endif
+
+
+
 
         #if 0
         /***Initialize the preference dialog settings (tab #2 "Cross Reference") ***/
@@ -1166,10 +1276,7 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
         gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "file_manager_app_entry")), MAX_STRING_ARG_SIZE - 1);
         my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "file_manager_app_entry")), settings.fileManager);
 
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "confirmation_checkbutton")),
-                                     settings.exitConfirm);
-
-
+ 
         if ( gtk_get_major_version() > 2 || ((gtk_get_major_version() == 2) && (gtk_get_minor_version() > 15)))
         {
             // if the current gtk library does not provide gtk_image_menu_item_set_always_show_image()
@@ -3526,28 +3633,40 @@ void on_stats_dialog_closebutton_clicked(GtkButton       *button,
 
 //----------------- End Session Statistics Reporting ---------------
 
-void on_confirmation_checkbutton_toggled(GtkToggleButton *togglebutton,
-                                         gpointer         user_data)
+
+
+// Handle Exit-confirm changes from Initialization and the preferences dialog
+#ifndef GTK4_BUILD
+void on_confirmation_checkbutton_toggled(GtkToggleButton *checkbutton, gpointer user_data)
 {
-    if (!initializing_prefs)
+    printf("Hello from %s entry: exitConfirm = %s\n", __func__, settings.exitConfirm ? "True" : "False");
+    if ( gtk_toggle_button_get_active(checkbutton) != settings.exitConfirm )
     {
         settings.exitConfirm = !(settings.exitConfirm);
+        APP_CONFIG_set_boolean("exitConfirm", settings.exitConfirm);    // Update the preferences file
+        
+        // Synch the checkbutton in the confirm_checkout dialog.
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(quit_confirm_dialog),
+                            "confirm_exit_checkbutton")), settings.exitConfirm);
+    }
 
-        // Update the preferences file
-        APP_CONFIG_set_boolean("exitConfirm", settings.exitConfirm);
+}
+#else
+void on_confirmation_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data)
+{
+    printf("Hello from %s entry: exitConfirm = %s\n", __func__, settings.exitConfirm ? "True" : "False");
+     if ( gtk_check_button_get_active(checkbutton) != settings.exitConfirm )
+    {
+        settings.exitConfirm = !(settings.exitConfirm);
+        APP_CONFIG_set_boolean("exitConfirm", settings.exitConfirm);    // Update the preferences file
+        
+        // Synch the checkbutton in the confirm_checkout dialog.
+        gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(quit_confirm_dialog),
+                            "confirm_exit_checkbutton")), settings.exitConfirm);
     }
 }
+#endif
 
-
-void on_confirm_exit_checkbutton_toggled(GtkToggleButton *togglebutton,
-                                         gpointer         user_data)
-{
-    // One-shot confirm-disable checkbox
-    settings.exitConfirm = FALSE;
-
-    // Update the preferences file
-    APP_CONFIG_set_boolean("exitConfirm", settings.exitConfirm);
-}
 
 
 void on_show_includes_checkbutton_toggled(GtkToggleButton *togglebutton,

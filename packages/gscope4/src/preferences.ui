@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.96.1 -->
+<!-- Created with Cambalache 0.99.1 -->
 <interface>
   <!-- interface-name preferences.ui -->
   <requires lib="gtk" version="4.18"/>
@@ -669,6 +669,7 @@ Reference</property>
                 <child>
                   <object class="GtkCheckButton" id="confirmation_checkbutton">
                     <property name="label">Present a confirmation dialog before exiting App</property>
+                    <signal name="toggled" handler="on_confirmation_checkbutton_toggled"/>
                   </object>
                 </child>
                 <child>

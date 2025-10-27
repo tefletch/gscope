@@ -299,7 +299,8 @@ static void startup (GApplication *app, gpointer *user_data)
     gtk_window_set_transient_for(GTK_WINDOW(quit_confirm_dialog), GTK_WINDOW(gscope_main));
     gtk_widget_set_visible(GTK_WIDGET(quit_confirm_dialog), FALSE);
     gtk_window_set_hide_on_close(GTK_WINDOW(quit_confirm_dialog), TRUE);
- 
+    gtk_window_set_modal(GTK_WINDOW(quit_confirm_dialog),TRUE);
+
     
     // Configure Menu Actions
     //=======================
@@ -338,6 +339,7 @@ static void activate (GtkApplication *app, gpointer *user_data)
     {
         APP_CONFIG_init(GTK_WIDGET(my_lookup_widget("gscope_splash")));
         CALLBACKS_init(GTK_WIDGET(my_lookup_widget("gscope_main")));
+        CALLBACKS_register_app(app);    // Give a reference to callbacks.c for application shutdown.
         BUILD_initDatabase(GTK_WIDGET(my_lookup_widget("splash_progressbar")));
     }
 
@@ -423,7 +425,6 @@ static int command_line(GApplication *app, GApplicationCommandLine *cmdline)
 static void shutdown(GApplication *app, gpointer *user_data)
 {
     printf("** Main: GTK4 Shutdown **\nDoes nothing right now.\n");
-    // Perform all shutdown cleanup (save/close files)
 }
 
 
