@@ -51,7 +51,6 @@ static SrcFile_stats* create_stats_list(SrcFile_stats **si_stats);
 
 
 //---------------- Private Globals ----------------------------------
-static gboolean  preferences_dialog_visible = FALSE;
 static gboolean  initializing_prefs = TRUE;
 static gboolean  editor_command_changed = FALSE;
 static gboolean  suffix_entry_changed = FALSE;
@@ -1077,6 +1076,7 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
 
     static gboolean initialized = FALSE;
 
+
     prefs_dialog = gscope_preferences;
 
     if (!initialized)
@@ -1301,15 +1301,11 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
 
         #endif
 
-        preferences_dialog_visible = FALSE;
         initializing_prefs = FALSE;
         initialized = TRUE;
     }
 
-    if (!preferences_dialog_visible)
-        gtk_widget_show(prefs_dialog);
-
-    preferences_dialog_visible = TRUE;
+    gtk_widget_set_visible(prefs_dialog, TRUE);
 }
 
 
@@ -2253,8 +2249,7 @@ void on_treeview1_row_activated(GtkTreeView     *treeview,
 
 void on_preferences_dialog_close_button_clicked(GtkButton *button, gpointer user_data)
 {
-    gtk_widget_hide(GTK_WIDGET(gscope_preferences));
-    preferences_dialog_visible = FALSE;
+    gtk_widget_set_visible(gscope_preferences, FALSE);
 }
 
 
@@ -2263,8 +2258,7 @@ gboolean on_gscope_preferences_delete_event(GtkWidget       *widget,
                                             gpointer         user_data)
 {
     // Just hide the widget
-    gtk_widget_hide(GTK_WIDGET(gscope_preferences));
-    preferences_dialog_visible = FALSE;
+    gtk_widget_set_visible(gscope_preferences, FALSE);
 
     return TRUE;   // Don't destroy the widget
 }

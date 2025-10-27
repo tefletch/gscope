@@ -292,6 +292,7 @@ static void startup (GApplication *app, gpointer *user_data)
     GObject *gscope_preferences = gtk_builder_get_object(builder, "gscope_preferences");
     gtk_window_set_transient_for(GTK_WINDOW(gscope_preferences), GTK_WINDOW(gscope_main));
     gtk_widget_set_visible(GTK_WIDGET(gscope_preferences), FALSE);
+    gtk_window_set_hide_on_close(GTK_WINDOW(gscope_preferences), TRUE);
 
     // Instantiate the 'quit_confirm_dialog'
     //=====================================
