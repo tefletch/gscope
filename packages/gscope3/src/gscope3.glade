@@ -3031,6 +3031,7 @@ and View</property>
                     </child>
                     <child>
                       <object class="GtkCheckButton" id="autogen_enable_checkbutton1">
+                        <property name="label" translatable="yes">Enable</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="focus-on-click">False</property>

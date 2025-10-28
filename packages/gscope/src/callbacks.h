@@ -130,11 +130,9 @@ void on_never_retain_text_checkbutton_toggled(GtkToggleButton *togglebutton, gpo
 #endif
 
 
-void on_ignore_case_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data);
 
 void on_use_viewer_radiobutton_toggled(GtkToggleButton *togglebutton, gpointer user_data);
 
-void on_reuse_window_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data);
 
 void on_use_editor_radiobutton_toggled(GtkToggleButton *togglebutton, gpointer user_data);
 
@@ -160,7 +158,6 @@ void on_name_entry_changed(GtkEditable *editable, gpointer user_data);
 
 void on_search_root_entry_changed(GtkEditable *editable, gpointer user_data);
 
-void on_autogen_enable_checkbutton1_toggled(GtkToggleButton *togglebutton, gpointer user_data);
 
 void on_autogen_search_root_entry1_changed(GtkEditable *editable, gpointer user_data);
 
@@ -223,10 +220,6 @@ void on_rebuild_radiobutton_toggled(GtkToggleButton *togglebutton, gpointer user
 
 void on_force_rebuild_radiobutton_toggled(GtkToggleButton *togglebutton, gpointer user_data);
 
-void on_truncate_symbols_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data);
-
-void on_compress_symbols_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data);
-
 void on_suffix_entry_changed(GtkEditable *editable, gpointer user_data);
 
 void on_source_directory_browse_button_clicked(GtkButton *button, gpointer user_data);
@@ -258,9 +251,27 @@ void on_quit_confirm_dialog_response(GtkDialog *dialog, gint response_id, gpoint
 #ifndef GTK4_BUILD
 void on_confirmation_checkbutton_toggled(GtkToggleButton *checkbutton, gpointer user_data);
 void on_confirm_exit_checkbutton_toggled(GtkToggleButton *checkbutton, gpointer user_data);
+void on_show_includes_checkbutton_toggled(GtkToggleButton *checkbutton, gpointer user_data);
+void on_recursive_search_mode_checkbutton_toggled(GtkToggleButton *g_checksum_free, gpointer user_data);
+void on_showicons_checkbutton_toggled(GtkToggleButton *checkbutton, gpointer user_data);
+void on_single_click_checkbutton_toggled(GtkToggleButton *g_checkbutton, gpointer user_data);
+void on_autogen_enable_checkbutton1_toggled(GtkToggleButton *checkbutton, gpointer user_data);
+void on_truncate_symbols_checkbutton_toggled(GtkToggleButton *checkbutton, gpointer user_data);
+void on_compress_symbols_checkbutton_toggled(GtkToggleButton *checkbutton, gpointer user_data);
+void on_reuse_window_checkbutton_toggled(GtkToggleButton *checkbutton, gpointer user_data);
+void on_ignore_case_checkbutton_toggled(GtkToggleButton *checkbutton, gpointer user_data);
 #else
 void on_confirmation_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data);
 void on_confirm_exit_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data);
+void on_show_includes_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data);
+void on_recursive_search_mode_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data);
+void on_showicons_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data);
+void on_single_click_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data);
+void on_autogen_enable_checkbutton1_toggled(GtkCheckButton *checkbutton, gpointer user_data);
+void on_truncate_symbols_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data);
+void on_compress_symbols_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data);
+void on_reuse_window_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data);
+void on_ignore_case_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data);
 #endif
 
 gboolean on_stats_dialog_delete_event(GtkWidget *widget, GdkEvent *event, gpointer user_data);
@@ -269,17 +280,9 @@ void on_stats_dialog_closebutton_clicked(GtkButton *button, gpointer user_data);
 
 void on_include_dirlist_entry_changed(GtkEditable *editable, gpointer user_data);
 
-void on_show_includes_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data);
-
-void on_show_includes_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data);
-
-void on_recursive_search_mode_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data);
-
-void on_showicons_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data);
 
 void on_session_info_button_clicked(GtkButton *button, gpointer user_data);
 
-void on_single_click_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data);
 
 void on_save_results_file_chooser_dialog_response(GtkDialog *dialog, gint response_id, gpointer user_data);
 

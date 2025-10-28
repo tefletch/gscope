@@ -38,7 +38,8 @@ void        my_start_text_editor(gchar *filename, gchar *linenum);
 void        my_gtk_entry_set_text(GtkEntry *entry, const gchar *text);
 const gchar *my_gtk_entry_get_text(GtkEntry *entry);
 gchar       *my_gtk_file_chooser_get_filename(GtkFileChooser *chooser);
-void        my_gtk_toggle_button_set_active(GtkWidget *button, gboolean is_active);
+void        my_gtk_check_button_set_active(GtkWidget *button, gboolean is_active);
+gboolean    my_gtk_check_button_get_active(GtkWidget *button);
 void        my_gtk_box_pack_start (GtkBox* box,   GtkWidget* child,   gboolean expand,   gboolean fill,  guint padding);
 
 

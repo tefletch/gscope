@@ -960,6 +960,7 @@ Settings</property>
                     <child>
                       <object class="GtkCheckButton" id="autogen_enable_checkbutton1">
                         <property name="halign">start</property>
+                        <property name="label">Enable</property>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">1</property>
