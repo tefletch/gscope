@@ -992,9 +992,11 @@ void on_ignorecase_activate(GtkMenuItem *menuitem, gpointer user_data)
 void on_ignorecase_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
     GVariant *state = g_action_get_state(G_ACTION(action));
+
+    settings.ignoreCase = !settings.ignoreCase;
+
     if ( g_variant_get_boolean(state) != settings.ignoreCase )
     {
-        settings.ignoreCase = !settings.ignoreCase;
         g_simple_action_set_state(action, g_variant_new_boolean(settings.ignoreCase));
 
         /* Reset the record of the last query so that the next query will not be reported as current */
@@ -3584,7 +3586,7 @@ void on_ignore_case_checkbutton_toggled(GtkToggleButton *checkbutton, gpointer u
 void on_ignore_case_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data)
 #endif
 {
-    if ( my_gtk_check_button_get_active(GTK_WIDGET(checkbutton)) != settings.reuseWin )
+    if ( my_gtk_check_button_get_active(GTK_WIDGET(checkbutton)) != settings.ignoreCase )
     {
         // Toggle the "sticky" setting
         sticky_settings.ignoreCase = !(sticky_settings.ignoreCase);
@@ -3593,8 +3595,10 @@ void on_ignore_case_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer us
         // Align the "options menu".  Warning, this "set-active" call toggles this "settings" value;
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(GTK_WIDGET(gscope_main), "ignorecase_checkmenuitem")),
                                        sticky_settings.ignoreCase);
+
         #else
-        printf("Revisit Reminder: need to finish GTK4 mods in function: %s\n", __func__);
+        GAction *action = g_action_map_lookup_action(G_ACTION_MAP(gscope_app), "ignorecase");
+        g_simple_action_set_state(G_SIMPLE_ACTION(action), g_variant_new_boolean(sticky_settings.ignoreCase));
         #endif
 
         // Align application behavior with the new "sticky" setting (override any change caused by "set_active" callback)

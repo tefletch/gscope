@@ -86,6 +86,7 @@
                     <child>
                       <object class="GtkCheckButton" id="ignore_case_checkbutton">
                         <property name="label">Ignore case during search</property>
+                        <signal name="toggled" handler="on_ignore_case_checkbutton_toggled"/>
                       </object>
                     </child>
                   </object>
