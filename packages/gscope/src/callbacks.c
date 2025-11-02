@@ -792,7 +792,7 @@ void on_confirm_exit_checkbutton_toggled(GtkToggleButton *checkbutton, gpointer 
 void on_confirm_exit_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data)
 #endif
 {
-    printf("Hello from %s entry: exitConfirm = %s\n", __func__, settings.exitConfirm ? "True" : "False");
+    printf("Hello from: %s\n", __func__);
     if ( my_gtk_check_button_get_active(GTK_WIDGET(checkbutton)) != settings.exitConfirm)
     {
         settings.exitConfirm = !settings.exitConfirm;
@@ -3670,7 +3670,7 @@ void on_confirmation_checkbutton_toggled(GtkToggleButton *checkbutton, gpointer 
 void on_confirmation_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data)
 #endif
 {
-    printf("Hello from %s entry: exitConfirm = %s\n", __func__, settings.exitConfirm ? "True" : "False");
+    printf("Hello from: %s\n", __func__);
     if ( my_gtk_check_button_get_active(GTK_WIDGET(checkbutton)) != settings.exitConfirm )
     {
         settings.exitConfirm = !(settings.exitConfirm);
