@@ -1123,10 +1123,27 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
         #if (UI_VERSION == 1)
         gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_failed_search_checkbutton"), !sticky_settings.retainInput);
         #endif
+
+        #if (UI_VERSION > 1)
+        if ( !settings.retainFailed && !settings.retainInput )
+            my_gtk_check_button_set_active(GTK_WIDGET(lookup_widget(GTK_WIDGET(prefs_dialog), "never_retain_text_checkbutton")), TRUE);
+        else
+            my_gtk_check_button_set_active(GTK_WIDGET(lookup_widget(GTK_WIDGET(prefs_dialog), "never_retain_text_checkbutton")), FALSE);
+
+        // Radio Button Group
+        gtk_check_button_set_group(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_checkbutton")),
+                                   GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_failed_search_checkbutton")));
+        gtk_check_button_set_group(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_checkbutton")),
+                                   GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "never_retain_text_checkbutton")));
+        // End Radio Button Group                           
+        #endif
+
         
         my_gtk_check_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "ignore_case_checkbutton"),
                                      sticky_settings.ignoreCase);
 
+        
+        
         #ifndef GTK4_BUILD
         my_gtk_check_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "use_viewer_radiobutton"),
                                      !sticky_settings.useEditor);
@@ -1147,6 +1164,8 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
         // End Radio Button Group
         #endif
 
+        
+        
         my_gtk_check_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "reuse_window_checkbutton"),
                                      sticky_settings.reuseWin);
 
