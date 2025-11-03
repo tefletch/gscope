@@ -980,10 +980,10 @@ void on_delete_history_file_activate(GSimpleAction *action, GVariant *parameter,
 #ifndef GTK4_BUILD
 void on_ignorecase_activate(GtkMenuItem *menuitem, gpointer user_data)
 {
+    settings.ignoreCase = !settings.ignoreCase;
+
     if ( gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuitem)) != settings.ignoreCase )
     {
-        settings.ignoreCase = !settings.ignoreCase;
-        
         /* Reset the record of the last query so that the next query will not be reported as current */
         process_query(FIND_NULL);
     }
