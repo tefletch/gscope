@@ -1065,9 +1065,11 @@ void on_retaininput_activate(GtkMenuItem *menuitem, gpointer user_data)
 void on_retaininput_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
     GVariant *state = g_action_get_state(G_ACTION(action));
+
+    settings.retainInput = !settings.retainInput;
+
     if ( g_variant_get_boolean(state) != settings.retainInput )
     {
-        settings.retainInput = !settings.retainInput;
         g_simple_action_set_state(action, g_variant_new_boolean(settings.retainInput));
     }
 }
@@ -1086,9 +1088,11 @@ void on_smartquery_activate(GtkMenuItem *menuitem, gpointer user_data)
 void on_smartquery_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
     GVariant *state = g_action_get_state(G_ACTION(action));
+
+    settings.smartQuery = !settings.smartQuery;
+
     if ( g_variant_get_boolean(state) != settings.smartQuery )
     {
-        settings.smartQuery = !settings.smartQuery;
         g_simple_action_set_state(action, g_variant_new_boolean(settings.smartQuery));
     }
 }
