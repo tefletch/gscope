@@ -123,6 +123,7 @@
                     <property name="label">Reuse the File View window</property>
                     <property name="margin-bottom">8</property>
                     <property name="margin-start">40</property>
+                    <signal name="toggled" handler="on_reuse_window_checkbutton_toggled"/>
                   </object>
                 </child>
                 <child>

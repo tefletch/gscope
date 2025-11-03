@@ -1042,9 +1042,11 @@ void on_reusewin_activate(GtkMenuItem *menuitem, gpointer user_data)
 void on_reusewin_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
     GVariant *state = g_action_get_state(G_ACTION(action));
+
+    settings.reuseWin = !settings.reuseWin;
+
     if ( g_variant_get_boolean(state) != settings.reuseWin )
     {
-        settings.reuseWin = !settings.reuseWin;
         g_simple_action_set_state(action, g_variant_new_boolean(settings.reuseWin));
     }
 }
@@ -3646,9 +3648,10 @@ void on_reuse_window_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer u
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(GTK_WIDGET(gscope_main), "reusewin_checkmenuitem")),
                                        sticky_settings.reuseWin);
         #else
-        //Revisit
+        GAction *action = g_action_map_lookup_action(G_ACTION_MAP(gscope_app), "reusewin");
+        g_simple_action_set_state(G_SIMPLE_ACTION(action), g_variant_new_boolean(sticky_settings.reuseWin));
         #endif
-
+        
         // Align application behavior with the new "sticky" setting (override any change caused by "set_active" callback)
         settings.reuseWin = sticky_settings.reuseWin;
 
