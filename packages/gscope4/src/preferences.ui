@@ -113,7 +113,7 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkCheckButton" id="use_viewer_radiobutton">
+                  <object class="GtkCheckButton" id="use_viewer_checkbutton">
                     <property name="label">Use built-in file viewer</property>
                     <property name="margin-bottom">8</property>
                   </object>
@@ -126,8 +126,9 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkCheckButton" id="use_editor_radiobutton">
+                  <object class="GtkCheckButton" id="use_editor_checkbutton">
                     <property name="label">Use text editor</property>
+                    <signal name="toggled" handler="on_use_editor_checkbutton_toggled"/>
                   </object>
                 </child>
                 <child>

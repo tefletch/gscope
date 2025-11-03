@@ -998,7 +998,6 @@ void on_ignorecase_activate(GSimpleAction *action, GVariant *parameter, gpointer
     if ( g_variant_get_boolean(state) != settings.ignoreCase )
     {
         g_simple_action_set_state(action, g_variant_new_boolean(settings.ignoreCase));
-
         /* Reset the record of the last query so that the next query will not be reported as current */
         process_query(FIND_NULL);
     }
@@ -1009,18 +1008,22 @@ void on_ignorecase_activate(GSimpleAction *action, GVariant *parameter, gpointer
 #ifndef GTK4_BUILD
 void on_useeditor_activate(GtkMenuItem *menuitem, gpointer user_data)
 {
+    settings.useEditor = !settings.useEditor;
+
     if ( gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuitem)) != settings.useEditor )
     {
-        settings.useEditor = !settings.useEditor;
+        // Do Nothing
     }
 }
 #else
 void on_useeditor_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
     GVariant *state = g_action_get_state(G_ACTION(action));
+
+    settings.useEditor = !settings.useEditor;
+
     if ( g_variant_get_boolean(state) != settings.useEditor )
     {
-        settings.useEditor = !settings.useEditor;
         g_simple_action_set_state(action, g_variant_new_boolean(settings.useEditor));
     }
 }
@@ -1122,8 +1125,16 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
         my_gtk_check_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "ignore_case_checkbutton"),
                                      sticky_settings.ignoreCase);
 
-        my_gtk_check_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "use_editor_radiobutton"),
+        // Radio Button Group
+        my_gtk_check_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "use_viewer_checkbutton"),
+                                     !sticky_settings.useEditor);
+
+        my_gtk_check_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "use_editor_checkbutton"),
                                      sticky_settings.useEditor);
+
+        gtk_check_button_set_group(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "use_viewer_checkbutton")),
+                                   GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "use_editor_checkbutton")));
+        // End Radio Button Group
 
         my_gtk_check_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "reuse_window_checkbutton"),
                                      sticky_settings.reuseWin);
@@ -2288,8 +2299,11 @@ gboolean on_gscope_preferences_delete_event(GtkWidget       *widget,
 }
 
 
-
-void on_use_viewer_radiobutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+#ifndef GTK4_BUILD
+void on_use_viewer_radiobutton_toggled(GtkToggleButton *checkbutton, gpointer user_data)
+#else
+void on_use_viewer_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data)
+#endif
 {
     // Don't change the useEditor setting - that is handled in on_use_editor_radiobutton_toggled()
 
@@ -2300,9 +2314,14 @@ void on_use_viewer_radiobutton_toggled(GtkToggleButton *togglebutton, gpointer u
 
 
 // The setting managed by this callback interacts with the "options menu" (temporary overrides)
-void on_use_editor_radiobutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+// on_useeditor_activate
+#ifndef GTK4_BUILD
+void on_use_editor_radiobutton_toggled(GtkToggleButton *checkbutton, gpointer user_data)
+#else
+void on_use_editor_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data)
+#endif
 {
-    if (!initializing_prefs)
+    if ( my_gtk_check_button_get_active(GTK_WIDGET(checkbutton)) != settings.useEditor )
     {
         // Toggle the "sticky" setting
         sticky_settings.useEditor = !(sticky_settings.useEditor);
@@ -2311,14 +2330,14 @@ void on_use_editor_radiobutton_toggled(GtkToggleButton *togglebutton, gpointer u
         // Align the "options menu".  Warning, this "set-active" call toggles this "settings" value;
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(GTK_WIDGET(gscope_main), "useeditor_checkmenuitem")),
                                        sticky_settings.useEditor);
+        
         #else
-        printf("Revisit Reminder: need to finish GTK4 mods in function: %s\n", __func__);
+        GAction *action = g_action_map_lookup_action(G_ACTION_MAP(gscope_app), "useeditor");
+        g_simple_action_set_state(G_SIMPLE_ACTION(action), g_variant_new_boolean(sticky_settings.useEditor));
         #endif
 
         // Align application behavior with the new "sticky" setting (override any change caused by "set_active" callback)
         settings.useEditor = sticky_settings.useEditor;  // undo the value change caused by the "set_active" callback
-
-        // Update the preferences file
         APP_CONFIG_set_boolean("useEditor", settings.useEditor);
     }
 
