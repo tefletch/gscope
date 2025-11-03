@@ -362,7 +362,7 @@
                                       </object>
                                     </child>
                                     <child>
-                                      <object class="GtkCheckMenuItem" id="smartquery_imagemenuitem">
+                                      <object class="GtkCheckMenuItem" id="smartquery_checkmenuitem">
                                         <property name="visible">True</property>
                                         <property name="can-focus">False</property>
                                         <property name="label" translatable="yes">Smart Query</property>

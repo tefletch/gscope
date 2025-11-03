@@ -302,6 +302,13 @@ int main(int argc, char *argv[])
                                            TRUE);
             settings.retainInput = TRUE;  // undo the value change caused by the "set_active" callback
         }
+        if (settings.smartQuery)
+        {
+            gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(lookup_widget(GTK_WIDGET(gscope_main), "smartquery_checkmenuitem")),
+                                           TRUE);
+            settings.smartQuery = TRUE;  // undo the value change caused by the "set_active" callback
+
+        }
 
         gtk_widget_hide(GTK_WIDGET(gtk_builder_get_object(builder, "progressbar1")));
 
