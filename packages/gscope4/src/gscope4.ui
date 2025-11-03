@@ -262,7 +262,7 @@
               <object class="GtkButton" id="src_mode_status_button"/>
             </child>
             <child>
-              <object class="GtkProgressBar">
+              <object class="GtkProgressBar" id="progressbar1">
                 <property name="can-focus">False</property>
                 <property name="can-target">False</property>
                 <property name="focus-on-click">False</property>
@@ -389,15 +389,19 @@
       <submenu id="sub_menu4a">
         <attribute name="label">Wiki</attribute>
         <item>
+          <attribute name="action">app.overview_wiki</attribute>
           <attribute name="label">Overview</attribute>
         </item>
         <item>
+          <attribute name="action">app.usage_wiki</attribute>
           <attribute name="label">Usage</attribute>
         </item>
         <item>
+          <attribute name="action">app.configure_wiki</attribute>
           <attribute name="label">Configure</attribute>
         </item>
         <item>
+          <attribute name="action">app.release_wiki</attribute>
           <attribute name="label">Release Notes</attribute>
         </item>
       </submenu>

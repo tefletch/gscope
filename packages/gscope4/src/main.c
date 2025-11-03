@@ -55,6 +55,10 @@ static GActionEntry app_entries[] = {
     {"usage_activate", on_usage1_activate, NULL, NULL, NULL },
     {"setup", on_setup1_activate, NULL, NULL, NULL },
     /* wiki sub-menu entries*/
+    {"overview_wiki", on_overview_wiki_activate, NULL, NULL, NULL },
+    {"usage_wiki", on_usage_wiki_activate, NULL, NULL, NULL },
+    {"configure_wiki", on_configure_wiki_activate, NULL, NULL, NULL },
+    {"release_wiki", on_release_wiki_activate, NULL, NULL, NULL },
     {"about", on_about1_activate, NULL, NULL, NULL }
 };
 

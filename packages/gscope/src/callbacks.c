@@ -628,6 +628,7 @@ void on_cref_update_button_clicked(GtkButton *button, gpointer user_data)
         #endif
 }
 
+
 //===================================================================================================
 //  Application exit logic
 //
@@ -809,9 +810,69 @@ void on_confirm_exit_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer u
 //===================================================================================================
 
 
+//===================================================================================================
+//  Wiki activation logic
+//===================================================================================================
+
+#ifndef GTK4_BUILD
+void on_overview_wiki_activate(GtkMenuItem *menuitem, gpointer user_data)
+{
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki", GDK_CURRENT_TIME, NULL);
+}
+#else
+void on_overview_wiki_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+{
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki", GDK_CURRENT_TIME);
+}
+#endif
+
+
+#ifndef GTK4_BUILD
+void on_usage_wiki_activate(GtkMenuItem *menuitem, gpointer user_data)
+{
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Using-Gscope", GDK_CURRENT_TIME, NULL);
+}
+#else
+void on_usage_wiki_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+{
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Using-Gscope", GDK_CURRENT_TIME);
+}
+#endif
+
+
+#ifndef GTK4_BUILD
+void on_configure_wiki_activate(GtkMenuItem *menuitem, gpointer user_data)
+{
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Configuring-Gscope", GDK_CURRENT_TIME, NULL);
+}
+#else
+void on_configure_wiki_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+{
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Configuring-Gscope", GDK_CURRENT_TIME);
+}
+#endif
+
+
+#ifndef GTK4_BUILD
+void on_release_wiki_activate(GtkMenuItem *menuitem, gpointer user_data)
+{
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Gscope-Release-Notes", GDK_CURRENT_TIME, NULL);
+}
+#else
+void on_release_wiki_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+{
+    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Gscope-Release-Notes", GDK_CURRENT_TIME);
+}
+#endif
+
+
+//===================================================================================================
+//  End Wiki activation logic
+//===================================================================================================
+
+
+
 #ifndef GTK4_BUILD  // GtkMenu evolution
-
-
 
 
 void on_fileview_start_editor_activate(GtkMenuItem *menuitem, gpointer user_data)
@@ -841,33 +902,6 @@ void on_fileview_close_activate(GtkMenuItem *menuitem, gpointer user_data)
 
 
 
-void on_overview_wiki_activate(GtkMenuItem     *menuitem,
-                               gpointer         user_data)
-{
-    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki", GDK_CURRENT_TIME, NULL);
-}
-
-
-void on_usage_wiki_activate(GtkMenuItem     *menuitem,
-                            gpointer         user_data)
-{
-    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Using-Gscope", GDK_CURRENT_TIME, NULL);
-}
-
-
-void on_configure_wiki_activate(GtkMenuItem     *menuitem,
-                                gpointer         user_data)
-{
-    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Configuring-Gscope", GDK_CURRENT_TIME, NULL);
-}
-
-
-
-void on_release_wiki_activate(GtkMenuItem     *menuitem,
-                              gpointer         user_data)
-{
-    gtk_show_uri(NULL, "https://github.com/tefletch/gscope/wiki/Gscope-Release-Notes", GDK_CURRENT_TIME, NULL);
-}
 
 #endif
 
