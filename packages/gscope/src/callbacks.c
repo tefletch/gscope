@@ -3515,7 +3515,7 @@ void on_retain_text_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer 
         // If retainInput = TRUE, disable the "retain_text_failed_search" checkbutton, otherwise enable the checkbutton
         gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "retain_text_failed_search_checkbutton"), !settings.retainInput);
         gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "retain_text_failed_search_image"), !settings.retainInput);
-        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "retain_text_failed_search_label"), !settings.retainInput);
+        // GTK2 ??? gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "retain_text_failed_search_label"), !settings.retainInput);
         #endif
 
         #if (UI_VERSION > 1)  // UIv2+ Query text retention radiobutton-like semantics Always/Fails/None
