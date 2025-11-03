@@ -53,7 +53,7 @@
       <object class="GtkBox">
         <property name="homogeneous">False</property>
         <property name="margin-bottom">5</property>
-        <property name="spacing">-1</property>
+        <property name="spacing">0</property>
         <child>
           <object class="GtkButton" id="cancel_exit_button">
             <property name="margin-bottom">0</property>

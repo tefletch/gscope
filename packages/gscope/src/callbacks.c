@@ -1130,13 +1130,23 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
         else
             my_gtk_check_button_set_active(GTK_WIDGET(lookup_widget(GTK_WIDGET(prefs_dialog), "never_retain_text_checkbutton")), FALSE);
 
+        if ( settings.retainInput )     // retainInput has top precedence
+        {
+            if ( settings.retainFailed )    // Config File Error: only one retain-type is allowed at a time
+            {
+                settings.retainFailed = FALSE;
+                APP_CONFIG_set_boolean("retainFailed", settings.retainFailed);  // Update the preferences file
+                my_gtk_check_button_set_active(GTK_WIDGET(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_failed_search_checkbutton")), FALSE);
+            }
+        }
+
         // Radio Button Group
         gtk_check_button_set_group(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_checkbutton")),
                                    GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_failed_search_checkbutton")));
         gtk_check_button_set_group(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_checkbutton")),
                                    GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "never_retain_text_checkbutton")));
         // End Radio Button Group                           
-        #endif
+        #endif  // UI_VERSION > 1
 
         
         my_gtk_check_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "ignore_case_checkbutton"),
