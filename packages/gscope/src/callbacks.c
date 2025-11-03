@@ -1127,6 +1127,14 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
         my_gtk_check_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "ignore_case_checkbutton"),
                                      sticky_settings.ignoreCase);
 
+        #ifndef GTK4_BUILD
+        my_gtk_check_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "use_viewer_radiobutton"),
+                                     !sticky_settings.useEditor);
+
+        my_gtk_check_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "use_editor_radiobutton"),
+                                     sticky_settings.useEditor);
+
+        #else
         // Radio Button Group
         my_gtk_check_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "use_viewer_checkbutton"),
                                      !sticky_settings.useEditor);
@@ -1137,6 +1145,7 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
         gtk_check_button_set_group(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "use_viewer_checkbutton")),
                                    GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "use_editor_checkbutton")));
         // End Radio Button Group
+        #endif
 
         my_gtk_check_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "reuse_window_checkbutton"),
                                      sticky_settings.reuseWin);
