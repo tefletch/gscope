@@ -240,6 +240,7 @@
             <property name="spacing">5</property>
             <child>
               <object class="GtkButton" id="session_info_button">
+                <signal name="clicked" handler="on_session_info_button_clicked"/>
                 <child>
                   <object class="GtkImage" id="session_info_button_image">
                     <property name="file">../share/gscope/pixmaps/info.png</property>
