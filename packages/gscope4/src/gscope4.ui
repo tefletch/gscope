@@ -417,4 +417,352 @@
     <property name="icon-name">gtk-about</property>
     <property name="program-name">G-Scope</property>
   </object>
+  <object class="GtkWindow" id="stats_dialog">
+    <property name="destroy-with-parent">True</property>
+    <property name="height-request">580</property>
+    <property name="hide-on-close">True</property>
+    <property name="icon-name">gtk-info</property>
+    <property name="title">Session Statistics</property>
+    <property name="transient-for">gscope_main</property>
+    <property name="width-request">1040</property>
+    <child>
+      <object class="GtkScrolledWindow" id="stats_scrolledwindow">
+        <property name="has-frame">True</property>
+        <child>
+          <object class="GtkViewport" id="viewport1">
+            <property name="can-focus">False</property>
+            <property name="can-target">False</property>
+            <property name="focus-on-click">False</property>
+            <child>
+              <object class="GtkBox" id="vbox16">
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkLabel" id="path_warning_label">
+                    <property name="can-focus">False</property>
+                    <property name="can-target">False</property>
+                    <property name="focus-on-click">False</property>
+                    <property name="use-markup">True</property>
+                    <property name="xalign">0.15</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox" id="optional_stats_vbox">
+                    <property name="can-focus">False</property>
+                    <property name="can-target">False</property>
+                    <property name="focus-on-click">False</property>
+                    <property name="margin-start">10</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <object class="GtkLabel" id="system_files_stats_label">
+                        <property name="can-focus">False</property>
+                        <property name="can-target">False</property>
+                        <property name="focus-on-click">False</property>
+                        <property name="margin-top">10</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0.0</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="si_header_hbox">
+                        <property name="can-focus">False</property>
+                        <property name="can-target">False</property>
+                        <property name="focus-on-click">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="si_value_hbox">
+                        <property name="can-focus">False</property>
+                        <property name="can-target">False</property>
+                        <property name="focus-on-click">False</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox" id="vbox17">
+                    <property name="can-focus">False</property>
+                    <property name="can-target">False</property>
+                    <property name="focus-on-click">False</property>
+                    <property name="margin-start">10</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <object class="GtkLabel" id="user_files_stats_label">
+                        <property name="can-focus">False</property>
+                        <property name="can-target">False</property>
+                        <property name="focus-on-click">False</property>
+                        <property name="label">&lt;span size="large" weight="bold"&gt;Source File Type Statistics:  User Application Files  &lt;/span&gt;</property>
+                        <property name="margin-top">25</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0.0</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="header_hbox">
+                        <property name="can-focus">False</property>
+                        <property name="can-target">False</property>
+                        <property name="focus-on-click">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="value_hbox"/>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="label27">
+                    <property name="can-focus">False</property>
+                    <property name="can-target">False</property>
+                    <property name="focus-on-click">False</property>
+                    <property name="halign">start</property>
+                    <property name="label">&lt;span size="large" weight="bold"&gt;Source File Lexical Analysis Statistics&lt;/span&gt;</property>
+                    <property name="margin-start">10</property>
+                    <property name="margin-top">26</property>
+                    <property name="use-markup">True</property>
+                    <property name="xalign">0.0</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkGrid" id="grid5">
+                    <property name="can-focus">False</property>
+                    <property name="can-target">False</property>
+                    <property name="column-spacing">5</property>
+                    <property name="focus-on-click">False</property>
+                    <property name="margin-start">10</property>
+                    <property name="row-spacing">5</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="can-focus">False</property>
+                        <property name="can-target">False</property>
+                        <property name="focus-on-click">False</property>
+                        <property name="halign">start</property>
+                        <property name="label">&lt;span size="large" weight="bold"&gt;Definitions&lt;/span&gt;</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0.0</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="column-span">1</property>
+                          <property name="row">0</property>
+                          <property name="row-span">1</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="can-focus">False</property>
+                        <property name="can-target">False</property>
+                        <property name="focus-on-click">False</property>
+                        <property name="halign">start</property>
+                        <property name="label">&lt;span size="large" weight="bold"&gt;Identifiers&lt;/span&gt;</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0.0</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="column-span">1</property>
+                          <property name="row">1</property>
+                          <property name="row-span">1</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="can-focus">False</property>
+                        <property name="can-target">False</property>
+                        <property name="focus-on-click">False</property>
+                        <property name="halign">start</property>
+                        <property name="label">&lt;span size="large" weight="bold"&gt;Function Definitions&lt;/span&gt;</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0.0</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="column-span">1</property>
+                          <property name="row">2</property>
+                          <property name="row-span">1</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="can-focus">False</property>
+                        <property name="can-target">False</property>
+                        <property name="focus-on-click">False</property>
+                        <property name="halign">start</property>
+                        <property name="label">&lt;span size="large" weight="bold"&gt;C++ Class Definitions&lt;/span&gt;</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0.0</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="column-span">1</property>
+                          <property name="row">3</property>
+                          <property name="row-span">1</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="can-focus">False</property>
+                        <property name="can-target">False</property>
+                        <property name="focus-on-click">False</property>
+                        <property name="halign">start</property>
+                        <property name="height-request">-1</property>
+                        <property name="label">&lt;span size="large" weight="bold"&gt;Function Calls&lt;/span&gt;</property>
+                        <property name="use-markup">True</property>
+                        <property name="valign">fill</property>
+                        <property name="xalign">0.0</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="column-span">1</property>
+                          <property name="row">4</property>
+                          <property name="row-span">1</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="can-focus">False</property>
+                        <property name="can-target">False</property>
+                        <property name="focus-on-click">False</property>
+                        <property name="label">&lt;span size="large" weight="bold"&gt;Include Files&lt;/span&gt;</property>
+                        <property name="lines">-1</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0.0</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="column-span">1</property>
+                          <property name="row">5</property>
+                          <property name="row-span">1</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="definition_count_label">
+                        <property name="can-focus">False</property>
+                        <property name="can-target">False</property>
+                        <property name="focus-on-click">False</property>
+                        <property name="label">&lt;span size="large" color="blue"&gt;0&lt;/span&gt;</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0.0</property>
+                        <layout>
+                          <property name="column">1</property>
+                          <property name="column-span">1</property>
+                          <property name="row">0</property>
+                          <property name="row-span">1</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="identifier_count_label">
+                        <property name="can-focus">False</property>
+                        <property name="can-target">False</property>
+                        <property name="focus-on-click">False</property>
+                        <property name="label">&lt;span size="large" color="blue"&gt;0&lt;/span&gt;</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0.0</property>
+                        <layout>
+                          <property name="column">1</property>
+                          <property name="column-span">1</property>
+                          <property name="row">1</property>
+                          <property name="row-span">1</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="function_count_label">
+                        <property name="can-focus">False</property>
+                        <property name="can-target">False</property>
+                        <property name="label">&lt;span size="large" color="blue"&gt;0&lt;/span&gt;</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0.0</property>
+                        <layout>
+                          <property name="column">1</property>
+                          <property name="column-span">1</property>
+                          <property name="row">2</property>
+                          <property name="row-span">1</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="class_definition_count_label">
+                        <property name="can-focus">False</property>
+                        <property name="can-target">False</property>
+                        <property name="focus-on-click">False</property>
+                        <property name="label">&lt;span size="large" color="blue"&gt;0&lt;/span&gt;</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0.0</property>
+                        <layout>
+                          <property name="column">1</property>
+                          <property name="column-span">1</property>
+                          <property name="row">3</property>
+                          <property name="row-span">1</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="function_calls_count_label">
+                        <property name="can-focus">False</property>
+                        <property name="can-target">False</property>
+                        <property name="focus-on-click">False</property>
+                        <property name="height-request">-1</property>
+                        <property name="label">&lt;span size="large" color="blue"&gt;0&lt;/span&gt;</property>
+                        <property name="use-markup">True</property>
+                        <property name="width-request">-1</property>
+                        <property name="xalign">0.0</property>
+                        <layout>
+                          <property name="column">1</property>
+                          <property name="column-span">1</property>
+                          <property name="row">4</property>
+                          <property name="row-span">1</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="include_file_count_label">
+                        <property name="can-focus">False</property>
+                        <property name="can-target">False</property>
+                        <property name="focus-on-click">False</property>
+                        <property name="label">&lt;span size="large" color="blue"&gt;0&lt;/span&gt;</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0.0</property>
+                        <property name="yalign">0.0</property>
+                        <layout>
+                          <property name="column">1</property>
+                          <property name="column-span">1</property>
+                          <property name="row">5</property>
+                          <property name="row-span">1</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">(Enums+Globals+Members+Structures+Typdefs+Unions+Classes+#defines+Functions)</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0.0</property>
+                        <layout>
+                          <property name="column">2</property>
+                          <property name="column-span">1</property>
+                          <property name="row">0</property>
+                          <property name="row-span">1</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">(#defines+Functions)</property>
+                        <property name="xalign">0.0</property>
+                        <layout>
+                          <property name="column">2</property>
+                          <property name="column-span">1</property>
+                          <property name="row">1</property>
+                          <property name="row-span">1</property>
+                        </layout>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
 </interface>
