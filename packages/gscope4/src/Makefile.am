@@ -31,6 +31,8 @@ gscope_SOURCES = \
 	lookup.h 	 \
 	scanner.c 	 \
 	scanner.h 	 \
+	search.c 	 \
+	search.h 	 \
 	support.c	 \
 	support.h	 \
 	utils.c      \
@@ -38,16 +40,8 @@ gscope_SOURCES = \
 #
 #	browser.c   \
 #	broswer.h   \
-#	callbacks.c  \
-#	callbacks.h	 \
 #	fileview.c 	\
 #	fileview.h 	\
-#	global.h	\
-#	main.c 		\
-#	search.c 	\
-#	search.h 	\
-#	utils.c 	\
-#	utils.h 	\
 #	version.h
 
 xmldir = $(prefix)/bin

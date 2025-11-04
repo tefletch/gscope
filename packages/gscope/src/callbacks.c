@@ -811,7 +811,7 @@ void on_confirm_exit_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer u
 
 
 //===================================================================================================
-//  Wiki activation logic
+//  Help-->Wiki activation logic
 //===================================================================================================
 
 #ifndef GTK4_BUILD
