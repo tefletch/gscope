@@ -44,6 +44,7 @@
                         <property name="label">&lt;span color="blue" weight="bold"&gt;Query text retention&lt;/span&gt;</property>
                         <property name="margin-end">4</property>
                         <property name="margin-start">4</property>
+                        <property name="tooltip-markup">Post-search content management for query input field</property>
                         <property name="use-markup">True</property>
                         <property name="valign">start</property>
                       </object>
@@ -219,6 +220,7 @@ and View</property>
                       <object class="GtkLabel">
                         <property name="label">&lt;span  color="blue" weight="bold"&gt;Cref Build Mode&lt;/span&gt;</property>
                         <property name="margin-start">4</property>
+                        <property name="tooltip-markup">Cross Reference Build Mode for Ajpp-Startup (and Cref-Rebuild)</property>
                         <property name="use-markup">True</property>
                       </object>
                     </child>
@@ -253,6 +255,7 @@ and View</property>
                       <object class="GtkLabel">
                         <property name="label">&lt;span  color="blue" weight="bold"&gt;Startup Config File:&lt;/span&gt;</property>
                         <property name="margin-end">16</property>
+                        <property name="tooltip-markup">Currently Active App-Config file (Selected at App-Startup)</property>
                         <property name="use-markup">True</property>
                       </object>
                     </child>
@@ -299,6 +302,7 @@ and View</property>
                         <property name="label">&lt;span color="blue" weight="bold"&gt;Search Traversal Mode&lt;/span&gt;</property>
                         <property name="margin-bottom">2</property>
                         <property name="margin-start">4</property>
+                        <property name="tooltip-markup">Recursive/Non-Recursive file search mode</property>
                         <property name="use-markup">True</property>
                       </object>
                     </child>
@@ -316,6 +320,7 @@ and View</property>
                     <property name="halign">start</property>
                     <property name="label">&lt;span color="blue" weight="bold"&gt;Matching Patterns&lt;/span&gt;</property>
                     <property name="margin-start">4</property>
+                    <property name="tooltip-markup">Specify patterns that identify "valid" source files</property>
                     <property name="use-markup">True</property>
                   </object>
                 </child>
@@ -325,6 +330,7 @@ and View</property>
                       <object class="GtkLabel">
                         <property name="label">File Suffix List</property>
                         <property name="margin-start">56</property>
+                        <property name="tooltip-markup">List of "valid" source file suffixes</property>
                       </object>
                     </child>
                     <child>
@@ -349,6 +355,7 @@ and View</property>
                       <object class="GtkLabel" id="rwar">
                         <property name="label">Typeless File List</property>
                         <property name="margin-start">56</property>
+                        <property name="tooltip-markup">List of non-suffix (typeless) "valid" source files</property>
                       </object>
                     </child>
                     <child>
@@ -371,6 +378,7 @@ and View</property>
                     <property name="halign">start</property>
                     <property name="label">&lt;span color="blue" weight="bold"&gt;Locations&lt;/span&gt;</property>
                     <property name="margin-start">4</property>
+                    <property name="tooltip-markup">Specify directories to be used (or ignored) by the Cross Reference Builder</property>
                     <property name="use-markup">True</property>
                   </object>
                 </child>
@@ -380,6 +388,7 @@ and View</property>
                       <object class="GtkLabel">
                         <property name="label">Source (root) Directory</property>
                         <property name="margin-start">21</property>
+                        <property name="tooltip-markup">The source file directory [tree root]</property>
                       </object>
                     </child>
                     <child>
@@ -416,6 +425,7 @@ and View</property>
                         <property name="label">Include File Search Path</property>
                         <property name="margin-end">2</property>
                         <property name="margin-start">20</property>
+                        <property name="tooltip-markup">List of include-file directories outside-of-source directory [tree]</property>
                       </object>
                     </child>
                     <child>
@@ -441,6 +451,7 @@ and View</property>
                         <property name="label">Ignored Directory List</property>
                         <property name="margin-end">4</property>
                         <property name="margin-start">20</property>
+                        <property name="tooltip-markup">List of directories within the source-directory [tree] to be ignored.</property>
                       </object>
                     </child>
                     <child>
@@ -471,6 +482,7 @@ and View</property>
                         <property name="label">&lt;span size="large"  weight="bold"&gt;Input File List&lt;/span&gt;</property>
                         <property name="margin-end">8</property>
                         <property name="margin-start">4</property>
+                        <property name="tooltip-markup">Use a text file the contains a list of specific filenames</property>
                         <property name="use-markup">True</property>
                       </object>
                     </child>
@@ -487,7 +499,7 @@ and View</property>
                     <property name="margin-start">30</property>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">Source file name list</property>
+                        <property name="label">Source name list file</property>
                         <property name="margin-end">10</property>
                         <property name="margin-start">4</property>
                       </object>
@@ -555,7 +567,7 @@ and View</property>
                       <object class="GtkEntry" id="cref_entry">
                         <property name="hexpand">True</property>
                         <property name="margin-end">8</property>
-                        <property name="placeholder-text">cscope_db.out</property>
+                        <property name="placeholder-text">&lt;full path&gt; cscope_db.out</property>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_cref_entry_focus_out_event</property>
@@ -584,6 +596,7 @@ and View</property>
                       <object class="GtkButton" id="search_log_button">
                         <property name="label">Enable</property>
                         <property name="margin-end">4</property>
+                        <property name="tooltip-markup">Enable/Disable Source-File search logging</property>
                       </object>
                     </child>
                     <child>
@@ -597,7 +610,7 @@ and View</property>
                       <object class="GtkEntry" id="search_log_entry">
                         <property name="hexpand">True</property>
                         <property name="margin-end">8</property>
-                        <property name="placeholder-text">gscope_srch.log</property>
+                        <property name="placeholder-text">&lt;full-path&gt;gscope_srch.log</property>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_search_log_entry_focus_out_event</property>

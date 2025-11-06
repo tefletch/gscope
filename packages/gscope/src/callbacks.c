@@ -1282,6 +1282,14 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
                 #endif
         }
 
+        {   // Display the Startup Config File (UI V1=page4 UI v2=page2)
+            gchar *markup_buf;
+            my_asprintf(&markup_buf, "<span foreground=\"seagreen\" weight=\"bold\">%s</span>", settings.rcFile);
+            gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(prefs_dialog), "rc_filename_label")), markup_buf);
+            g_free(markup_buf);
+        }
+
+
         #if 0
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "truncate_symbols_checkbutton")),
                                      settings.truncateSymbols);
@@ -1368,12 +1376,6 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
         /*** Initialize the preference dialog settings (Tab #4 "File Names") ***/
         /***********************************************************************/
 
-        {
-            gchar *markup_buf;
-            my_asprintf(&markup_buf, "<span foreground=\"seagreen\" weight=\"bold\">%s</span>", settings.rcFile);
-            gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(prefs_dialog), "rc_filename_label")), markup_buf);
-            g_free(markup_buf);
-        }
 
         gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "name_entry")),       MAX_STRING_ARG_SIZE - 1);
         my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "name_entry")),       settings.nameFile);
