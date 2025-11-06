@@ -223,22 +223,25 @@ and View</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckButton" id="rebuild_radiobutton_2">
+                      <object class="GtkCheckButton" id="rebuild_checkbutton">
                         <property name="active">True</property>
                         <property name="label">Incremental (as needed)</property>
                         <property name="margin-start">20</property>
+                        <signal name="toggled" handler="on_rebuild_checkbutton_toggled"/>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckButton" id="force_rebuild_radiobutton">
+                      <object class="GtkCheckButton" id="force_rebuild_checkbutton">
                         <property name="label">Force Full Rebuild</property>
                         <property name="margin-start">20</property>
+                        <signal name="toggled" handler="on_force_rebuild_checkbutton_toggled"/>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckButton" id="no_rebuild_radiobutton_2">
+                      <object class="GtkCheckButton" id="no_rebuild_checkbutton">
                         <property name="label">No Rebuild</property>
                         <property name="margin-start">20</property>
+                        <signal name="toggled" handler="on_no_rebuild_checkbutton_toggled"/>
                       </object>
                     </child>
                   </object>

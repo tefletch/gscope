@@ -794,7 +794,7 @@ void on_confirm_exit_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer u
 #endif
 {
     printf("Hello from: %s\n", __func__);
-    if ( my_gtk_check_button_get_active(GTK_WIDGET(checkbutton)) != settings.exitConfirm)
+    if ( my_gtk_check_button_get_active(GTK_WIDGET(checkbutton)) != settings.exitConfirm )
     {
         settings.exitConfirm = !settings.exitConfirm;
         APP_CONFIG_set_boolean("exitConfirm", settings.exitConfirm);
@@ -1211,8 +1211,7 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
                                    GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "use_editor_checkbutton")));
         // End Radio Button Group
         #endif
-
-        
+   
         
         my_gtk_check_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "reuse_window_checkbutton"),
                                      sticky_settings.reuseWin);
@@ -1233,7 +1232,6 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
         }
 
 
-
         /*** Initialize the preference dialog settings (Tab #5 "General") ***/
         /********************************************************************/
         #ifndef GTK4_BUILD
@@ -1249,26 +1247,42 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
         #endif
 
 
-
-
-        #if 0
         /***Initialize the preference dialog settings (tab #2 "Cross Reference") ***/
         /***************************************************************************/
         // Start-up build rules:  If conflicting info in config file, use the following
         // functional precedence:  Force Rebuild, Rebuild if Needed, No Rebuild
-        if (settings.updateAll)
-            // force rebuild
+        
+        #if defined(GTK4_BUILD)
+        // Create rebuild (radio) button group
+        gtk_check_button_set_group(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "force_rebuild_checkbutton")),
+                    GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "no_rebuild_checkbutton")));
+        gtk_check_button_set_group(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "force_rebuild_checkbutton")),
+                    GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "rebuild_checkbutton")));
+        #endif
+
+        if (settings.updateAll)     // force rebuild
+            #ifndef GTK4_BUILD
             gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "force_rebuild_radiobutton")), TRUE);
+            #else
+            gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "force_rebuild_checkbutton")), TRUE);
+            #endif
         else
         {
-            if (settings.noBuild)
-                // no rebuild
+            if (settings.noBuild)   // no rebuild
+                #ifndef GTK4_BUILD
                 gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "no_rebuild_radiobutton")), TRUE);
-            else
-                // rebuild if needed
+                #else
+                gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "no_rebuild_checkbutton")), TRUE);
+                #endif
+            else        // rebuild if needed
+                #ifndef GTK4_BUILD
                 gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "rebuild_radiobutton")), TRUE);
+                #else
+                gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "rebuild_checkbutton")), TRUE);
+                #endif
         }
 
+        #if 0
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "truncate_symbols_checkbutton")),
                                      settings.truncateSymbols);
 
@@ -3086,62 +3100,91 @@ void on_file_manager_app_entry_focus_out_event(GtkEventControllerFocus *controll
 /***************************************************/
 
 
+#ifndef GTK4_BUILD
+void on_no_rebuild_radiobutton_toggled(GtkToggleButton *checkbutton, gpointer user_data)
+#else
+void on_no_rebuild_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data)
+#endif
 
-void on_no_rebuild_radiobutton_toggled(GtkToggleButton *togglebutton,
-                                       gpointer         user_data)
 {
-    if (!initializing_prefs)
+    if ( my_gtk_check_button_get_active(GTK_WIDGET(checkbutton)) )   // noBuild is being selected
     {
-        if (settings.noBuild)
-            // noBuild is being de-selected
-            settings.noBuild = FALSE;
-        else
+        if ( !settings.noBuild )  // Turn ON noBuild
         {
-            // noBuild is being selected
             settings.noBuild = TRUE;
-            settings.updateAll = FALSE;
+            APP_CONFIG_set_boolean("noBuild", settings.noBuild);    // Update the preferences file
         }
-
-        // Update the preferences file
-        APP_CONFIG_set_boolean("noBuild", settings.noBuild);
-    }
-}
-
-
-void on_rebuild_radiobutton_toggled(GtkToggleButton *togglebutton,
-                                    gpointer         user_data)
-{
-    if (!initializing_prefs)
-    {
-        if (settings.updateAll)
-            // Build-if-needed is being selected
-            settings.updateAll = FALSE;
-
-        // Update the preferences file
-        APP_CONFIG_set_boolean("updateAll", settings.updateAll);
-    }
-}
-
-
-void on_force_rebuild_radiobutton_toggled(GtkToggleButton *togglebutton,
-                                          gpointer         user_data)
-{
-    if (!initializing_prefs)
-    {
-        if (settings.updateAll)
-            // Force rebuild is being de-selected
-            settings.updateAll = FALSE;
-        else
+        if ( settings.updateAll)
         {
-            // Force rebuild is being selected
-            settings.updateAll = TRUE;
-
-            settings.noBuild = FALSE;
+            settings.updateAll = FALSE;
+            APP_CONFIG_set_boolean("updateAll", settings.updateAll);// Update the preferences file
         }
-
-        // Update the preferences file
-        APP_CONFIG_set_boolean("updateAll", settings.updateAll);
     }
+    else    // noBuild is being de-selected
+    {
+        if ( settings.noBuild )
+        {
+            settings.noBuild = FALSE;
+            APP_CONFIG_set_boolean("noBuild", settings.noBuild);    // Update the preferences file
+        }
+    }
+    //printf("on_no_rebiuld: force=%s, nobuild=%s\n", settings.updateAll ? "T" : "F", settings.noBuild ? "T" : "F");
+}
+
+
+#ifndef GTK4_BUILD
+void on_rebuild_radiobutton_toggled(GtkToggleButton *checkbutton, gpointer user_data)
+#else
+void on_rebuild_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data)
+#endif
+{
+    if ( my_gtk_check_button_get_active(GTK_WIDGET(checkbutton)) )   // Build-if-needed is being selected
+    {
+        if ( settings.updateAll )
+        {
+            settings.updateAll = FALSE;
+            APP_CONFIG_set_boolean("updateAll", settings.updateAll);    // Update the preferences file
+        }
+        if ( settings.noBuild )
+        {
+            settings.noBuild = FALSE;
+            APP_CONFIG_set_boolean("noBuild", settings.noBuild);    // Update the preferences file
+        }
+    }
+ // else
+ //     Nothing to do when rebuild_checkbutton goes off
+    //printf("on_rebuild: force=%s, nobuild=%s\n", settings.updateAll ? "T" : "F", settings.noBuild ? "T" : "F");
+}
+
+
+#ifndef GTK4_BUILD
+void on_force_rebuild_radiobutton_toggled(GtkToggleButton *checkbutton, gpointer user_data)
+#else
+void on_force_rebuild_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data)
+#endif
+{
+    if ( my_gtk_check_button_get_active(GTK_WIDGET(checkbutton)) )   // Force rebuild is being selected
+    {
+        if ( !settings.updateAll )
+        {
+            settings.updateAll = TRUE;
+            APP_CONFIG_set_boolean("updateAll", settings.updateAll);    // Update the preferences file
+        }
+        if ( settings.noBuild )
+        {
+            settings.noBuild = FALSE;
+            APP_CONFIG_set_boolean("noBuild", settings.noBuild);    // Update the preferences file
+        }
+    }
+    else    // force-rebuild is being de-selected
+    {
+        if (settings.updateAll)
+        {
+            settings.updateAll = FALSE;
+            APP_CONFIG_set_boolean("updateAll", settings.updateAll);// Update the preferences file
+        }
+    }
+    //printf("on_force: force=%s, nobuild=%s\n", settings.updateAll ? "T" : "F", settings.noBuild ? "T" : "F");
 }
 
 

@@ -4,6 +4,6 @@
 <cambalache-project version="0.96.0" target_tk="gtk-4.0">
   <ui filename="gscope4.ui" sha256="2a199914011a9559e4835f6451e5bbcbc7b1e3083298c83d63c762aaa06465da"/>
   <ui filename="splash.ui" sha256="5efdf8235f0f02a99e1e0c65218a1f6d6a16623473108390ea945fad1919cec8"/>
-  <ui filename="preferences.ui" sha256="ec49f902e22e0bb391d7058d9e808f25aa3a6fa1ca84185567b43e733284b510"/>
+  <ui filename="preferences.ui" sha256="903d4a27debcbc774e449f42b199da76e35293d067506a108c981e7c3355b27e"/>
   <ui filename="quit.ui" sha256="25e9ee52f20b5533dffa508856b2b867b188a80606c37dde0b991141969a672c"/>
 </cambalache-project>
