@@ -1558,6 +1558,7 @@ void on_session_statistics_activate(GSimpleAction *action, GVariant *parameter, 
             while (entry != NULL)
             {
                 entry->col_label = gtk_label_new(entry->suffix);
+                gtk_widget_show(entry->col_label);
                 
                 my_gtk_box_pack_start(GTK_BOX(header_hbox), entry->col_label, FALSE, TRUE, 0);
                 
@@ -1576,6 +1577,7 @@ void on_session_statistics_activate(GSimpleAction *action, GVariant *parameter, 
                 
                 sprintf(tmp_str, "<span color=\"blue\">%d</span>", entry->fcount);
                 entry->col_value = gtk_label_new(tmp_str);
+                gtk_widget_show(entry->col_value);
                 
                 my_gtk_box_pack_start(GTK_BOX(value_hbox), entry->col_value, FALSE, FALSE, 0);
                 gtk_widget_set_size_request(entry->col_value, 60, -1);
@@ -1620,6 +1622,7 @@ void on_session_statistics_activate(GSimpleAction *action, GVariant *parameter, 
         while (entry != NULL)
         {
             entry->col_label = gtk_label_new(entry->suffix);
+            gtk_widget_show(entry->col_label);
             my_gtk_box_pack_start(GTK_BOX(header_hbox), entry->col_label, FALSE, TRUE, 0);
             gtk_widget_set_size_request(entry->col_label, 60, -1);
 
@@ -1637,6 +1640,7 @@ void on_session_statistics_activate(GSimpleAction *action, GVariant *parameter, 
 
             sprintf(tmp_str, "<span color=\"blue\">%d</span>", entry->fcount);
             entry->col_value = gtk_label_new(tmp_str);
+            gtk_widget_show(entry->col_value);
             my_gtk_box_pack_start(GTK_BOX(value_hbox), entry->col_value, FALSE, FALSE, 0);
             gtk_widget_set_size_request(entry->col_value, 60, -1);
             gtk_label_set_use_markup(GTK_LABEL(entry->col_value), TRUE);
