@@ -4,7 +4,7 @@
             "name": "linux-gcc-x64",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/usr/include/gtk-4.0/**",
+                "/usr/include/gtk-3.0/**",
                 "/usr/include/glib-2.0/**",
                 "/usr/lib/x86_64-linux-gnu/glib-2.0/include/**",
                 "/usr/include/cairo",
@@ -12,12 +12,13 @@
                 "/usr/include/harfbuzz",
                 "/usr/include/gdk-pixbuf-2.0",
                 "/usr/include/graphene-1.0",
-                "/usr/lib/x86_64-linux-gnu/graphene-1.0/include"
+                "/usr/lib/x86_64-linux-gnu/graphene-1.0/include",
+                "/usr/include/gtk-3.0"
             ],
             "defines": [
                 "GTK3_BUILD",
                 "PACKAGE_DATA_DIR=\"/usr/local/share\"",
-                "VERSION=\"4.22\"",
+                "VERSION=\"3.22\"",
                 "PACKAGE=\"gscope\""
             ],
             "compilerPath": "/usr/bin/gcc",
