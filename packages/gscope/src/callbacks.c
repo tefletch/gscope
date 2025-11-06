@@ -1290,6 +1290,17 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
         }
 
 
+        #ifndef GTK4_BUILD
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "recursive_search_mode_checkbutton")),
+                                settings.recurseDir);
+        #else
+        gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "recursive_search_mode_checkbutton")),
+                                settings.recurseDir);
+        #endif
+
+
+
+
         #if 0
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "truncate_symbols_checkbutton")),
                                      settings.truncateSymbols);
@@ -1368,9 +1379,6 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
         gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "include_entry")),  MAX_GTK_ENTRY_SIZE - 1);
         my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "include_entry")),  settings.includeDir);
 
-
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "recursive_search_mode_checkbutton")),
-                                     settings.recurseDir);
 
 
         /*** Initialize the preference dialog settings (Tab #4 "File Names") ***/
