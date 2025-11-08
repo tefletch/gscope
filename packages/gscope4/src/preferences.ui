@@ -311,6 +311,7 @@ and View</property>
                         <property name="label">Recursive Search Mode</property>
                         <property name="margin-bottom">4</property>
                         <property name="margin-start">16</property>
+                        <signal name="toggled" handler="on_recursive_search_mode_checkbutton_toggled"/>
                       </object>
                     </child>
                   </object>
@@ -339,6 +340,8 @@ and View</property>
                         <property name="margin-bottom">12</property>
                         <property name="margin-end">4</property>
                         <property name="margin-start">28</property>
+                        <property name="tooltip-markup">A delimited list of source file suffixes (e.g.  :c:h:cpp:hpp: ). The leading and trailing delimiters are required.  The delimiter can be any character, that is not part of the character set utilized by valid suffixes.</property>
+                        <signal name="changed" handler="on_suffix_entry_changed"/>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_suffix_entry_focus_out_event</property>
@@ -363,6 +366,7 @@ and View</property>
                         <property name="hexpand">True</property>
                         <property name="margin-end">4</property>
                         <property name="margin-start">9</property>
+                        <signal name="changed" handler="on_typeless_entry_changed"/>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_typeless_entry_focus_out_event</property>
@@ -396,6 +400,7 @@ and View</property>
                         <property name="hexpand">True</property>
                         <property name="margin-bottom">12</property>
                         <property name="margin-start">8</property>
+                        <signal name="changed" handler="on_source_entry_changed"/>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_source_entry_focus_out_event</property>
@@ -434,6 +439,7 @@ and View</property>
                         <property name="margin-bottom">12</property>
                         <property name="margin-end">4</property>
                         <property name="margin-start">1</property>
+                        <signal name="changed" handler="on_include_entry_changed"/>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_include_entry_focus_out_event</property>
@@ -459,6 +465,7 @@ and View</property>
                         <property name="hexpand">True</property>
                         <property name="margin-end">4</property>
                         <property name="margin-start">14</property>
+                        <signal name="changed" handler="on_ignored_entry_changed"/>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_ignored_entry_focus_out_event</property>
@@ -508,6 +515,7 @@ and View</property>
                       <object class="GtkEntry" id="name_entry">
                         <property name="hexpand">True</property>
                         <property name="margin-end">8</property>
+                        <signal name="changed" handler="on_name_entry_changed"/>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_name_entry_focus_out_event</property>
@@ -568,6 +576,7 @@ and View</property>
                         <property name="hexpand">True</property>
                         <property name="margin-end">8</property>
                         <property name="placeholder-text">&lt;full path&gt; cscope_db.out</property>
+                        <signal name="changed" handler="on_cref_entry_changed"/>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_cref_entry_focus_out_event</property>
@@ -611,6 +620,7 @@ and View</property>
                         <property name="hexpand">True</property>
                         <property name="margin-end">8</property>
                         <property name="placeholder-text">&lt;full-path&gt;gscope_srch.log</property>
+                        <signal name="changed" handler="on_search_log_entry_changed"/>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_search_log_entry_focus_out_event</property>

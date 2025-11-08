@@ -522,6 +522,7 @@ static SrcFile_stats* create_stats_list(SrcFile_stats **si_stats)
 }
 
 
+
 //=============================================================================================
 //          Public Callback Functions
 //=============================================================================================
@@ -537,6 +538,8 @@ GtkWidget *CALLBACKS_get_widget(gchar *widget_name)
 {
     if ( strcmp(widget_name, "gscope_main") == 0 )
         return(gscope_main);
+    if ( strcmp(widget_name, "gscope_splash") == 0)
+        return(lookup_widget("gscope_splash", widget_name));
     if ( strcmp(widget_name, "progressbar1") == 0 )
         return(lookup_widget(gscope_main, widget_name));
 
@@ -1298,6 +1301,17 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
                                 settings.recurseDir);
         #endif
 
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "suffix_entry")),   MAX_GTK_ENTRY_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "suffix_entry")),   settings.suffixList);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "typeless_entry")), MAX_GTK_ENTRY_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "typeless_entry")), settings.typelessList);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "ignored_entry")),  MAX_GTK_ENTRY_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "ignored_entry")),  settings.ignoredList);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "source_entry")),   MAX_GTK_ENTRY_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "source_entry")),   settings.srcDir);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "include_entry")),  MAX_GTK_ENTRY_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "include_entry")),  settings.includeDir);
+
 
 
 
@@ -1368,17 +1382,6 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
 
         /*** Initialize the preference dialog settings (Tab #3 "Source File Search") ***/
         /*******************************************************************************/
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "suffix_entry")),   MAX_GTK_ENTRY_SIZE - 1);
-        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "suffix_entry")),   settings.suffixList);
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "typeless_entry")), MAX_GTK_ENTRY_SIZE - 1);
-        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "typeless_entry")), settings.typelessList);
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "ignored_entry")),  MAX_GTK_ENTRY_SIZE - 1);
-        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "ignored_entry")),  settings.ignoredList);
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "source_entry")),   MAX_GTK_ENTRY_SIZE - 1);
-        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "source_entry")),   settings.srcDir);
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "include_entry")),  MAX_GTK_ENTRY_SIZE - 1);
-        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "include_entry")),  settings.includeDir);
-
 
 
         /*** Initialize the preference dialog settings (Tab #4 "File Names") ***/
@@ -2515,7 +2518,7 @@ void on_suffix_entry_focus_out_event(GtkEventControllerFocus *controller, gpoint
                 // Update the application setting
                 strcpy(settings.suffixList, suffix_list);
             }
-            else
+            else    // Invalid list syntax, revert to original (valid-by-default) setting.
             {
                 my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "suffix_entry")), settings.suffixList);
             }
@@ -3866,7 +3869,7 @@ void on_recursive_search_mode_checkbutton_toggled(GtkCheckButton *checkbutton, g
     if ( my_gtk_check_button_get_active(GTK_WIDGET(checkbutton)) != settings.recurseDir )
     {
         settings.recurseDir = !(settings.recurseDir);
-        APP_CONFIG_set_boolean("ignoreCase", settings.recurseDir);  // Update the preferences file
+        APP_CONFIG_set_boolean("recurseDir", settings.recurseDir);  // Update the preferences file
     }
 }
 
