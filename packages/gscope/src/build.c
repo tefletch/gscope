@@ -511,11 +511,18 @@ static void initialize_for_new_cref(GtkWidget *progress_bar)
     if (nsrcfiles == 0)
     {
         if ( !settings.refOnly )
-            DISPLAY_message_dialog(GTK_WINDOW(CALLBACKS_get_widget("gscope_main")), GTK_MESSAGE_ERROR, "<span weight=\"bold\"> No source files found</span>\nGscope will exit.", TRUE);
+        {
+            #ifndef GTK4_BUILD
+            DISPLAY_message_dialog(GTK_WINDOW(CALLBACKS_get_widget("gscope_splash")), GTK_MESSAGE_ERROR, "<span weight=\"bold\"> No source files found</span>", TRUE);
+            #else
+            DISPLAY_message_dialog(GTK_WINDOW(CALLBACKS_get_widget("gscope_main")), GTK_MESSAGE_ERROR, "<span weight=\"bold\"> No source files found</span>", TRUE);
+            #endif
+            fprintf(stderr,"\nNo source files found.\n");
+        }
         else
-            fprintf(stderr,"No source files found. Gscope will exit.\n");
+            fprintf(stderr,"\nNo source files found.\n");
 
-        exit(EXIT_FAILURE);
+        //exit(EXIT_FAILURE);
     }
 
     /* initialize the C keyword table */
