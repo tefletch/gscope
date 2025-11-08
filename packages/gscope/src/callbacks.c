@@ -590,22 +590,19 @@ void CALLBACKS_init(GtkWidget *main)
  
 #endif
 
-// Reconcile widget states with startup configuration settings
-//============================================================
+    // Reconcile widget states with startup configuration settings
+    //============================================================
 
-#ifndef GTK4_BUILD
-gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(quit_confirm_dialog),
-                            "confirm_exit_checkbutton")), settings.exitConfirm);
-#else
-if ( gtk_check_button_get_active(GTK_CHECK_BUTTON(my_lookup_widget("confirm_exit_checkbutton")))!= settings.exitConfirm )
-{
-    printf("%s: Synchronize confirm_exit_checkbutton to settings.exitConfirm = %s\n", __func__, settings.exitConfirm ? "TRUE" : "FALSE");
-    gtk_check_button_set_active(GTK_CHECK_BUTTON(my_lookup_widget("confirm_exit_checkbutton")), settings.exitConfirm);
-}
-#endif
-
-
-
+    #ifndef GTK4_BUILD
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(quit_confirm_dialog),
+                                "confirm_exit_checkbutton")), settings.exitConfirm);
+    #else
+    if ( gtk_check_button_get_active(GTK_CHECK_BUTTON(my_lookup_widget("confirm_exit_checkbutton")))!= settings.exitConfirm )
+    {
+        printf("%s: Synchronize confirm_exit_checkbutton to settings.exitConfirm = %s\n", __func__, settings.exitConfirm ? "TRUE" : "FALSE");
+        gtk_check_button_set_active(GTK_CHECK_BUTTON(my_lookup_widget("confirm_exit_checkbutton")), settings.exitConfirm);
+    }
+    #endif
 }
 
 
@@ -1311,6 +1308,12 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
         my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "source_entry")),   settings.srcDir);
         gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "include_entry")),  MAX_GTK_ENTRY_SIZE - 1);
         my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "include_entry")),  settings.includeDir);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "name_entry")),       MAX_STRING_ARG_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "name_entry")),       settings.nameFile);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "cref_entry")),       MAX_STRING_ARG_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "cref_entry")),       settings.refFile);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_entry")), MAX_STRING_ARG_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_entry")), settings.searchLogFile);
 
 
 
@@ -1388,12 +1391,6 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
         /***********************************************************************/
 
 
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "name_entry")),       MAX_STRING_ARG_SIZE - 1);
-        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "name_entry")),       settings.nameFile);
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "cref_entry")),       MAX_STRING_ARG_SIZE - 1);
-        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "cref_entry")),       settings.refFile);
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_entry")), MAX_STRING_ARG_SIZE - 1);
-        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_entry")), settings.searchLogFile);
 
         button1 = lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_button");
 
