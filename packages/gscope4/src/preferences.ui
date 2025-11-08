@@ -366,6 +366,7 @@ and View</property>
                         <property name="hexpand">True</property>
                         <property name="margin-end">4</property>
                         <property name="margin-start">9</property>
+                        <property name="tooltip-markup">A delimited list of source files that do not have a suffix  (i.e.   :Makefile: ).  The leading and trailing delimiters are required.  The delimiter can be any character, that is not part of the character set utilized by the list of non-suffixed files.</property>
                         <signal name="changed" handler="on_typeless_entry_changed"/>
                         <child>
                           <object class="GtkEventControllerFocus">
@@ -400,6 +401,7 @@ and View</property>
                         <property name="hexpand">True</property>
                         <property name="margin-bottom">12</property>
                         <property name="margin-start">8</property>
+                        <property name="tooltip-markup">Search this directory [tree] for source files.</property>
                         <signal name="changed" handler="on_source_entry_changed"/>
                         <child>
                           <object class="GtkEventControllerFocus">
@@ -439,6 +441,7 @@ and View</property>
                         <property name="margin-bottom">12</property>
                         <property name="margin-end">4</property>
                         <property name="margin-start">1</property>
+                        <property name="tooltip-markup">A delimited list of Include File Directories [eg :/usr/include:/usr/include/sys:] to be searched when looking for include files referenced by any application source file.  For embedded applications, the default search path (NULL) is ususally sufficient.  For host-based applications, you will probably want to add /usr/include to the search path.  The leading and trailing delimiters are required.  The delimiter can be any character that is not part of the character set used to specify a directory path.</property>
                         <signal name="changed" handler="on_include_entry_changed"/>
                         <child>
                           <object class="GtkEventControllerFocus">
@@ -465,6 +468,7 @@ and View</property>
                         <property name="hexpand">True</property>
                         <property name="margin-end">4</property>
                         <property name="margin-start">14</property>
+                        <property name="tooltip-markup">A delimited list of directory names that should be ignored by the recursive search function.  The leading and trailing delimiters are required.  The delimiter can be any character, that is not part of the character set utilized by the list of ignored directories.</property>
                         <signal name="changed" handler="on_ignored_entry_changed"/>
                         <child>
                           <object class="GtkEventControllerFocus">
@@ -515,6 +519,7 @@ and View</property>
                       <object class="GtkEntry" id="name_entry">
                         <property name="hexpand">True</property>
                         <property name="margin-end">8</property>
+                        <property name="tooltip-markup">A text file that contains a newline delimited list of source files to be indexed</property>
                         <signal name="changed" handler="on_name_entry_changed"/>
                         <child>
                           <object class="GtkEventControllerFocus">
@@ -569,6 +574,7 @@ and View</property>
                         <property name="label">Cross Reference File</property>
                         <property name="margin-end">36</property>
                         <property name="margin-start">4</property>
+                        <property name="tooltip-markup">The cross-reference (index) database filename. Sometimes it is useful to save it in another location besides the (default) current working directory.</property>
                       </object>
                     </child>
                     <child>
@@ -613,6 +619,7 @@ and View</property>
                         <property name="label">Search Log</property>
                         <property name="margin-end">10</property>
                         <property name="margin-start">4</property>
+                        <property name="tooltip-markup">A trace listing of all the directories traversed by a recursive source-file-search</property>
                       </object>
                     </child>
                     <child>

@@ -1796,7 +1796,7 @@ gchar *template =
 "\n# Show files found in include path on stdout (when session statistics are generated)"
 "\nshowIncludes    = false"
 "\n"
-"\n# Trace the directories searced by a recursive source-file-search"
+"\n# Trace the directories searched by a recursive source-file-search"
 "\nsearchLogFile   = gscope_srch.log"
 "\n"
 "\n# Only files with the following suffixes are considered to be 'source' files."
