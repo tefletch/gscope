@@ -783,23 +783,40 @@ static void _make_src_file_list()
     {
         if ((names = fopen(settings.nameFile, "r")) == NULL)
         {
-            my_cannotopen(namefile);
-            exit(EXIT_FAILURE);
-        }
-        /* get the names in the file */
-        while (fscanf(names, "%s", path) == 1)      // Revisit:  Possible buffer overrun using fscanf()
-        {
-            compress_path(path);    // path may be modified.
-
-            if (infilelist(path) == FALSE)
+            if ( settings.refOnly )
             {
-                if ( is_regular_file(path) )    /* if file is found */
-                    DIR_addsrcfile(path);
-                else
-                    fprintf(stderr, "Cannot find file %s\n", path);
+                my_cannotopen(namefile);
+                exit(EXIT_FAILURE);
+            }
+            else
+            {
+                char *message;
+                asprintf(&message, "Cannot open <span weight=\"bold\">Source Files Name List</span> file: <span weight=\"bold\" foreground=\"blue\">%s</span>", settings.nameFile);
+                #ifndef GTK4_BUILD
+                DISPLAY_message_dialog(GTK_WINDOW(CALLBACKS_get_widget("gscope_splash")), GTK_MESSAGE_ERROR, message, TRUE);
+                #else
+                DISPLAY_message_dialog(GTK_WINDOW(CALLBACKS_get_widget("gscope_main")), GTK_MESSAGE_ERROR, message, TRUE);
+                #endif
+                free(message);
             }
         }
-        (void) fclose(names);
+        else
+        {
+            /* get the names in the file */
+            while (fscanf(names, "%s", path) == 1)      // Revisit:  Possible buffer overrun using fscanf()
+            {
+                compress_path(path);    // path may be modified.
+
+                if (infilelist(path) == FALSE)
+                {
+                    if ( is_regular_file(path) )    /* if file is found */
+                        DIR_addsrcfile(path);
+                    else
+                        fprintf(stderr, "Cannot find file %s\n", path);
+                }
+            }
+            (void) fclose(names);
+        }
         return;
     }
 

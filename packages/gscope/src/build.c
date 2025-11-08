@@ -515,14 +515,12 @@ static void initialize_for_new_cref(GtkWidget *progress_bar)
             #ifndef GTK4_BUILD
             DISPLAY_message_dialog(GTK_WINDOW(CALLBACKS_get_widget("gscope_splash")), GTK_MESSAGE_ERROR, "<span weight=\"bold\"> No source files found</span>", TRUE);
             #else
-            DISPLAY_message_dialog(GTK_WINDOW(CALLBACKS_get_widget("gscope_main")), GTK_MESSAGE_ERROR, "<span weight=\"bold\"> No source files found</span>", TRUE);
+            DISPLAY_message_dialog(GTK_WINDOW(CALLBACKS_get_widget("gscope_main")), GTK_MESSAGE_ERROR, "<span weight=\"bold\"> No source files found</span>", FALSE);
             #endif
             fprintf(stderr,"\nNo source files found.\n");
         }
         else
             fprintf(stderr,"\nNo source files found.\n");
-
-        //exit(EXIT_FAILURE);
     }
 
     /* initialize the C keyword table */
