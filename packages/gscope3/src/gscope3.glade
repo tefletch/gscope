@@ -370,7 +370,7 @@
                                       </object>
                                     </child>
                                     <child>
-                                      <object class="GtkSeparatorMenuItem" id="imagemenuitem7">
+                                      <object class="GtkSeparatorMenuItem">
                                         <property name="visible">True</property>
                                         <property name="can-focus">False</property>
                                       </object>
