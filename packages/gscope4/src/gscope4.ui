@@ -374,6 +374,7 @@
       </item>
       <item>
         <attribute name="action">app.list_autogen_errors</attribute>
+        <attribute name="icon">dialog-warning</attribute>
         <attribute name="label">Autogen Errors</attribute>
       </item>
     </submenu>

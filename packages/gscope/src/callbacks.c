@@ -412,7 +412,6 @@ static SrcFile_stats* create_stats_list(SrcFile_stats **si_stats)
         // Now that the list is created, collect the per-suffix statistics
         for (f = 0; f < nsrcfiles; f++)
         {
-
             if ((include_file_path_exists) && (DIR_file_on_include_search_path(DIR_src_files[f])))
             {
                 /* Count this file in the system include source stats */
@@ -1315,15 +1314,67 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
         gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_entry")), MAX_STRING_ARG_SIZE - 1);
         my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_entry")), settings.searchLogFile);
 
+        // Initialize Search log settings
+        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_label"), settings.searchLogging);
+        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_entry"), settings.searchLogging);
+        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_browse_button"), settings.searchLogging);
+        if (settings.searchLogging)
+            gtk_button_set_label(GTK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_button")), "Disable");
+        else
+            gtk_button_set_label(GTK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_button")), "Enable");
+
+        // "Show menu icons" supported from GTK 2.15 through GTK3.  Not supported on GTK4 (no more GtkImageMenuItem 
+        // Use a GtkMenuItem containing a GtkBox with a GtkAccelLabel and a GtkImage instead).
+        if ( (gtk_get_major_version() > 2 && gtk_get_major_version() < 4) || ((gtk_get_major_version() == 2) && (gtk_get_minor_version() > 15)))
+        {
+            #ifndef GTK4_BUILD
+            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "showicons_checkbutton")), settings.menuIcons);
+            #else
+            gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "showicons_checkbutton")), settings.menuIcons);
+            #endif
+        }
+        else
+        {
+            // if the current gtk library does not provide gtk_image_menu_item_set_always_show_image()
+            // We cannot support the "Show Menu Icons" functionality, so disable that preference item.
+            gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "showicons_checkbutton"), FALSE);
+            #ifndef GTK4_BUILD
+            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "showicons_checkbutton")), FALSE);
+            #else
+            gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "showicons_checkbutton")), FALSE);
+            #endif
+        }
+        
+        #ifndef GTK4_BUILD
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "single_click_checkbutton")), settings.singleClick);
+        #else
+        gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "single_click_checkbutton")), settings.singleClick);
+        #endif
+
+        #ifndef GTK4_BUILD
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "show_includes_checkbutton")), settings.showIncludes);
+        #else
+        gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "show_includes_checkbutton")), settings.showIncludes);
+        #endif
+
+        #ifndef GTK4_BUILD
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "compress_symbols_checkbutton")), !settings.compressDisable);
+        #else
+        gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "compress_symbols_checkbutton")), !settings.compressDisable);
+        #endif
+
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "terminal_app_entry")), MAX_STRING_ARG_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "terminal_app_entry")), settings.terminalApp);
+        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "file_manager_app_entry")), MAX_STRING_ARG_SIZE - 1);
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "file_manager_app_entry")), settings.fileManager);
+
+ 
 
 
 
         #if 0
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "truncate_symbols_checkbutton")),
                                      settings.truncateSymbols);
-
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "compress_symbols_checkbutton")),
-                                     !settings.compressDisable);
 
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_enable_checkbutton1")),
                                      settings.autoGenEnable);
@@ -1392,47 +1443,11 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
 
 
 
-        button1 = lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_button");
-
-        // Initialize Search log settings
-        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_label"), settings.searchLogging);
-        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_entry"), settings.searchLogging);
-        gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_browse_button"), settings.searchLogging);
-
-        if (settings.searchLogging)
-            gtk_button_set_label(GTK_BUTTON(button1), "Disable");
-        else
-            gtk_button_set_label(GTK_BUTTON(button1), "Enable");
-
 
         /*** Initialize the preference dialog settings (Tab #5 "General") ***/
         /********************************************************************/
 
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "terminal_app_entry")), MAX_STRING_ARG_SIZE - 1);
-        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "terminal_app_entry")), settings.terminalApp);
-        gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "file_manager_app_entry")), MAX_STRING_ARG_SIZE - 1);
-        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "file_manager_app_entry")), settings.fileManager);
 
- 
-        if ( gtk_get_major_version() > 2 || ((gtk_get_major_version() == 2) && (gtk_get_minor_version() > 15)))
-        {
-            // if the current gtk library does not provide gtk_image_menu_item_set_always_show_image()
-            // We cannot support the "Show Menu Icons" functionality, so disable that preference item.
-            gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "showicons_checkbutton"), FALSE);
-            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "showicons_checkbutton")), FALSE);
-        }
-        else
-        {
-            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "showicons_checkbutton")),
-                                         settings.menuIcons);
-        }
-
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "single_click_checkbutton")),
-                                     settings.singleClick);
-
-
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "show_includes_checkbutton")),
-                                     settings.showIncludes);
 
         gtk_window_set_transient_for(GTK_WINDOW(prefs_dialog), GTK_WINDOW(gscope_main));
 
@@ -3579,14 +3594,9 @@ void on_search_log_button_clicked(GtkButton       *button,
     APP_CONFIG_set_boolean("searchLogging", settings.searchLogging);
 
     if (settings.searchLogging)
-    {
         gtk_button_set_label(GTK_BUTTON(lookup_widget(GTK_WIDGET(gscope_preferences), "search_log_button")), "Disable");
-    }
     else
-    {
         gtk_button_set_label(GTK_BUTTON(lookup_widget(GTK_WIDGET(gscope_preferences), "search_log_button")), "Enable");
-    }
-
 }
 
 
@@ -3817,7 +3827,7 @@ void on_compress_symbols_checkbutton_toggled(GtkCheckButton *checkbutton, gpoint
     if ( my_gtk_check_button_get_active(GTK_WIDGET(checkbutton)) != settings.compressDisable )
     {
         settings.compressDisable = !(settings.compressDisable);
-        APP_CONFIG_set_boolean("compressDisable", settings.compressDisable);    // Update the preferences file
+        APP_CONFIG_set_boolean("compressDisable", !settings.compressDisable);    // Update the preferences file
     }
 }
 

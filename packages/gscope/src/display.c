@@ -197,14 +197,11 @@ void DISPLAY_init(GtkWidget *main)
     // ===== Initialize optional sensitivity Menu Items =====
     #ifndef GTK4_BUILD
     gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_main), "imagemenuitem20"), settings.autoGenEnable);
-
-    #ifndef GTK3_BUILD
+    #endif
+    
+    #if !defined(GTK3_BUILD) && !defined(GTK4_BUILD)
     // ======== Initialize ImageMenuItem Icon Display Behavior ========
     DISPLAY_always_show_image(settings.menuIcons);
-    #endif
-
-    #else   // GTK4_BUILD
-    printf("GTK4: bypassing menu configuration (for now)\n");
     #endif
 }
 
@@ -611,7 +608,7 @@ void DISPLAY_progress(GtkWidget *bar, char *progress_msg, guint count, guint max
 
 void DISPLAY_always_show_image(gboolean always_show)
 {
-    #ifndef GTK4_BUILD
+    #if 0
     char item[40];
     int i;
 

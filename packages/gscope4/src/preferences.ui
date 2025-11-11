@@ -612,10 +612,11 @@ and View</property>
                         <property name="label">Enable</property>
                         <property name="margin-end">4</property>
                         <property name="tooltip-markup">Enable/Disable Source-File search logging</property>
+                        <signal name="clicked" handler="on_search_log_button_clicked"/>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkLabel">
+                      <object class="GtkLabel" id="search_log_label">
                         <property name="label">Search Log</property>
                         <property name="margin-end">10</property>
                         <property name="margin-start">4</property>
@@ -711,11 +712,13 @@ Reference</property>
                 <child>
                   <object class="GtkCheckButton" id="showicons_checkbutton">
                     <property name="label">Show Icons in Menus</property>
+                    <signal name="toggled" handler="on_showicons_checkbutton_toggled"/>
                   </object>
                 </child>
                 <child>
                   <object class="GtkCheckButton" id="single_click_checkbutton">
                     <property name="label">Single-click open</property>
+                    <signal name="toggled" handler="on_single_click_checkbutton_toggled"/>
                   </object>
                 </child>
                 <child>
@@ -739,11 +742,13 @@ Reference</property>
                 <child>
                   <object class="GtkCheckButton" id="show_includes_checkbutton">
                     <property name="label">List include files on stdout when "session Statistics" dialog is activated</property>
+                    <signal name="toggled" handler="on_show_includes_checkbutton_toggled"/>
                   </object>
                 </child>
                 <child>
                   <object class="GtkCheckButton" id="compress_symbols_checkbutton">
                     <property name="label">Compress Symbol Table  (Normally Enabled, de-select for debugging)</property>
+                    <signal name="toggled" handler="on_compress_symbols_checkbutton_toggled"/>
                   </object>
                 </child>
                 <child>
@@ -784,6 +789,7 @@ Reference</property>
                           <object class="GtkEntry" id="terminal_app_entry">
                             <property name="hexpand">True</property>
                             <property name="margin-end">4</property>
+                            <signal name="changed" handler="on_terminal_app_entry_changed"/>
                             <child>
                               <object class="GtkEventControllerFocus">
                                 <property name="name">on_terminal_app_entry_focus_out_event</property>
