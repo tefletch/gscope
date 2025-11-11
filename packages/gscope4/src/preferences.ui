@@ -883,7 +883,7 @@ Settings</property>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkLabel">
+                  <object class="GtkLabel" id="autogen_cache_location_label">
                     <property name="halign">start</property>
                     <property name="label">Local cache storage location</property>
                     <property name="margin-bottom">4</property>
@@ -896,6 +896,7 @@ Settings</property>
                     <property name="margin-start">8</property>
                     <property name="placeholder-text">/tmp</property>
                     <property name="primary-icon-name">folder</property>
+                    <signal name="changed" handler="on_autogen_cache_path_entry_changed"/>
                     <child>
                       <object class="GtkEventControllerFocus">
                         <property name="name">on_autogen_cache_path_entry_focus_out_event</property>
@@ -914,9 +915,25 @@ Settings</property>
                     </child>
                     <child>
                       <object class="GtkSpinButton" id="autogen_cache_threshold_spinbutton">
+                        <property name="activates-default">False</property>
+                        <property name="adjustment">
+                          <object class="GtkAdjustment">
+                            <property name="lower">1.0</property>
+                            <property name="page-increment">1.0</property>
+                            <property name="page-size">1.0</property>
+                            <property name="step-increment">1.0</property>
+                            <property name="upper">9.0</property>
+                            <property name="value">1.0</property>
+                          </object>
+                        </property>
+                        <property name="climb-rate">1.0</property>
+                        <property name="digits">0</property>
                         <property name="margin-end">8</property>
                         <property name="margin-start">8</property>
+                        <property name="numeric">True</property>
                         <property name="value">1.0</property>
+                        <property name="wrap">False</property>
+                        <signal name="changed" handler="on_autogen_cache_threshold_spinbutton_changed"/>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <signal name="leave" handler="on_autogen_cache_threshold_spinbutton_focus_out_event"/>
@@ -952,7 +969,7 @@ Settings</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkLabel">
+                      <object class="GtkLabel" id="autogen_suffix_label">
                         <property name="label">&lt;span weight="bold"&gt;Suffix&lt;/span&gt;</property>
                         <property name="use-markup">True</property>
                         <layout>
@@ -964,7 +981,7 @@ Settings</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkLabel">
+                      <object class="GtkLabel" id="autogen_cmd_label">
                         <property name="label">&lt;span weight="bold"&gt;Command&lt;/span&gt;</property>
                         <property name="use-markup">True</property>
                         <layout>
@@ -976,7 +993,7 @@ Settings</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkLabel">
+                      <object class="GtkLabel" id="autogen_id_label">
                         <property name="label">&lt;span weight="bold"&gt;GenId&lt;/span&gt;</property>
                         <property name="use-markup">True</property>
                         <layout>
@@ -988,7 +1005,7 @@ Settings</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkLabel">
+                      <object class="GtkLabel" id="autogen_root_label">
                         <property name="label">&lt;span weight="bold"&gt;Search Root Override&lt;/span&gt;</property>
                         <property name="use-markup">True</property>
                         <layout>
@@ -1003,6 +1020,7 @@ Settings</property>
                       <object class="GtkCheckButton" id="autogen_enable_checkbutton1">
                         <property name="halign">start</property>
                         <property name="label">Enable</property>
+                        <signal name="toggled" handler="on_autogen_enable_checkbutton1_toggled"/>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">1</property>
@@ -1073,14 +1091,17 @@ Settings</property>
                 <child>
                   <object class="GtkBox">
                     <property name="margin-top">20</property>
+                    <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkLabel">
+                      <object class="GtkLabel" id="autogen_active_cache_path_label">
                         <property name="label">Generated filename format: </property>
+                        <property name="xalign">0.0</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkLabel" id="autogen_generated_filename_label">
                         <property name="label"> </property>
+                        <property name="xalign">0.0</property>
                       </object>
                     </child>
                   </object>

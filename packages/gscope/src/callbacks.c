@@ -1231,26 +1231,17 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
         }
 
 
-        /*** Initialize the preference dialog settings (Tab #5 "General") ***/
-        /********************************************************************/
-        #ifndef GTK4_BUILD
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog),
-                                    "confirmation_checkbutton")), settings.exitConfirm);
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(quit_confirm_dialog),
-                                    "confirm_exit_checkbutton")), settings.exitConfirm);
-        #else
-        gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog),
-                                    "confirmation_checkbutton")), settings.exitConfirm);
-        gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(quit_confirm_dialog),
-                                    "confirm_exit_checkbutton")), settings.exitConfirm);
-        #endif
-
-
         /***Initialize the preference dialog settings (tab #2 "Cross Reference") ***/
         /***************************************************************************/
         // Start-up build rules:  If conflicting info in config file, use the following
         // functional precedence:  Force Rebuild, Rebuild if Needed, No Rebuild
         
+        #ifndef GTK4_BUILD  // Truncate symbols function removed as of GTK4
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "truncate_symbols_checkbutton")),
+                                     settings.truncateSymbols);
+        #endif
+
+
         #if defined(GTK4_BUILD)
         // Create rebuild (radio) button group
         gtk_check_button_set_group(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "force_rebuild_checkbutton")),
@@ -1369,15 +1360,29 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
         my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "file_manager_app_entry")), settings.fileManager);
 
  
+        /*** Initialize the preference dialog settings (Tab #3 "General") ***/
+        /********************************************************************/
+        #ifndef GTK4_BUILD
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog),
+                                    "confirmation_checkbutton")), settings.exitConfirm);
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(quit_confirm_dialog),
+                                    "confirm_exit_checkbutton")), settings.exitConfirm);
+        #else
+        gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog),
+                                    "confirmation_checkbutton")), settings.exitConfirm);
+        gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(quit_confirm_dialog),
+                                    "confirm_exit_checkbutton")), settings.exitConfirm);
+        #endif
 
 
+        /*** Initialize the AutoGen settings (Tab #4 ) ***/
+        /*************************************************/
 
-        #if 0
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "truncate_symbols_checkbutton")),
-                                     settings.truncateSymbols);
-
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_enable_checkbutton1")),
-                                     settings.autoGenEnable);
+        #ifndef GTK4_BUILD
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_enable_checkbutton1")), settings.autoGenEnable);
+        #else
+        gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_enable_checkbutton1")), settings.autoGenEnable);
+        #endif
 
         gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_cache_path_entry")),  MAX_STRING_ARG_SIZE - 1);
         my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "autogen_cache_path_entry")),  settings.autoGenPath);
@@ -1433,24 +1438,8 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
         }
 
 
-
-        /*** Initialize the preference dialog settings (Tab #3 "Source File Search") ***/
-        /*******************************************************************************/
-
-
-        /*** Initialize the preference dialog settings (Tab #4 "File Names") ***/
-        /***********************************************************************/
-
-
-
-
-        /*** Initialize the preference dialog settings (Tab #5 "General") ***/
-        /********************************************************************/
-
-
-
+        #ifndef GTK4_BUILD      // As of GTK4, this dialog is instantiated and set trasient to "main" in main.c
         gtk_window_set_transient_for(GTK_WINDOW(prefs_dialog), GTK_WINDOW(gscope_main));
-
         #endif
 
         initializing_prefs = FALSE;
@@ -3936,28 +3925,44 @@ void on_autogen_enable_checkbutton1_toggled(GtkCheckButton *checkbutton, gpointe
     // These items will be "composite enabled across multiple enables" if/when more than one autogen meta-source type is supported.
     gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cache_path_entry"),     settings.autoGenEnable);
     gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cache_location_label"), settings.autoGenEnable);
+    #ifndef GTK4_BUILD
     gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_main),        "imagemenuitem20"),              settings.autoGenEnable);
+    #endif
 
     {
         gchar       active_path[PATHLEN * 2];
+        gchar       active_file[PATHLEN * 2];
 
         if (settings.autoGenEnable)
+        {
             snprintf(active_path, PATHLEN * 2, "My cache path: <span color=\"steelblue\">%s/%s/auto*_*</span>",
                      settings.autoGenPath,
                      getenv("USER"));
+            snprintf(active_file, PATHLEN * 2, "Generated filename format:  <span weight=\"bold\">foo</span>"
+                     "<span weight=\"bold\" color=\"darkred\">%s</span> ---> "
+                     "<b>foo</b><span weight=\"bold\" color=\"darkblue\">%s.c</span>  AND "
+                     "<b>foo</b><span weight=\"bold\" color=\"darkblue\">%s.h</span>",
+                     settings.autoGenSuffix,
+                     settings.autoGenId,
+                     settings.autoGenId
+                    );
+        }
         else
+        {
             snprintf(active_path, PATHLEN * 2, "My cache path:");
+            snprintf(active_file, PATHLEN * 2, "Generated file name format:");
+        }
 
         gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_active_cache_path_label")), active_path);
+        gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_generated_filename_label")), active_file);
     }
 }
 
 
 
 
-void on_save_results_file_chooser_dialog_response(GtkDialog       *dialog,
-                                                  gint             response_id,
-                                                  gpointer         user_data)
+
+void on_save_results_file_chooser_dialog_response(GtkDialog *dialog, gint response_id, gpointer user_data)
 {
     gchar *filename;
     gboolean save_success = FALSE;

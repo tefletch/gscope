@@ -375,7 +375,7 @@ char *DIR_get_path(get_method_e method)
             /***************************************/
             if (autogen_cache) free(autogen_cache);   // Avoid memory leak if we DIR_INITIALIZE more than once
 
-            my_asprintf(&autogen_cache, "%s%s", settings.autoGenPath, getenv("USER"));
+            my_asprintf(&autogen_cache, "%s/%s", settings.autoGenPath, getenv("USER"));
         break;
 
 
