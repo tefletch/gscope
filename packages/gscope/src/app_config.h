@@ -35,7 +35,7 @@
 #define srcDirDef          ""
 #define rcFileDef          ""
 #define fileEditorDef      "/bin/vi"
-#define autoGenPathDef     "/sirius/work"
+#define autoGenPathDef     "/tmp"
 #define autoGenSuffixDef   ".proto"
 #define autoGenCmdDef      "protoc-c_latest"
 #define autoGenRootDef     ""
