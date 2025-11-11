@@ -124,7 +124,7 @@ void my_add_widget(gpointer widget, gpointer user_data)
 {
     GType       my_type;
 
-    static GType nb1, nb2, nb3, nb4;
+    static GType nb1, nb2, nb3, nb4, nb5;
 
     if ( !hash_table )   // Need to initialize
     {
@@ -137,13 +137,29 @@ void my_add_widget(gpointer widget, gpointer user_data)
         nb2 = g_type_from_name("GtkTreeSelection");         // Glade-Gtk3
         nb3 = g_type_from_name("GMenu");                    // Cambalache-Gtk4
         nb4 = g_type_from_name("GtkEventControllerFocus");  // Cambalache-Gtk4
+        nb5 = g_type_from_name("GtkAdjustment");            // Cambalache-Gtk4
     }
 
     my_type = G_OBJECT_TYPE(widget);
 
-    if ( my_type == nb1 || my_type == nb2 || my_type == nb3 || my_type == nb4)     // Brute force Non-Buildable check
+    if ( my_type == nb1 || my_type == nb2 || my_type == nb3 || my_type == nb4 || my_type == nb5)     // Brute force Non-Buildable check
     {
         /* my_type is a Non-Buildable type : Do nothing */
+
+        #if 0
+        // Temporarily show what's going on
+        printf("Non-Buildable Object Ecncountered: ");
+        if (my_type == nb1)
+            printf ("GtkAccelGrouop\n");
+        if (my_type == nb2)
+            printf ("GtkAccelGroup\n");
+        if (my_type == nb3)
+            printf("GtkTreeSelection\n");
+        if (my_type == nb4)
+            printf("GtkEventControllerFocus\n");
+        if (my_type == nb5)
+            printf("GtkAdjustment\n");
+        #endif
     }
     else
     {
