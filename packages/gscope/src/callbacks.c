@@ -51,7 +51,6 @@ static SrcFile_stats* create_stats_list(SrcFile_stats **si_stats);
 
 
 //---------------- Private Globals ----------------------------------
-static gboolean  initializing_prefs = TRUE;
 static gboolean  editor_command_changed = FALSE;
 static gboolean  suffix_entry_changed = FALSE;
 static gboolean  typeless_entry_changed = FALSE;
@@ -895,13 +894,6 @@ void on_fileview_close_activate(GtkMenuItem *menuitem, gpointer user_data)
     gtk_widget_destroy(GTK_WIDGET(((ViewWindow *)user_data)->topWidget));
 }
 
-
-
-
-
-
-
-
 #endif
 
 
@@ -1147,8 +1139,6 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
 
     if (!initialized)
     {
-        initializing_prefs = TRUE;
-
         /*** Initialize the preference dialog settings (tab #1 "Search and View") ***/
         /****************************************************************************/
         my_gtk_check_button_set_active(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_checkbutton"),
@@ -1442,7 +1432,6 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
         gtk_window_set_transient_for(GTK_WINDOW(prefs_dialog), GTK_WINDOW(gscope_main));
         #endif
 
-        initializing_prefs = FALSE;
         initialized = TRUE;
     }
 
@@ -3619,7 +3608,7 @@ void on_stats_dialog_closebutton_clicked(GtkButton       *button,
 // UI_VERSION 2: Top menu Option-->Retain input for next query (deleted menu item)
 void on_retain_text_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
 {
-    if (!initializing_prefs)
+    if ( my_gtk_check_button_get_active(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_checkbutton")) != sticky_settings.retainInput )
     {
         /*** Manage Settings ***/
         /***********************/
@@ -3668,7 +3657,7 @@ void on_retain_text_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer 
 
 void on_retain_text_failed_search_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
 {
-    if (!initializing_prefs)
+    if ( my_gtk_check_button_get_active(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_failed_search_checkbutton")) != settings.retainFailed )
     {
         // This setting is only implemented as a start-up setting, hence there is no "active" (volatile) setting to match.
 
@@ -3710,23 +3699,19 @@ void on_never_retain_text_checkbutton_toggled(GtkToggleButton *togglebutton, gpo
     GtkWidget *retain_text_failed_search = lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_failed_search_checkbutton");
     GtkWidget *never_retain_text = lookup_widget(GTK_WIDGET(prefs_dialog), "never_retain_text_checkbutton");
 
-    if (!initializing_prefs)
+    if ( gtk_check_button_get_active(GTK_CHECK_BUTTON(never_retain_text)) )             // never: off-to-on transition
     {
         /*** Manage UI ***/
-        /*****************/
-        if (  gtk_check_button_get_active(GTK_CHECK_BUTTON(never_retain_text)) )            // never: off-to-on transition
-        {
-            if ( gtk_check_button_get_active(GTK_CHECK_BUTTON(retain_text)) )               // retain: if on, force off
-                my_gtk_check_button_set_active(retain_text, FALSE);
+        if ( gtk_check_button_get_active(GTK_CHECK_BUTTON(retain_text)) )               // retain: if on, force off
+            my_gtk_check_button_set_active(retain_text, FALSE);
 
-            if ( gtk_check_button_get_active(GTK_CHECK_BUTTON(retain_text_failed_search)) ) // failed: if on, force off
-                    my_gtk_check_button_set_active(retain_text_failed_search, FALSE);
-        }
-        else                                                                                // never: on-to-off transition
-        {
-            // do nothing
-        }
-   }
+        if ( gtk_check_button_get_active(GTK_CHECK_BUTTON(retain_text_failed_search)) ) // failed: if on, force off
+                my_gtk_check_button_set_active(retain_text_failed_search, FALSE);
+    }
+    else                                                                                // never: on-to-off transition
+    {
+        // do nothing
+    }
 }
 #endif
 
