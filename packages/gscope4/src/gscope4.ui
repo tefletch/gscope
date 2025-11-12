@@ -55,7 +55,7 @@
                         <property name="label">Find definition of</property>
                         <property name="name">find_definition_of_button</property>
                         <property name="receives-default">True</property>
-                        <signal name="clicked" handler="print_hello"/>
+                        <signal name="clicked" handler="on_find_definition_of_button_clicked"/>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">1</property>
@@ -67,7 +67,7 @@
                         <property name="label">Find functions called by</property>
                         <property name="name">find_functions_called_by_button</property>
                         <property name="receives-default">True</property>
-                        <signal name="clicked" handler="print_hello"/>
+                        <signal name="clicked" handler="on_find_functions_called_by_button_clicked"/>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">2</property>
@@ -91,7 +91,7 @@
                         <property name="label">Find functions calling</property>
                         <property name="name">find_functions_calling_button</property>
                         <property name="receives-default">True</property>
-                        <signal name="clicked" handler="print_hello"/>
+                        <signal name="clicked" handler="on_find_functions_calling_button_clicked"/>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">3</property>
@@ -103,7 +103,7 @@
                         <property name="label">Find text string</property>
                         <property name="name">find_text_string_button</property>
                         <property name="receives-default">True</property>
-                        <signal name="clicked" handler="print_hello"/>
+                        <signal name="clicked" handler="on_find_text_string_button_clicked"/>
                         <layout>
                           <property name="column">1</property>
                           <property name="row">0</property>
@@ -115,7 +115,7 @@
                         <property name="label">Find egrep pattern</property>
                         <property name="name">find_egrep_pattern_button</property>
                         <property name="receives-default">True</property>
-                        <signal name="clicked" handler="print_hello"/>
+                        <signal name="clicked" handler="on_find_egrep_pattern_button_clicked"/>
                         <layout>
                           <property name="column">1</property>
                           <property name="row">1</property>
@@ -127,7 +127,7 @@
                         <property name="label">Find files</property>
                         <property name="name">find_files_button</property>
                         <property name="receives-default">True</property>
-                        <signal name="clicked" handler="print_hello"/>
+                        <signal name="clicked" handler="on_find_files_button_clicked"/>
                         <layout>
                           <property name="column">1</property>
                           <property name="row">2</property>
@@ -139,7 +139,7 @@
                         <property name="label">Find files including</property>
                         <property name="name">find_files_including_button</property>
                         <property name="receives-default">True</property>
-                        <signal name="clicked" handler="print_hello"/>
+                        <signal name="clicked" handler="on_find_files_including_button_clicked"/>
                         <layout>
                           <property name="column">1</property>
                           <property name="row">3</property>

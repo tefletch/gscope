@@ -95,15 +95,16 @@ void DISPLAY_init(GtkWidget *main)
 
     gscope_main = main;     // Save a convenience pointer to the main window
 
-    #ifndef GTK4_BUILD  // gtk4: Bypass treeview initialization for now (does this logic belong here, or callbacks?)
-    // ======== Set up the search RESULTS treeview ========
-    // Add four columms to the GtkTreeView.
-    // All four columns will be displayed as text.
 
+    //============================================================
+    //  Set up the search RESULTS treeview
+    //
+    // Add four colums to the GtkTreeview, all four colums will
+    // be displayed as text.
+    //============================================================
     treeview   = lookup_widget(GTK_WIDGET (gscope_main), "treeview1");
 
-    /* Create a new GtkCellRendererText, add it to the tree view column and
-     * append the column to the tree view. */
+    // Create a new GtkCellRendererText, add it to the tree view column and append the column to the tree view
 
     renderer = gtk_cell_renderer_text_new();
     display_col[FILENAME] = gtk_tree_view_column_new_with_attributes("File", renderer, "text", FILENAME, NULL);
@@ -145,9 +146,12 @@ void DISPLAY_init(GtkWidget *main)
     gtk_tree_view_set_search_equal_func (GTK_TREE_VIEW(treeview), search_equal_func, NULL, NULL);
 
 
-    // ======== Set up the search HISTORY treeview ========
-    // Add one columm to the GtkTreeView.
-    // The column will be displayed as text.
+    //============================================================
+    //  Set up the search HISTORY treeview
+    //
+    //  Add one columm to the GtkTreeView.  The column will
+    //  be displayed as text.
+    //============================================================
     h_treeview = lookup_widget(GTK_WIDGET (gscope_main), "history_treeview");
 
     renderer = gtk_cell_renderer_text_new();
@@ -161,12 +165,11 @@ void DISPLAY_init(GtkWidget *main)
      * destroyed along with the tree view. */
     gtk_tree_view_set_model(GTK_TREE_VIEW(h_treeview), GTK_TREE_MODEL(h_store));
     g_object_unref(h_store);
-    #else
-    printf("GTK4: Bypassing treeview setup for now\n");
-    #endif
 
-    // ======== Initialize the static status info ========
 
+    //============================================================
+    //  Initialize the static status info
+    //============================================================
     sms_button = lookup_widget(GTK_WIDGET(gscope_main), "src_mode_status_button");
 
     if (settings.recurseDir)
@@ -199,8 +202,8 @@ void DISPLAY_init(GtkWidget *main)
     gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_main), "imagemenuitem20"), settings.autoGenEnable);
     #endif
     
-    #if !defined(GTK3_BUILD) && !defined(GTK4_BUILD)
     // ======== Initialize ImageMenuItem Icon Display Behavior ========
+    #if !defined(GTK3_BUILD) && !defined(GTK4_BUILD)
     DISPLAY_always_show_image(settings.menuIcons);
     #endif
 }
@@ -276,7 +279,7 @@ void DISPLAY_status(gchar *msg)
 
 
 
-/* Display the results of the query */
+/* Display the (query-specific formatted) results of the query */
 void DISPLAY_search_results(search_t button, search_results_t *results)
 {
     #define FILE_FN_LN_TXT_COL_MASK  0x0f

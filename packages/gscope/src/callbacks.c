@@ -554,8 +554,8 @@ GtkWidget *CALLBACKS_get_widget(gchar *widget_name)
 
 void CALLBACKS_init(GtkWidget *main)
 {
-    // Initialize a private global that references the main window widget for all callbacks to use.
-    gscope_main = main;
+    gscope_main = main;     // Initialize a private global for all callbacks to use.
+
     DISPLAY_init(main);
 
     // Instantiate the widgets defined by the GUI Builders
@@ -2132,15 +2132,11 @@ void on_open_quick_view(GtkWidget *menuitem, gchar *file_and_line)
 
 #ifndef GTK4_BUILD  // GTK4 treeview EventButton handling 
 
-gboolean on_history_treeview_button_press_event(GtkWidget       *widget,
-                                                GdkEventButton  *event,
-                                                gpointer         user_data)
+gboolean on_history_treeview_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
     static GtkWidget *query_entry;
     static gboolean initialized = FALSE;
-
     gchar *entry;
-
 
     if (!initialized)
     {
