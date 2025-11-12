@@ -554,8 +554,6 @@ GtkWidget *CALLBACKS_get_widget(gchar *widget_name)
 
 void CALLBACKS_init(GtkWidget *main)
 {
-    printf("Hello from: %s\n", __func__);
-
     // Initialize a private global that references the main window widget for all callbacks to use.
     gscope_main = main;
     DISPLAY_init(main);
@@ -649,8 +647,6 @@ void on_cref_update_button_clicked(GtkButton *button, gpointer user_data)
 
 static gboolean exit_confirmed()
 {
-    printf("Hello from: %s\n", __func__);
-
     if (settings.exitConfirm)
     {
         #ifndef GTK4_BUILD
@@ -706,7 +702,6 @@ void on_quit1_activate(GSimpleAction *action, GVariant *parameter, gpointer user
 void on_window1_destroy(GtkWidget *widget, gpointer user_data)
 {
     // Callback is called when on_window1_delete_event returns FALSE
-    printf("Hello from: %s\n", __func__);
     app_shutdown();
 }
 
@@ -719,8 +714,6 @@ gboolean on_window1_delete_event(GtkWidget *widget, GdkEvent *event, gpointer us
 gboolean on_window1_close_request(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 #endif
 {
-    printf("Hello from: %s\n", __func__);
-
     // Normal Window destroy callback sequence
     // 1) delete_event
     // 2) if delete_event() returns FALSE then on_window_destroy()
@@ -740,7 +733,6 @@ gboolean on_quit_confirm_dialog_delete_event(GtkWidget *widget, GdkEvent *event,
 gboolean on_quit_confirm_dialog_test(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 #endif
 {
-    printf("Hello from: %s\n", __func__);
     gtk_widget_hide(widget);
     //return TRUE;     // Do not destroy the widget
 }
@@ -748,7 +740,6 @@ gboolean on_quit_confirm_dialog_test(GtkWidget *widget, GdkEvent *event, gpointe
 
 void on_quit_confirm_dialog_response(GtkDialog *dialog, gint response_id, gpointer user_data)
 {
-    printf("Hello from: %s, response = %d\n", __func__, response_id);
     switch (response_id)
     {
         case GTK_RESPONSE_OK:
@@ -791,7 +782,6 @@ void on_confirm_exit_checkbutton_toggled(GtkToggleButton *checkbutton, gpointer 
 void on_confirm_exit_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data)
 #endif
 {
-    printf("Hello from: %s\n", __func__);
     if ( my_gtk_check_button_get_active(GTK_WIDGET(checkbutton)) != settings.exitConfirm )
     {
         settings.exitConfirm = !settings.exitConfirm;
@@ -1819,8 +1809,6 @@ void on_about1_activate(GSimpleAction *action, GVariant *parameter, gpointer use
 {
     static gboolean customized = FALSE;
 
-    printf("Hello from: %s\n", __func__);
-
     if (!customized)
     {
         gchar description[] = "Interactive C source code browser";
@@ -1957,8 +1945,6 @@ gboolean on_aboutdialog1_delete_event(GtkWidget       *widget,
 void on_find_c_identifier_button_clicked(GtkButton       *button,
                                          gpointer         user_data)
 {
-    printf("Hello from CALLBACK: %s\n", __func__);
-
     if (!search_button_lockout)
     {
         search_button_lockout = TRUE;
@@ -3813,7 +3799,6 @@ void on_confirmation_checkbutton_toggled(GtkToggleButton *checkbutton, gpointer 
 void on_confirmation_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data)
 #endif
 {
-    printf("Hello from: %s\n", __func__);
     if ( my_gtk_check_button_get_active(GTK_WIDGET(checkbutton)) != settings.exitConfirm )
     {
         settings.exitConfirm = !(settings.exitConfirm);
