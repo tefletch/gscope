@@ -162,7 +162,9 @@
                     <property name="has-frame">True</property>
                     <property name="height-request">147</property>
                     <child>
-                      <object class="GtkTreeView"/>
+                      <object class="GtkTreeView" id="history_treeview">
+                        <property name="enable-grid-lines">horizontal</property>
+                      </object>
                     </child>
                   </object>
                 </child>
