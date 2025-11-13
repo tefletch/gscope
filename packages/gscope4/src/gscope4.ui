@@ -164,6 +164,12 @@
                     <child>
                       <object class="GtkTreeView" id="history_treeview">
                         <property name="enable-grid-lines">horizontal</property>
+                        <child>
+                          <object class="GtkGestureClick" id="history_treeview_click">
+                            <property name="button">1</property>
+                            <signal name="pressed" handler="on_history_treeview_button_pressed"/>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>

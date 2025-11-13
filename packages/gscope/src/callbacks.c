@@ -2130,8 +2130,7 @@ void on_open_quick_view(GtkWidget *menuitem, gchar *file_and_line)
 
 
 
-#ifndef GTK4_BUILD  // GTK4 treeview EventButton handling 
-
+#ifndef GTK4_BUILD
 gboolean on_history_treeview_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
     static GtkWidget *query_entry;
@@ -2141,9 +2140,7 @@ gboolean on_history_treeview_button_press_event(GtkWidget *widget, GdkEventButto
     if (!initialized)
     {
         initialized = TRUE;
-
-        /* Get a pointer to the query entry widget */
-        query_entry = lookup_widget(GTK_WIDGET(gscope_main), "query_entry");
+       query_entry = lookup_widget(GTK_WIDGET(gscope_main), "query_entry");    // Get a pointer to the query entry widget
     }
 
 
@@ -2158,7 +2155,31 @@ gboolean on_history_treeview_button_press_event(GtkWidget *widget, GdkEventButto
 
     return FALSE;
 }
+#else       // GTK4 "new and improved" treeview button handling
+gboolean on_history_treeview_button_pressed(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data)
+{
+    GtkTreeView      *tree_view = GTK_TREE_VIEW(user_data);
+    gchar            *entry;
+    static GtkWidget *query_entry;
+    static gboolean  initialized = FALSE;
 
+    printf("Hello from: %s\n", __func__);
+    if ( !initialized )
+    {
+        initialized = TRUE;
+        query_entry = lookup_widget(GTK_WIDGET(gscope_main), "query_entry");    // Get a pointer to the query entry widget
+    }
+
+
+
+
+}
+#endif
+
+
+
+
+#ifndef GTK4_BUILD  // GTK4 treeview EventButton handling 
 
 void show_context_menu(GtkWidget *treeview, GdkEventButton *event, gchar *filename, gchar *linenum, gchar *symbol)
 {

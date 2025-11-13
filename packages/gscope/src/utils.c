@@ -124,7 +124,7 @@ void my_add_widget(gpointer widget, gpointer user_data)
 {
     GType       my_type;
 
-    static GType nb1, nb2, nb3, nb4, nb5;
+    static GType nb1, nb2, nb3, nb4, nb5, nb6;
 
     if ( !hash_table )   // Need to initialize
     {
@@ -138,11 +138,12 @@ void my_add_widget(gpointer widget, gpointer user_data)
         nb3 = g_type_from_name("GMenu");                    // Cambalache-Gtk4
         nb4 = g_type_from_name("GtkEventControllerFocus");  // Cambalache-Gtk4
         nb5 = g_type_from_name("GtkAdjustment");            // Cambalache-Gtk4
+        nb6 = g_type_from_name("GtkGestureClick");          // Cambalache-Gtk4
     }
 
     my_type = G_OBJECT_TYPE(widget);
 
-    if ( my_type == nb1 || my_type == nb2 || my_type == nb3 || my_type == nb4 || my_type == nb5)     // Brute force Non-Buildable check
+    if ( my_type == nb1 || my_type == nb2 || my_type == nb3 || my_type == nb4 || my_type == nb5 || my_type == nb6 )     // Brute force Non-Buildable check
     {
         /* my_type is a Non-Buildable type : Do nothing */
 
@@ -159,6 +160,8 @@ void my_add_widget(gpointer widget, gpointer user_data)
             printf("GtkEventControllerFocus\n");
         if (my_type == nb5)
             printf("GtkAdjustment\n");
+        if (my_type == nb6)
+            printf("GtkGestureClick\n");
         #endif
     }
     else
