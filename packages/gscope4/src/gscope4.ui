@@ -163,13 +163,10 @@
                     <property name="height-request">147</property>
                     <child>
                       <object class="GtkTreeView" id="history_treeview">
-                        <property name="enable-grid-lines">horizontal</property>
-                        <child>
-                          <object class="GtkGestureClick" id="history_treeview_click">
-                            <property name="button">1</property>
-                            <signal name="pressed" handler="on_history_treeview_button_pressed"/>
-                          </object>
-                        </child>
+                        <property name="enable-search">False</property>
+                        <property name="headers-clickable">False</property>
+                        <property name="show-expanders">False</property>
+                        <signal name="row-activated" handler="on_history_treeview_row_activated"/>
                       </object>
                     </child>
                   </object>
@@ -237,6 +234,7 @@
               <object class="GtkTreeView" id="treeview1">
                 <property name="enable-grid-lines">both</property>
                 <property name="reorderable">True</property>
+                <signal name="row-activated" handler="on_treeview1_row_activated"/>
               </object>
             </child>
           </object>

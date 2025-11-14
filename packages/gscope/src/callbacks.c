@@ -2156,9 +2156,8 @@ gboolean on_history_treeview_button_press_event(GtkWidget *widget, GdkEventButto
     return FALSE;
 }
 #else       // GTK4 "new and improved" treeview button handling
-gboolean on_history_treeview_button_pressed(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data)
+void on_history_treeview_row_activated(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, gpointer user_data)
 {
-    GtkTreeView      *tree_view = GTK_TREE_VIEW(user_data);
     gchar            *entry;
     static GtkWidget *query_entry;
     static gboolean  initialized = FALSE;
@@ -2174,6 +2173,69 @@ gboolean on_history_treeview_button_pressed(GtkGestureClick *gesture, int n_pres
 
 
 }
+#endif
+
+
+#ifndef GTK4_BUILD
+gboolean on_treeview1_button_press_event(GtkWidget       *widget,
+                                         GdkEventButton  *event,
+                                         gpointer         user_data)
+{
+    gchar *filename;
+    gchar *linenum;
+    gchar *symbol;
+
+    GtkTreePath     *path;
+
+    if (event->type == GDK_BUTTON_PRESS)  // Process single button click (ignore GDK_[23]BUTTON_PRESS event types)
+    {
+        switch (event->button)
+        {
+            case 1:     // left-button -- (optional) single click open
+                if (settings.singleClick)     // Single Click mode
+                {
+                    if (gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(widget), event->x, event->y, &path, NULL, NULL, NULL))
+                    {
+                        if (DISPLAY_get_filename_and_lineinfo(path, &filename, &linenum))
+                        {
+                            if (settings.useEditor)
+                            {
+                                my_start_text_editor(filename, linenum);
+                            }
+                            else
+                            {
+                                FILEVIEW_create(filename, atoi(linenum));
+                            }
+                        }
+                        gtk_tree_path_free(path);
+                    }
+                }
+                break;
+
+            case 3:     // right-button -- List item context menu
+
+                // Get the GtkTreePath
+                if (gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(widget), event->x, event->y, &path, NULL, NULL, NULL))
+                {
+                    if (DISPLAY_get_entry_info(path, &filename, &linenum, &symbol)) // Get the selected filename
+                    {
+                        // pass filename into show menu call
+                        show_context_menu(widget, event, filename, linenum, symbol);
+                    }
+                    gtk_tree_path_free(path);
+                }
+
+                break;
+
+            default:
+                // Do nothing
+                break;
+        }
+    }
+    return FALSE;
+}
+#else
+
 #endif
 
 
@@ -2258,65 +2320,6 @@ void show_context_menu(GtkWidget *treeview, GdkEventButton *event, gchar *filena
 
 
 
-gboolean on_treeview1_button_press_event(GtkWidget       *widget,
-                                         GdkEventButton  *event,
-                                         gpointer         user_data)
-{
-    gchar *filename;
-    gchar *linenum;
-    gchar *symbol;
-
-    GtkTreePath     *path;
-
-    if (event->type == GDK_BUTTON_PRESS)  // Process single button click (ignore GDK_[23]BUTTON_PRESS event types)
-    {
-        switch (event->button)
-        {
-            case 1:     // left-button -- (optional) single click open
-                if (settings.singleClick)     // Single Click mode
-                {
-                    if (gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(widget), event->x, event->y, &path, NULL, NULL, NULL))
-                    {
-                        if (DISPLAY_get_filename_and_lineinfo(path, &filename, &linenum))
-                        {
-                            if (settings.useEditor)
-                            {
-                                my_start_text_editor(filename, linenum);
-                            }
-                            else
-                            {
-                                FILEVIEW_create(filename, atoi(linenum));
-                            }
-                        }
-                        gtk_tree_path_free(path);
-                    }
-                }
-                break;
-
-            case 3:     // right-button -- List item context menu
-
-                // Get the GtkTreePath
-                if (gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(widget), event->x, event->y, &path, NULL, NULL, NULL))
-                {
-                    if (DISPLAY_get_entry_info(path, &filename, &linenum, &symbol)) // Get the selected filename
-                    {
-                        // pass filename into show menu call
-                        show_context_menu(widget, event, filename, linenum, symbol);
-                    }
-                    gtk_tree_path_free(path);
-                }
-
-                break;
-
-            default:
-                // Do nothing
-                break;
-        }
-    }
-    return FALSE;
-}
-
-
 /*** Handle shift-F10 (context menu without a mouse) ***/
 gboolean on_treeview1_popup_menu(GtkWidget       *widget,
                                  gpointer         user_data)
@@ -2356,11 +2359,9 @@ gboolean on_treeview1_popup_menu(GtkWidget       *widget,
 
 #endif  // GTK4 treeview EventButton handling 
 
-void on_treeview1_row_activated(GtkTreeView     *treeview,
-                                GtkTreePath     *path,
-                                GtkTreeViewColumn *column,
-                                gpointer         user_data)
+void on_treeview1_row_activated(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *column, gpointer user_data)
 {
+    printf("Hello from: %s\n", __func__);
     if (!settings.singleClick)
     {
         gchar *filename;

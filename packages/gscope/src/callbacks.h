@@ -272,6 +272,9 @@ void on_truncate_symbols_checkbutton_toggled(GtkCheckButton *checkbutton, gpoint
 void on_compress_symbols_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data);
 void on_reuse_window_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data);
 void on_ignore_case_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer user_data);
+
+void on_history_treeview_row_activated(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, gpointer user_data);
+
 #endif
 
 gboolean on_stats_dialog_delete_event(GtkWidget *widget, GdkEvent *event, gpointer user_data);
