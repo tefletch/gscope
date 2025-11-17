@@ -512,7 +512,7 @@ void DISPLAY_history_clear()
 }
 
 
-
+// Revisit: 11/16/25 This call may be obsolete, consider using row-activated instead of button-press-event under history treeview
 gboolean DISPLAY_get_clicked_entry(gint widget_x, gint widget_y, gchar **entry_p)
 {
     GtkTreePath *path;
@@ -533,6 +533,17 @@ gboolean DISPLAY_get_clicked_entry(gint widget_x, gint widget_y, gchar **entry_p
            gtk_tree_path_free(path);
            return(TRUE);
        }
+    }
+    return(FALSE);
+}
+
+
+gboolean DISPLAY_get_history_row_entry(GtkTreePath *path, gchar **entry)
+{
+    if ( gtk_tree_model_get_iter( GTK_TREE_MODEL(h_store), &iter, path) )
+    {
+        gtk_tree_model_get(GTK_TREE_MODEL(h_store), &iter, HISTORY, entry, -1);
+        return(TRUE);
     }
     return(FALSE);
 }

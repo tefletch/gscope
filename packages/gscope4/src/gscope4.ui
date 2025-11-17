@@ -156,15 +156,17 @@
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkScrolledWindow" id="history_scrolledwindow">
-                    <property name="can-focus">False</property>
-                    <property name="can-target">False</property>
-                    <property name="focus-on-click">False</property>
+                    <property name="can-focus">True</property>
+                    <property name="can-target">True</property>
+                    <property name="focus-on-click">True</property>
                     <property name="has-frame">True</property>
                     <property name="height-request">147</property>
                     <child>
                       <object class="GtkTreeView" id="history_treeview">
+                        <property name="activate-on-single-click">True</property>
                         <property name="enable-search">False</property>
                         <property name="headers-clickable">False</property>
+                        <property name="headers-visible">False</property>
                         <property name="show-expanders">False</property>
                         <signal name="row-activated" handler="on_history_treeview_row_activated"/>
                       </object>

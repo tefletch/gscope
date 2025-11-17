@@ -20,6 +20,9 @@ void DISPLAY_init(GtkWidget *main);
 /* Return the contents of the 'clicked' history list item */
 gboolean DISPLAY_get_clicked_entry(gint widget_x, gint widget_y, gchar **entry_p);
 
+/* Return the contents of the 'activated' history list item */
+gboolean DISPLAY_get_history_row_entry(GtkTreePath *path, gchar **entry);
+
 /* Return the filename from the activated query result row [defined by path] */
 gboolean DISPLAY_get_filename_and_lineinfo(GtkTreePath *path, gchar **filename, gchar **line_num);
 
