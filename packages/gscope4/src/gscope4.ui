@@ -5,6 +5,7 @@
   <requires lib="gio" version="2.0"/>
   <requires lib="gtk" version="4.8"/>
   <object class="GtkWindow" id="gscope_main">
+    <property name="default-widget">find_c_identifier_button</property>
     <property name="height-request">600</property>
     <property name="icon-name">system-search</property>
     <property name="title">Gscope</property>
@@ -186,6 +187,7 @@
                         </child>
                         <child>
                           <object class="GtkEntry" id="query_entry">
+                            <property name="activates-default">True</property>
                             <property name="hexpand">True</property>
                           </object>
                         </child>
@@ -193,6 +195,8 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="clear_query_button">
+                        <property name="receives-default">False</property>
+                        <signal name="clicked" handler="on_clear_query_button_clicked"/>
                         <child>
                           <object class="GtkImage">
                             <property name="icon-name">gtk-clear</property>
@@ -248,6 +252,7 @@
             <property name="spacing">5</property>
             <child>
               <object class="GtkButton" id="session_info_button">
+                <property name="receives-default">False</property>
                 <signal name="clicked" handler="on_session_info_button_clicked"/>
                 <child>
                   <object class="GtkImage" id="session_info_button_image">
@@ -258,6 +263,7 @@
             </child>
             <child>
               <object class="GtkButton" id="cref_update_button">
+                <property name="receives-default">False</property>
                 <signal name="clicked" handler="on_cref_update_button_clicked"/>
               </object>
             </child>
@@ -268,22 +274,48 @@
               </object>
             </child>
             <child>
-              <object class="GtkButton" id="src_mode_status_button"/>
+              <object class="GtkButton" id="src_mode_status_button">
+                <property name="receives-default">False</property>
+              </object>
             </child>
             <child>
-              <object class="GtkProgressBar" id="progressbar1">
-                <property name="can-focus">False</property>
-                <property name="can-target">False</property>
-                <property name="focus-on-click">False</property>
-                <property name="hexpand">True</property>
-                <property name="margin-bottom">10</property>
-                <property name="margin-top">10</property>
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkProgressBar" id="progressbar1">
+                    <property name="can-focus">False</property>
+                    <property name="can-target">False</property>
+                    <property name="focus-on-click">False</property>
+                    <property name="height-request">-1</property>
+                    <property name="hexpand">True</property>
+                    <property name="hexpand-set">True</property>
+                    <property name="margin-bottom">10</property>
+                    <property name="margin-top">10</property>
+                    <property name="overflow">hidden</property>
+                    <property name="vexpand">False</property>
+                    <property name="vexpand-set">False</property>
+                    <property name="visible">False</property>
+                    <property name="width-request">-1</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="hexpand">True</property>
+                    <property name="hexpand-set">True</property>
+                    <property name="label"> </property>
+                  </object>
+                </child>
               </object>
             </child>
             <child>
               <object class="GtkButton" id="cancel_button">
-                <property name="halign">end</property>
+                <property name="can-focus">False</property>
+                <property name="can-target">False</property>
+                <property name="focus-on-click">False</property>
+                <property name="halign">start</property>
                 <property name="margin-end">5</property>
+                <property name="overflow">hidden</property>
+                <property name="receives-default">False</property>
                 <child>
                   <object class="GtkBox" id="cancel_button_hbox">
                     <property name="spacing">3</property>

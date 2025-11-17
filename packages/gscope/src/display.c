@@ -549,7 +549,6 @@ gboolean DISPLAY_get_history_row_entry(GtkTreePath *path, gchar **entry)
 }
 
 
-
 gboolean DISPLAY_get_filename_and_lineinfo(GtkTreePath *path, gchar **filename, gchar **line_num)
 {
     static gchar zero_line[] = "0";
