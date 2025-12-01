@@ -16,7 +16,6 @@
 // ---- Typedefs ----
 
 // ---- local function prototypes ----
-static gboolean open_file (GtkSourceBuffer *sBuf, const gchar *filename);
 #ifndef GTK4_BUILD  // needs gtk4 menu migration
 void ModifyTextPopUp(GtkTextView *textview, GtkMenu *menu, gpointer user_data);
 #endif
@@ -82,10 +81,24 @@ void on_fileview_destroy(GtkWidget *object, gpointer user_data)
     return;
 }
 
-#ifdef GTK3_BUILD
-/* Not needed for GTK2, since the scrolling can happen correctly before
-   the window is first shown.  In GTK3, the scroll will be ignored or
-   calculated incorrectly unless the window geometry is known / visible */
+#if defined(GTK3_BUILD) || defined(GTK4_BUILD)
+/* Not needed for GTK2, since the scrolling can happen correctly before the window is first shown.  
+   
+   In GTK3 (and beyond), the scroll will be ignored or executed incorrectly because the true source
+   window height is not yet known (or up-to-date).
+   
+   According to GTK "experts":
+   To avoid a race condition where the scroll operation is executed while line-height calculations
+   are ongoing in an idle handler, "schedule" the "scroll" in an idle callback.
+
+   The scrolling depends on computing the height of the text inside the buffer, since the text view widget needs
+   to know where to scroll to as a function of the pixel height of the text. In some cases, that height might not
+   be computed before the "scroll" operation is executed
+
+   Implementation example:
+        g_idle_add_full(G_PRIORITY_IDLE_LOW, scroll_view_cb, GTK_TEXT_VIEW(windowPtr->srcViewWidget), NULL);
+*/
+
 static gboolean scroll_view_cb(gpointer data)
 {
     GtkTextView *view;
@@ -98,11 +111,120 @@ static gboolean scroll_view_cb(gpointer data)
     // Scroll the cursor line into view when the widget is first shown
     mark = gtk_text_buffer_get_insert (GTK_TEXT_BUFFER (s_buffer));
     gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (view), mark, 0, TRUE, 0, 0.5);
+    gtk_source_view_set_highlight_current_line(GTK_SOURCE_VIEW(view), TRUE);
 
     // This event is handled -- don't fire it again
     return FALSE;
 }
 #endif
+
+
+static gboolean open_file (GtkSourceBuffer *sBuf, const gchar *filename)
+{
+    GtkSourceLanguageManager *lm;
+    GtkSourceLanguage *language = NULL;
+    GError *err = NULL;
+    gboolean reading;
+    GtkTextIter iter;
+    GIOChannel *io;
+    gchar *buffer;
+
+    g_return_val_if_fail (sBuf != NULL, FALSE);
+    g_return_val_if_fail (filename != NULL, FALSE);
+    
+    #if defined(GTK3_BUILD) || defined(GTK4_BUILD)
+    g_return_val_if_fail (GTK_SOURCE_IS_BUFFER (sBuf), FALSE);
+    #else
+    g_return_val_if_fail (GTK_IS_SOURCE_BUFFER (sBuf), FALSE);
+    #endif
+
+    lm = gtk_source_language_manager_get_default();
+    if( is_mf_or_makefile(filename) )
+        language = gtk_source_language_manager_get_language (lm, "makefile");
+    else
+        language = gtk_source_language_manager_guess_language(lm, filename, NULL);
+
+    if (language != NULL)
+    {
+        gtk_source_buffer_set_highlight_syntax (GTK_SOURCE_BUFFER (sBuf), TRUE);
+        gtk_source_buffer_set_language (GTK_SOURCE_BUFFER(sBuf), language);
+    }
+
+    /* Now load the file from Disk */
+    io = g_io_channel_new_file (filename, "r", &err);
+    if (!io)
+    {
+        g_print("error: %s %s\n", (err)->message, filename);
+        return FALSE;
+    }
+
+    if (g_io_channel_set_encoding (io, "utf-8", &err) != G_IO_STATUS_NORMAL)
+    {
+        g_print("err: Failed to set encoding:\n%s\n%s", filename, (err)->message);
+        return FALSE;
+    }
+
+    #ifndef GTK4_BUILD
+    gtk_source_buffer_begin_not_undoable_action (sBuf);
+    #else
+    gtk_text_buffer_begin_irreversible_action(GTK_TEXT_BUFFER(sBuf));
+    #endif
+
+    // Revisit: is this needed?  gtk_text_buffer_set_text (GTK_TEXT_BUFFER (sBuf), "", 0);
+    buffer = g_malloc (4096);
+    reading = TRUE;
+    while (reading)
+    {
+        gsize bytes_read;
+        GIOStatus status;
+
+        status = g_io_channel_read_chars (io, buffer, 4096, &bytes_read, &err);
+        switch (status)
+        {
+            case G_IO_STATUS_EOF: reading = FALSE;
+
+            case G_IO_STATUS_NORMAL:
+                if (bytes_read == 0) continue;
+                gtk_text_buffer_get_end_iter ( GTK_TEXT_BUFFER (sBuf), &iter);
+                gtk_text_buffer_insert (GTK_TEXT_BUFFER(sBuf),&iter,buffer,bytes_read);
+                break;
+
+            case G_IO_STATUS_AGAIN: continue;
+
+            case G_IO_STATUS_ERROR:
+
+            default:
+                g_print("err (%s): %s", filename, (err)->message);
+                /* because of error in input we clear already loaded text */
+                gtk_text_buffer_set_text (GTK_TEXT_BUFFER (sBuf), "", 0);
+
+                reading = FALSE;
+                break;
+        }
+    }
+    g_free (buffer);
+
+    #ifndef GTK4_BUILD
+    gtk_source_buffer_end_not_undoable_action (sBuf);
+    #else
+    gtk_text_buffer_end_irreversible_action(GTK_TEXT_BUFFER(sBuf));
+    #endif
+
+    g_io_channel_unref (io);
+
+    if (err)
+    {
+        g_error_free (err);
+        return FALSE;
+    }
+
+    gtk_text_buffer_set_modified (GTK_TEXT_BUFFER (sBuf), FALSE);
+
+    g_object_set_data_full (G_OBJECT (sBuf),"filename", g_strdup (filename),
+                            (GDestroyNotify) g_free);
+
+    return TRUE;
+}
 
 void FILEVIEW_create(gchar *file_name, gint line)
 {
@@ -125,7 +247,7 @@ void FILEVIEW_create(gchar *file_name, gint line)
 
     if (sameName)    // --- A view window is already open for this file ---
     {
-        s_buffer =gtk_text_view_get_buffer(GTK_TEXT_VIEW(windowPtr->srcViewWidget));
+        s_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(windowPtr->srcViewWidget));
     }
     else
     {   // --- No view already open for this file ---
@@ -147,7 +269,7 @@ void FILEVIEW_create(gchar *file_name, gint line)
             gtk_text_buffer_set_modified (GTK_TEXT_BUFFER (s_buffer), FALSE);
             #endif
             
-            #ifdef GTK3_BUILD
+            #if defined(GTK3_BUILD) || defined(GTK4_BUILD)
             g_idle_add (&scroll_view_cb, windowPtr->srcViewWidget);
             #endif
         }
@@ -290,8 +412,9 @@ static void createFileViewer(ViewWindow *windowPtr)
     windowPtr->srcViewWidget = GTK_SOURCE_VIEW(sView);
 
     gtk_text_view_set_editable(GTK_TEXT_VIEW(sView), FALSE);
-    gtk_source_view_set_show_line_numbers(GTK_SOURCE_VIEW(sView), FALSE);
-    gtk_source_view_set_highlight_current_line(GTK_SOURCE_VIEW(sView), TRUE);
+    // Revisit:  May want to add context menu (or other method) to enable/disable "show line numbers"
+    gtk_source_view_set_show_line_numbers(GTK_SOURCE_VIEW(sView), TRUE);
+    gtk_source_view_set_highlight_current_line(GTK_SOURCE_VIEW(sView), TRUE);  // only effective for GTK2, harmless for GTK3 and later
     gtk_source_view_set_show_line_marks(GTK_SOURCE_VIEW(sView), TRUE);
     #ifndef GTK4_BUILD  // needs gtk4 menu migration
     #ifdef GTK3_BUILD
@@ -321,7 +444,7 @@ static void createFileViewer(ViewWindow *windowPtr)
     g_signal_connect (GTK_SOURCE_VIEW(sView),"populate-popup",G_CALLBACK(ModifyTextPopUp),windowPtr);
     #endif
 
-    #ifdef GTK3_BUILD
+    #if defined(GTK3_BUILD) || defined(GTK4_BUILD)
     g_idle_add (&scroll_view_cb, sView);
     #endif
 
@@ -338,7 +461,9 @@ static void createFileViewer(ViewWindow *windowPtr)
     {
         GtkCssProvider *provider = gtk_css_provider_new();
         
-        gtk_css_provider_load_from_string (provider, "textview { font-family: Monospace; font-size: 8pt; }");
+        // Revisit: may want to make the font-size user selectable (larger/smaller)
+        gtk_css_provider_load_from_string (provider, "textview { font-family: Monospace; }");
+        //gtk_css_provider_load_from_string (provider, "textview { font-family: Monospace; font-size: 8pt; }");
         gtk_style_context_add_provider (gtk_widget_get_style_context(sView), GTK_STYLE_PROVIDER (provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
         g_object_unref (provider);
     }
@@ -357,122 +482,6 @@ static void createFileViewer(ViewWindow *windowPtr)
 
 }
 
-
-
-static gboolean open_file (GtkSourceBuffer *sBuf, const gchar *filename)
-{
-    GtkSourceLanguageManager *lm;
-    GtkSourceLanguage *language = NULL;
-    GError *err = NULL;
-    gboolean reading;
-    GtkTextIter iter;
-    GIOChannel *io;
-    gchar *buffer;
-
-    g_return_val_if_fail (sBuf != NULL, FALSE);
-    g_return_val_if_fail (filename != NULL, FALSE);
-    
-    #if defined(GTK3_BUILD) || defined(GTK4_BUILD)
-    g_return_val_if_fail (GTK_SOURCE_IS_BUFFER (sBuf), FALSE);
-    #else
-    g_return_val_if_fail (GTK_IS_SOURCE_BUFFER (sBuf), FALSE);
-    #endif
-
-#if 0   /* Gtksourceview 1.x logic */
-    /* get the Language for C source mimetype */
-    lm = g_object_get_data (G_OBJECT (sBuf), "languages-manager");
-
-    language = gtk_source_language_manager_get_language_from_mime_type (lm, "text/x-csrc");
-    //g_print("Language: [%s]\n", gtk_source_language_get_name(language));
-#else   /* Gtksourceview 2.x logic */
-    lm = gtk_source_language_manager_get_default();
-    if( is_mf_or_makefile(filename) )
-        language = gtk_source_language_manager_get_language (lm, "makefile");
-    else
-        language = gtk_source_language_manager_guess_language(lm, filename, NULL);
-#endif
-
-    if (language != NULL)
-    {
-        gtk_source_buffer_set_highlight_syntax (GTK_SOURCE_BUFFER (sBuf), TRUE);
-        gtk_source_buffer_set_language (GTK_SOURCE_BUFFER(sBuf), language);
-    }
-
-    /* Now load the file from Disk */
-    io = g_io_channel_new_file (filename, "r", &err);
-    if (!io)
-    {
-        g_print("error: %s %s\n", (err)->message, filename);
-        return FALSE;
-    }
-
-    if (g_io_channel_set_encoding (io, "utf-8", &err) != G_IO_STATUS_NORMAL)
-    {
-        g_print("err: Failed to set encoding:\n%s\n%s", filename, (err)->message);
-        return FALSE;
-    }
-
-    #ifndef GTK4_BUILD
-    gtk_source_buffer_begin_not_undoable_action (sBuf);
-    #else
-    gtk_text_buffer_begin_irreversible_action(GTK_TEXT_BUFFER(sBuf));
-    #endif
-
-    //gtk_text_buffer_set_text (GTK_TEXT_BUFFER (sBuf), "", 0);
-    buffer = g_malloc (4096);
-    reading = TRUE;
-    while (reading)
-    {
-        gsize bytes_read;
-        GIOStatus status;
-
-        status = g_io_channel_read_chars (io, buffer, 4096, &bytes_read, &err);
-        switch (status)
-        {
-            case G_IO_STATUS_EOF: reading = FALSE;
-
-            case G_IO_STATUS_NORMAL:
-                if (bytes_read == 0) continue;
-                gtk_text_buffer_get_end_iter ( GTK_TEXT_BUFFER (sBuf), &iter);
-                gtk_text_buffer_insert (GTK_TEXT_BUFFER(sBuf),&iter,buffer,bytes_read);
-                break;
-
-            case G_IO_STATUS_AGAIN: continue;
-
-            case G_IO_STATUS_ERROR:
-
-            default:
-                g_print("err (%s): %s", filename, (err)->message);
-                /* because of error in input we clear already loaded text */
-                gtk_text_buffer_set_text (GTK_TEXT_BUFFER (sBuf), "", 0);
-
-                reading = FALSE;
-                break;
-        }
-    }
-    g_free (buffer);
-
-    #ifndef GTK4_BUILD
-    gtk_source_buffer_end_not_undoable_action (sBuf);
-    #else
-    gtk_text_buffer_end_irreversible_action(GTK_TEXT_BUFFER(sBuf));
-    #endif
-
-    g_io_channel_unref (io);
-
-    if (err)
-    {
-        g_error_free (err);
-        return FALSE;
-    }
-
-    gtk_text_buffer_set_modified (GTK_TEXT_BUFFER (sBuf), FALSE);
-
-    g_object_set_data_full (G_OBJECT (sBuf),"filename", g_strdup (filename),
-                            (GDestroyNotify) g_free);
-
-    return TRUE;
-}
 
 
 #ifndef GTK4_BUILD  // needs gtk4 menu migration
