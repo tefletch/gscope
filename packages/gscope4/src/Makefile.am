@@ -25,6 +25,8 @@ gscope_SOURCES = \
 	dir.h        \
 	display.c    \
 	display.h 	 \
+	fileview.c 	 \
+	fileview.h 	 \
 	gtk4_aux.c   \
 	gtk4_aux.h   \
 	lookup.c 	 \
@@ -40,8 +42,6 @@ gscope_SOURCES = \
 #
 #	browser.c   \
 #	broswer.h   \
-#	fileview.c 	\
-#	fileview.h 	\
 #	version.h
 
 xmldir = $(prefix)/bin

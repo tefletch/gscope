@@ -17,7 +17,9 @@
 
 // ---- local function prototypes ----
 static gboolean open_file (GtkSourceBuffer *sBuf, const gchar *filename);
+#ifndef GTK4_BUILD  // needs gtk4 menu migration
 void ModifyTextPopUp(GtkTextView *textview, GtkMenu *menu, gpointer user_data);
+#endif
 static void createFileViewer(ViewWindow *windowPtr);
 static gboolean is_mf_or_makefile(const char *filename);
 
@@ -137,12 +139,14 @@ void FILEVIEW_create(gchar *file_name, gint line)
             gtk_widget_set_name(GTK_WIDGET(windowPtr->topWidget), windowPtr->filename);
 
             // Clear the current buffer text
+            #ifndef GTK4_BUILD  // needs gtk4 menu migration
             s_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(windowPtr->srcViewWidget));
             gtk_source_buffer_begin_not_undoable_action (GTK_SOURCE_BUFFER (s_buffer) );
             gtk_text_buffer_set_text (GTK_TEXT_BUFFER (s_buffer), "", 0);
             gtk_source_buffer_end_not_undoable_action (GTK_SOURCE_BUFFER (s_buffer) );
             gtk_text_buffer_set_modified (GTK_TEXT_BUFFER (s_buffer), FALSE);
-
+            #endif
+            
             #ifdef GTK3_BUILD
             g_idle_add (&scroll_view_cb, windowPtr->srcViewWidget);
             #endif
@@ -213,33 +217,51 @@ static void createFileViewer(ViewWindow *windowPtr)
     GtkWidget *sView;
     GtkSourceBuffer *sBuf;
     GtkSourceLanguageManager *lm;
-    GdkPixbuf *fileview_icon_pixbuf;
+    
     PangoFontDescription *font_desc;
     const gchar * const *lang_dirs;
+    #ifndef GTK4_BUILD  // needs gtk4 menu migration
     static guint x = 400;
     static guint y = 400;
+    #endif
 
     // Data required to support non-standard gtksourceview install directory
     lang_dirs = gtk_source_language_manager_get_search_path (gtk_source_language_manager_get_default ());
 
     // Create a Window
+    #ifndef GTK4_BUILD  // needs gtk4 menu migration
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     gtk_container_set_border_width (GTK_CONTAINER (window), 10);
+    #else
+    window = gtk_window_new();
+    #endif
     gtk_window_set_title (GTK_WINDOW (window), windowPtr->filename);
     gtk_widget_set_name(GTK_WIDGET(window), windowPtr->filename);
     gtk_window_set_default_size (GTK_WINDOW(window), 660, 500);
+    
+    #ifndef GTK4_BUILD  // needs gtk4 menu migration
     gtk_window_move(GTK_WINDOW (window), x, y);
     x+=30;
     y+=30;
+    #endif
+
     windowPtr->topWidget = window;
     g_signal_connect (GTK_WINDOW(window),"destroy",G_CALLBACK(on_fileview_destroy), window);
 
-    fileview_icon_pixbuf = create_pixbuf ("icon-search.png");
+    GdkPixbuf *fileview_icon_pixbuf = create_pixbuf ("icon-search.png");
+
+    #ifndef GTK4_BUILD  // needs gtk4 menu migration
     if (fileview_icon_pixbuf)
         gtk_window_set_icon (GTK_WINDOW (window), fileview_icon_pixbuf);
+    #endif
 
     /* Create a Scrolled Window that will contain the GtkSourceView */
+    #ifndef GTK4_BUILD  // needs gtk4 menu migration
     pScrollWin = gtk_scrolled_window_new (NULL, NULL);
+    #else
+    pScrollWin = gtk_scrolled_window_new ();
+    #endif
+
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (pScrollWin),
                                     GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
@@ -250,7 +272,11 @@ static void createFileViewer(ViewWindow *windowPtr)
     // This enables gtksourceview to find the language spec files when it is not installed at its "normal" path.
 
     lm = gtk_source_language_manager_new();
+    #ifndef GTK4_BUILD  // needs gtk4 menu migration
     gtk_source_language_manager_set_search_path(lm, (gchar **) lang_dirs);
+    #else
+    gtk_source_language_manager_set_search_path(lm, (const gchar * const*) lang_dirs);
+    #endif
 
     /* and a GtkSourceBuffer to hold text (similar to GtkTextBuffer) */
     sBuf = GTK_SOURCE_BUFFER (gtk_source_buffer_new (NULL));
@@ -267,6 +293,7 @@ static void createFileViewer(ViewWindow *windowPtr)
     gtk_source_view_set_show_line_numbers(GTK_SOURCE_VIEW(sView), FALSE);
     gtk_source_view_set_highlight_current_line(GTK_SOURCE_VIEW(sView), TRUE);
     gtk_source_view_set_show_line_marks(GTK_SOURCE_VIEW(sView), TRUE);
+    #ifndef GTK4_BUILD  // needs gtk4 menu migration
     #ifdef GTK3_BUILD
     {
         GtkSourceMarkAttributes *attrs;
@@ -278,15 +305,28 @@ static void createFileViewer(ViewWindow *windowPtr)
     #else
     gtk_source_view_set_mark_category_icon_from_pixbuf(GTK_SOURCE_VIEW(sView), "LMtype", fileview_icon_pixbuf);
     #endif
+    #else
+    {
+        GtkSourceMarkAttributes *attrs;
+
+        attrs = gtk_source_mark_attributes_new();
+        gtk_source_mark_attributes_set_pixbuf(attrs, fileview_icon_pixbuf);
+        gtk_source_mark_attributes_render_icon(attrs, GTK_WIDGET(sView), 20);
+        gtk_source_view_set_mark_attributes(GTK_SOURCE_VIEW(sView), "LMtype", attrs, 1);
+    }
+    #endif
 
     g_object_unref (fileview_icon_pixbuf);  // Free the pixbuf
+    #ifndef GTK4_BUILD  // needs gtk4 menu migration
     g_signal_connect (GTK_SOURCE_VIEW(sView),"populate-popup",G_CALLBACK(ModifyTextPopUp),windowPtr);
+    #endif
 
     #ifdef GTK3_BUILD
     g_idle_add (&scroll_view_cb, sView);
     #endif
 
     /* Set default Font name,size */
+    #ifndef GTK4_BUILD
     font_desc = pango_font_description_from_string ("Monospace");
     #ifdef GTK3_BUILD
     gtk_widget_override_font (sView, font_desc);
@@ -294,12 +334,27 @@ static void createFileViewer(ViewWindow *windowPtr)
     gtk_widget_modify_font (sView, font_desc);
     #endif
     pango_font_description_free (font_desc);
+    #else
+    {
+        GtkCssProvider *provider = gtk_css_provider_new();
+        
+        gtk_css_provider_load_from_string (provider, "textview { font-family: Monospace; font-size: 8pt; }");
+        gtk_style_context_add_provider (gtk_widget_get_style_context(sView), GTK_STYLE_PROVIDER (provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+        g_object_unref (provider);
+    }
+    #endif
 
+    #ifndef GTK4_BUILD
     /* Attach the GtkSourceView to the scrolled Window */
     gtk_container_add (GTK_CONTAINER (pScrollWin), GTK_WIDGET (sView));
     /* And the Scrolled Window to the main Window */
     gtk_container_add (GTK_CONTAINER (window), pScrollWin);
     gtk_widget_show_all (pScrollWin);
+    #else
+    gtk_window_set_child(GTK_WINDOW(pScrollWin), GTK_WIDGET(sView));
+    gtk_window_set_child(GTK_WINDOW(window), GTK_WIDGET(pScrollWin));
+    #endif
+
 }
 
 
@@ -316,7 +371,8 @@ static gboolean open_file (GtkSourceBuffer *sBuf, const gchar *filename)
 
     g_return_val_if_fail (sBuf != NULL, FALSE);
     g_return_val_if_fail (filename != NULL, FALSE);
-    #ifdef GTK3_BUILD
+    
+    #if defined(GTK3_BUILD) || defined(GTK4_BUILD)
     g_return_val_if_fail (GTK_SOURCE_IS_BUFFER (sBuf), FALSE);
     #else
     g_return_val_if_fail (GTK_IS_SOURCE_BUFFER (sBuf), FALSE);
@@ -356,7 +412,11 @@ static gboolean open_file (GtkSourceBuffer *sBuf, const gchar *filename)
         return FALSE;
     }
 
+    #ifndef GTK4_BUILD
     gtk_source_buffer_begin_not_undoable_action (sBuf);
+    #else
+    gtk_text_buffer_begin_irreversible_action(GTK_TEXT_BUFFER(sBuf));
+    #endif
 
     //gtk_text_buffer_set_text (GTK_TEXT_BUFFER (sBuf), "", 0);
     buffer = g_malloc (4096);
@@ -392,7 +452,12 @@ static gboolean open_file (GtkSourceBuffer *sBuf, const gchar *filename)
     }
     g_free (buffer);
 
+    #ifndef GTK4_BUILD
     gtk_source_buffer_end_not_undoable_action (sBuf);
+    #else
+    gtk_text_buffer_end_irreversible_action(GTK_TEXT_BUFFER(sBuf));
+    #endif
+
     g_io_channel_unref (io);
 
     if (err)
@@ -410,6 +475,7 @@ static gboolean open_file (GtkSourceBuffer *sBuf, const gchar *filename)
 }
 
 
+#ifndef GTK4_BUILD  // needs gtk4 menu migration
 void ModifyTextPopUp(GtkTextView *textview, GtkMenu *menu, gpointer user_data)
 {
     GList *list;
@@ -439,7 +505,7 @@ void ModifyTextPopUp(GtkTextView *textview, GtkMenu *menu, gpointer user_data)
     gtk_widget_show_all(GTK_WIDGET(menu));
 
 }
-
+#endif
 
 static gboolean is_mf_or_makefile(const char *filename)
 {

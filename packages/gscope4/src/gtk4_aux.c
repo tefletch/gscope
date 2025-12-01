@@ -21,15 +21,6 @@ GtkWidget* BROWSER_create(gchar *name, gchar *root_file, gchar *line_num)
 
 
 
-// Temporary GTK4 stub functions for FILEVIEW component
-//=====================================================
-void FILEVIEW_create(gchar *file_name, gint line)
-{
-    printf("hello from Gtk4aux: %s\n", __func__);
-}
-
-
-
 // Temporary GTK4 stub functions for message dialogs
 //===================================================
 
