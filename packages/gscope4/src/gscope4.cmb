@@ -3,7 +3,7 @@
 <!-- Created with Cambalache 0.99.1 -->
 <cambalache-project version="0.96.0" target_tk="gtk-4.0">
   <ui filename="gscope4.ui" sha256="470002aac79ff02ff5f9dba30e2b0fcc43361f4dc181ea77c6b4c1bfcd425dab"/>
-  <ui filename="splash.ui" sha256="5efdf8235f0f02a99e1e0c65218a1f6d6a16623473108390ea945fad1919cec8"/>
+  <ui filename="splash.ui" sha256="0acbc39d9b9e92d48aae2958f8d985a095c343934865d3452da854b859658c7b"/>
   <ui filename="preferences.ui" sha256="13c9136b14998db04c342c557576e685ef0edf2bbff17f11f12bbbc3dbac7655"/>
   <ui filename="quit.ui" sha256="25e9ee52f20b5533dffa508856b2b867b188a80606c37dde0b991141969a672c"/>
 </cambalache-project>
