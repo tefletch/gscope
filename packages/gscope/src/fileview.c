@@ -351,7 +351,7 @@ static void createFileViewer(ViewWindow *windowPtr)
     gtk_container_add (GTK_CONTAINER (window), pScrollWin);
     gtk_widget_show_all (pScrollWin);
     #else
-    gtk_window_set_child(GTK_WINDOW(pScrollWin), GTK_WIDGET(sView));
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(pScrollWin), GTK_WIDGET(sView));
     gtk_window_set_child(GTK_WINDOW(window), GTK_WIDGET(pScrollWin));
     #endif
 
