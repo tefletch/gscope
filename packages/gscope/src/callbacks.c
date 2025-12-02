@@ -730,7 +730,7 @@ gboolean on_window1_close_request(GtkWidget *widget, GdkEvent *event, gpointer u
 #ifndef GTK4_BUILD
 gboolean on_quit_confirm_dialog_delete_event(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 #else
-gboolean on_quit_confirm_dialog_test(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+gboolean on_quit_confirm_dialog_close_request(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 #endif
 {
     gtk_widget_hide(widget);
@@ -1813,7 +1813,15 @@ void on_about1_activate(GSimpleAction *action, GVariant *parameter, gpointer use
     {
         gchar description[] = "Interactive C source code browser";
         gchar based_on[] =    "\n\nDerived from CSCOPE version 15.5";
-        gchar modified_by[] = "\nPorted to Linux and GTK (2.11) by HP Inc";
+        #if defined(GTK4_BUILD)
+            gchar modified_by[] = "\nPorted to Linux with GTK2 UI (July 2007)\nAdded GTK3 UI (October 2015)\nAdded GTK4 UI (January 2026)";
+            #else
+                #if defined(GTK3_BUILD)
+                    gchar modified_by[] = "\nPorted to Linux with GTK2 UI (July 2007)\nAdded GTK3 UI (October 2015)";
+                #else   // GTK2
+                    gchar modified_by[] = "\nPorted to Linux with GTK2 UI (July 2007)";
+                #endif
+        #endif
         gchar gtk_version[] = "\n\nCurrent System GTK Version: ";
         gchar build_date[] =  "\n\nBuild Date: "__DATE__;
 
@@ -1830,13 +1838,15 @@ void on_about1_activate(GSimpleAction *action, GVariant *parameter, gpointer use
 
         // The UI maker for GTK4 does not allow direct configuration of the program icon using a custom image (only allows icons)
         #if defined(GTK4_BUILD)
-        GFile *logo_file = g_file_new_for_path("../share/gscope/pixmaps/gscope_globe3.png");
-        GdkTexture *gscope_logo = gdk_texture_new_from_file(logo_file, NULL);
-        g_object_unref(logo_file);
-        gtk_about_dialog_set_logo(GTK_ABOUT_DIALOG(aboutdialog1), GDK_PAINTABLE(gscope_logo));
+        {
+            GFile *logo_file = g_file_new_for_path(PACKAGE_DATA_DIR "/" PACKAGE "/pixmaps/gscope_globe3.png");
+            GdkTexture *gscope_logo = gdk_texture_new_from_file(logo_file, NULL);
+            g_object_unref(logo_file);
+            gtk_about_dialog_set_logo(GTK_ABOUT_DIALOG(aboutdialog1), GDK_PAINTABLE(gscope_logo));
+        }
         #endif
 
-        gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(aboutdialog1), VERSION);
+        gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(aboutdialog1), "Version "VERSION);
 
         my_asprintf(&full_comment, "%s%s%s%s%d.%d.%d%s",
                     description,
@@ -1901,10 +1911,8 @@ void on_quit_destroy(GtkWindow *window)
 
 //--------------------- End Application Exit Callbacks -----------------------
 
-
-void on_aboutdialog1_response(GtkDialog       *dialog,
-                              gint             response_id,
-                              gpointer         user_data)
+#ifndef GTK4_BUILD
+void on_aboutdialog1_response(GtkDialog *dialog, gint response_id, gpointer user_data)
 {
     switch (response_id)
     {
@@ -1923,18 +1931,20 @@ void on_aboutdialog1_response(GtkDialog       *dialog,
             g_free(error_string);
             gtk_widget_hide(GTK_WIDGET(dialog));
         }
-
             break;
     }
 
     return;
 }
+#endif
 
 
 
-gboolean on_aboutdialog1_delete_event(GtkWidget       *widget,
-                                      GdkEvent        *event,
-                                      gpointer         user_data)
+#ifndef GTK4_BUILD
+gboolean on_aboutdialog1_delete_event(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+#else
+gboolean on_aboutdialog1_close_request(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+#endif
 {
     gtk_widget_hide(widget);
     return TRUE;     // Do not destroy the widget
@@ -2390,16 +2400,25 @@ void on_preferences_dialog_close_button_clicked(GtkButton *button, gpointer user
     gtk_widget_set_visible(gscope_preferences, FALSE);
 }
 
-
-gboolean on_gscope_preferences_delete_event(GtkWidget       *widget,
-                                            GdkEvent        *event,
-                                            gpointer         user_data)
+//================================
+// Callbacks not used for GTK4
+//================================
+#ifndef GTK4_BUILD
+gboolean on_gscope_preferences_delete_event(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
-    // Just hide the widget
-    gtk_widget_set_visible(gscope_preferences, FALSE);
-
+    gtk_widget_hide(widget);  // Just hide the widget
     return TRUE;   // Don't destroy the widget
 }
+
+gboolean on_folder_chooser_dialog_delete_event(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+    gtk_widget_hide(widget);
+    return TRUE;     // Do not destroy the widget
+}
+
+
+
+#endif
 
 
 #ifndef GTK4_BUILD
@@ -3310,15 +3329,6 @@ void on_folder_chooser_dialog_response(GtkDialog       *dialog,
 
 
 
-gboolean on_folder_chooser_dialog_delete_event(GtkWidget       *widget,
-                                               GdkEvent        *event,
-                                               gpointer         user_data)
-{
-    gtk_widget_hide(widget);
-    return TRUE;     // Do not destroy the widget
-}
-
-
 
 
 void on_source_entry_changed(GtkEditable     *editable,
@@ -3586,17 +3596,14 @@ void on_search_log_button_clicked(GtkButton       *button,
 //----------------- Start Session Statistics Reporting ---------------
 
 
-
-gboolean on_stats_dialog_delete_event(GtkWidget       *widget,
-                                      GdkEvent        *event,
-                                      gpointer         user_data)
+#ifndef GTK4_BUILD
+gboolean on_stats_dialog_delete_event(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
     gtk_widget_hide(widget);
     stats_visible = FALSE;
-
     return TRUE;
 }
-
+#endif
 
 void on_stats_dialog_closebutton_clicked(GtkButton       *button,
                                          gpointer         user_data)
@@ -4024,13 +4031,12 @@ void on_save_results_file_chooser_dialog_response(GtkDialog *dialog, gint respon
 }
 
 
-
-gboolean on_save_results_file_chooser_dialog_delete_event(GtkWidget       *widget,
-                                                          GdkEvent        *event,
-                                                          gpointer         user_data)
+#ifndef GTK4_BUILD
+gboolean on_save_results_file_chooser_dialog_delete_event(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
     return TRUE;     // Cancel the delete_event (do not destroy the widget)
 }
+#endif
 
 
 
