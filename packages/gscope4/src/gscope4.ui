@@ -455,9 +455,14 @@
   </menu>
   <object class="GtkEventControllerFocus"/>
   <object class="GtkAboutDialog" id="aboutdialog1">
+    <property name="authors">Tom Fletcher</property>
     <property name="decorated">True</property>
+    <property name="destroy-with-parent">True</property>
+    <property name="hide-on-close">True</property>
     <property name="icon-name">gtk-about</property>
-    <property name="program-name">G-Scope</property>
+    <property name="license-type">unknown</property>
+    <property name="program-name">G-Scope [GTK4]</property>
+    <signal name="close-request" handler="on_aboutdialog1_close_request"/>
   </object>
   <object class="GtkWindow" id="stats_dialog">
     <property name="destroy-with-parent">True</property>

@@ -7,6 +7,7 @@
     <property name="height-request">-1</property>
     <property name="hexpand">False</property>
     <signal name="response" handler="on_quit_confirm_dialog_response"/>
+    <signal name="close-request" handler="on_quit_confirm_dialog_close_request"/>
     <child internal-child="action_area">
       <object class="GtkBox">
         <property name="height-request">-1</property>

@@ -1155,7 +1155,7 @@
     <property name="destroy-with-parent">True</property>
     <property name="type-hint">normal</property>
     <property name="transient-for">gscope_main</property>
-    <property name="program-name">G-Scope</property>
+    <property name="program-name">G-Scope [GTK3]</property>
     <property name="version">Version 3.0</property>
     <property name="comments" translatable="yes">Interacive C source code browser
 
