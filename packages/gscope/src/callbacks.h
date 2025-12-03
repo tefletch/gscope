@@ -111,11 +111,13 @@ void on_cref_update_button_clicked             (GtkButton *button, gpointer user
 void on_clear_query_button_clicked             (GtkButton *button, gpointer user_data);
 
 
-#if defined(GTK4_BUILD) || defined(GTK3_BUILD)
-#else   // Only Gscope2 needs these callbacks
+#ifndef GTK4_BUILD
 void on_treeview1_row_activated (GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *column, gpointer user_data);
 gboolean on_history_treeview_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 gboolean on_treeview1_button_press_event      (GtkWidget *widget, GdkEventButton  *event, gpointer user_data);
+#else
+void on_treeview1_button1_pressed(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, gpointer user_data);
+void on_treeview1_button3_pressed(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, gpointer user_data);
 #endif
 
 

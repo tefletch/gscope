@@ -241,6 +241,17 @@
                 <property name="enable-grid-lines">both</property>
                 <property name="reorderable">True</property>
                 <signal name="row-activated" handler="on_treeview1_row_activated"/>
+                <child>
+                  <object class="GtkGestureClick" id="treeview1_button3">
+                    <property name="button">3</property>
+                    <signal name="pressed" handler="on_treeview1_button3_pressed"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkGestureClick" id="treeview1_button1">
+                    <signal name="pressed" handler="on_treeview1_button1_pressed"/>
+                  </object>
+                </child>
               </object>
             </child>
           </object>

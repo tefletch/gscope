@@ -2304,9 +2304,7 @@ gboolean on_treeview1_popup_menu(GtkWidget       *widget,
 
 
 #ifndef GTK4_BUILD
-gboolean on_treeview1_button_press_event(GtkWidget       *widget,
-                                         GdkEventButton  *event,
-                                         gpointer         user_data)
+gboolean on_treeview1_button_press_event(GtkWidget *widget, GdkEventButton  *event, gpointer user_data)
 {
     gchar *filename;
     gchar *linenum;
@@ -2361,12 +2359,22 @@ gboolean on_treeview1_button_press_event(GtkWidget       *widget,
     }
     return FALSE;
 }
+
 #else
+// Left-button press -- OPTIONAL single click open
+void on_treeview1_button1_pressed(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, gpointer user_data)
+{
+    printf("Hello from: %s\n", __func__);
+}
+
+
+// Right-button press -- Present item context menu
+void on_treeview1_button3_pressed(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, gpointer user_data)
+{
+     printf("Hello from: %s\n", __func__);
+}
 
 #endif
-
-
-
 
 
 void on_treeview1_row_activated(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *column, gpointer user_data)
