@@ -2189,7 +2189,6 @@ void on_history_treeview_row_activated(GtkTreeView *tree_view, GtkTreePath *path
 
 
 #ifndef GTK4_BUILD  // GTK4 treeview EventButton handling 
-
 void show_context_menu(GtkWidget *treeview, GdkEventButton *event, gchar *filename, gchar *linenum, gchar *symbol)
 {
     static GtkWidget   *menu = NULL;
@@ -2264,9 +2263,24 @@ void show_context_menu(GtkWidget *treeview, GdkEventButton *event, gchar *filena
                    (event != NULL) ? event->button : 0,
                    gdk_event_get_time((GdkEvent *)event));
 }
+#else
+void show_context_menu(gint x, gint y, gchar *filename, gchar *linenum, gchar *symbol)
+{
+    GtkWidget       *popover;
+    GdkRectangle    rect;
+    GMenuModel      *context_menu_model;
+
+    rect.x = (gint) x;
+    rect.y = (gint) y;
+    rect.width = rect.height = 1;
+            
+    popover = gtk_popover_menu_new_from_model(context_menu_model);
+
+}
+#endif
 
 
-
+#ifndef GTK4_BUILD
 /*** Handle shift-F10 (context menu without a mouse) ***/
 gboolean on_treeview1_popup_menu(GtkWidget       *widget,
                                  gpointer         user_data)
@@ -2371,7 +2385,29 @@ void on_treeview1_button1_pressed(GtkGestureClick* self, gint n_press, gdouble x
 // Right-button press -- Present item context menu
 void on_treeview1_button3_pressed(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, gpointer user_data)
 {
-     printf("Hello from: %s\n", __func__);
+    GtkTreePath     *path;
+    gchar           *filename;
+    gchar           *linenum;
+    gchar           *symbol;
+    gint            bin_x;
+    gint            bin_y;
+
+    printf("Hello from: %s\n", __func__);
+
+    gtk_tree_view_convert_widget_to_bin_window_coords(GTK_TREE_VIEW(my_lookup_widget("treeview1")), (gint) x, (gint) y, &bin_x, &bin_y);
+    if ( gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(my_lookup_widget("treeview1")), bin_x, bin_y, &path, NULL, NULL, NULL) )
+    {
+        if (DISPLAY_get_entry_info(path, &filename, &linenum, &symbol)) // Get the selected filename
+        {
+            show_context_menu(bin_x, bin_y, filename, linenum, symbol);
+            printf("%s: file: %s, line: %s, sym: %s\n", __func__, filename, linenum, symbol);
+        }
+        gtk_tree_path_free(path);      
+    }
+    else
+        printf("%s: tree view path-get FAILED\n", __func__);
+ 
+
 }
 
 #endif
