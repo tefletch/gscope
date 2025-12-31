@@ -2264,6 +2264,16 @@ void show_context_menu(GtkWidget *treeview, GdkEventButton *event, gchar *filena
                    gdk_event_get_time((GdkEvent *)event));
 }
 #else
+static void on_item1_activated(GSimpleAction *action, GVariant *parameter, gpointer app) 
+{
+    g_print("Item1\n");
+}
+
+static void on_item2_activated(GSimpleAction *action, GVariant *parameter, gpointer app) 
+{
+    g_print("Item2\n");
+}
+
 void show_context_menu(gint x, gint y, gchar *filename, gchar *linenum, gchar *symbol)
 {
     GtkWidget       *popover;
@@ -2273,8 +2283,37 @@ void show_context_menu(gint x, gint y, gchar *filename, gchar *linenum, gchar *s
     rect.x = (gint) x;
     rect.y = (gint) y;
     rect.width = rect.height = 1;
+
+    //popover = gtk_popover_new();
+    GtkWidget *label1 = gtk_label_new("Open Containing Folder");
+
+    // GMenu (model)
+    GMenu *context_menu = g_menu_new();
+    GMenuItem *menu_item1 = g_menu_item_new("Open Containing Folder",   "app.on_item1_activated");
+    GMenuItem *menu_item2 = g_menu_item_new("Browse Containing Folder", "app.on_item2_activated");
+    g_menu_append_item(context_menu, menu_item1);
+    g_menu_append_item(context_menu, menu_item2);
+    g_object_unref(menu_item1);
+    g_object_unref(menu_item2);
+
+    // actions
+    GSimpleAction *act_item1 = g_simple_action_new ("item1", NULL);
+    GSimpleAction *act_item2 = g_simple_action_new ("item2", NULL);
+    //g_action_map_add_action (G_ACTION_MAP (app), G_ACTION (act_item1));
+    //g_action_map_add_action (G_ACTION_MAP (app), G_ACTION (act_item2)); 
+    //g_signal_connect (act_item1, "activate", G_CALLBACK (item1_activated), app);
+    //g_signal_connect (act_item2, "activate", G_CALLBACK (item2_activated), app);
+
+
+
+    
+
+    if ( gtk_popover_menu_add_child( GTK_POPOVER_MENU(popover), label1, "test1") )
+        printf("succeeded\n");
+    else
+        printf("failed\n");
             
-    popover = gtk_popover_menu_new_from_model(context_menu_model);
+    popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(context_menu));
 
 }
 #endif
