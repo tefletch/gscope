@@ -14,6 +14,24 @@
 #define     ENCODE  TRUE
 #define     DECODE  FALSE
 
+#define          BLACK(string) "\x1b[0;30m" #string "\x1b[0m"
+#define            RED(string) "\x1b[31m" #string "\x1b[0m"
+#define          GREEN(string) "\x1b[0;32m," #string "\x1b[0m"
+#define         ORANGE(string) "\x1b[0;33m" #string "\x1b[0m"
+#define           BLUE(string) "\x1b[0;34m" #string "\x1b[0m"
+#define        MAGENTA(string) "\x1b[0;35m" #string "\x1b[0m"
+#define           CYAN(string) "\x1b[0;36m" #string "\x1b[0m"
+#define     LIGHT_GRAY(string) "\x1b[0;37m" #string "\x1b[0m"
+
+#define      DARK_GRAY(string) "\x1b[1;30m" #string "\x1b[0m"   /* Bright Black */
+#define     BRIGHT_RED(string) "\x1b[1;31m" #string "\x1b[0m"
+#define   BRIGHT_GREEN(string) "\x1b[1;32m" #string "\x1b[0m"
+#define         YELLOW(string) "\x1b[1;33m" #string "\x1b[0m"
+#define    BRIGHT_BLUE(string) "\x1b[1;34m" #string "\x1b[0m"
+#define BRIGHT_MAGENTA(string) "\x1b[1;35m" #string "\x1b[0m"
+#define    BRIGHT_CYAN(string) "\x1b[1'36m" #string "\x1b[0m"
+#define          WHITE(string) "\x1b[1;37m" #string "\x1b[0m"
+
 #if defined(GTK3_BUILD) || defined(GTK4_BUILD)
 #define lookup_widget(wiget, name) my_lookup_widget(name)
 #endif

@@ -2417,7 +2417,7 @@ gboolean on_treeview1_button_press_event(GtkWidget *widget, GdkEventButton  *eve
 // Left-button press -- OPTIONAL single click open
 void on_treeview1_button1_pressed(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, gpointer user_data)
 {
-    printf("Hello from: %s\n", __func__);
+    printf("Hello from: " YELLOW(%s) "\n", __func__);
 }
 
 
@@ -2431,7 +2431,7 @@ void on_treeview1_button3_pressed(GtkGestureClick* self, gint n_press, gdouble x
     gint            bin_x;
     gint            bin_y;
 
-    printf("Hello from: %s\n", __func__);
+    printf("Hello from: " YELLOW(%s) "\n", __func__);
 
     gtk_tree_view_convert_widget_to_bin_window_coords(GTK_TREE_VIEW(my_lookup_widget("treeview1")), (gint) x, (gint) y, &bin_x, &bin_y);
     if ( gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(my_lookup_widget("treeview1")), bin_x, bin_y, &path, NULL, NULL, NULL) )
