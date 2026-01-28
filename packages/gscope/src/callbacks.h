@@ -78,6 +78,10 @@ void on_usage_wiki_activate         (GSimpleAction *action, GVariant *parameter,
 void on_configure_wiki_activate     (GSimpleAction *action, GVariant *parameter, gpointer user_data);
 void on_release_wiki_activate       (GSimpleAction *action, GVariant *parameter, gpointer user_data);
 void on_about1_activate             (GSimpleAction *action, GVariant *parameter, gpointer user_data);
+// Treeview1 context menu
+void on_open_folder_activate        (GSimpleAction *action, GVariant *parameter, gpointer user_data); 
+void on_browse_folder_activate      (GSimpleAction *action, GVariant *parameter, gpointer user_data); 
+
 
 gboolean on_window1_close_request            (GtkWidget *widget, GdkEvent *event, gpointer user_data);
 // gscope preferences are rebuilt every time the dialog is activated (no close-request hiding)

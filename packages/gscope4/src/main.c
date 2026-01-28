@@ -59,7 +59,10 @@ static GActionEntry app_entries[] = {
     {"usage_wiki", on_usage_wiki_activate, NULL, NULL, NULL },
     {"configure_wiki", on_configure_wiki_activate, NULL, NULL, NULL },
     {"release_wiki", on_release_wiki_activate, NULL, NULL, NULL },
-    {"about", on_about1_activate, NULL, NULL, NULL }
+    {"about", on_about1_activate, NULL, NULL, NULL },
+    /* Treeview1 context menu actions */
+    {"open_containing_folder", on_open_folder_activate, NULL, NULL, NULL},
+    {"browse_containing_folder", on_browse_folder_activate, NULL, NULL, NULL}
 };
 
 

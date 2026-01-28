@@ -2264,19 +2264,18 @@ void show_context_menu(GtkWidget *treeview, GdkEventButton *event, gchar *filena
                    gdk_event_get_time((GdkEvent *)event));
 }
 #else
-static void on_item1_activated(GSimpleAction *action, GVariant *parameter, gpointer app) 
+void on_open_folder_activate(GSimpleAction *action, GVariant *parameter, gpointer app) 
 {
     g_print("Item1\n");
 }
 
-static void on_item2_activated(GSimpleAction *action, GVariant *parameter, gpointer app) 
+void on_browse_folder_activate(GSimpleAction *action, GVariant *parameter, gpointer app) 
 {
     g_print("Item2\n");
 }
 
 void show_context_menu(gint x, gint y, gchar *filename, gchar *linenum, gchar *symbol)
 {
-    GtkWidget       *popover;
     GdkRectangle    rect;
     GMenuModel      *context_menu_model;
 
@@ -2284,36 +2283,37 @@ void show_context_menu(gint x, gint y, gchar *filename, gchar *linenum, gchar *s
     rect.y = (gint) y;
     rect.width = rect.height = 1;
 
-    //popover = gtk_popover_new();
     GtkWidget *label1 = gtk_label_new("Open Containing Folder");
 
-    // GMenu (model)
+    // Create the menu model
     GMenu *context_menu = g_menu_new();
-    GMenuItem *menu_item1 = g_menu_item_new("Open Containing Folder",   "app.on_item1_activated");
-    GMenuItem *menu_item2 = g_menu_item_new("Browse Containing Folder", "app.on_item2_activated");
-    g_menu_append_item(context_menu, menu_item1);
-    g_menu_append_item(context_menu, menu_item2);
-    g_object_unref(menu_item1);
-    g_object_unref(menu_item2);
+    g_menu_append(context_menu, "Open Containing Folder", "app.open_containing_folder");
+    g_menu_append(context_menu, "Browse Containing Folder", "app.browse_containing_folder");
 
-    // actions
-    GSimpleAction *act_item1 = g_simple_action_new ("item1", NULL);
-    GSimpleAction *act_item2 = g_simple_action_new ("item2", NULL);
-    //g_action_map_add_action (G_ACTION_MAP (app), G_ACTION (act_item1));
-    //g_action_map_add_action (G_ACTION_MAP (app), G_ACTION (act_item2)); 
-    //g_signal_connect (act_item1, "activate", G_CALLBACK (item1_activated), app);
-    //g_signal_connect (act_item2, "activate", G_CALLBACK (item2_activated), app);
-
-
+    // Create Popover from model
+    GtkWidget *popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(context_menu));
 
     
+    // Attach Popover to desired widget
+    gtk_popover_set_pointing_to(GTK_POPOVER(popover), &rect);
+    //g_object_set((gpointer) rect, "popover", popover, NULL);
+    
+    
+         //g_object_unref(menu_item1);
+        //g_object_unref(menu_item2);
 
+    //gtk_popover_set_position(GTK_POPOVER(popover), GTK_POS_BOTTOM);
+
+    g_object_unref(context_menu); // Model is owned by popover
+
+    gtk_popover_popup(GTK_POPOVER(popover));
+    
+#if 0
     if ( gtk_popover_menu_add_child( GTK_POPOVER_MENU(popover), label1, "test1") )
-        printf("succeeded\n");
+        printf("popover_menu_add_child: succeeded\n");
     else
-        printf("failed\n");
-            
-    popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(context_menu));
+        printf("popover_menu_add_child: failed\n");
+#endif
 
 }
 #endif
