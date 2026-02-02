@@ -2292,7 +2292,7 @@ void show_context_menu(gint x, gint y, gchar *filename, gchar *linenum, gchar *s
 
     // Create Popover from model
     GtkWidget *popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(context_menu));
-
+    gtk_widget_set_parent(popover, my_lookup_widget("treeview1"));
     
     // Attach Popover to desired widget
     gtk_popover_set_pointing_to(GTK_POPOVER(popover), &rect);
