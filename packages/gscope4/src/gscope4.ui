@@ -242,6 +242,14 @@
                 <property name="reorderable">True</property>
                 <signal name="row-activated" handler="on_treeview1_row_activated"/>
                 <child>
+                  <object class="GtkPopoverMenu" id="treeview1_popover">
+                    <property name="autohide">True</property>
+                    <property name="has-arrow">True</property>
+                    <property name="menu-model">context_menu</property>
+                    <property name="position">bottom</property>
+                  </object>
+                </child>
+                <child>
                   <object class="GtkGestureClick" id="treeview1_button3">
                     <property name="button">3</property>
                     <signal name="pressed" handler="on_treeview1_button3_pressed"/>
@@ -823,4 +831,22 @@
       </object>
     </child>
   </object>
+  <menu id="context_menu">
+    <item>
+      <attribute name="action">app.open_in_terminal</attribute>
+      <attribute name="label">Open In Terminal</attribute>
+    </item>
+    <item>
+      <attribute name="action">app.open_in_file_manager</attribute>
+      <attribute name="label">Open in File Manager</attribute>
+    </item>
+    <item>
+      <attribute name="action">app.browse_static_function_calls</attribute>
+      <attribute name="label">Browse Static Function Calls</attribute>
+    </item>
+    <item>
+      <attribute name="action">app.quick_view</attribute>
+      <attribute name="label">Quick-View</attribute>
+    </item>
+  </menu>
 </interface>
