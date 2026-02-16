@@ -2264,27 +2264,27 @@ void show_context_menu(GtkWidget *treeview, GdkEventButton *event, gchar *filena
                    gdk_event_get_time((GdkEvent *)event));
 }
 #else
-void on_open_folder_activate(GSimpleAction *action, GVariant *parameter, gpointer app) 
+void on_open_in_terminal_activate(GSimpleAction *action, GVariant *parameter, gpointer app) 
 {
-    g_print("Item1\n");
+    g_print("on_open_in_terminal_activate\n");
 }
 
-void on_browse_folder_activate(GSimpleAction *action, GVariant *parameter, gpointer app) 
+void on_open_in_file_manager_activate(GSimpleAction *action, GVariant *parameter, gpointer app) 
 {
-    g_print("Item2\n");
+    g_print("on_open_in_file_manager_activate(\n");
 }
 
 void show_context_menu(gint x, gint y, gchar *filename, gchar *linenum, gchar *symbol)
 {
     GdkRectangle    rect;
-    GMenuModel      *context_menu_model;
 
     rect.x = (gint) x;
     rect.y = (gint) y;
     rect.width = rect.height = 1;
 
-    GtkWidget *label1 = gtk_label_new("Open Containing Folder");
+    GtkPopover *popover = GTK_POPOVER(my_lookup_widget("treeview1_popover"));
 
+    #if 0 // menu model and popover created in Gui Builder (Cambalache)
     // Create the menu model
     GMenu *context_menu = g_menu_new();
     g_menu_append(context_menu, "Open Containing Folder", "app.open_containing_folder");
@@ -2293,28 +2293,12 @@ void show_context_menu(gint x, gint y, gchar *filename, gchar *linenum, gchar *s
     // Create Popover from model
     GtkWidget *popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(context_menu));
     gtk_widget_set_parent(popover, my_lookup_widget("treeview1"));
+    #endif
     
-    // Attach Popover to desired widget
-    gtk_popover_set_pointing_to(GTK_POPOVER(popover), &rect);
-    //g_object_set((gpointer) rect, "popover", popover, NULL);
-    
-    
-         //g_object_unref(menu_item1);
-        //g_object_unref(menu_item2);
+    // Attach Popover to desired location within parent widget
+    gtk_popover_set_pointing_to(popover, &rect);
 
-    //gtk_popover_set_position(GTK_POPOVER(popover), GTK_POS_BOTTOM);
-
-    g_object_unref(context_menu); // Model is owned by popover
-
-    gtk_popover_popup(GTK_POPOVER(popover));
-    
-#if 0
-    if ( gtk_popover_menu_add_child( GTK_POPOVER_MENU(popover), label1, "test1") )
-        printf("popover_menu_add_child: succeeded\n");
-    else
-        printf("popover_menu_add_child: failed\n");
-#endif
-
+    gtk_popover_popup(popover);
 }
 #endif
 
@@ -2431,7 +2415,7 @@ void on_treeview1_button3_pressed(GtkGestureClick* self, gint n_press, gdouble x
     gint            bin_x;
     gint            bin_y;
 
-    printf("Hello from: " YELLOW(%s) "\n", __func__);
+    printf("Hello from: " YELLOW(%s) " x = %f, y = %f\n", __func__, x, y);
 
     gtk_tree_view_convert_widget_to_bin_window_coords(GTK_TREE_VIEW(my_lookup_widget("treeview1")), (gint) x, (gint) y, &bin_x, &bin_y);
     if ( gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(my_lookup_widget("treeview1")), bin_x, bin_y, &path, NULL, NULL, NULL) )

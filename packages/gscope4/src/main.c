@@ -61,8 +61,8 @@ static GActionEntry app_entries[] = {
     {"release_wiki", on_release_wiki_activate, NULL, NULL, NULL },
     {"about", on_about1_activate, NULL, NULL, NULL },
     /* Treeview1 context menu actions */
-    {"open_containing_folder", on_open_folder_activate, NULL, NULL, NULL},
-    {"browse_containing_folder", on_browse_folder_activate, NULL, NULL, NULL}
+    {"open_in_terminal", on_open_in_terminal_activate, NULL, NULL, NULL},
+    {"open_in_file_manager", on_open_in_file_manager_activate, NULL, NULL, NULL}
 };
 
 
