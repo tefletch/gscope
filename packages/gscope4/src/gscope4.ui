@@ -244,7 +244,12 @@
                 <child>
                   <object class="GtkPopoverMenu" id="treeview1_popover">
                     <property name="autohide">True</property>
-                    <property name="has-arrow">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="can-target">True</property>
+                    <property name="cascade-popdown">False</property>
+                    <property name="focus-on-click">False</property>
+                    <property name="halign">center</property>
+                    <property name="has-arrow">False</property>
                     <property name="menu-model">context_menu</property>
                     <property name="position">bottom</property>
                   </object>

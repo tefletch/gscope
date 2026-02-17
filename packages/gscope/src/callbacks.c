@@ -2266,21 +2266,32 @@ void show_context_menu(GtkWidget *treeview, GdkEventButton *event, gchar *filena
 #else
 void on_open_in_terminal_activate(GSimpleAction *action, GVariant *parameter, gpointer app) 
 {
-    g_print("on_open_in_terminal_activate\n");
+    printf("Hello from %s\n", __func__); 
 }
 
 void on_open_in_file_manager_activate(GSimpleAction *action, GVariant *parameter, gpointer app) 
 {
-    g_print("on_open_in_file_manager_activate(\n");
+    printf("Hello from %s\n", __func__); 
+}
+
+void on_browse_static_function_calls_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+{
+    printf("Hello from %s\n", __func__); 
+}
+
+void on_quick_view_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+{
+    printf("Hello from %s\n", __func__); 
 }
 
 void show_context_menu(gint x, gint y, gchar *filename, gchar *linenum, gchar *symbol)
 {
-    GdkRectangle    rect;
+    static GdkRectangle    rect;
 
     rect.x = (gint) x;
-    rect.y = (gint) y;
-    rect.width = rect.height = 1;
+    rect.y = (gint) y + 30;         // Revisit: the +30 is a hack to cause the popup to render just "below" the mouse pointer.
+    rect.width = rect.height = 1;   // Having the mouse pointer outside the popup rendering avoids a GTK4 warning
+                                    // bug: "Broken Accounting of active state for widget"
 
     GtkPopover *popover = GTK_POPOVER(my_lookup_widget("treeview1_popover"));
 
@@ -2415,9 +2426,12 @@ void on_treeview1_button3_pressed(GtkGestureClick* self, gint n_press, gdouble x
     gint            bin_x;
     gint            bin_y;
 
-    printf("Hello from: " YELLOW(%s) " x = %f, y = %f\n", __func__, x, y);
+    printf("Hello from: " YELLOW(%s) " \n", __func__);
 
     gtk_tree_view_convert_widget_to_bin_window_coords(GTK_TREE_VIEW(my_lookup_widget("treeview1")), (gint) x, (gint) y, &bin_x, &bin_y);
+    //printf("wx = %f, bin_x = %d\n", x, bin_x);
+    //printf("wy = %f, bin_y = %d\n", y, bin_y);
+
     if ( gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(my_lookup_widget("treeview1")), bin_x, bin_y, &path, NULL, NULL, NULL) )
     {
         if (DISPLAY_get_entry_info(path, &filename, &linenum, &symbol)) // Get the selected filename

@@ -62,7 +62,9 @@ static GActionEntry app_entries[] = {
     {"about", on_about1_activate, NULL, NULL, NULL },
     /* Treeview1 context menu actions */
     {"open_in_terminal", on_open_in_terminal_activate, NULL, NULL, NULL},
-    {"open_in_file_manager", on_open_in_file_manager_activate, NULL, NULL, NULL}
+    {"open_in_file_manager", on_open_in_file_manager_activate, NULL, NULL, NULL},
+    {"browse_static_function_calls", on_browse_static_function_calls_activate, NULL, NULL, NULL},
+    {"quick_view", on_quick_view_activate, NULL, NULL, NULL}
 };
 
 
