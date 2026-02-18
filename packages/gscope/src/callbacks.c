@@ -2295,9 +2295,24 @@ void show_context_menu(gint x, gint y, gchar *filename, gchar *linenum, gchar *s
 {
     static GdkRectangle rect;
     gchar               tmp_path[PATHLEN];
+    guint               offset;
+
+    offset = 30;
+
+    // Hack for GTK popover bug: Scale popover offset based on application font size.
+    gint size;
+    PangoContext         *context = gtk_widget_get_pango_context(my_lookup_widget("treeview1"));
+    PangoFontDescription *font_description = pango_context_get_font_description(context);
+    size = pango_font_description_get_size(font_description);
+
+    //offset = 30; // Normal offset    Font size 8-16  [10927 - 21555]
+    if (size > 23200) offset = 40;  // Font size 17-23 [23221 - 31416]
+    if (size > 32450) offset = 50;  // Font size 24-29 [32482 - 39612]
+    if (size > 40950) offset = 60;  // Font size 30+   [40978 + ]
+    // End of font-size hack
 
     rect.x = (gint) x;
-    rect.y = (gint) y + 30;         // Revisit: the +30 is a hack to cause the popup to render just "below" the mouse pointer.
+    rect.y = (gint) y + offset;     // Revisit: the (nominal) +30 offset is a hack to cause the popup to render just "below" the mouse pointer.
     rect.width = rect.height = 1;   // Having the mouse pointer outside the popup rendering avoids a GTK4 warning
                                     // bug: "Broken Accounting of active state for widget"
     
