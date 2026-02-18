@@ -2165,7 +2165,7 @@ gboolean on_history_treeview_button_press_event(GtkWidget *widget, GdkEventButto
 
     return FALSE;
 }
-#else       // GTK4 "new and improved" treeview button handling NOTE: This migt work for all GTK versions in lieu of history_treeview_button_press_event(above)
+#else       // GTK4 "new and improved" treeview button handling NOTE: This might work for all GTK versions in lieu of history_treeview_button_press_event(above)
 void on_history_treeview_row_activated(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, gpointer user_data)
 {
     gchar            *entry;
@@ -2186,17 +2186,18 @@ void on_history_treeview_row_activated(GtkTreeView *tree_view, GtkTreePath *path
 #endif
 
 
+// Context menu global parameters
+static gchar       container[(2 * PATHLEN) + 1];                   // +1 for '/'                                --- For 'open in terminal' and 'open in file manager'
+static gchar       file_and_line[PATHLEN + MAX_LINENUM_SIZE + 2];  // +2 for Field-Delimiter and trailing null  --- For open_quick_view
+static gchar       entry[1024];                                    //                                           --- For static_call_browser
+// Ene Context menu global parameters
 
-
-#ifndef GTK4_BUILD  // GTK4 treeview EventButton handling 
+#ifndef GTK4_BUILD  // Pre-GTK4 treeview Context Menu handling 
 void show_context_menu(GtkWidget *treeview, GdkEventButton *event, gchar *filename, gchar *linenum, gchar *symbol)
 {
     static GtkWidget   *menu = NULL;
     static GtkWidget   *menu_item;
     gchar              tmp_path[PATHLEN];
-    static gchar       container[(2 * PATHLEN) + 1];                   // +1 for '/'
-    static gchar       file_and_line[PATHLEN + MAX_LINENUM_SIZE + 2];  // +2 for Field-Delimiter and trailing null
-    static gchar       entry[1024];
 
     /*** Construct the Context Menu ***/
     if (!menu)
@@ -2255,6 +2256,7 @@ void show_context_menu(GtkWidget *treeview, GdkEventButton *event, gchar *filena
     /*** Update the contents of "file_and_line ***/
     snprintf(file_and_line, PATHLEN + MAX_LINENUM_SIZE + 1, "%s|%s", filename, linenum);
 
+    /*** Update the contents of 'entry'  ***/
     snprintf(entry, 1023, "%s|%s|%s", filename, linenum, symbol);
 
     gtk_widget_show_all(menu);
@@ -2263,59 +2265,83 @@ void show_context_menu(GtkWidget *treeview, GdkEventButton *event, gchar *filena
                    (event != NULL) ? event->button : 0,
                    gdk_event_get_time((GdkEvent *)event));
 }
-#else
+
+#else   // GTK4 treeview Context Menu action handling
 void on_open_in_terminal_activate(GSimpleAction *action, GVariant *parameter, gpointer app) 
 {
-    printf("Hello from %s\n", __func__); 
+    printf("Hello from %s container = %s\n", __func__, container); 
 }
 
 void on_open_in_file_manager_activate(GSimpleAction *action, GVariant *parameter, gpointer app) 
 {
-    printf("Hello from %s\n", __func__); 
+    printf("Hello from %s container = %s\n", __func__, container); 
 }
 
 void on_browse_static_function_calls_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
-    printf("Hello from %s\n", __func__); 
+    printf("Hello from %s entry = %s\n", __func__, entry); 
 }
 
 void on_quick_view_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
-    printf("Hello from %s\n", __func__); 
+    printf("Hello from %s file_and_line = %s\n", __func__, file_and_line);
+    
+    on_open_quick_view(NULL, file_and_line);
 }
 
+
 void show_context_menu(gint x, gint y, gchar *filename, gchar *linenum, gchar *symbol)
+/*********************** Need to save parameters globally or pass to individual action-activate callbacks ************/
 {
-    static GdkRectangle    rect;
+    static GdkRectangle rect;
+    gchar               tmp_path[PATHLEN];
 
     rect.x = (gint) x;
     rect.y = (gint) y + 30;         // Revisit: the +30 is a hack to cause the popup to render just "below" the mouse pointer.
     rect.width = rect.height = 1;   // Having the mouse pointer outside the popup rendering avoids a GTK4 warning
                                     // bug: "Broken Accounting of active state for widget"
+    
+    /*** Update the contents of "container" ***/
+    strcpy(tmp_path, filename);
+    my_dirname(tmp_path);
 
+    if (tmp_path[0] != '/')    // Not an absolute path
+    {
+        if (tmp_path[0] == '\0')
+        {
+            // Null 'dirname' add CWD
+            if ( g_strlcpy(container, DIR_get_path(DIR_CURRENT_WORKING), PATHLEN) >= PATHLEN )
+            {
+                // Do nothing: Quietly truncate the path
+            }
+        }
+        else
+        {
+            // Relative 'dirname' make it absolute
+            snprintf(container, (2 * PATHLEN), "%s/%s", DIR_get_path(DIR_CURRENT_WORKING), tmp_path);
+        }
+    }
+
+
+    /*** Update the contents of "file_and_line ***/
+    snprintf(file_and_line, PATHLEN + MAX_LINENUM_SIZE + 1, "%s|%s", filename, linenum);
+
+    /*** Update the contents of 'entry'  ***/
+    snprintf(entry, 1023, "%s|%s|%s", filename, linenum, symbol);
+
+    // The treeview1 context menu is constructed by the GUI builder (and realized in 'main')
     GtkPopover *popover = GTK_POPOVER(my_lookup_widget("treeview1_popover"));
 
-    #if 0 // menu model and popover created in Gui Builder (Cambalache)
-    // Create the menu model
-    GMenu *context_menu = g_menu_new();
-    g_menu_append(context_menu, "Open Containing Folder", "app.open_containing_folder");
-    g_menu_append(context_menu, "Browse Containing Folder", "app.browse_containing_folder");
-
-    // Create Popover from model
-    GtkWidget *popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(context_menu));
-    gtk_widget_set_parent(popover, my_lookup_widget("treeview1"));
-    #endif
-    
     // Attach Popover to desired location within parent widget
     gtk_popover_set_pointing_to(popover, &rect);
 
     gtk_popover_popup(popover);
 }
-#endif
+#endif  // GTK4 treeview Context Menu action handling
 
 
 #ifndef GTK4_BUILD
-/*** Handle shift-F10 (context menu without a mouse) ***/
+/*** Handle shift-F10 (context menu without a mouse) ***/   
 gboolean on_treeview1_popup_menu(GtkWidget       *widget,
                                  gpointer         user_data)
 {
@@ -2346,9 +2372,9 @@ gboolean on_treeview1_popup_menu(GtkWidget       *widget,
 
     return TRUE;
 }
-
-
-#endif  // GTK4 treeview EventButton handling 
+#else
+// Difficult, if not impossible to implement with GTK4 - This functionality is deprecated starting with Gscope4
+#endif 
 
 
 #ifndef GTK4_BUILD
