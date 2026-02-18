@@ -335,6 +335,14 @@ static void activate (GtkApplication *app, gpointer *user_data)
         exit(EXIT_SUCCESS);
     }
 
+    if (strcmp(secure_getenv("XDG_SESSION_TYPE"), "wayland") == 0)
+        printf("We're running on Wayland.  Gscope May not operate normally under Wayland\n");
+    #if 0    
+    else if (strcmp(secure_getenv("XDG_SESSION_TYPE"), "x11") == 0) 
+        printf("We're on X11.\n");
+    else
+        printf("Not X11 and not Wayland\n");
+    #endif
     
     // Settings-conditional startup
     // (Must run AFTER command_line handler)
