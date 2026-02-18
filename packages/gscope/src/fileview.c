@@ -342,7 +342,7 @@ static void createFileViewer(ViewWindow *windowPtr)
     
     PangoFontDescription *font_desc;
     const gchar * const *lang_dirs;
-    #ifndef GTK4_BUILD  // needs gtk4 menu migration
+    #ifndef GTK4_BUILD
     static guint x = 400;
     static guint y = 400;
     #endif
@@ -351,20 +351,24 @@ static void createFileViewer(ViewWindow *windowPtr)
     lang_dirs = gtk_source_language_manager_get_search_path (gtk_source_language_manager_get_default ());
 
     // Create a Window
-    #ifndef GTK4_BUILD  // needs gtk4 menu migration
+    #ifndef GTK4_BUILD
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     gtk_container_set_border_width (GTK_CONTAINER (window), 10);
     #else
     window = gtk_window_new();
     #endif
+    
     gtk_window_set_title (GTK_WINDOW (window), windowPtr->filename);
     gtk_widget_set_name(GTK_WIDGET(window), windowPtr->filename);
     gtk_window_set_default_size (GTK_WINDOW(window), 660, 500);
     
-    #ifndef GTK4_BUILD  // needs gtk4 menu migration
+    #ifndef GTK4_BUILD
     gtk_window_move(GTK_WINDOW (window), x, y);
     x+=30;
     y+=30;
+    #else
+    // There is a way to simulate windows_move using X11, but not for Wayland.
+    // Just let the window manager place the new windows (at least for now)
     #endif
 
     windowPtr->topWidget = window;
@@ -372,13 +376,15 @@ static void createFileViewer(ViewWindow *windowPtr)
 
     GdkPixbuf *fileview_icon_pixbuf = create_pixbuf ("icon-search.png");
 
-    #ifndef GTK4_BUILD  // needs gtk4 menu migration
+    #ifndef GTK4_BUILD  // Use a custom icon
     if (fileview_icon_pixbuf)
         gtk_window_set_icon (GTK_WINDOW (window), fileview_icon_pixbuf);
+    #else   // GTK4: use a system-provided icon
+        gtk_window_set_icon_name(GTK_WINDOW (window), "system-search");
     #endif
 
     /* Create a Scrolled Window that will contain the GtkSourceView */
-    #ifndef GTK4_BUILD  // needs gtk4 menu migration
+    #ifndef GTK4_BUILD
     pScrollWin = gtk_scrolled_window_new (NULL, NULL);
     #else
     pScrollWin = gtk_scrolled_window_new ();
@@ -394,9 +400,9 @@ static void createFileViewer(ViewWindow *windowPtr)
     // This enables gtksourceview to find the language spec files when it is not installed at its "normal" path.
 
     lm = gtk_source_language_manager_new();
-    #ifndef GTK4_BUILD  // needs gtk4 menu migration
+    #ifndef GTK4_BUILD // Actually gtksourceview-2 and gtksourceview-3
     gtk_source_language_manager_set_search_path(lm, (gchar **) lang_dirs);
-    #else
+    #else   // Actually gtksourceview-5
     gtk_source_language_manager_set_search_path(lm, (const gchar * const*) lang_dirs);
     #endif
 
@@ -416,19 +422,8 @@ static void createFileViewer(ViewWindow *windowPtr)
     gtk_source_view_set_show_line_numbers(GTK_SOURCE_VIEW(sView), TRUE);
     gtk_source_view_set_highlight_current_line(GTK_SOURCE_VIEW(sView), TRUE);  // only effective for GTK2, harmless for GTK3 and later
     gtk_source_view_set_show_line_marks(GTK_SOURCE_VIEW(sView), TRUE);
-    #ifndef GTK4_BUILD  // needs gtk4 menu migration
-    #ifdef GTK3_BUILD
-    {
-        GtkSourceMarkAttributes *attrs;
 
-        attrs = gtk_source_mark_attributes_new ();
-        gtk_source_mark_attributes_set_pixbuf(attrs, fileview_icon_pixbuf);
-        gtk_source_view_set_mark_attributes(GTK_SOURCE_VIEW(sView), "LMtype", attrs, 1);
-    }
-    #else
-    gtk_source_view_set_mark_category_icon_from_pixbuf(GTK_SOURCE_VIEW(sView), "LMtype", fileview_icon_pixbuf);
-    #endif
-    #else
+    #if defined(GTK3_BUILD) || defined(GTK4_BUILD)
     {
         GtkSourceMarkAttributes *attrs;
 
@@ -437,10 +432,12 @@ static void createFileViewer(ViewWindow *windowPtr)
         gtk_source_mark_attributes_render_icon(attrs, GTK_WIDGET(sView), 20);
         gtk_source_view_set_mark_attributes(GTK_SOURCE_VIEW(sView), "LMtype", attrs, 1);
     }
+    #else   // GTK2
+    gtk_source_view_set_mark_category_icon_from_pixbuf(GTK_SOURCE_VIEW(sView), "LMtype", fileview_icon_pixbuf);
     #endif
 
     g_object_unref (fileview_icon_pixbuf);  // Free the pixbuf
-    #ifndef GTK4_BUILD  // needs gtk4 menu migration
+    #ifndef GTK4_BUILD  // needs gtk4 menu migration ********************************************
     g_signal_connect (GTK_SOURCE_VIEW(sView),"populate-popup",G_CALLBACK(ModifyTextPopUp),windowPtr);
     #endif
 
@@ -450,14 +447,14 @@ static void createFileViewer(ViewWindow *windowPtr)
 
     /* Set default Font name,size */
     #ifndef GTK4_BUILD
-    font_desc = pango_font_description_from_string ("Monospace");
+    font_desc = pango_font_description_from_string ("Monospace");   // GTK2 and GTK3
     #ifdef GTK3_BUILD
-    gtk_widget_override_font (sView, font_desc);
+    gtk_widget_override_font (sView, font_desc);    // GTK3
     #else
-    gtk_widget_modify_font (sView, font_desc);
+    gtk_widget_modify_font (sView, font_desc);  // GTK2
     #endif
-    pango_font_description_free (font_desc);
-    #else
+    pango_font_description_free (font_desc);    // GTK2 and GTK3
+    #else   // GTK4
     {
         GtkCssProvider *provider = gtk_css_provider_new();
         
