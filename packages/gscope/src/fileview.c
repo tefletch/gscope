@@ -437,7 +437,7 @@ static void createFileViewer(ViewWindow *windowPtr)
     #endif
 
     g_object_unref (fileview_icon_pixbuf);  // Free the pixbuf
-    #ifndef GTK4_BUILD  // needs gtk4 menu migration ********************************************
+    #ifndef GTK4_BUILD  // needs gtk4 menu migration ******************************************** see gtk_text_view_set_extra_menu()
     g_signal_connect (GTK_SOURCE_VIEW(sView),"populate-popup",G_CALLBACK(ModifyTextPopUp),windowPtr);
     #endif
 
