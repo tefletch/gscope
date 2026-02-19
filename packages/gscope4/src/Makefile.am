@@ -38,11 +38,11 @@ gscope_SOURCES = \
 	support.c	 \
 	support.h	 \
 	utils.c      \
-	utils.h
+	utils.h		 \
+	version.h
 #
 #	browser.c   \
-#	broswer.h   \
-#	version.h
+#	broswer.h
 
 xmldir = $(prefix)/bin
 xml_DATA = gscope4.cmb
