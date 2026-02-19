@@ -189,6 +189,18 @@ settings_t settings = {
 sticky_t sticky_settings;
 
 
+void helper_app_missing(gchar *app, gchar *app_type)
+{
+    char *message;
+
+    asprintf(&message,
+    "Missing helper App [%s]: " BRIGHT_RED(%s) "\n"
+    "Install missing App or Change configured %s.\n"
+    "G-Scope [%s] operations will fail until this is corrected.\n\n", app_type, app, app_type, app_type);
+
+    printf("%s", message);
+    free(message);
+}
 
 //===============================================================
 // File-Private Globals
@@ -327,6 +339,15 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
         }
     }
 
+
+    /*** Sanity Check Application Helper App Configuration Settings ***/
+    if (gscope_splash)
+    {
+        // These chacks are only relevent for GUI mode
+        if ( !my_command_check(settings.fileEditor) )  helper_app_missing(settings.fileEditor, "Editor App");
+        if ( !my_command_check(settings.terminalApp) ) helper_app_missing(settings.terminalApp, "Terminal App");
+        if ( !my_command_check(settings.fileManager) ) helper_app_missing(settings.fileManager, "File Manager App");
+    }
 
     /*** GTK Configuration File Processing ***/
     /*****************************************/

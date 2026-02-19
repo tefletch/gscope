@@ -326,22 +326,19 @@ pid_t my_system(gchar *application)
         /* Start the application */
         exec_result = execvp(execArgs[0], execArgs);
 
+        for (i = 0; i < MY_MAX_COMMAND_ARGS + 1; i++)
+            if (execArgs[i]) free(execArgs[i]);
+
         if (exec_result < 0) 
         {
-            fprintf(stderr, "exec Failed: %s \n", strerror(errno));
+            fprintf(stderr, "exec Failed: %s: %s \n", application, strerror(errno));
             cwd = getcwd(NULL, 1024);
             fprintf(stderr, "CWD         = %s\n", cwd);
             free(cwd);
-            fprintf(stderr, "Applicaton = /bin/sh -c %s\n", application);
+            fprintf(stderr, "Applicaton = /bin/sh -c %s\n\n", application);
 
             exit(1);
         }
-
-        for (i = 0; i < MY_MAX_COMMAND_ARGS + 1; i++)
-        {
-            if (execArgs[i]) free(execArgs[i]);
-        }
-        
     }
 
     // Only the parent process gets here
@@ -525,3 +522,24 @@ void my_gtk_box_pack_start (GtkBox* box,   GtkWidget* child,   gboolean expand, 
 
 
 }
+
+
+
+// This function assumes that host environment provides the 'which' command
+// One could do a "which wich" to confirm this.
+gboolean my_command_check(gchar *command)
+{
+    gchar *which_cmd;
+    char out[1024];
+
+    my_asprintf(&which_cmd, "which %s", command);
+    
+    FILE *fp = popen(which_cmd, "r");
+    g_free(which_cmd);
+
+    if (fp && fgets(out, sizeof out, fp))
+        return(TRUE);   // command found
+    else
+        return(FALSE);   // command not found
+}
+    

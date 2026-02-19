@@ -51,6 +51,7 @@ void        my_space_codec(gboolean encode, gchar *my_string);
 void        my_chdir(gchar *path);
 void        my_asprintf(gchar **str_ptr, const char *fmt, ...);
 void        my_start_text_editor(gchar *filename, gchar *linenum);
+gboolean    my_command_check(gchar *command);
 
 // GTK Version-variant abstractions
 void        my_gtk_entry_set_text(GtkEntry *entry, const gchar *text);
