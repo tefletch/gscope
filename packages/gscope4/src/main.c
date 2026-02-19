@@ -327,7 +327,7 @@ static void startup (GApplication *app, gpointer *user_data)
 static void activate (GtkApplication *app, gpointer *user_data)
 {
 
-    printf("** %s **\n", __func__);
+    printf("** %s **\n\n", __func__);
 
     if (settings.version)
     {
@@ -436,6 +436,7 @@ static int command_line(GApplication *app, GApplicationCommandLine *cmdline)
     activate(GTK_APPLICATION(app), NULL);
 
     printf("%s: done\n", __func__);
+    printf("========== startup complete ========\n\n");
     return 0;
 }
 
@@ -491,7 +492,7 @@ int main(int argc, char *argv[])
 
      
     // *** Run the application instance ***
-    printf("\n%s: run application\n", __func__);
+    printf("\n======== start application =========\n");
     status = g_application_run (G_APPLICATION(app), argc, argv);
 
     printf("hello from %s: application_run complete\n", __func__);
