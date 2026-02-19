@@ -2067,6 +2067,7 @@ void on_open_terminal(GtkWidget *menuitem, gchar *container)
     my_space_codec(ENCODE, coded_container);     // Encode any 'space' characters found in the container path
 
     my_asprintf(&command, settings.terminalApp, coded_container);  // Synthesize the full command line
+
     my_system(command);
 
     free(command);
@@ -2269,12 +2270,12 @@ void show_context_menu(GtkWidget *treeview, GdkEventButton *event, gchar *filena
 #else   // GTK4 treeview Context Menu action handling
 void on_open_in_terminal_activate(GSimpleAction *action, GVariant *parameter, gpointer app) 
 {
-    printf("Hello from %s container = %s\n", __func__, container); 
+    on_open_terminal(NULL, container); 
 }
 
 void on_open_in_file_manager_activate(GSimpleAction *action, GVariant *parameter, gpointer app) 
 {
-    printf("Hello from %s container = %s\n", __func__, container); 
+    on_open_file_browser(NULL, container); 
 }
 
 void on_browse_static_function_calls_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
@@ -2284,14 +2285,11 @@ void on_browse_static_function_calls_activate(GSimpleAction *action, GVariant *p
 
 void on_quick_view_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
-    printf("Hello from %s file_and_line = %s\n", __func__, file_and_line);
-    
     on_open_quick_view(NULL, file_and_line);
 }
 
 
 void show_context_menu(gint x, gint y, gchar *filename, gchar *linenum, gchar *symbol)
-/*********************** Need to save parameters globally or pass to individual action-activate callbacks ************/
 {
     static GdkRectangle rect;
     gchar               tmp_path[PATHLEN];
@@ -2467,8 +2465,6 @@ void on_treeview1_button3_pressed(GtkGestureClick* self, gint n_press, gdouble x
     gint            bin_x;
     gint            bin_y;
 
-    printf("Hello from: " YELLOW(%s) " \n", __func__);
-
     gtk_tree_view_convert_widget_to_bin_window_coords(GTK_TREE_VIEW(my_lookup_widget("treeview1")), (gint) x, (gint) y, &bin_x, &bin_y);
     //printf("wx = %f, bin_x = %d\n", x, bin_x);
     //printf("wy = %f, bin_y = %d\n", y, bin_y);
@@ -2478,7 +2474,7 @@ void on_treeview1_button3_pressed(GtkGestureClick* self, gint n_press, gdouble x
         if (DISPLAY_get_entry_info(path, &filename, &linenum, &symbol)) // Get the selected filename
         {
             show_context_menu(bin_x, bin_y, filename, linenum, symbol);
-            printf("%s: file: %s, line: %s, sym: %s\n", __func__, filename, linenum, symbol);
+            //printf("%s: file: %s, line: %s, sym: %s\n", __func__, filename, linenum, symbol);
         }
         gtk_tree_path_free(path);      
     }
