@@ -2593,7 +2593,6 @@ void on_editor_command_entry_changed(GtkEditable *editable, gpointer user_data)
 }
 
 
-
 //*** Start multi-Gtk version focus handling *******/
 /***************************************************/
 

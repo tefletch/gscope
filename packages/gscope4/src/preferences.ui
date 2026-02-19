@@ -147,6 +147,7 @@
                         <property name="focus-on-click">False</property>
                         <property name="hexpand">True</property>
                         <property name="margin-end">4</property>
+                        <signal name="changed" handler="on_editor_command_entry_changed"/>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">editor_entry_controller</property>
