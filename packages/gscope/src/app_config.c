@@ -585,7 +585,7 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
 
 void APP_CONFIG_set_boolean(const gchar *key, gboolean value)
 {
-    printf("CONFIG_SET: Key = %s, Value = %s\n", key, value ? "TRUE" : "FALSE");
+    //printf("CONFIG_SET: Key = %s, Value = %s\n", key, value ? "TRUE" : "FALSE");
     g_key_file_set_boolean(key_file, "Defaults", key, value);
     rewrite_config_file();
 }
@@ -594,7 +594,7 @@ void APP_CONFIG_set_boolean(const gchar *key, gboolean value)
 
 void  APP_CONFIG_set_integer(const gchar *key, gint value)
 {
-//    printf("app_config set integer = %d\n", value);
+    //printf("app_config set integer = %d\n", value);
     g_key_file_set_integer(key_file, "Defaults", key, value);
     rewrite_config_file();
 }
@@ -603,7 +603,7 @@ void  APP_CONFIG_set_integer(const gchar *key, gint value)
 
 void  APP_CONFIG_set_string(const gchar *key, const gchar *value)
 {
-//    printf("app_config set string = %s\n", value);
+    //printf("app_config set string = %s\n", value);
     g_key_file_set_string(key_file, "Defaults", key, value);
     rewrite_config_file();
 }
