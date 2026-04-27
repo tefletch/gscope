@@ -17,7 +17,6 @@
 
 // ---- local function prototypes ----
 #ifndef GTK4_BUILD  // needs gtk4 menu migration
-void ModifyTextPopUp(GtkTextView *textview, GtkMenu *menu, gpointer user_data);
 #endif
 static void createFileViewer(ViewWindow *windowPtr);
 static gboolean is_mf_or_makefile(const char *filename);
@@ -332,6 +331,115 @@ void FILEVIEW_create(gchar *file_name, gint line)
 }
 
 
+#ifndef GTK4_BUILD  // needs gtk4 menu migration
+void ModifyTextPopUp(GtkTextView *textview, GtkMenu *menu, gpointer user_data)
+{
+    GList *list;
+    GtkWidget *menuitem;
+    GtkWidget *ImageMenuItem1, *ImageMenuItem2;
+    int i = 0;
+
+    list = gtk_container_get_children (GTK_CONTAINER(menu));
+
+    while( (menuitem = (GtkWidget *) g_list_nth_data( list, i)) != NULL )
+    {
+        gtk_widget_destroy(menuitem);
+        i++;
+    }
+
+    g_list_free(list);
+
+    ImageMenuItem1 = gtk_image_menu_item_new_from_stock (GTK_STOCK_EDIT, NULL);
+    gtk_container_add (GTK_CONTAINER (menu), ImageMenuItem1);
+
+    ImageMenuItem2 = gtk_image_menu_item_new_from_stock (GTK_STOCK_CLOSE, NULL);
+    gtk_container_add (GTK_CONTAINER (menu), ImageMenuItem2);
+
+    g_signal_connect(G_OBJECT(ImageMenuItem1), "activate", G_CALLBACK(on_fileview_start_editor_activate), user_data);
+    g_signal_connect(G_OBJECT(ImageMenuItem2), "activate", G_CALLBACK(on_fileview_close_activate), user_data);
+
+    gtk_widget_show_all(GTK_WIDGET(menu));
+
+}
+#else
+
+void gtk_text_view_popup_menu(GtkWidget *widget, const char *action_name, GVariant   *parameters)
+{
+    printf("Hello from %s\n", __func__);
+}
+
+void modify_text_popup(ViewWindow *window_ptr)
+{
+    #ifdef dummy_code // experimental logic
+    // *************************** this logic doesn't work here.  The gtkpopup child doesn't exist YET.  need to hook up to popup activate.
+    // i think we want to connect to the 'map' signal for the popover
+    GtkWidget *child;
+
+    for ( child = gtk_widget_get_first_child(GTK_WIDGET(window_ptr->srcViewWidget)); child != NULL;  child = gtk_widget_get_next_sibling(child) ) 
+    {
+        if ( GTK_IS_POPOVER_MENU(child) )
+            printf("Child %lx is popover\n", child);
+        else
+            printf("Child %lx is NOT a popover\n", child);
+    }
+
+    //gtk_widget_action_set_enabled(GTK_WIDGET(window_ptr->srcViewWidget), "menu.popup", FALSE);
+    //g_action_map_add_action(G_ACTION_MAP(menu), "menu.popup", NULL, gtk_text_view_popup_menu);
+    if ( g_action_name_is_valid("menu.popup") )
+        printf("TRUE\n");
+    else
+        printf("FALSE\n");
+
+    printf("pdname: %s\n", g_action_print_detailed_name("menu.popup", NULL));
+
+    GSimpleAction *sa = g_simple_action_new("menu.popup", NULL);
+    g_signal_connect(sa, "activate", G_CALLBACK(gtk_text_view_popup_menu), NULL);
+    g_action_map_add_action(G_ACTION_MAP("menu"), G_ACTION(sa));
+
+    
+    printf("hello again\n");
+    #endif
+
+    GMenuModel *my_menu_model;
+
+    my_menu_model = gtk_text_view_get_extra_menu(GTK_TEXT_VIEW(window_ptr->srcViewWidget));
+    // g_menu_remove_all(G_MENU(my_menu_model));
+
+    printf("Menu Model item count: %d\n", g_menu_model_get_n_items(my_menu_model));
+
+    char *id;
+    if ( g_menu_model_get_item_attribute (my_menu_model, 0, G_MENU_ATTRIBUTE_LABEL, "s", &id) )
+    {
+        printf("id = %s\n", id);
+        g_free(id);
+    }
+
+    // *** Try next:  Add a new action to my_menu_model  ---------------------------------
+
+
+    // g_action_map_remove_action(G_ACTION_MAP("clipboard"), "cut");
+
+    #if 0   // This doesn't work because menu_model is NOT a widget
+    *parent = gtk_widget_get_parent(GTK_WIDGET(my_menu_model));
+    if (parent)
+        printf("found parent\n");
+    else
+        printf("no parent\n");
+    #endif
+
+    if ( g_action_name_is_valid("menu.popup") )
+        printf("menu.popup valid: TRUE\n");
+    else
+        printf("menu.popup valid: FALSE\n");
+
+    printf("pdname: %s\n", g_action_print_detailed_name("menu.popup", NULL));
+
+    printf("Exiting %s\n", __func__);
+
+}
+#endif
+
+
 static void createFileViewer(ViewWindow *windowPtr)
 {
     GtkWidget *window;
@@ -374,7 +482,7 @@ static void createFileViewer(ViewWindow *windowPtr)
     windowPtr->topWidget = window;
     g_signal_connect (GTK_WINDOW(window),"destroy",G_CALLBACK(on_fileview_destroy), window);
 
-    GdkPixbuf *fileview_icon_pixbuf = create_pixbuf ("icon-search.png");
+    GdkPixbuf *fileview_icon_pixbuf = create_pixbuf ("icon-search.png"); // Revisit: fileview_icon_pixbuf not needed for gtk4
 
     #ifndef GTK4_BUILD  // Use a custom icon
     if (fileview_icon_pixbuf)
@@ -437,8 +545,11 @@ static void createFileViewer(ViewWindow *windowPtr)
     #endif
 
     g_object_unref (fileview_icon_pixbuf);  // Free the pixbuf
+    
     #ifndef GTK4_BUILD  // needs gtk4 menu migration ******************************************** see gtk_text_view_set_extra_menu()
     g_signal_connect (GTK_SOURCE_VIEW(sView),"populate-popup",G_CALLBACK(ModifyTextPopUp),windowPtr);
+    #else
+    modify_text_popup(windowPtr);
     #endif
 
     #if defined(GTK3_BUILD) || defined(GTK4_BUILD)
@@ -479,39 +590,6 @@ static void createFileViewer(ViewWindow *windowPtr)
 
 }
 
-
-
-#ifndef GTK4_BUILD  // needs gtk4 menu migration
-void ModifyTextPopUp(GtkTextView *textview, GtkMenu *menu, gpointer user_data)
-{
-    GList *list;
-    GtkWidget *menuitem;
-    GtkWidget *ImageMenuItem1, *ImageMenuItem2;
-    int i = 0;
-
-    list = gtk_container_get_children (GTK_CONTAINER(menu));
-
-    while( (menuitem = (GtkWidget *) g_list_nth_data( list, i)) != NULL )
-    {
-        gtk_widget_destroy(menuitem);
-        i++;
-    }
-
-    g_list_free(list);
-
-    ImageMenuItem1 = gtk_image_menu_item_new_from_stock (GTK_STOCK_EDIT, NULL);
-    gtk_container_add (GTK_CONTAINER (menu), ImageMenuItem1);
-
-    ImageMenuItem2 = gtk_image_menu_item_new_from_stock (GTK_STOCK_CLOSE, NULL);
-    gtk_container_add (GTK_CONTAINER (menu), ImageMenuItem2);
-
-    g_signal_connect(G_OBJECT(ImageMenuItem1), "activate", G_CALLBACK(on_fileview_start_editor_activate), user_data);
-    g_signal_connect(G_OBJECT(ImageMenuItem2), "activate", G_CALLBACK(on_fileview_close_activate), user_data);
-
-    gtk_widget_show_all(GTK_WIDGET(menu));
-
-}
-#endif
 
 static gboolean is_mf_or_makefile(const char *filename)
 {
