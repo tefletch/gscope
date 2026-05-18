@@ -15,6 +15,8 @@ gscope_SOURCES = \
 	app_config.h \
 	auto_gen.c   \
 	auto_gen.h   \
+	browser.c    \
+	browser.h    \
 	build.c      \
 	build.h      \
 	callbacks.c  \
@@ -40,9 +42,6 @@ gscope_SOURCES = \
 	utils.c      \
 	utils.h		 \
 	version.h
-#
-#	browser.c   \
-#	broswer.h
 
 xmldir = $(prefix)/bin
 xml_DATA = gscope4.cmb
