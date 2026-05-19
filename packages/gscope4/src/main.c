@@ -189,17 +189,17 @@ static gboolean cmd_line_handler(gpointer data)
     /* Copy any dynamically allocated [argument] strings to the settings structure (and free them) */
     /* Buffer overflow protection:  Any [argument] string that exceeds the maximum allowed size is truncated */
     if (refFile)
-    {strncpy(settings.refFile,    refFile,    MAX_STRING_ARG_SIZE); settings.refFile[MAX_STRING_ARG_SIZE - 1] = 0; g_free(refFile);}
+    {g_strlcpy(settings.refFile,    refFile,    MAX_STRING_ARG_SIZE); g_free(refFile);}
     if (nameFile)
-    {strncpy(settings.nameFile,   nameFile,   MAX_STRING_ARG_SIZE); settings.nameFile[MAX_STRING_ARG_SIZE - 1] = 0; g_free(nameFile);}
+    {g_strlcpy(settings.nameFile,   nameFile,   MAX_STRING_ARG_SIZE); g_free(nameFile);}
     if (includeDir)
-    {strncpy(settings.includeDir, includeDir, MAX_STRING_ARG_SIZE); settings.includeDir[MAX_STRING_ARG_SIZE - 1] = 0; g_free(includeDir);}
+    {g_strlcpy(settings.includeDir, includeDir, MAX_STRING_ARG_SIZE); g_free(includeDir);}
     if (rcFile)
-    {strncpy(settings.rcFile,     rcFile,     MAX_STRING_ARG_SIZE); settings.rcFile[MAX_STRING_ARG_SIZE - 1] = 0; g_free(rcFile);}
+    {g_strlcpy(settings.rcFile,     rcFile,     MAX_STRING_ARG_SIZE); g_free(rcFile);}
     if (srcDir)
-    {strncpy(settings.srcDir,     srcDir,     MAX_STRING_ARG_SIZE); settings.srcDir[MAX_STRING_ARG_SIZE - 1] = 0; g_free(srcDir);}
+    {g_strlcpy(settings.srcDir,     srcDir,     MAX_STRING_ARG_SIZE); g_free(srcDir);}
     if (geometry)
-    {strncpy(settings.geometry,   geometry,   MAX_STRING_ARG_SIZE); settings.geometry[MAX_STRING_ARG_SIZE - 1] = 0; g_free(geometry);}
+    {g_strlcpy(settings.geometry,   geometry,   MAX_STRING_ARG_SIZE); g_free(geometry);}
 
 
     g_strfreev(args);
@@ -245,13 +245,13 @@ static void startup (GApplication *app, gpointer *user_data)
         }
         ui_file_path[255] = '\0';        // Ensure path string is null terminated -- readlink() does not append a null if it truncates.
         my_dirname(ui_file_path);
-        sprintf(ui_file, "%s%s", ui_file_path, "/gscope4.ui");
+        snprintf(ui_file, sizeof(ui_file), "%s%s", ui_file_path, "/gscope4.ui");
         builder = gtk_builder_new_from_file(ui_file);
 
         // Read supplemental UI definitions
         //=================================
         const char *splash_objects[] = {"gscope_splash", ""};
-        sprintf(ui_file, "%s%s", ui_file_path, "/splash.ui");
+        snprintf(ui_file, sizeof(ui_file), "%s%s", ui_file_path, "/splash.ui");
         if (!gtk_builder_add_objects_from_file(builder, ui_file, splash_objects, &error))
         {
             fprintf(stderr, "UI object merge error: File: %s. Error: %s\n", ui_file, error ? error->message : "Unknown");
@@ -259,7 +259,7 @@ static void startup (GApplication *app, gpointer *user_data)
         }
 
         const char *prefs_objects[] = {"gscope_preferences", ""};
-        sprintf(ui_file, "%s%s", ui_file_path, "/preferences.ui");
+        snprintf(ui_file, sizeof(ui_file), "%s%s", ui_file_path, "/preferences.ui");
         if (!gtk_builder_add_objects_from_file(builder, ui_file, prefs_objects, &error))
         {
             fprintf(stderr, "UI object merge error: File: %s. Error: %s\n", ui_file, error ? error->message : "Unknown");
@@ -267,7 +267,7 @@ static void startup (GApplication *app, gpointer *user_data)
         }
 
         const char *quit_objects[] = {"quit_confirm_dialog", ""};
-        sprintf(ui_file, "%s%s", ui_file_path, "/quit.ui");
+        snprintf(ui_file, sizeof(ui_file), "%s%s", ui_file_path, "/quit.ui");
         if (!gtk_builder_add_objects_from_file(builder, ui_file, quit_objects, &error))
         {
             fprintf(stderr, "UI object merge error: File: %s. Error: %s\n", ui_file, error ? error->message : "Unknown");
@@ -531,17 +531,17 @@ int main(int argc, char *argv[])
     /* Copy any dynamically allocated [argument] strings to the settings structure (and free them) */
     /* Buffer overflow protection:  Any [argument] string that exceeds the maximum allowed size is truncated */
     if (refFile)
-    {strncpy(settings.refFile,    refFile,    MAX_STRING_ARG_SIZE); settings.refFile[MAX_STRING_ARG_SIZE - 1] = 0; g_free(refFile);    }
+    {g_strlcpy(settings.refFile,    refFile,    MAX_STRING_ARG_SIZE); g_free(refFile);    }
     if (nameFile)
-    {strncpy(settings.nameFile,   nameFile,   MAX_STRING_ARG_SIZE); settings.nameFile[MAX_STRING_ARG_SIZE - 1] = 0; g_free(nameFile);   }
+    {g_strlcpy(settings.nameFile,   nameFile,   MAX_STRING_ARG_SIZE); g_free(nameFile);   }
     if (includeDir)
-    {strncpy(settings.includeDir, includeDir, MAX_STRING_ARG_SIZE); settings.includeDir[MAX_STRING_ARG_SIZE - 1] = 0; g_free(includeDir); }
+    {g_strlcpy(settings.includeDir, includeDir, MAX_STRING_ARG_SIZE); g_free(includeDir); }
     if (rcFile)
-    {strncpy(settings.rcFile,     rcFile,     MAX_STRING_ARG_SIZE); settings.rcFile[MAX_STRING_ARG_SIZE - 1] = 0; g_free(rcFile);     }
+    {g_strlcpy(settings.rcFile,     rcFile,     MAX_STRING_ARG_SIZE); g_free(rcFile);     }
     if (srcDir)
-    {strncpy(settings.srcDir,     srcDir,     MAX_STRING_ARG_SIZE); settings.srcDir[MAX_STRING_ARG_SIZE - 1] = 0; g_free(srcDir);     }
+    {g_strlcpy(settings.srcDir,     srcDir,     MAX_STRING_ARG_SIZE); g_free(srcDir);     }
     if (geometry)
-    {strncpy(settings.geometry,   geometry,   MAX_STRING_ARG_SIZE); settings.geometry[MAX_STRING_ARG_SIZE - 1] = 0; g_free(geometry); }
+    {g_strlcpy(settings.geometry,   geometry,   MAX_STRING_ARG_SIZE); g_free(geometry); }
 
     //Process the arguments that don't require GUI functionality
 
@@ -571,7 +571,7 @@ int main(int argc, char *argv[])
         /* Support optional/fall-back "local" pixmap files under $HOME/gscope/pixmaps */
         home = getenv("HOME");
         if (home == NULL) home = "";
-        sprintf(path, "%s%s", home, "/.gscope/pixmaps");
+        snprintf(path, sizeof(path), "%s%s", home, "/.gscope/pixmaps");
 
         add_pixmap_directory(path);  // Support for "private" installs (as a fall-back, not an override)
 
@@ -609,7 +609,7 @@ int main(int argc, char *argv[])
             }
             ui_file_path[255] = '\0';        // Ensure path string is null terminated -- readlink() does not append a null if it truncates.
             my_dirname(ui_file_path);
-            strcat(ui_file_path, "/gscope4.");
+            g_strlcat(ui_file_path, "/gscope4.", sizeof(ui_file_path));
 
             // gtk4 migration:
             // If needed, use gtk_builder_set_current_object() to add user data to signals.
