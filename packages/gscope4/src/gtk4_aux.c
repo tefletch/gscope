@@ -7,20 +7,6 @@
 
 
 
-// Temporary GTK4 stub functions for BROWSER component
-//====================================================
-gboolean BROWSER_init(GtkWidget *main)
-{    
-    printf("hello from Gtk4aux: %s\n", __func__);
-}
-
-GtkWidget* BROWSER_create(gchar *name, gchar *root_file, gchar *line_num)
-{    
-    printf("hello from Gtk4aux: %s\n", __func__);
-}
-
-
-
 // Temporary GTK4 stub functions for message dialogs
 //===================================================
 
