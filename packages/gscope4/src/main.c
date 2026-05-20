@@ -353,7 +353,8 @@ static void activate (GtkApplication *app, gpointer *user_data)
     }
     else
     {
-        APP_CONFIG_init(GTK_WIDGET(my_lookup_widget("gscope_splash")));
+        // Since we don't have modal dialogs in GTK4 we cannot use gscope_splash as the parent window
+        APP_CONFIG_init(GTK_WIDGET(my_lookup_widget("gscope_main")));
         CALLBACKS_init(GTK_WIDGET(my_lookup_widget("gscope_main")));
         CALLBACKS_register_app(app);    // Give a reference to callbacks.c for application shutdown.
         BUILD_initDatabase(GTK_WIDGET(my_lookup_widget("splash_progressbar")));
