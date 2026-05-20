@@ -2280,7 +2280,7 @@ void on_open_in_file_manager_activate(GSimpleAction *action, GVariant *parameter
 
 void on_browse_static_function_calls_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
-    printf("Hello from %s entry = %s\n", __func__, entry); 
+    on_open_call_browser(NULL, entry);
 }
 
 void on_quick_view_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
