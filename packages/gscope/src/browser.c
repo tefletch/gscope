@@ -355,7 +355,7 @@ static void get_function(tcb_t *tcb, guint col, guint row, dir_e direction, gcha
 //********************************************************************************************** 
 static result_t* parse_results(search_results_t *results)
 {
-    result_t * node,*next_node,*front;
+    result_t *node, *next_node, *front;
     gchar *curr;
     gboolean first_space;
     gchar *result_ptr = results->start_ptr;
@@ -2308,15 +2308,16 @@ static GtkWidget* create_browser_window(gchar *name, gchar *root_file, gchar *li
     browser_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_set_name(browser_vbox, "browser_vbox");
     gtk_widget_show(browser_vbox);
+    
     #ifndef GTK4_BUILD
     gtk_container_add(GTK_CONTAINER(browser_window), browser_vbox);
     browser_scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
     gtk_box_pack_start(GTK_BOX(browser_vbox), browser_scrolledwindow, TRUE, TRUE, 0);
-#else
+    #else
     gtk_window_set_child(GTK_WINDOW(browser_window), browser_vbox);
     browser_scrolledwindow = gtk_scrolled_window_new();
     gtk_box_append(GTK_BOX(browser_vbox), browser_scrolledwindow);
-#endif
+    #endif
 
     gtk_widget_set_name(browser_scrolledwindow, "browser_scrolledwindow");
     gtk_widget_show(browser_scrolledwindow);
