@@ -2343,7 +2343,7 @@ static GtkWidget* create_browser_window(gchar *name, gchar *root_file, gchar *li
     gtk_container_add(GTK_CONTAINER(browser_viewport), browser_table);
     #else
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(browser_scrolledwindow), browser_viewport);
-    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(browser_viewport), browser_table);
+    gtk_viewport_set_child(GTK_VIEWPORT(browser_viewport), browser_table);
     #endif
 
     // Initialize the TCB
