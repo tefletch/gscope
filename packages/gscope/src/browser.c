@@ -359,17 +359,21 @@ static result_t* parse_results(search_results_t *results)
     gchar *curr;
     gboolean first_space;
     gchar *result_ptr = results->start_ptr;
+    gchar *line_end;
 
     front = next_node = (result_t *)g_malloc(sizeof(result_t));
     while (result_ptr != results->end_ptr)
     {
         node = next_node;
-        gchar *line_end = result_ptr;
+        
+        line_end = result_ptr;
         while (line_end != results->end_ptr && *line_end != '\n') line_end++;
-        node->buf = (gchar *)g_malloc((gsize)(line_end - result_ptr) + 1);
+        node->buf = (gchar *)g_malloc((gsize)(line_end - result_ptr) + 1);  // Allocate a 'right sized' buffer for node->buf
+        
         node->file_name = node->buf;
         curr = node->buf;
         first_space = TRUE;
+        
         // newlines seperate each entry
         while (*result_ptr != '\n')
         {
