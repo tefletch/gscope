@@ -308,8 +308,8 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
                         GTK_DIALOG_DESTROY_WITH_PARENT,
                         GTK_MESSAGE_WARNING,
                         GTK_BUTTONS_CLOSE,
-                        "Unable to create default G-Scope configuration file:\n"
-                        "%s.\n\n"
+                        "Unable to create default G-Scope configuration file\n"
+                        "Filename: %s.\n\n"
                         "Starting program using factory defaults.\n"
                         "G-Scope will not retain configuration changes.", app_config_file);
 
@@ -323,7 +323,7 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
                         "Starting program using factory defaults.\n"
                         "G-Scope will not retain configuration changes.", app_config_file);
 
-                    GTK4_message_dialog(GTK_MESSAGE_WARNING, message);
+                    my_message_dialog(GTK_WINDOW(gscope_splash), GTK_MESSAGE_WARNING, message, TRUE);
 
                     free(message);
                 #endif
@@ -422,7 +422,7 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
                         "File: <span weight=\"bold\">%s</span>",
                         gtk_config_file);
 
-                    GTK4_message_dialog(GTK_MESSAGE_INFO, message);
+                    my_message_dialog(GTK_WINDOW (gscope_splash), GTK_MESSAGE_INFO, message, TRUE);
                     free(message);
                 #endif
 
@@ -862,7 +862,7 @@ static void pixmap_path_fixup(char *filename, char *path, GtkWidget *parent)
                             "from your old config file.\n\n<b>Saved file name:</b> %s",
                             filename,
                             new_filename);
-                    GTK4_message_dialog(GTK_MESSAGE_INFO, message);
+                    my_message_dialog(GTK_WINDOW(parent), GTK_MESSAGE_INFO, message, TRUE);
                     free(message);
                     #endif
                     g_free(new_filename);

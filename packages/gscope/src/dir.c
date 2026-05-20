@@ -793,9 +793,9 @@ static void _make_src_file_list()
                 char *message;
                 asprintf(&message, "Cannot open <span weight=\"bold\">Source Files Name List</span> file: <span weight=\"bold\" foreground=\"blue\">%s</span>", settings.nameFile);
                 #ifndef GTK4_BUILD
-                DISPLAY_message_dialog(GTK_WINDOW(CALLBACKS_get_widget("gscope_splash")), GTK_MESSAGE_ERROR, message, TRUE);
+                my_message_dialog(GTK_WINDOW(CALLBACKS_get_widget("gscope_splash")), GTK_MESSAGE_ERROR, message, TRUE);
                 #else
-                DISPLAY_message_dialog(GTK_WINDOW(CALLBACKS_get_widget("gscope_main")), GTK_MESSAGE_ERROR, message, TRUE);
+                my_message_dialog(GTK_WINDOW(CALLBACKS_get_widget("gscope_main")), GTK_MESSAGE_ERROR, message, TRUE);
                 #endif
                 free(message);
             }
@@ -993,7 +993,7 @@ static void find_srcfiles_in_tree(gchar *src_dir)
         my_asprintf(&message,"\nG-Scope Error: Recursive File Tree Walk Error: %s", strerror(errno));
 
         if ( !settings.refOnly )  // If we are in GUI mode
-            DISPLAY_message_dialog(GTK_WINDOW(CALLBACKS_get_widget("gscope_main")), GTK_MESSAGE_ERROR, message, TRUE);
+            my_message_dialog(GTK_WINDOW(CALLBACKS_get_widget("gscope_main")), GTK_MESSAGE_ERROR, message, TRUE);
         else
             fprintf(stderr, "%s\n", message);
 

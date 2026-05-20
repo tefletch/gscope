@@ -34,6 +34,8 @@
 
 #if defined(GTK3_BUILD) || defined(GTK4_BUILD)
 #define lookup_widget(wiget, name) my_lookup_widget(name)
+#else   // GTK2
+#include "support.h"
 #endif
 
 
@@ -60,7 +62,6 @@ gchar       *my_gtk_file_chooser_get_filename(GtkFileChooser *chooser);
 void        my_gtk_check_button_set_active(GtkWidget *button, gboolean is_active);
 gboolean    my_gtk_check_button_get_active(GtkWidget *button);
 void        my_gtk_box_pack_start (GtkBox* box,   GtkWidget* child,   gboolean expand,   gboolean fill,  guint padding);
-
-
+void        my_message_dialog(GtkWindow *parent, GtkMessageType severity, const gchar *message, gboolean modal);
 
 

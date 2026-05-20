@@ -758,7 +758,7 @@ void on_quit_confirm_dialog_response(GtkDialog *dialog, gint response_id, gpoint
             char *error_string;
 
             my_asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"Quit Confirmation\" dialog.", response_id);
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
+            my_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
             g_free(error_string);
         }
 
@@ -1746,7 +1746,7 @@ void on_usage1_activate(GSimpleAction *action, GVariant *parameter, gpointer use
        "\n                          Show version information"
     ;
 
-    DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_OTHER, message, FALSE);
+    my_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_OTHER, message, FALSE);
 }
 
 
@@ -1775,7 +1775,7 @@ void on_setup1_activate(GSimpleAction *action, GVariant *parameter, gpointer use
        "    $TMPDIR = <span style=\"italic\">path</span>  [All G-Scope temporary files are placed in this directory]";
 
 
-    DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_OTHER, (gchar *)message, FALSE);
+    my_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_OTHER, (gchar *)message, FALSE);
 }
 
 
@@ -1914,7 +1914,7 @@ void on_aboutdialog1_response(GtkDialog *dialog, gint response_id, gpointer user
             char *error_string;
 
             my_asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"about\" dialog.", response_id);
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
+            my_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
             g_free(error_string);
             gtk_widget_hide(GTK_WIDGET(dialog));
         }
@@ -2714,7 +2714,7 @@ void on_ignored_entry_focus_out_event(GtkEventControllerFocus *controller, gpoin
             }
             else
             {
-                DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_WARNING, "Invalid 'Ignored List' Syntax.\nUpdate aborted.", TRUE);
+                my_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_WARNING, "Invalid 'Ignored List' Syntax.\nUpdate aborted.", TRUE);
                 my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "ignored_entry")), settings.ignoredList);
             }
         }
@@ -2904,7 +2904,7 @@ void on_autogen_cache_path_entry_focus_out_event(GtkEventControllerFocus *contro
             // The user is not allowed to configure a "null" string for the cache path
             // and the directory must exist and have the required permissions
 
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid local cache path selected, reverting to default path.", TRUE);
+            my_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid local cache path selected, reverting to default path.", TRUE);
             my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cache_path_entry")), autoGenPathDef);
             autogen_cache_path =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cache_path_entry")));
         }
@@ -2983,7 +2983,7 @@ void on_autogen_suffix_entry1_focus_out_event(GtkEventControllerFocus *controlle
         {
             // We always expect .<something>
 
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid Meta-source suffix, reverting to default.", TRUE);
+            my_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid Meta-source suffix, reverting to default.", TRUE);
             my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_suffix_entry1")), autoGenSuffixDef);
             entry_text =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_suffix_entry1")));
         }
@@ -3033,7 +3033,7 @@ void on_autogen_cmd_entry1_focus_out_event(GtkEventControllerFocus *controller, 
         {
             // We always expect <something>
 
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid Meta-source compile command, reverting to default.", TRUE);
+            my_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid Meta-source compile command, reverting to default.", TRUE);
             my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cmd_entry1")),  autoGenCmdDef);
             entry_text =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "autogen_cmd_entry1")));
         }
@@ -3146,7 +3146,7 @@ void on_terminal_app_entry_focus_out_event(GtkEventControllerFocus *controller, 
         if ((strlen(entry_text) < 3) || (strstr(entry_text, "%s") == NULL))
         {
             // We always expect something in entry_text and at least one %s format specifier
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid Terminal App command, reverting to default.", TRUE);
+            my_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid Terminal App command, reverting to default.", TRUE);
             my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")),  terminalAppDef);
             entry_text =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")));
         }
@@ -3155,7 +3155,7 @@ void on_terminal_app_entry_focus_out_event(GtkEventControllerFocus *controller, 
         tmp_ptr = strchr(entry_text, ' ');
         if (tmp_ptr == NULL || strchr(tmp_ptr + 1, ' ') != NULL)   //  if num_args != 1
         {
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Terminal App command format error, single (1) option required, reverting to default.", TRUE);
+            my_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Terminal App command format error, single (1) option required, reverting to default.", TRUE);
             my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")),  terminalAppDef);
             entry_text =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "terminal_app_entry")));
         }
@@ -3194,7 +3194,7 @@ void on_file_manager_app_entry_focus_out_event(GtkEventControllerFocus *controll
         if ((strlen(entry_text) < 3) || (strstr(entry_text, "%s") == NULL))
         {
             // We always expect something in entry_text and at least one %s format specifier
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid File Manager App command, reverting to default.", TRUE);
+            my_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "Invalid File Manager App command, reverting to default.", TRUE);
             my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")),  fileManagerDef);
             entry_text =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")));
         }
@@ -3203,7 +3203,7 @@ void on_file_manager_app_entry_focus_out_event(GtkEventControllerFocus *controll
         tmp_ptr = strchr(entry_text, ' ');
         if (tmp_ptr == NULL || strchr(tmp_ptr + 1, ' ') != NULL)   //  if num_args != 1
         {
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "File Manager App command format error, single (1) option required, reverting to default.", TRUE);
+            my_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_ERROR, "File Manager App command format error, single (1) option required, reverting to default.", TRUE);
             my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")),  fileManagerDef);
             entry_text =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")));
         }
@@ -3419,7 +3419,7 @@ void on_folder_chooser_dialog_response(GtkDialog       *dialog,
             char *error_string;
 
             my_asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"folder chooser\" dialog.", response_id);
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
+            my_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
             g_free(error_string);
 
             gtk_widget_hide(GTK_WIDGET(dialog));
@@ -3504,7 +3504,7 @@ void on_open_file_chooser_dialog_response(GtkDialog       *dialog,
             char *error_string;
 
             my_asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"file open\" dialog.", response_id);
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
+            my_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
             g_free(error_string);
 
             gtk_widget_hide(GTK_WIDGET(dialog));
@@ -3579,7 +3579,7 @@ void on_output_file_chooser_dialog_response(GtkDialog       *dialog,
 
             if (strlen(filename) >= MAX_STRING_ARG_SIZE)
             {
-                DISPLAY_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_WARNING, "Selected File path is too long.\nUpdate aborted.", TRUE);
+                my_message_dialog(GTK_WINDOW(gscope_preferences), GTK_MESSAGE_WARNING, "Selected File path is too long.\nUpdate aborted.", TRUE);
                 filename = (gchar *)my_gtk_entry_get_text(GTK_ENTRY(output_entry[active_output_entry]));
             }
             else
@@ -3622,7 +3622,7 @@ void on_output_file_chooser_dialog_response(GtkDialog       *dialog,
             char *error_string;
 
             my_asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"output file\" dialog.", response_id);
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
+            my_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
             g_free(error_string);
 
             gtk_widget_hide(GTK_WIDGET(dialog));
@@ -4109,7 +4109,7 @@ void on_save_results_file_chooser_dialog_response(GtkDialog *dialog, gint respon
             char error_string[150];
 
             sprintf(error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"Save Results As\" dialog.", response_id);
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
+            my_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
             save_success = TRUE;      /* Nothing really saved, but we don't want to trigger the "No Results" pop-up */
         }
 
@@ -4118,12 +4118,12 @@ void on_save_results_file_chooser_dialog_response(GtkDialog *dialog, gint respon
 
     if (bad_filename)
     {
-        DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_ERROR, "Error:  You must specify a folder and file name.", TRUE);
+        my_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_ERROR, "Error:  You must specify a folder and file name.", TRUE);
     }
     else
     {
         if (!save_success)
-            DISPLAY_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_ERROR, "Error:  No search results available to save.", TRUE);
+            my_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_ERROR, "Error:  No search results available to save.", TRUE);
     }
 
 

@@ -41,8 +41,5 @@ void DISPLAY_always_show_image(gboolean always_show);
 /* Set the session info button tooltip */
 void DISPLAY_update_stats_tooltip(gchar *msg);
 
-/* Display a message dialog(type, message, modal) over a specific parent */
-void DISPLAY_message_dialog(GtkWindow *parent, GtkMessageType severity, const gchar *message, gboolean modal);
-
 /* Update the cross-reference status indicator */
 void DISPLAY_set_cref_current(gboolean up_to_date);
