@@ -93,7 +93,9 @@ static GtkWidget    *output_file_chooser_dialog = NULL;
 static GtkWidget    *save_results_file_chooser_dialog = NULL;
 static GtkWidget    *browser_window = NULL;
 
+#if defined(GTK4_BUILD)
 static GtkApplication *gscope_app = NULL;  
+#endif
 
 //---Public Globals (Try to keep this section empty)----
 
@@ -537,7 +539,7 @@ GtkWidget *CALLBACKS_get_widget(gchar *widget_name)
     if ( strcmp(widget_name, "gscope_main") == 0 )
         return(gscope_main);
     if ( strcmp(widget_name, "gscope_splash") == 0)
-        return(lookup_widget("gscope_splash", widget_name));
+        return(lookup_widget(gscope_main, widget_name));
     if ( strcmp(widget_name, "progressbar1") == 0 )
         return(lookup_widget(gscope_main, widget_name));
 
@@ -788,7 +790,7 @@ void on_confirm_exit_checkbutton_toggled(GtkCheckButton *checkbutton, gpointer u
         APP_CONFIG_set_boolean("exitConfirm", settings.exitConfirm);
 
         // Synch the checkbutton in the preferences dialog.
-        my_gtk_check_button_set_active(lookup_widget(GTK_WIDGET(preferences_dialog),
+        my_gtk_check_button_set_active(lookup_widget(GTK_WIDGET(quit_confirm_dialog),
                                     "confirmation_checkbutton"), settings.exitConfirm);
     }
 }
@@ -1295,44 +1297,20 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
             gtk_button_set_label(GTK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_button")), "Enable");
 
         // "Show menu icons" supported from GTK 2.15 through GTK3.  Not supported on GTK4 (no more GtkImageMenuItem 
-        // Use a GtkMenuItem containing a GtkBox with a GtkAccelLabel and a GtkImage instead).
-        if ( (gtk_get_major_version() > 2 && gtk_get_major_version() < 4) || ((gtk_get_major_version() == 2) && (gtk_get_minor_version() > 15)))
-        {
-            #ifndef GTK4_BUILD
-            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "showicons_checkbutton")), settings.menuIcons);
-            #else
-            gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "showicons_checkbutton")), settings.menuIcons);
-            #endif
-        }
-        else
-        {
-            // if the current gtk library does not provide gtk_image_menu_item_set_always_show_image()
-            // We cannot support the "Show Menu Icons" functionality, so disable that preference item.
-            gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "showicons_checkbutton"), FALSE);
-            #ifndef GTK4_BUILD
-            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "showicons_checkbutton")), FALSE);
-            #else
-            gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "showicons_checkbutton")), FALSE);
-            #endif
-        }
-        
+        // Use a GtkMenuItem containing a GtkBox with a GtkAccelLabel and a GtkImage instead).        if ( (gtk_get_major_version() > 2 && gtk_get_major_version() < 4) || ((gtk_get_major_version() == 2) && (gtk_get_minor_version() > 15)))
+
         #ifndef GTK4_BUILD
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "showicons_checkbutton")), settings.menuIcons);
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "single_click_checkbutton")), settings.singleClick);
-        #else
-        gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "single_click_checkbutton")), settings.singleClick);
-        #endif
-
-        #ifndef GTK4_BUILD
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "show_includes_checkbutton")), settings.showIncludes);
-        #else
-        gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "show_includes_checkbutton")), settings.showIncludes);
-        #endif
-
-        #ifndef GTK4_BUILD
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "compress_symbols_checkbutton")), !settings.compressDisable);
         #else
+        gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "showicons_checkbutton")), FALSE);
+        gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "single_click_checkbutton")), settings.singleClick);
+        gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "show_includes_checkbutton")), settings.showIncludes);
         gtk_check_button_set_active(GTK_CHECK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "compress_symbols_checkbutton")), !settings.compressDisable);
         #endif
+        
 
         gtk_entry_set_max_length(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "terminal_app_entry")), MAX_STRING_ARG_SIZE - 1);
         my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(prefs_dialog), "terminal_app_entry")), settings.terminalApp);
@@ -1848,12 +1826,21 @@ void on_about1_activate(GSimpleAction *action, GVariant *parameter, gpointer use
 
         gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(aboutdialog1), "Version "VERSION);
 
+        #if defined(GTK3_BUILD) || defined (GTK4_BUILD)
         my_asprintf(&full_comment, "%s%s%s%s%d.%d.%d%s",
                     description,
                     based_on,
                     modified_by,
                     gtk_version, gtk_get_major_version(), gtk_get_minor_version(), gtk_get_micro_version(),
                     build_date);
+        #else   // GTK 2
+        my_asprintf(&full_comment, "%s%s%s%s%d.%d.%d%s",
+                    description,
+                    based_on,
+                    modified_by,
+                    gtk_version, gtk_major_version, gtk_minor_version, gtk_micro_version,
+                    build_date);
+        #endif
 
         gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(aboutdialog1), full_comment);
         g_free(full_comment);
@@ -3736,7 +3723,7 @@ void on_stats_dialog_closebutton_clicked(GtkButton       *button,
 // UI_VERSION 2: Top menu Option-->Retain input for next query (deleted menu item)
 void on_retain_text_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
 {
-    if ( my_gtk_check_button_get_active(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_checkbutton")) != sticky_settings.retainInput )
+    if ( my_gtk_check_button_get_active(lookup_widget(GTK_WIDGET(gscope_preferences), "retain_text_checkbutton")) != sticky_settings.retainInput )
     {
         /*** Manage Settings ***/
         /***********************/
@@ -3785,7 +3772,7 @@ void on_retain_text_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer 
 
 void on_retain_text_failed_search_checkbutton_toggled(GtkToggleButton *togglebutton, gpointer user_data)
 {
-    if ( my_gtk_check_button_get_active(lookup_widget(GTK_WIDGET(prefs_dialog), "retain_text_failed_search_checkbutton")) != settings.retainFailed )
+    if ( my_gtk_check_button_get_active(lookup_widget(GTK_WIDGET(gscope_preferences), "retain_text_failed_search_checkbutton")) != settings.retainFailed )
     {
         // This setting is only implemented as a start-up setting, hence there is no "active" (volatile) setting to match.
 

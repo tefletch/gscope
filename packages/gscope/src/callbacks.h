@@ -206,6 +206,7 @@ gboolean on_autogen_id_entry1_focus_out_event   (GtkWidget *widget, GdkEventFocu
 gboolean on_autogen_cache_threshold_spinbutton_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
 gboolean on_terminal_app_entry_focus_out_event  (GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
 gboolean on_file_manager_app_entry_focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer user_data);
+gboolean on_folder_chooser_dialog_delete_event  (GtkWidget *widget, GdkEvent *event, gpointer user_data);
 #else
 void on_editor_command_entry_focus_out_event(GtkEventControllerFocus *controller, gpointer user_data);
 void on_suffix_entry_focus_out_event        (GtkEventControllerFocus *controller, gpointer user_data);

@@ -679,7 +679,7 @@ static void create_header_button_with_adjuster(tcb_t *tcb, guint col, gint label
     gtk_widget_set_can_focus(header_button, FALSE);
     
     #if !defined(GTK3_BUILD) && !defined(GTK4_BUILD)
-    gtk_button_set_focus_on_click(header_button, FALSE);
+    gtk_button_set_focus_on_click(GTK_BUTTON(header_button), FALSE);
     #else
     gtk_widget_set_focus_on_click(header_button, FALSE);
     #endif
@@ -1148,13 +1148,18 @@ static void make_expander_at_position(tcb_t *tcb, guint col, guint row, dir_e di
         image = create_pixmap(expander, "sca_expander_right.png");
     gtk_widget_show(image);
     #ifndef GTK4_BUILD
+    gtk_table_attach (GTK_TABLE(tcb->browser_table), expander, 
+                    col, col + 1, 
+                    row, row + 1,
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (GTK_FILL), 0, 0);
     gtk_container_add(GTK_CONTAINER(expander), image);
     #else
     gtk_box_append(GTK_BOX(expander), image);
+    gtk_grid_attach(GTK_GRID(tcb->browser_table), expander, col, row, 1, 1);
     #endif
    
     // Add the new expander widget to the [col] column list [at row]
-    gtk_grid_attach(GTK_GRID(tcb->browser_table), expander, col, row, 1, 1);
     column_list_insert(&(tcb->col_list[col]), expander, row);
 
     tcb->col_list[col].type = EXPANDER;
@@ -1258,8 +1263,6 @@ static void right_click_menu(GdkEventButton *event, result_t *function_box)
     gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
                    (event != NULL) ? event->button : 0,
                    gdk_event_get_time((GdkEvent *)event));
-
-    gtk_menu_popup_at_pointer(GTK_MENU(menu), NULL);
 }
 
 #else
@@ -1701,12 +1704,18 @@ static void make_collapser_at_position(tcb_t *tcb, guint col, guint row, dir_e d
     
     #ifndef GTK4_BUILD
     gtk_container_add(GTK_CONTAINER(collapser), image);
-    #else
-    gtk_box_append(GTK_BOX(collapser), image);
-    #endif
 
     // Attach new collapser widget to the table at the location previously occupied by the expander widget [row, col]
+    gtk_table_attach(GTK_TABLE(tcb->browser_table), collapser, col, col + 1, row, row + 1,
+                     (GtkAttachOptions)(GTK_FILL),
+                     (GtkAttachOptions)(GTK_FILL), 0, 0);
+    #else
+    gtk_box_append(GTK_BOX(collapser), image);
+    
+    // Attach new collapser widget to the table at the location previously occupied by the expander widget [row, col]
     gtk_grid_attach(GTK_GRID(tcb->browser_table), collapser, col, row, 1, 1);
+    #endif
+
     column_list_insert(&(tcb->col_list[col]), collapser, row);
 
     tcb->col_list[col].type = EXPANDER;     // Yes, this is correct, a collapser is an EXPANDER-class item
@@ -2306,12 +2315,13 @@ static GtkWidget* create_browser_window(gchar *name, gchar *root_file, gchar *li
     {
         gtk_window_set_icon(GTK_WINDOW(browser_window), browser_window_icon_pixbuf);
         gdk_pixbuf_unref(browser_window_icon_pixbuf);
+        browser_vbox = gtk_vbox_new(FALSE, 0);
     }
     #else
     gtk_window_set_icon_name(GTK_WINDOW(browser_window), "system-search");
+    browser_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     #endif
 
-    browser_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_set_name(browser_vbox, "browser_vbox");
     gtk_widget_show(browser_vbox);
     
@@ -2319,10 +2329,12 @@ static GtkWidget* create_browser_window(gchar *name, gchar *root_file, gchar *li
     gtk_container_add(GTK_CONTAINER(browser_window), browser_vbox);
     browser_scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
     gtk_box_pack_start(GTK_BOX(browser_vbox), browser_scrolledwindow, TRUE, TRUE, 0);
+    browser_table = gtk_table_new(3, 5, FALSE);   // 3rows x 5 columns, not-homogeneous
     #else
     gtk_window_set_child(GTK_WINDOW(browser_window), browser_vbox);
     browser_scrolledwindow = gtk_scrolled_window_new();
     gtk_box_append(GTK_BOX(browser_vbox), browser_scrolledwindow);
+    browser_table = gtk_grid_new();
     #endif
 
     gtk_widget_set_name(browser_scrolledwindow, "browser_scrolledwindow");
@@ -2333,8 +2345,6 @@ static GtkWidget* create_browser_window(gchar *name, gchar *root_file, gchar *li
     gtk_widget_set_name(browser_viewport, "browser_viewport");
     gtk_widget_show(browser_viewport);
 
-    //browser_table = gtk_table_new(3, 5, FALSE);   // 3rows x 5 columns, not-homogeneous
-    browser_table = gtk_grid_new();
     gtk_widget_set_name(browser_table, "browser_table");
     gtk_widget_show(browser_table);
 
