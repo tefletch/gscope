@@ -26,8 +26,6 @@
 #include "build.h"
 #include "utils.h"
 
-#include "gtk4_aux.h"
-
 
 // Test callback
 void print_hello (GtkWidget *widget, gpointer   data)

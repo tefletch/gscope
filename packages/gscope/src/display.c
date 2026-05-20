@@ -25,7 +25,6 @@
 #include "utils.h"
 #include "app_config.h"
 #ifdef GTK4_BUILD
-#include "gtk4_aux.h"
 #endif
 
 // ==== defines ====
