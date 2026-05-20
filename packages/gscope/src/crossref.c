@@ -66,12 +66,12 @@ static  void     putcrossref(void);
 static  void     savesymbol(int token, int num);
 static  void     writestring(char *s);
 static  void     putfilename(char *srcfile);
-static  gboolean file_is_ascii_text(FILE *filename);
+static  gboolean file_is_ascii_text(FILE *filename, char *srcfile);
 
 gboolean crossref(char *srcfile)
 {
     int i;
-    int length;     /* symbol length */
+    int length;         /* symbol length */
     int entry_no;       /* function level of the symbol */
     int token;          /* current token */
     struct stat st;
@@ -94,7 +94,7 @@ gboolean crossref(char *srcfile)
     }
     filename = srcfile; /* save the file name for warning messages */
 
-    if ( file_is_ascii_text(yyin) )
+    if ( file_is_ascii_text(yyin, srcfile) )
     {
         putfilename(srcfile);   /* output the file name */
         dbputc('\n');
@@ -195,14 +195,18 @@ gboolean crossref(char *srcfile)
 /* for performance reasons.  Most non-text files can be detected this way .*/
 
 #define TEXT_CHECK_SIZE     16      /* The number of bytes to check */
+#define BUCKET_SIZE         3
 
-static gboolean file_is_ascii_text(FILE *filename)
+static gboolean file_is_ascii_text(FILE *filename, char *srcfile)
 {
     gchar check_buf[TEXT_CHECK_SIZE];
+    gchar byte_bucket[BUCKET_SIZE];
+
     size_t bytes_read;
     int i;
 
     bytes_read = fread(check_buf, 1, TEXT_CHECK_SIZE, filename);
+    rewind(filename);
 
     // Some text editors create UTF-8 encoded files that contain special values in the first 3 bytes.
     // Consider files that utilize a Unicode BOM as ASCII files.
@@ -215,17 +219,27 @@ static gboolean file_is_ascii_text(FILE *filename)
     // be normally-off [Default = Treat any file with BOM as binary] and assign a command line argurment to enable
     // BOM detect-and-skip on a per session basis.
     if ( (bytes_read > 2) && (check_buf[0] == 0xef) && (check_buf[1] == 0xbb) && (check_buf[2] == 0xbf) )  
+    {
+        // SUBTLE SIDE EFFECT:  Reposition the read pointer PAST the Unicode BOM preamble
+        if ( fread(byte_bucket, 1, BUCKET_SIZE, filename) < BUCKET_SIZE )
+            return(FALSE);      // Something is seriously wrong if we cannot reposition the read pointer past BOM
         return(TRUE);
+    }
 
     // Allow UTF8 copyright symbol (2-byte UTF8) by using byte substitution of actual ASCII chars
     // Warning: Allowing a UTF8 copyright symbol in an ASCII file may cause gscope issues
     for (i = 0; i < bytes_read - 1; i++)
     {
-        if ( check_buf[i] == 0xc2 && check_buf[i+1] == 0xa9 )
+        if ( check_buf[i] == 0xc2 && check_buf[i+1] == 0xa9 )  // If copyright symbol encountered
         {
+            // Let this funciton ignore copyright symbol
             // patch check_buf with some real ASCII chars
             check_buf[i]   = '(';
             check_buf[i+1] = ')';
+            fprintf(stderr, "\nWarning: Non-ASCII copyright symbol detected in source file");
+            fprintf(stderr, "\n         File: %s\n");
+            fprintf(stderr, "Gscope classifies this file as ASCII, but may malfunction\n");
+            fprintf(stderr, "It is STRONGLY suggested that you remove this non-ASCII data from the file.\n");
         }
     }
 
@@ -242,7 +256,6 @@ static gboolean file_is_ascii_text(FILE *filename)
     return(TRUE);    
     
     #if 0
-    rewind(filename);
 
     
     for (i = 0; i < bytes_read; i++)
@@ -506,6 +519,9 @@ static void writestring(char *s)
 {
     unsigned char c;
     int i;
+
+    //if ( strcmp(s, "on_browse_static_function_calls_activate") == 0 )
+    //    printf("\nfn: %s: hit: %s\n\n", __func__, s);
 
     if (settings.compressDisable == TRUE)
     {
