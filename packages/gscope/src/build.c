@@ -571,7 +571,7 @@ static void initcompress()
 
 /* build the cross-reference */
 
-void build_new_cref(GtkWidget *progress_bar)
+static void build_new_cref(GtkWidget *progress_bar)
 {
     FILE    *old_file;
     char    *old_file_buf = NULL;   /* Buffer that holds the entire old crossref file contents */
