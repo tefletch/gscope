@@ -442,7 +442,7 @@ static int command_line(GApplication *app, GApplicationCommandLine *cmdline)
 
 static void shutdown(GApplication *app, gpointer *user_data)
 {
-    printf("** Main: GTK4 Shutdown **\nDoes nothing right now.\n");
+    //printf("** Main: GTK4 Shutdown **\nDoes nothing right now.\n");
 }
 
 
@@ -494,10 +494,10 @@ int main(int argc, char *argv[])
     printf("\n======== start application =========\n");
     status = g_application_run (G_APPLICATION(app), argc, argv);
 
-    printf("hello from %s: application_run complete\n", __func__);
+    //printf("hello from %s: application_run complete\n", __func__);
     g_object_unref (app);
 
-    printf("hello from %s: done\n", __func__);
+    printf("%s: done\n", __func__);
 
 #if 0 // GTK4 bootstrap: Migrate later (build spash screen next -- see below)
     GtkWidget   *gscope_main;
