@@ -563,7 +563,19 @@ void CALLBACKS_init(GtkWidget *main)
     // Instantiate the widgets defined by the GUI Builders
     //====================================================
 
-#if defined(GTK3_BUILD) || defined(GTK4_BUILD)
+    #if !defined(GTK4_BUILD) && !defined(GTK3_BUILD)
+
+    // GTK2
+    quit_dialog  = create_quit_confirm_dialog();
+    aboutdialog1 = create_aboutdialog1();
+    gscope_preferences = create_gscope_preferences();
+    stats_dialog = create_stats_dialog();
+    folder_chooser_dialog = create_folder_chooser_dialog();
+    open_file_chooser_dialog = create_open_file_chooser_dialog();
+    output_file_chooser_dialog = create_output_file_chooser_dialog();
+    save_results_file_chooser_dialog = create_save_results_file_chooser_dialog();
+
+    #else   // GTK3 and GTK4
 
     quit_dialog  = my_lookup_widget("quit_confirm_dialog");
     aboutdialog1 = my_lookup_widget("aboutdialog1");
@@ -575,18 +587,7 @@ void CALLBACKS_init(GtkWidget *main)
     output_file_chooser_dialog = my_lookup_widget("output_file_chooser_dialog");
     save_results_file_chooser_dialog = my_lookup_widget("save_results_file_chooser_dialog2");
 
-#else   // GTK2
-
-    quit_dialog  = create_quit_confirm_dialog();
-    aboutdialog1 = create_aboutdialog1();
-    gscope_preferences = create_gscope_preferences();
-    stats_dialog = create_stats_dialog();
-    folder_chooser_dialog = create_folder_chooser_dialog();
-    open_file_chooser_dialog = create_open_file_chooser_dialog();
-    output_file_chooser_dialog = create_output_file_chooser_dialog();
-    save_results_file_chooser_dialog = create_save_results_file_chooser_dialog();
- 
-#endif
+    #endif
 
     // Reconcile widget states with startup configuration settings
     //============================================================
@@ -649,6 +650,8 @@ void on_cref_update_button_clicked(GtkButton *button, gpointer user_data)
 
 static gboolean exit_confirmed()
 {
+    //printf("hello from: %s\n", __func__);
+
     if (settings.exitConfirm)
     {
         #ifndef GTK4_BUILD
@@ -662,20 +665,20 @@ static gboolean exit_confirmed()
         //=====================================
         //gtk_window_set_modal(GTK_WINDOW(quit_confirm_dialog),TRUE);  --set in main.c
         gtk_widget_set_visible(quit_confirm_dialog, TRUE);
-        printf("finish exit\n-");  //---- need to collect response from dialog before deciding ok_to_quit
+        //printf("finish exit\n-");  //---- need to collect response from dialog before deciding ok_to_quit
         #endif
     }
     else
         ok_to_quit = TRUE;
 
-    printf("%s returns: %s\n", __func__, ok_to_quit ? "TRUE" : "FALSE");
+    //printf("%s returns: %s\n", __func__, ok_to_quit ? "TRUE" : "FALSE");
     return (ok_to_quit);
 }
 
 
 static void app_shutdown()
 {
-    printf("hello from: %s\n",__func__);
+    //printf("hello from: %s\n",__func__);
     SEARCH_cleanup();
 
     // Good-bye !!!
@@ -693,7 +696,7 @@ void on_quit1_activate(GtkMenuItem *menuitem, gpointer user_data)
 void on_quit1_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 #endif
 {
-    printf("hello from: %s\n", __func__);
+    //printf("hello from: %s\n", __func__);
     if ( exit_confirmed() )
         app_shutdown();
     else
@@ -703,6 +706,7 @@ void on_quit1_activate(GSimpleAction *action, GVariant *parameter, gpointer user
 
 void on_window1_destroy(GtkWidget *widget, gpointer user_data)
 {
+    //printf("hello from: %s\n", __func__);
     // Callback is called when on_window1_delete_event returns FALSE
     app_shutdown();
 }
@@ -716,13 +720,14 @@ gboolean on_window1_delete_event(GtkWidget *widget, GdkEvent *event, gpointer us
 gboolean on_window1_close_request(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 #endif
 {
+    //printf("hello from: %s\n", __func__);
     // Normal Window destroy callback sequence
     // 1) delete_event
     // 2) if delete_event() returns FALSE then on_window_destroy()
 
     if ( exit_confirmed() )
-        return FALSE;    // Return FALSE to destroy the widget.
-    else
+        app_shutdown();
+
         return TRUE;     // Return TRUE to cancel the delete_event.
 }
 
@@ -735,6 +740,7 @@ gboolean on_quit_confirm_dialog_delete_event(GtkWidget *widget, GdkEvent *event,
 gboolean on_quit_confirm_dialog_close_request(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 #endif
 {
+    //printf("hello from: %s\n", __func__);
     gtk_widget_hide(widget);
     //return TRUE;     // Do not destroy the widget
 }
@@ -742,6 +748,7 @@ gboolean on_quit_confirm_dialog_close_request(GtkWidget *widget, GdkEvent *event
 
 void on_quit_confirm_dialog_response(GtkDialog *dialog, gint response_id, gpointer user_data)
 {
+    //printf("hello from: %s\n", __func__);
     switch (response_id)
     {
         case GTK_RESPONSE_OK:
