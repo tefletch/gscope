@@ -493,6 +493,9 @@ static void move_table_widget(GtkWidget *widget, tcb_t *tcb, guint row, guint co
         gtk_widget_set_hexpand(widget, TRUE);   // FILLER: GTK_EXPAND + GTK_FILL
     gtk_widget_set_halign(widget, GTK_ALIGN_FILL);  // FILLER or Otherwise: GTK_FILL
 
+    if ( tcb->col_list[col].type == FILLER ) gtk_widget_set_hexpand(widget, TRUE);
+    gtk_widget_set_halign(widget, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(widget, GTK_ALIGN_FILL);
     gtk_grid_attach(GTK_GRID(tcb->browser_table), widget, col, row, 1, 1);
     #endif
 
@@ -713,7 +716,11 @@ static void create_header_button_with_adjuster(tcb_t *tcb, guint col, gint label
     gtk_container_add (GTK_CONTAINER (adjuster_eventbox), adjuster_image);
 
     #else
+    gtk_widget_set_halign(header_button, GTK_ALIGN_FILL);
     gtk_grid_attach(GTK_GRID(tcb->browser_table), header_button, col, 0, 1, 1);
+    
+    gtk_widget_set_halign(adjuster_eventbox, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(adjuster_eventbox, GTK_ALIGN_FILL);
     gtk_grid_attach (GTK_GRID(tcb->browser_table), adjuster_eventbox, col + 1, 0, 1, 1);
     gtk_box_append(GTK_BOX(adjuster_eventbox), adjuster_image);
     #endif
@@ -1042,6 +1049,8 @@ static void add_connectors(tcb_t *tcb, guint col, guint row, guint count, dir_e 
                                          (GtkAttachOptions)(GTK_FILL),
                                          (GtkAttachOptions)(GTK_FILL), 0, 0);
                         #else
+                        gtk_widget_set_halign(connector, GTK_ALIGN_FILL);
+                        gtk_widget_set_valign(connector, GTK_ALIGN_FILL);
                         gtk_grid_attach(GTK_GRID(tcb->browser_table), connector, i, j, 1, 1);
                         #endif
 
@@ -1070,6 +1079,8 @@ static void add_connectors(tcb_t *tcb, guint col, guint row, guint count, dir_e 
                                          (GtkAttachOptions)(GTK_FILL),
                                          (GtkAttachOptions)(GTK_FILL), 0, 0);
                         #else
+                        gtk_widget_set_halign(connector, GTK_ALIGN_FILL);
+                        gtk_widget_set_valign(connector, GTK_ALIGN_FILL);
                         gtk_grid_attach(GTK_GRID(tcb->browser_table), connector, i, j, 1, 1);
                         #endif
 
@@ -1090,6 +1101,8 @@ static void add_connectors(tcb_t *tcb, guint col, guint row, guint count, dir_e 
                          (GtkAttachOptions)(GTK_FILL),
                          (GtkAttachOptions)(GTK_FILL), 0, 0);
         #else
+        gtk_widget_set_halign(connector, GTK_ALIGN_FILL);
+        gtk_widget_set_valign(connector, GTK_ALIGN_FILL);
         gtk_grid_attach(GTK_GRID(tcb->browser_table), connector, col, i, 1, 1);
         #endif
 
@@ -1104,6 +1117,8 @@ static void add_connectors(tcb_t *tcb, guint col, guint row, guint count, dir_e 
                          (GtkAttachOptions)(GTK_FILL),
                          (GtkAttachOptions)(GTK_FILL), 0, 0);
         #else
+        gtk_widget_set_halign(connector, GTK_ALIGN_FILL);
+        gtk_widget_set_valign(connector, GTK_ALIGN_FILL);
         gtk_grid_attach(GTK_GRID(tcb->browser_table), connector, col, row + count - 1, 1, 1);
         #endif
 
@@ -1155,6 +1170,8 @@ static void make_expander_at_position(tcb_t *tcb, guint col, guint row, dir_e di
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
     gtk_container_add(GTK_CONTAINER(expander), image);
     #else
+    gtk_widget_set_halign(expander, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(expander, GTK_ALIGN_FILL);
     gtk_box_append(GTK_BOX(expander), image);
     gtk_grid_attach(GTK_GRID(tcb->browser_table), expander, col, row, 1, 1);
     #endif
@@ -1207,6 +1224,8 @@ static void create_dummy_adjuster(tcb_t *tcb, guint col, guint row)
                     (GtkAttachOptions) (GTK_FILL), 0, 0);
     gtk_container_add(GTK_CONTAINER(adjuster_eventbox), adjuster_image);
     #else
+    gtk_widget_set_halign(adjuster_eventbox, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(adjuster_eventbox, GTK_ALIGN_FILL);
     gtk_grid_attach(GTK_GRID(tcb->browser_table), adjuster_eventbox, col, row, 1, 1);
     gtk_box_append(GTK_BOX(adjuster_eventbox), adjuster_image);
     #endif
@@ -1235,6 +1254,11 @@ static void make_filler_column(tcb_t *tcb, guint position)
                      (GtkAttachOptions)(0), 0, 0);
     #else
     gtk_widget_set_focus_on_click(button, FALSE);
+    gtk_widget_set_hexpand(button, TRUE);
+    gtk_widget_set_halign(button, GTK_ALIGN_FILL);
+
+    gtk_widget_set_hexpand(button, TRUE);
+    gtk_widget_set_halign(button, GTK_ALIGN_FILL);
     gtk_grid_attach(GTK_GRID(tcb->browser_table), button, position, 0, 1, 1);
     #endif
 
@@ -1401,11 +1425,15 @@ static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gc
     #if defined(GTK3_BUILD) || defined(GTK4_BUILD)
 
     #if defined(GTK3_BUILD)
+    gtk_widget_set_halign(root_function_blue_eventbox, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(root_function_blue_eventbox, GTK_ALIGN_FILL);
     gtk_grid_attach(GTK_GRID(tcb->browser_table), root_function_blue_eventbox, tcb->root_col, 1, 1, 1);
     gtk_container_add(GTK_CONTAINER(root_function_blue_eventbox), root_function_label);
     #endif
 
     #if defined(GTK4_BUILD)
+    gtk_widget_set_halign(root_function_blue_eventbox, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(root_function_blue_eventbox, GTK_ALIGN_FILL);
     gtk_grid_attach(GTK_GRID(tcb->browser_table), root_function_blue_eventbox, tcb->root_col, 1, 1, 1);
     gtk_box_append(GTK_BOX(tcb->browser_table), root_function_label);
     #endif
@@ -1501,11 +1529,15 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
         #else
         
         #if defined(GTK3_BUILD)
+        gtk_widget_set_halign(function_event_box, GTK_ALIGN_FILL);
+        gtk_widget_set_valign(function_event_box, GTK_ALIGN_FILL);
         gtk_grid_attach(GTK_GRID(tcb->browser_table), function_event_box, col, row, 1, 1);
         gtk_container_add(GTK_CONTAINER(function_event_box), function_label);
         #endif
 
         #if defined(GTK4_BUILD)
+        gtk_widget_set_halign(function_event_box, GTK_ALIGN_FILL);
+        gtk_widget_set_valign(function_event_box, GTK_ALIGN_FILL);
         gtk_grid_attach(GTK_GRID(tcb->browser_table), function_event_box, col, row, 1, 1);
         gtk_box_append(GTK_BOX(function_event_box), function_label);
         #endif
@@ -1710,10 +1742,12 @@ static void make_collapser_at_position(tcb_t *tcb, guint col, guint row, dir_e d
                      (GtkAttachOptions)(GTK_FILL),
                      (GtkAttachOptions)(GTK_FILL), 0, 0);
     #else
-    gtk_box_append(GTK_BOX(collapser), image);
     
     // Attach new collapser widget to the table at the location previously occupied by the expander widget [row, col]
+    gtk_widget_set_halign(collapser, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(collapser, GTK_ALIGN_FILL);
     gtk_grid_attach(GTK_GRID(tcb->browser_table), collapser, col, row, 1, 1);
+    gtk_box_append(GTK_BOX(collapser), image);
     #endif
 
     column_list_insert(&(tcb->col_list[col]), collapser, row);
@@ -2303,7 +2337,7 @@ static GtkWidget* create_browser_window(gchar *name, gchar *root_file, gchar *li
     #endif
 
     gtk_widget_set_name(browser_window, "browser_window");
-    gtk_widget_set_size_request(browser_window, 250, 130);
+    gtk_widget_set_size_request(browser_window, 800, 130);
     my_asprintf(&var_string, "Static Call Browser (%s)", name);
     gtk_window_set_title(GTK_WINDOW(browser_window), var_string);
     g_free(var_string);
