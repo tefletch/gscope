@@ -566,7 +566,7 @@ void CALLBACKS_init(GtkWidget *main)
     #if !defined(GTK4_BUILD) && !defined(GTK3_BUILD)
 
     // GTK2
-    quit_dialog  = create_quit_confirm_dialog();
+    quit_confirm_dialog  = create_quit_confirm_dialog();
     aboutdialog1 = create_aboutdialog1();
     gscope_preferences = create_gscope_preferences();
     stats_dialog = create_stats_dialog();
@@ -577,7 +577,7 @@ void CALLBACKS_init(GtkWidget *main)
 
     #else   // GTK3 and GTK4
 
-    quit_dialog  = my_lookup_widget("quit_confirm_dialog");
+    quit_confirm_dialog  = my_lookup_widget("quit_confirm_dialog");
     aboutdialog1 = my_lookup_widget("aboutdialog1");
     gscope_preferences = my_lookup_widget("gscope_preferences");
     quit_confirm_dialog = my_lookup_widget("quit_confirm_dialog");
