@@ -89,6 +89,7 @@
 
 #define     MAX_LIST_SIZE           1023            /* Max size for all lists.  All lists must be the same size */
 #define     MAX_OVERRIDE_PATH_SIZE  256
+#define     MAX_VERSION_STRING      20
 
 #if defined(GTK3_BUILD) || defined(GTK4_BUILD)  // GTK3/GTK4 (gscope.css)
 #define     CURRENT_CONFIG_VERSION   "005"
@@ -219,8 +220,8 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
     #ifndef GTK4_BUILD
     static      GtkWidget   *MsgDialog;
     #endif
-    char        new_version_string[20];
-    char        old_version_string[20];
+    char        new_version_string[MAX_VERSION_STRING];
+    char        old_version_string[MAX_VERSION_STRING];
     gchar       gtk_config_file[256] = {0};
     gchar       app_home[MAX_HOME_PATH + 1] = {0};
     gboolean    new_version_detected = FALSE;
@@ -271,7 +272,7 @@ void APP_CONFIG_init(GtkWidget *gscope_splash)
     // if the $HOME/.gscope directory doesn't exist, create it
     if ( !g_file_test(app_home, G_FILE_TEST_IS_DIR) )
     {
-        if ( g_mkdir(app_home,0755) )
+        if ( g_mkdir(app_home,0750) )
         {
             fprintf(stderr, "\nError:  Unable to create configuration directory: %s\n"
                             "Fix the problem and try again.\nStartup aborted.\n\n", app_home);
@@ -782,7 +783,11 @@ static gboolean app_version_check(char *old_string, char *new_string)
         old_version = g_key_file_get_integer(key_file, "Defaults", "trackedVersion", &error);
         if (old_version == 0) old_version = 1020;  /* if no version tracking info available, assume last version was 1.20 */
 
-        sprintf(old_string,"%d.%d", old_version/1000, old_version%1000);
+        if ( snprintf(old_string, MAX_VERSION_STRING, "%d.%d", old_version/1000, old_version%1000) >= MAX_VERSION_STRING )
+        {
+            // Truncated string, just put a NULL on the end
+            old_string[MAX_VERSION_STRING - 1] = '\0';
+        }
 
         strcpy(new_string, VERSION);
 
@@ -1969,7 +1974,7 @@ FILE *out_file;
     {
         fprintf(out_file,"%s\n", template);
         fclose(out_file);
-        if ( g_chmod(filename, 0644) < 0 )
+        if ( g_chmod(filename, 0640) < 0 )
             fprintf(stderr, "Warning: Config file permissions error:  Unable to chmod() file: %s", filename);
     }
     else
