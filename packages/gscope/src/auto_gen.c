@@ -661,21 +661,16 @@ static gboolean _protobuf_csrc (const char *full_filename, char *data_dir)
     char    *realpath_ptr;  //Holds the target path of the symlink
     gboolean retval = TRUE;
 
-    char    output_dir  [PATHLEN + sizeof(GSCOPE_GEN_DIR) + PATHLEN + 10];  // +10 for literal chars and null-terminator
-    char    symlink_buf [PATHLEN + sizeof(GSCOPE_BLD_DIR) + PATHLEN + 10];
-    char    isearch_buf [PATHLEN + sizeof(GSCOPE_BLD_DIR) + 10];
-    char    command_buf [sizeof(settings.autoGenCmd) +
-                         sizeof(output_dir) +
-                         PATHLEN +
-                         PATHLEN +
-                         sizeof(isearch_buf) +
-                         PATHLEN + 100]; // +100 for literal chars in fmt string and null-terminator
+    char    *output_dir = NULL;
+    char    *symlink_buf = NULL;
+    char    *isearch_buf = NULL;
+    char    *command_buf = NULL;
 
     // Build the protobuf compiler include search path
-    sprintf(isearch_buf, "%s/%s", data_dir, GSCOPE_BLD_DIR);
+    my_asprintf(&isearch_buf, "%s/%s", data_dir, GSCOPE_BLD_DIR);
 
     // Get the target of the symlink as input to compiler. Used to remove unique identifier from compiled output
-    sprintf(symlink_buf, "%s/%s/%s", data_dir, GSCOPE_BLD_DIR, my_basename(full_filename));
+    sprintf(&symlink_buf, "%s/%s/%s", data_dir, GSCOPE_BLD_DIR, my_basename(full_filename));
     realpath_ptr = realpath(symlink_buf, NULL);
 
     // Exit if target of symlink is missing
@@ -687,12 +682,12 @@ static gboolean _protobuf_csrc (const char *full_filename, char *data_dir)
 
     // Construct/re-use a session specific, output directory
     dirname_ptr = my_dirname(strdup(full_filename));
-    sprintf(output_dir, "%s/%s/%s", data_dir, GSCOPE_GEN_DIR, dirname_ptr);
+    sprintf(&output_dir, "%s/%s/%s", data_dir, GSCOPE_GEN_DIR, dirname_ptr);
     _mkdir_all(output_dir);
 
 
     // Construct the complete protoc-c command string to be run.  Redirect error output to /dev/null
-    sprintf(command_buf, "%s --c_out=%s -I=%s/%s:%s %s > /dev/null 2>&1",
+    my_asprintf(&command_buf, "%s --c_out=%s -I=%s/%s:%s %s > /dev/null 2>&1",
                           settings.autoGenCmd,
                           output_dir,
                           data_dir,
@@ -757,6 +752,10 @@ static gboolean _protobuf_csrc (const char *full_filename, char *data_dir)
     }
 
     free(realpath_ptr);
+    g_freee(command_buf);
+    g_free(isearch_buf);
+    g_free(symlink_buf);
+    g_free(output_dir);
 
     return(retval);
 }
