@@ -4113,14 +4113,14 @@ void on_save_results_file_chooser_dialog_response(GtkDialog *dialog, gint respon
 
         default:
         {
-            char error_string[150];
+            char *error_string;
 
-            sprintf(error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"Save Results As\" dialog.", response_id);
+            my_asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"Save Results As\" dialog.", response_id);
             my_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
+            g_free(error_string);
             save_success = TRUE;      /* Nothing really saved, but we don't want to trigger the "No Results" pop-up */
         }
-
-            break;
+        break;
     }
 
     if (bad_filename)
