@@ -181,10 +181,10 @@ typedef struct
 //      Local Functions
 //===============================================================
 static gboolean old_crossref_is_compatible(char *file_buf);
-static void     initialize_using_old_cref(void);
-static void     initialize_for_new_cref(GtkWidget *progress_bar);
-static void     build_new_cref(GtkWidget *progress_bar);
-static void     make_new_cref(old_buf_descriptor_t *old_descriptor, GtkWidget *progress_bar);
+static gchar    *initialize_using_old_cref(void);
+static gchar    *initialize_for_new_cref(GtkWidget *progress_bar);
+static gchar    *build_new_cref(GtkWidget *progress_bar);
+static gchar    *make_new_cref(old_buf_descriptor_t *old_descriptor, GtkWidget *progress_bar);
 static void     initcompress(void);
 static void     putheader(char *dir);
 static char     *get_old_file(char *dest_ptr, char *src_ptr);
@@ -265,6 +265,7 @@ void BUILD_initDatabase(GtkWidget *progress_bar)
     gchar *autogen_time;
     gchar *overall_time;
     gchar *mega_message;
+    gchar *cref_results;
 
     gettimeofday(&overall_time_start, NULL);
 
@@ -283,12 +284,12 @@ void BUILD_initDatabase(GtkWidget *progress_bar)
         printf("         files have changed since the last time it was built.\n\n");
 
         /* Re-use an existing cross-reference */
-        initialize_using_old_cref();
+        cref_results = initialize_using_old_cref();
     }
     else
     {
         /* Build a new cross-reference */
-        initialize_for_new_cref(progress_bar);
+        cref_results = initialize_for_new_cref(progress_bar);
     }
 
     // Now that we have a valid cross-reference database,
@@ -370,7 +371,7 @@ void BUILD_initDatabase(GtkWidget *progress_bar)
 
     // Construct the mega-message
     //===========================
-    my_asprintf(&mega_message, "%s%s%s%s%s", autogen_stats, src_search_time, cross_ref_time, autogen_time, overall_time);
+    my_asprintf(&mega_message, "%s%s%s%s%s%s", cref_results, autogen_stats, src_search_time, cross_ref_time, autogen_time, overall_time);
 
     if ( !settings.refOnly )
     {
@@ -386,6 +387,7 @@ void BUILD_initDatabase(GtkWidget *progress_bar)
     g_free(autogen_time);
     g_free(overall_time);
     g_free(mega_message);
+    g_free(cref_results);
 }
 
 
@@ -396,7 +398,7 @@ void BUILD_init_cli_file_list(int argc, char *argv[])
 }
 
 
-static void initialize_using_old_cref()
+static gchar *initialize_using_old_cref()
 {
     FILE      *old_file;           /* old cross-reference file */
     char      *format_string;
@@ -492,16 +494,14 @@ static void initialize_using_old_cref()
     gettimeofday(&cref_time_start, NULL);
     cref_time_stop = cref_time_start;
 
-    {
-        char *working_buf;
-        my_asprintf(&working_buf, "Using %d Old (noBuild) Cross-reference files\n\n", file_count);
-        strcat(build_stats_msg, working_buf);
-        g_free(working_buf);
-    }
+    char *status_msg;
+    my_asprintf(&status_msg, "Using %d Old (noBuild) Cross-reference files\n\n", file_count);
+
+    return(status_msg);
 }
 
 
-static void initialize_for_new_cref(GtkWidget *progress_bar)
+static gchar *initialize_for_new_cref(GtkWidget *progress_bar)
 {
     gettimeofday(&src_list_time_start, NULL);
 
@@ -552,9 +552,11 @@ static void initialize_for_new_cref(GtkWidget *progress_bar)
     // We are now ready parse the source files and build the cross-reference database
     gettimeofday(&cref_time_start, NULL);
 
-    build_new_cref(progress_bar);
+    gchar *results = build_new_cref(progress_bar);
 
     gettimeofday(&cref_time_stop, NULL);
+
+    return(results);
 }
 
 
@@ -583,7 +585,7 @@ static void initcompress()
 
 /* build the cross-reference */
 
-static void build_new_cref(GtkWidget *progress_bar)
+static gchar *build_new_cref(GtkWidget *progress_bar)
 {
     FILE    *old_file;
     char    *old_file_buf = NULL;   /* Buffer that holds the entire old crossref file contents */
@@ -662,16 +664,17 @@ static void build_new_cref(GtkWidget *progress_bar)
         }
     }
 
+    gchar *results;
 
     if ( force_rebuild )
-        make_new_cref(NULL, progress_bar);                /* Create a full cross reference */
+        results = make_new_cref(NULL, progress_bar);                /* Create a full cross reference */
     else
-        make_new_cref(&old_buf_descriptor, progress_bar); /* Create an incremental cross-reference */
+        results = make_new_cref(&old_buf_descriptor, progress_bar); /* Create an incremental cross-reference */
 
 
     if (old_file_buf) g_free(old_file_buf);
 
-    return;
+    return(results);
 }
 
 
@@ -749,7 +752,7 @@ static gboolean old_crossref_is_compatible(char *file_buf)
 
 
 
-static void make_new_cref(old_buf_descriptor_t *old_descriptor, GtkWidget *progress_bar)
+static gchar *make_new_cref(old_buf_descriptor_t *old_descriptor, GtkWidget *progress_bar)
 {
     uint32_t    firstfile;          /* first source file in pass */
     uint32_t    lastfile;           /* last source file in pass */
@@ -767,7 +770,9 @@ static void make_new_cref(old_buf_descriptor_t *old_descriptor, GtkWidget *progr
     char        *old_offset_ptr;
     char        *new_cref_file;
     gboolean    full_update;
-    char        working_buf[200];
+    gchar       *cref_results;
+    gchar       *cref_msg;
+    gchar       *skipped_msg;
 
 
     if (old_descriptor == NULL)
@@ -840,15 +845,13 @@ static void make_new_cref(old_buf_descriptor_t *old_descriptor, GtkWidget *progr
             /* Process all include files detected during parsing */
             if (lastfile == nsrcfiles)
             {
-                sprintf(working_buf, "Cross-referenced %d files\n(Source parsing found %d additional include files)\n",
-                        nsrcfiles - skipped, nsrcfiles - skipped - num_original);
-                strcat(build_stats_msg, working_buf);
+                my_asprintf(&cref_msg, "Cross-referenced %d files\n(Source parsing found %d additional include files)\n",
+                            nsrcfiles - skipped, nsrcfiles - skipped - num_original);
 
                 if (skipped > 0)
-                {
-                    sprintf(working_buf, "Skipped %d Non-ASCII text source files\n", skipped);
-                    strcat(build_stats_msg, working_buf);
-                }
+                    my_asprintf(&skipped_msg, "Skipped %d Non-ASCII text source files\n", skipped);
+                else
+                    my_asprintf(&skipped_msg, "%s", "");
 
                 break;
             }
@@ -934,15 +937,13 @@ static void make_new_cref(old_buf_descriptor_t *old_descriptor, GtkWidget *progr
             /* Process all include files detected during parsing */
             if (lastfile == nsrcfiles)
             {
-                sprintf(working_buf, "Cross-referenced %d files (%d New, %d Re-used)\nSource parsing found %d additional include files\n",
-                        nsrcfiles - skipped, built, copied, nsrcfiles - skipped - num_original);
-                strcat(build_stats_msg, working_buf);
+                my_asprintf(&cref_msg, "Cross-referenced %d files (%d New, %d Re-used)\nSource parsing found %d additional include files\n",
+                            nsrcfiles - skipped, built, copied, nsrcfiles - skipped - num_original);
 
                 if (skipped > 0)
-                {
-                    sprintf(working_buf, "Skipped %d Non-ASCII text source files\n", skipped);
-                    strcat(build_stats_msg, working_buf);
-                }
+                    my_asprintf(&skipped_msg, "Skipped %d Non-ASCII text source files\n", skipped);
+                else
+                    my_asprintf(&skipped_msg, "%s", "");
 
                 break;
             }
@@ -978,7 +979,14 @@ static void make_new_cref(old_buf_descriptor_t *old_descriptor, GtkWidget *progr
 
     /* replace the old database file with the new database file */
     movefile(new_cref_file, settings.refFile);
-//    printf("Cross-Reference build complete.\n\n");
+
+    my_asprintf(&cref_results, "%s%s", cref_msg, skipped_msg);
+
+    g_free(cref_msg);
+    g_free(skipped_msg);
+    
+    //    printf("Cross-Reference build complete.\n\n");
+    return(cref_results);
 }
 
 
