@@ -137,10 +137,7 @@ void AUTOGEN_init(char *data_dir)
     }
     else    // Symlink exists
     {
-        if ( sb.st_size == 0 )          // Rare: Some magic symlinks under /proc and /sys report st_size as zero
-            bufsize = PATH_MAX;         // Good enough
-        else    
-            bufsize = sb.st_size + 1;   // Normal, expected result when symlink exists
+        bufsize = sb.st_size + 1;   // Normal, expected result when symlink exists
  
         link_dest = g_malloc(bufsize);    
         if ( !link_dest )

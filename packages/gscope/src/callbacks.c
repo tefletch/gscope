@@ -742,7 +742,7 @@ gboolean on_quit_confirm_dialog_close_request(GtkWidget *widget, GdkEvent *event
 {
     //printf("hello from: %s\n", __func__);
     gtk_widget_hide(widget);
-    //return TRUE;     // Do not destroy the widget
+    return TRUE;     // Do not destroy the widget
 }
 
 
