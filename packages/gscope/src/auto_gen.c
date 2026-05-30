@@ -150,7 +150,7 @@ void AUTOGEN_init(char *data_dir)
         }
 
         num_bytes = readlink(gen_symlink_path, link_dest, bufsize);
-        if (num_bytes >= 0)
+        if (num_bytes > 0)
             link_dest[num_bytes] = '\0';
 
         // Extract the pre-existing EUID
