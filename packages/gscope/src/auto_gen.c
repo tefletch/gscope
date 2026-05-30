@@ -132,7 +132,7 @@ void AUTOGEN_init(char *data_dir)
             default:
                 perror("Fatal AUTOGEN_init() auto-gen lstat error");     // Rare: lstat() fails
                 exit(EXIT_FAILURE);
-            break;
+            //break;
         }
     }
     else    // Symlink exists
@@ -150,7 +150,8 @@ void AUTOGEN_init(char *data_dir)
         }
 
         num_bytes = readlink(gen_symlink_path, link_dest, bufsize);
-        link_dest[num_bytes] = '\0';
+        if (num_bytes >= 0)
+            link_dest[num_bytes] = '\0';
 
         // Extract the pre-existing EUID
         extract_ptr = strrchr(link_dest, '_');
@@ -170,7 +171,7 @@ void AUTOGEN_init(char *data_dir)
                     // Handle (unlikely) permission errors (and other errors)
                     fprintf(stderr, "1Fatal Error: Cannot access autogen cache directory: %s\n%s\n", link_dest, strerror(errno));
                     exit(EXIT_FAILURE);
-                break;
+                //break;
             }
         }
     }
@@ -202,7 +203,7 @@ void AUTOGEN_init(char *data_dir)
             default:
                 perror("Fatal AUTOGEN_init auto-build lstat error");       // Rare: lstat() fails
                 exit(EXIT_FAILURE);
-            break;
+            //break;
         }
     }
     else    // Symlink exists
@@ -220,7 +221,8 @@ void AUTOGEN_init(char *data_dir)
         }
 
         num_bytes = readlink(bld_symlink_path, link_dest, bufsize);
-        link_dest[num_bytes] = '\0';
+        if (num_bytes >= 0)
+            link_dest[num_bytes] = '\0';
 
         if ( access(link_dest, X_OK) < 0 )       // Symlink exists, but symlink destination does not exist
         {
@@ -235,7 +237,7 @@ void AUTOGEN_init(char *data_dir)
                     // Handle (unlikely) permission errors (and other errors)
                     fprintf(stderr, "Fatal AUTOGEN_init Error: Cannot access autogen cache directory: %s\n%s\n", link_dest, strerror(errno));
                     exit(EXIT_FAILURE);
-                break;
+                //break;
             }
         }
     }
