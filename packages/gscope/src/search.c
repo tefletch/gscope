@@ -1565,9 +1565,9 @@ void SEARCH_init()
     /*** create the temporary file names ***/
     raw_tmpdir = getenv("TMPDIR");
     if ( raw_tmpdir )
-        my_asprintf(&tmpdir, "%s", raw_tmpdir);
+        my_asprintf(&tmpdir, "%s", raw_tmpdir);     //NOSONAR
     else
-        my_asprintf(&tmpdir, "/tmp");
+        my_asprintf(&tmpdir, "/tmp");               //NOSONAR
 
     pid = getpid();
     snprintf(temp1, MAX_TMP_PATH +1, "%s/cscope%d.1", tmpdir, pid);
