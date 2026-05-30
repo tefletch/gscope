@@ -1563,7 +1563,7 @@ void SEARCH_init()
        (cref_file_buf) for use by the various functions of the SEARCH component */
 
     /*** create the temporary file names ***/
-    raw_tmpdir = getenv("TMPDIR");
+    raw_tmpdir = getenv("TMPDIR");                  //NOSONAR
     if ( raw_tmpdir )
         my_asprintf(&tmpdir, "%s", raw_tmpdir);     //NOSONAR
     else
