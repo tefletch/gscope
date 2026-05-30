@@ -95,13 +95,13 @@ void AUTOGEN_init(char *data_dir)
     char    *gen_symlink_path = NULL;
     char    *link_dest = NULL;
     char    *bld_symlink_path = NULL;
-    char    euid[MAX_STRING_ARG_SIZE];                          // Per session/direAUTOGEN_initctory unique ID.
+    char    *euid;              // Per session/directory AUTOGEN_initunique ID.
+    char    *file_path;         //Working copy of full path
     char    username[MAX_USER_SIZE + 1];
 
     DIR     *dir;
     struct  dirent *ent;
     struct  stat   sb;
-    char    file_path[PATHLEN]; //Working copy of full path
     char    *real_path;
 
     gettimeofday(&autogen_time_start, NULL);
@@ -117,7 +117,7 @@ void AUTOGEN_init(char *data_dir)
         {
             case ENOENT:            // Normal, expected result when symlink doesn't exist
                 // Create new EUID
-                sprintf(euid, "%ld", time(NULL));
+                my_asprintf(&euid, "%ld", time(NULL));
 
                 // Create new "auto generated" symlink and destination
                 my_asprintf (&link_dest,"%s/%s/%s%s", settings.autoGenPath, username, GEN_PREFIX, euid);
@@ -292,7 +292,7 @@ void AUTOGEN_init(char *data_dir)
         {
             pc_stats.num_proto_files++;
 
-            sprintf(file_path, "%s/%s/%s", data_dir, GSCOPE_BLD_DIR, ent->d_name);
+            my_asprintf(&file_path, "%s/%s/%s", data_dir, GSCOPE_BLD_DIR, ent->d_name);
             real_path = realpath(file_path, NULL);
             if (settings.updateAll) // Unlink all symlinks
             {
@@ -329,6 +329,7 @@ void AUTOGEN_init(char *data_dir)
                 nfile_info++;
             }
             free(real_path);
+            g_free(file_path);
         }
     }
     closedir (dir);
