@@ -522,8 +522,7 @@ void AUTOGEN_addproto(char* name)
         do
         {
             g_free(build_link_src);
-            my_asprintf(&build_link_src, "%s__%d%s", simple_basename, ++uid, settings.autoGenSuffix);
-            sprintf(strstr(build_link_src, settings.autoGenSuffix), "__%d%s", ++uid, settings.autoGenSuffix);  // Append __<uid><autoGenSuffix
+            my_asprintf(&build_link_src, "%s__%d%s", simple_basename, ++uid, settings.autoGenSuffix);       // Append __<uid><autoGenSuffix
         }
         while ( access(build_link_src, F_OK) == 0 );
         
