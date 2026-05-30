@@ -1168,38 +1168,41 @@ static gboolean writerefsfound()
 /*****************************************************************************/
 static char *open_results_file(char *full_filename, off_t *size)
 {
-    FILE     *results_file;
-    struct   stat statstruct;
-    static char     *results_buf;
+    FILE        *results_file;
+    struct stat statstruct;
+    static char *results_buf;
 
-    if ( (stat(full_filename, &statstruct) != 0 ) || ((results_file = fopen(full_filename, "rb")) == NULL) )
+    if ( ((results_file = fopen(full_filename, "rb")) != NULL) && (fstat(fileno(results_file), &statstruct) == 0) )
     {
-        /* There is no search-results file */
-        return(NULL);
-    }
+        results_buf = g_malloc(statstruct.st_size);    /* malloc a buffer to hold the entire old-file */
+        if ( !results_buf )
+        {
+            /* Malloc failed */
+            fprintf(stderr, "Error: Unable to allocate memory for search results file\n");
+            *size = 0;
+            fclose(results_file);
+            return(NULL);
+        }
 
-    results_buf = g_malloc(statstruct.st_size);    /* malloc a buffer to hold the entire old-file */
-    if (results_buf == NULL)
-    {
-        /* Malloc failed */
-        fprintf(stderr, "Error: Unable to allocate memory for search results file\n");
-        *size = 0;
+        if ( fread(results_buf, 1, statstruct.st_size, results_file) != statstruct.st_size )
+        {
+            /* Read failed */
+            fprintf(stderr, "Error: Unable to to read entire search results file\n");
+            *size = 0;
+            fclose(results_file);
+            return(NULL);
+        }
         fclose(results_file);
-        return(NULL);
-    }
 
-    if ( fread(results_buf, 1, statstruct.st_size, results_file) != statstruct.st_size )
+        *size = statstruct.st_size;
+        return(results_buf);
+    }
+    else    // There is no search-results file
     {
-        /* Read failed */
-        fprintf(stderr, "Error: Unable to to read entire search results file\n");
         *size = 0;
-        fclose(results_file);
-        return(NULL);
+        if (results_file) fclose (results_file);
+        return(NULL); 
     }
-    fclose(results_file);
-
-    *size = statstruct.st_size;
-    return(results_buf);
 }
 
 
@@ -1276,7 +1279,7 @@ void match_file(char *infile_name, regex_t regex_ptr, char *format)
 
     // open the input file
 
-    if ( (stat(infile_name, &statstruct) == 0) && ((in_file = fopen(infile_name, "r")) != NULL) )
+    if ( ((in_file = fopen(infile_name, "r")) != NULL) && (fstat(fileno(in_file), &statstruct) == 0) )
     {
         if ( (statstruct.st_size + 1) > buf_size )        // grow the buffer as needed
         {
@@ -1324,6 +1327,7 @@ void match_file(char *infile_name, regex_t regex_ptr, char *format)
     }
     else
     {
+        if (in_file) fclose(in_file);
         DISPLAY_set_cref_current(FALSE);    /* Set the out-of-date indicator */
         fprintf(stderr, "File open error: %s\n", infile_name);
     }
