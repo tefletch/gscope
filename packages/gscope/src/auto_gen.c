@@ -90,15 +90,17 @@ static int      recursive_remove(char *path);
 void AUTOGEN_init(char *data_dir)
 {
     ssize_t num_bytes;
+    ssize_t bufsize;
     char    *extract_ptr;
-    char    gen_symlink_path[PATHLEN + 10];                     // +10 for literal chars and null-terminator
-    char    bld_symlink_path[PATHLEN + 10];
+    char    *gen_symlink_path = NULL;
+    char    *link_dest = NULL;
+    char    *bld_symlink_path = NULL;
     char    euid[MAX_STRING_ARG_SIZE];                          // Per session/direAUTOGEN_initctory unique ID.
     char    username[MAX_USER_SIZE + 1];
-    char    link_dest[PATHLEN + PATHLEN + MAX_USER_SIZE + sizeof(BLD_PREFIX) + sizeof(euid) + 20];   // +20 for literal chars and null-terminator
 
     DIR     *dir;
     struct  dirent *ent;
+    struct  stat   sb;
     char    file_path[PATHLEN]; //Working copy of full path
     char    *real_path;
 
@@ -107,26 +109,49 @@ void AUTOGEN_init(char *data_dir)
 
     /*** Initialize "auto generated" symlink and destination ***/
     /***********************************************************/
-    sprintf(gen_symlink_path, "%s/%s", data_dir, GSCOPE_GEN_DIR);
-    num_bytes = readlink(gen_symlink_path, link_dest, PATHLEN - 1);
-    if (num_bytes < 0)  // Symlink does not exist
-    {
-        // Create new EUID
-        sprintf(euid, "%ld", time(NULL));
+    my_asprintf(&gen_symlink_path, "%s/%s", data_dir, GSCOPE_GEN_DIR);
 
-        // Create new "auto generated" symlink and destination
-        sprintf (link_dest,"%s/%s/%s%s", settings.autoGenPath, username, GEN_PREFIX, euid);
-        _mkdir_all(link_dest);
-        if ( symlink (link_dest , gen_symlink_path) < 0 )
+    if ( lstat(gen_symlink_path, &sb) < 0 )
+    {
+        switch (errno)
         {
-            fprintf(stderr, "Fatal Error: Symlink symlnk() failed: old=%s new=%s\n%s\n", link_dest, gen_symlink_path, strerror(errno));
-            //exit(EXIT_FAILURE);
+            case ENOENT:            // Normal, expected result when symlink doesn't exist
+                // Create new EUID
+                sprintf(euid, "%ld", time(NULL));
+
+                // Create new "auto generated" symlink and destination
+                my_asprintf (&link_dest,"%s/%s/%s%s", settings.autoGenPath, username, GEN_PREFIX, euid);
+                _mkdir_all(link_dest);
+                if ( symlink (link_dest , gen_symlink_path) < 0 )
+                {
+                    fprintf(stderr, "Fatal AUTOGEN_init Error: auto-gen symlink() failed: old=%s new=%s\n%s\n", link_dest, gen_symlink_path, strerror(errno));
+                    //exit(EXIT_FAILURE);
+                }
+
+                _do_garbage_collection();  // Every time we create a new cache directory, manage the overall collection of caches.
+            break;
+
+            default:
+                perror("Fatal AUTOGEN_init() auto-gen lstat error");     // Rare: lstat() fails
+                exit(EXIT_FAILURE);
+            break;
+        }
+    }
+    else    // Symlink exists
+    {
+        if ( sb.st_size == 0 )          // Rare: Some magic symlinks under /proc and /sys report st_size as zero
+            bufsize = PATH_MAX;         // Good enough
+        else    
+            bufsize = sb.st_size + 1;   // Normal, expected result when symlink exists
+ 
+        link_dest = g_malloc(bufsize);    
+        if ( !link_dest )
+        {
+            perror("Fatal AUTOGEN_init() auto-gen malloc error");
+            exit(EXIT_FAILURE);
         }
 
-        _do_garbage_collection();  // Every time we create a new cache directory, manage the overall collection of caches.
-    }
-    else            // Symlink exists
-    {
+        num_bytes = readlink(gen_symlink_path, link_dest, bufsize);
         link_dest[num_bytes] = '\0';
 
         // Extract the pre-existing EUID
@@ -152,26 +177,51 @@ void AUTOGEN_init(char *data_dir)
         }
     }
 
+    g_free(link_dest);
 
     /*** Initialize "auto build" symlink and destination ***/
     /*******************************************************/
-    sprintf(bld_symlink_path, "%s/%s", data_dir, GSCOPE_BLD_DIR);
-    num_bytes = readlink(bld_symlink_path, link_dest, PATHLEN - 1);
-    if (num_bytes < 0)  // Symlink does not exist
+    my_asprintf(&bld_symlink_path, "%s/%s", data_dir, GSCOPE_BLD_DIR);
+    
+    if ( lstat(bld_symlink_path, &sb) < 0 )
     {
-        // euid (new, or extracted) has already been set
-
-        // Create new "auto build" symlink and destination
-        sprintf (link_dest,"%s/%s/%s%s", settings.autoGenPath, username, BLD_PREFIX, euid);
-        _mkdir_all(link_dest);
-        if ( symlink (link_dest, bld_symlink_path) < 0 )
+        switch (errno)
         {
-            fprintf(stderr, "2Fatal Error: Symlink symlnk() failed: old=%s new=%s\n%s\n", link_dest, gen_symlink_path, strerror(errno));
-            //exit(EXIT_FAILURE);
+            case ENOENT:            // Normal expected result when symlink doesn't exist
+            
+                // euid (new, or extracted) has already been set
+
+                // Create new "auto build" symlink and destination
+                my_asprintf (&link_dest,"%s/%s/%s%s", settings.autoGenPath, username, BLD_PREFIX, euid);
+                _mkdir_all(link_dest);
+                if ( symlink (link_dest, bld_symlink_path) < 0 )
+                {
+                    fprintf(stderr, "Fatal AUTOGEN_init Error: auto-build symlink() failed: old=%s new=%s\n%s\n", link_dest, gen_symlink_path, strerror(errno));
+                    //exit(EXIT_FAILURE);
+                }
+            break;
+
+            default:
+                perror("Fatal AUTOGEN_init auto-build lstat error");       // Rare: lstat() fails
+                exit(EXIT_FAILURE);
+            break;
         }
     }
-    else            // Symlink exists
+    else    // Symlink exists
     {
+        if ( sb.st_size == 0 )           // Rare: Some magic symlinks under /proc and /sys report st_size as zero
+            bufsize = PATH_MAX;
+        else
+            bufsize = sb.st_size + 1;   // Normal, expected resule when symlink exists
+
+        link_dest = g_malloc(bufsize);
+        if ( !link_dest )
+        {
+            perror("Fatal AUTOGEN_init() auto-build malloc error");
+            exit(EXIT_FAILURE);
+        }
+
+        num_bytes = readlink(bld_symlink_path, link_dest, bufsize);
         link_dest[num_bytes] = '\0';
 
         if ( access(link_dest, X_OK) < 0 )       // Symlink exists, but symlink destination does not exist
@@ -185,12 +235,17 @@ void AUTOGEN_init(char *data_dir)
 
                 default:
                     // Handle (unlikely) permission errors (and other errors)
-                    fprintf(stderr, "Fatal Error: Cannot access autogen cache directory: %s\n%s\n", link_dest, strerror(errno));
+                    fprintf(stderr, "Fatal AUTOGEN_init Error: Cannot access autogen cache directory: %s\n%s\n", link_dest, strerror(errno));
                     exit(EXIT_FAILURE);
                 break;
             }
         }
     }
+    
+    // Release all the dynamic buffers
+    g_free(bld_symlink_path);
+    g_free(gen_symlink_path);
+    g_free(link_dest);
 
 
     /*** Allocate file-info list or re-initialize the already allocated storage ***/
