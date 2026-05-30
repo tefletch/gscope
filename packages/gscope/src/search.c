@@ -1404,7 +1404,6 @@ static gboolean compress_search_pattern(char *cpattern, char *pattern)
 static search_result_t configure_search(char *pattern, gboolean *use_regexp, regex_t *regex_ptr, char *cpattern)
 {
     char        *s_ptr;
-    char        buf[MAX_SYMBOL_SIZE + 3];
 
     /* remove trailing white space */
     for (s_ptr = pattern + strlen(pattern) - 1; isspace(*s_ptr); --s_ptr) *s_ptr = '\0';
@@ -1419,14 +1418,20 @@ static search_result_t configure_search(char *pattern, gboolean *use_regexp, reg
     /* The match must be an exact match */
     if (is_regexp(pattern) || settings.ignoreCase)          // Configure regex search
     {
+        gchar   *buf;
+
         /* remove leading ^ and trailing $ (if present) */
         strip_anchors(pattern);
 
-        (void) sprintf(buf, "^%s$", pattern);
+        my_asprintf(&buf, "^%s$", pattern);
         if (regcomp (regex_ptr, buf, REG_EXTENDED | REG_NOSUB | (settings.ignoreCase ? REG_ICASE : 0) ) != 0)
+        {
+            g_free(buf);
             return(REGCMPERROR);
+        }
 
         *use_regexp = TRUE;
+        g_free(buf);
     }
     else                                                    // Configure byte-matching search
     {
@@ -1509,7 +1514,7 @@ void SEARCH_init()
 {
     FILE    *cref_file;
     struct  stat statstruct;
-    char    tmpdir[PATHLEN + 1];            /* temporary directory */
+    char    *tmpdir;            /* temporary directory */
     char    *raw_tmpdir;
     pid_t   pid;
 
@@ -1556,13 +1561,14 @@ void SEARCH_init()
     /*** create the temporary file names ***/
     raw_tmpdir = getenv("TMPDIR");
     if ( raw_tmpdir )
-        snprintf(tmpdir, PATHLEN + 1, "%s", raw_tmpdir);    // Ridiculously long tmpdir paths will be truncated
+        my_asprintf(&tmpdir, "%s", raw_tmpdir);
     else
-        sprintf(tmpdir, "/tmp");
+        my_asprintf(&tmpdir, "/tmp");
 
     pid = getpid();
     snprintf(temp1, MAX_TMP_PATH +1, "%s/cscope%d.1", tmpdir, pid);
     snprintf(temp2, MAX_TMP_PATH +1, "%s/cscope%d.2", tmpdir, pid);
+    g_free(tmpdir);
 
     /*** Initialize the Cross-Reference "periodic check" timer ***/
     periodic_check_cref();
