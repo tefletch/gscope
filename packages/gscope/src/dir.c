@@ -803,7 +803,7 @@ static void _make_src_file_list()
         else
         {
             /* get the names in the file */
-            while (fscanf(names, "%s", path) == 1)      // Revisit:  Possible buffer overrun using fscanf()
+            while (fscanf(names, "%500s", path) == 1)      // Revisit:  PATHLEN is defined as 500, could construct a format string using the PATHLEN definition
             {
                 compress_path(path);    // path may be modified.
 
@@ -865,7 +865,7 @@ static void _make_src_file_list()
                 {
 
                     /* add it to the list */
-                    (void) sprintf(path, "%s/%s", src_dir, file);
+                    (void) snprintf(path, PATHLEN, "%s/%s", src_dir, file);
                     compress_path(path);
                     DIR_addsrcfile(path);
                 }
@@ -1148,7 +1148,7 @@ void DIR_incfile(char *file)
     {
         /* First look in source_dir */
         src_dir = DIR_get_path(DIR_SOURCE);
-        sprintf(path, "%s/%s", src_dir, clean_name);
+        snprintf(path, PATHLEN, "%s/%s", src_dir, clean_name);
         if ( (is_regular_file(compress_path(path))) && (!infilelist(clean_name)) )
         {
             DIR_addsrcfile(clean_name);   // yes, use 'file', not 'path' -- keep the name "relative"
@@ -1158,7 +1158,7 @@ void DIR_incfile(char *file)
             /* Nothing found in source_dir, check the "include" search path */
             for (i = 0; i < num_include_dirs; ++i)
             {
-                sprintf(path, "%s/%s", include_dirs[i], clean_name);
+                snprintf(path, PATHLEN, "%s/%s", include_dirs[i], clean_name);
                 if ( is_regular_file(compress_path(path)) )
                 {
                      if (!infilelist(path))
@@ -1515,7 +1515,10 @@ static char * compress_path(char *pathname)
      */
 
     if (*pathname == '\0')
-        sprintf(pathname, ".");
+    {
+        *pathname       = '.';
+        *(pathname + 1) = '\0';     // return "."
+    }
 
     return(pathname);
 }
