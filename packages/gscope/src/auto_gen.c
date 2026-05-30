@@ -657,7 +657,6 @@ static gboolean _protobuf_csrc (const char *full_filename, char *data_dir)
     FILE    *file_ptr;
 
     char    *dirname_ptr;
-    char    *proto_ptr;     // Used to remove ".proto" from file name
     char    *realpath_ptr;  //Holds the target path of the symlink
     gboolean retval = TRUE;
 
@@ -670,7 +669,7 @@ static gboolean _protobuf_csrc (const char *full_filename, char *data_dir)
     my_asprintf(&isearch_buf, "%s/%s", data_dir, GSCOPE_BLD_DIR);
 
     // Get the target of the symlink as input to compiler. Used to remove unique identifier from compiled output
-    sprintf(&symlink_buf, "%s/%s/%s", data_dir, GSCOPE_BLD_DIR, my_basename(full_filename));
+    my_asprintf(&symlink_buf, "%s/%s/%s", data_dir, GSCOPE_BLD_DIR, my_basename(full_filename));
     realpath_ptr = realpath(symlink_buf, NULL);
 
     // Exit if target of symlink is missing
@@ -682,7 +681,7 @@ static gboolean _protobuf_csrc (const char *full_filename, char *data_dir)
 
     // Construct/re-use a session specific, output directory
     dirname_ptr = my_dirname(strdup(full_filename));
-    sprintf(&output_dir, "%s/%s/%s", data_dir, GSCOPE_GEN_DIR, dirname_ptr);
+    my_asprintf(&output_dir, "%s/%s/%s", data_dir, GSCOPE_GEN_DIR, dirname_ptr);
     _mkdir_all(output_dir);
 
 
@@ -704,18 +703,22 @@ static gboolean _protobuf_csrc (const char *full_filename, char *data_dir)
 
     if (system_res != 0)
     {
-        char    errfile_buf [PATHLEN * 3];
+        char    *errfile_buf = NULL;
+        char    *hfile_buf = NULL;
+        char    *simple_basename = NULL;
+        char    *proto_ptr;     // Used to remove ".proto" from file name
 
         retval = FALSE;
 
-        /*** Write error message to compilation output file ***/
-        sprintf(errfile_buf, "%s/%s", output_dir, my_basename(realpath_ptr));
+        my_asprintf(&simple_basename, "%s", my_basename(realpath_ptr));
+        proto_ptr = strrchr(simple_basename, '.');
 
-        // Remove .proto from path
-        proto_ptr = strrchr(errfile_buf, '.');
         if (proto_ptr)
         {
-            sprintf(proto_ptr, "%s.c", settings.autoGenId);
+            *proto_ptr = '\0';         // Trim off the file extension (typically .proto)
+        
+            /*** Write error message to compilation output file ***/
+            my_asprintf(&errfile_buf, "%s/%s%s.c", output_dir, simple_basename, settings.autoGenId);
 
             // Write error message to .c file
             file_ptr = fopen(errfile_buf, "w");
@@ -731,8 +734,8 @@ static gboolean _protobuf_csrc (const char *full_filename, char *data_dir)
             }
 
             // Write error message to .h file
-            sprintf(proto_ptr, "%s.h", settings.autoGenId);
-            file_ptr = fopen(errfile_buf, "w");
+            my_asprintf(&hfile_buf, "%s/%s%s.h", output_dir, simple_basename, settings.autoGenId);
+            file_ptr = fopen(hfile_buf, "w");
             if (file_ptr != NULL)
             {
                 fprintf(file_ptr, "/* AutoGen Error in compiling .h file */\n");
@@ -740,19 +743,23 @@ static gboolean _protobuf_csrc (const char *full_filename, char *data_dir)
             }
             else
             {
-                my_cannotopen(errfile_buf);
+                my_cannotopen(hfile_buf);
                 exit(EXIT_FAILURE);
             }
         }
         else
         {
             fprintf(stderr, "WARNING: Invalid filename for Protobuf metafile source specified:  %s\n"
-                           "File ignored.\n", errfile_buf);
+                           "File ignored.\n", realpath_ptr);
         }
+
+        g_free(errfile_buf);
+        g_free(simple_basename);
+        g_free(hfile_buf);
     }
 
     free(realpath_ptr);
-    g_freee(command_buf);
+    g_free(command_buf);
     g_free(isearch_buf);
     g_free(symlink_buf);
     g_free(output_dir);
