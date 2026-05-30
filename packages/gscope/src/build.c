@@ -258,9 +258,13 @@ static char build_stats_msg[1024];
 void BUILD_initDatabase(GtkWidget *progress_bar)
 {
     suseconds_t elapsed_usec;
-    char working_buf[500];
 
-    build_stats_msg[0] = '\0';   /* Initialize build stats to null string */
+    gchar *autogen_stats;
+    gchar *src_search_time;
+    gchar *cross_ref_time;
+    gchar *autogen_time;
+    gchar *overall_time;
+    gchar *mega_message;
 
     gettimeofday(&overall_time_start, NULL);
 
@@ -299,25 +303,23 @@ void BUILD_initDatabase(GtkWidget *progress_bar)
 
     gettimeofday(&overall_time_stop, NULL);
 
-    /* Show (optional) autogen stats */
+    /* Optional autogen stats */
     if (settings.autoGenEnable)
     {
         proto_compile_stats_t *stats_ptr =  AUTOGEN_get_file_count();
 
-        sprintf(working_buf, "Updated auto-generated header files for %d of %d\ndetected (%s) files (%d Succeeded, %d Failed).\n",
+        my_asprintf(&autogen_stats, "Updated auto-generated header files for %d of %d\ndetected (%s) files (%d Succeeded, %d Failed).\n",
                 stats_ptr->num_proto_changed,
                 stats_ptr->num_proto_files,
                 settings.autoGenSuffix,
                 stats_ptr->proto_build_success,
                 stats_ptr->proto_build_failed);
-        strcat(build_stats_msg, working_buf);
     }
+    else
+        my_asprintf(&autogen_stats, "%s", "");
 
-
-    strcat(build_stats_msg,"\n");
-
-    /* Show elapsed times */
-
+    // Source Search Time
+    //===================
     if (src_list_time_stop.tv_usec >= src_list_time_start.tv_usec)
         elapsed_usec = src_list_time_stop.tv_usec - src_list_time_start.tv_usec;
     else
@@ -325,13 +327,12 @@ void BUILD_initDatabase(GtkWidget *progress_bar)
         elapsed_usec = (1000000 + src_list_time_stop.tv_usec) - src_list_time_start.tv_usec;
         src_list_time_stop.tv_sec--;
     }
-
-    sprintf(working_buf, "Source Search Time:    %ld.%6.6ld seconds\n",
+    my_asprintf(&src_search_time, "Source Search Time:    %ld.%6.6ld seconds\n",
            src_list_time_stop.tv_sec - src_list_time_start.tv_sec,
            elapsed_usec );
-    strcat(build_stats_msg, working_buf);
-
-
+    
+    // Cross Reference Time
+    //=====================
     if (cref_time_stop.tv_usec >= cref_time_start.tv_usec)
         elapsed_usec = cref_time_stop.tv_usec - cref_time_start.tv_usec;
     else
@@ -339,13 +340,23 @@ void BUILD_initDatabase(GtkWidget *progress_bar)
         elapsed_usec = (1000000 + cref_time_stop.tv_usec) - cref_time_start.tv_usec;
         cref_time_stop.tv_sec--;
     }
-
-    sprintf(working_buf, "Cross Ref Time:            %ld.%6.6ld seconds\n",
+    my_asprintf(&cross_ref_time, "Cross Ref Time:            %ld.%6.6ld seconds\n",
            cref_time_stop.tv_sec - cref_time_start.tv_sec,
            elapsed_usec );
-    strcat(build_stats_msg, working_buf);
-
-
+    
+    // Optional AutoGen Time
+    //======================
+    if (settings.autoGenEnable)
+    {
+        my_asprintf(&autogen_time, "Autogen time:              %ld.%6.6ld seconds\n",
+               autogen_elapsed_sec,
+               autogen_elapsed_usec );
+    }
+    else
+        my_asprintf(&autogen_time, "%s", "");
+    
+    // Overall Time
+    //=============
     if (overall_time_stop.tv_usec >= overall_time_start.tv_usec)
         elapsed_usec = overall_time_stop.tv_usec - overall_time_start.tv_usec;
     else
@@ -353,27 +364,28 @@ void BUILD_initDatabase(GtkWidget *progress_bar)
         elapsed_usec = (1000000 + overall_time_stop.tv_usec) - overall_time_start.tv_usec;
         overall_time_stop.tv_sec--;
     }
-
-    if (settings.autoGenEnable)
-    {
-        sprintf(working_buf, "Autogen time:              %ld.%6.6ld seconds\n",
-               autogen_elapsed_sec,
-               autogen_elapsed_usec );
-        strcat(build_stats_msg, working_buf);
-    }
-
-    sprintf(working_buf, "Overall Time:               %ld.%6.6ld seconds",
+    my_asprintf(&overall_time, "Overall Time:               %ld.%6.6ld seconds",
            overall_time_stop.tv_sec - overall_time_start.tv_sec,
            elapsed_usec );
-    strcat(build_stats_msg, working_buf);
+
+    // Construct the mega-message
+    //===========================
+    my_asprintf(&mega_message, "%s%s%s%s%s", autogen_stats, src_search_time, cross_ref_time, autogen_time, overall_time);
 
     if ( !settings.refOnly )
     {
-        DISPLAY_update_stats_tooltip(build_stats_msg);
+        DISPLAY_update_stats_tooltip(mega_message);
         DISPLAY_set_cref_current(TRUE);
     }
     else
-        printf("\n%s\n", build_stats_msg);
+        printf("\n%s\n", mega_message);
+
+    g_free(autogen_stats);
+    g_free(src_search_time);
+    g_free(cross_ref_time);
+    g_free(autogen_time);
+    g_free(overall_time);
+    g_free(mega_message);
 }
 
 
