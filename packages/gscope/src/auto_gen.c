@@ -32,7 +32,6 @@
 
 #define GEN_PREFIX      "autogen_"
 #define BLD_PREFIX      "autobld_"
-#define MAX_USER_SIZE   40          /* My condolences if your have a username anywhere near 40 chars */
 
 //===============================================================
 //       Local Type Definitions
@@ -97,7 +96,7 @@ void AUTOGEN_init(char *data_dir)
     char    *bld_symlink_path = NULL;
     char    *euid;              // Per session/directory AUTOGEN_initunique ID.
     char    *file_path;         //Working copy of full path
-    char    username[MAX_USER_SIZE + 1];
+    char    *username;
 
     DIR     *dir;
     struct  dirent *ent;
@@ -105,8 +104,7 @@ void AUTOGEN_init(char *data_dir)
     char    *real_path;
 
     gettimeofday(&autogen_time_start, NULL);
-    snprintf(username, MAX_USER_SIZE + 1, "%s", getenv("USER"));     // Truncate any username > MAX_USER_SIZE
-
+    my_asprintf(&username, "%s", getenv("USER"));
     /*** Initialize "auto generated" symlink and destination ***/
     /***********************************************************/
     my_asprintf(&gen_symlink_path, "%s/%s", data_dir, GSCOPE_GEN_DIR);
@@ -246,6 +244,7 @@ void AUTOGEN_init(char *data_dir)
     g_free(bld_symlink_path);
     g_free(gen_symlink_path);
     g_free(link_dest);
+    g_free(username);
 
 
     /*** Allocate file-info list or re-initialize the already allocated storage ***/
@@ -357,9 +356,10 @@ void AUTOGEN_run(char *data_dir)
     time_t  compile_time;       //Last time file was compiled
     gboolean no_compile_flag;   //Indicates if compiled .pb-c.c can not be found
 
-    char    full_path_buf[PATHLEN + sizeof(GSCOPE_BLD_DIR) + PATHLEN + 10];     // +10 for literal chars and null-terminator
-    char    file_path_buf[PATHLEN + PATHLEN + 10];
-    char    compiledBuf  [PATHLEN + sizeof(GSCOPE_GEN_DIR) + PATHLEN + PATHLEN + 10]; //Path to the compiled .pb-c.c file
+    char    *full_path_buf = NULL;
+    char    *file_path_buf = NULL;
+    char    *fileBuf = NULL;
+    char    *compiledBuf = NULL;        //Path to the compiled .pb-c.c file
 
     gettimeofday(&autogen_time_start, NULL);
 
@@ -377,23 +377,24 @@ void AUTOGEN_run(char *data_dir)
     while (src_file_index < nfile_info)
     {
         /* <directory>/<file.proto> */
-        sprintf(file_path_buf, "%s/%s", file_info_list[src_file_index].unique_dirname, file_info_list[src_file_index].unique_basename);
+        my_asprintf(&file_path_buf, "%s/%s", file_info_list[src_file_index].unique_dirname, file_info_list[src_file_index].unique_basename);
 
         /* .../GSCOPE_BLD_DIR/<symlink to .proto> */
-        sprintf(full_path_buf, "%s/%s/%s",
+        my_asprintf(&full_path_buf, "%s/%s/%s",
                                data_dir,
                                GSCOPE_BLD_DIR,
                                file_info_list[src_file_index].unique_basename);
 
         /* .../GSCOPE_GEN_DIR/<directory>/<file.proto> */
-        sprintf(compiledBuf, "%s/%s/%s/%s",
+        my_asprintf(&fileBuf, "%s/%s/%s/%s",
                              data_dir,
                              GSCOPE_GEN_DIR,
                              file_info_list[src_file_index].unique_dirname,
                              file_info_list[src_file_index].true_basename);
 
         /* .../GSCOPE_GEN_DIR/<directory>/<file.pb-c.c> */
-        sprintf(strstr(compiledBuf, settings.autoGenSuffix), "%s%s", settings.autoGenId,".c");
+        *(strstr(fileBuf, settings.autoGenSuffix)) = '\0';              // Trim off autoGenSuffix
+        my_asprintf(&compiledBuf, "%s%s", settings.autoGenId,".c");     // Append <autoGenId>.c
 
         /* Checks to not compile file if it is already up to date */
         if ( (stat(compiledBuf, &statstruct) != 0) )
@@ -421,6 +422,11 @@ void AUTOGEN_run(char *data_dir)
                 pc_stats.proto_build_failed++;
         }
         src_file_index++;
+
+        g_free(full_path_buf);
+        g_free(file_path_buf);
+        g_free(fileBuf);
+        g_free(compiledBuf);
     }
     gettimeofday(&autogen_time_stop, NULL);
 
@@ -446,8 +452,9 @@ void AUTOGEN_addproto(char* name)
     char    *dirName;
     char    *cwd;
 
-    char    build_link_src [PATHLEN + 10];      // +10 for literal chars and null-terminator
-    char    build_link_dest[PATHLEN + 10];
+    char    *build_link_src = NULL;      // +10 for literal chars and null-terminator
+    char    *build_link_dest = NULL;
+    char    *simple_basename = NULL;
 
     int     uid;
     int     file_info_index;
@@ -497,7 +504,7 @@ void AUTOGEN_addproto(char* name)
 
     // If this bassename already exists in the build directory, create a synthetic
     // "unique" base name and use it as the name for the new symlink.
-    sprintf(build_link_src, "%s/%s", GSCOPE_BLD_DIR, baseName);
+    my_asprintf(&build_link_src, "%s/%s", GSCOPE_BLD_DIR, baseName);
 
     if ( access(build_link_src, F_OK) == -1 )
     {
@@ -506,23 +513,28 @@ void AUTOGEN_addproto(char* name)
         file_info_list[nfile_info].unique_basename = strdup(baseName);  // Record the unique basename
     }
     else
-    {
-        /* File (link) exists, synthesize a new, unique basename */
+    {           // File (link) exists, synthesize a new, unique basename
+
+        my_asprintf(&simple_basename, "%s/%s", GSCOPE_BLD_DIR, baseName);
+        *(strstr(simple_basename, settings.autoGenSuffix)) = '\0';      // Trim off autoGenSuffix
+
         uid = 0;
         do
         {
-            sprintf(build_link_src, "%s/%s", GSCOPE_BLD_DIR, baseName);
-            sprintf(strstr(build_link_src, settings.autoGenSuffix), "__%d%s", ++uid, settings.autoGenSuffix);
+            g_free(build_link_src);
+            my_asprintf(&build_link_src, "%s__%d%s", simple_basename, ++uid, settings.autoGenSuffix);
+            sprintf(strstr(build_link_src, settings.autoGenSuffix), "__%d%s", ++uid, settings.autoGenSuffix);  // Append __<uid><autoGenSuffix
         }
         while ( access(build_link_src, F_OK) == 0 );
-
+        
+        g_free(simple_basename);
         file_info_list[nfile_info].unique_basename = strdup(my_basename(build_link_src));
     }
 
     // If file is in the "root" of the source tree, do not include directory in path
     if( strcmp(file_info_list[nfile_info].unique_dirname, "") == 0 )
     {
-        sprintf(build_link_dest, "%s/%s", cwd = getcwd(NULL, 0), baseName);
+        my_asprintf(&build_link_dest, "%s/%s", cwd = getcwd(NULL, 0), baseName);
         free(cwd);
     }
     else
@@ -530,12 +542,12 @@ void AUTOGEN_addproto(char* name)
         if (dirName[0] == '/')
         {
             // dirName is an absolute path, use it as-is
-            sprintf(build_link_dest, "%s/%s", dirName, baseName);
+            my_asprintf(&build_link_dest, "%s/%s", dirName, baseName);
         }
         else
         {
             // dirName is a relative path, make it absolute
-            sprintf(build_link_dest, "%s/%s/%s", cwd = getcwd(NULL, 0), dirName, baseName);
+            my_asprintf(&build_link_dest, "%s/%s/%s", cwd = getcwd(NULL, 0), dirName, baseName);
             free(cwd);
         }
     }
@@ -545,6 +557,9 @@ void AUTOGEN_addproto(char* name)
         fprintf(stderr, "Fatal Error: 3Symlink symlnk() failed: old=%s new=%s\n%s\n", build_link_dest, build_link_src, strerror(errno));
         //exit(EXIT_FAILURE);
     }
+
+    g_free(build_link_src);
+    g_free(build_link_dest);
 
     file_info_list[nfile_info].exists  = TRUE;      // Symlink and target file exists
 
@@ -607,14 +622,15 @@ proto_compile_stats_t *AUTOGEN_get_file_count(void)
 static void _remove_old_symlinks(char *data_dir)
 {
     int     file_info_index;
-    char    remove_buf[PATHLEN + sizeof(GSCOPE_BLD_DIR) + PATHLEN + 10];    // +10 for literal chars and null-terminator
+    char    *remove_buf = NULL;
 
     for (file_info_index = 0; file_info_index < nfile_info; file_info_index++)
     {
         if (!file_info_list[file_info_index].exists) //If target proto file is no longer found in directory
         {
-            sprintf(remove_buf, "%s/%s/%s", data_dir, GSCOPE_BLD_DIR, file_info_list[file_info_index].unique_basename);
+            my_asprintf(&remove_buf, "%s/%s/%s", data_dir, GSCOPE_BLD_DIR, file_info_list[file_info_index].unique_basename);
             (void) remove(remove_buf);
+            g_free(remove_buf);
 
             g_free(file_info_list[file_info_index].unique_basename);
             g_free(file_info_list[file_info_index].true_basename);
