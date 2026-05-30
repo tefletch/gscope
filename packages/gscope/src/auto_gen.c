@@ -880,7 +880,7 @@ static void _do_garbage_collection()
             unsigned int  i;
             struct        dirent *entry;
             char          **cache_list;
-            char          full_cache_path[PATHLEN + 1];
+            char          *full_cache_path;
 
             garbage_dumped = TRUE;      // For reporting purposes, assume that we successfully removed some cache(s).
 
@@ -908,14 +908,16 @@ static void _do_garbage_collection()
             i = 0;
             while(entry_count > settings.autoGenThresh) // We want to delete half of the "old" cache directory pairs
             {
-                sprintf(full_cache_path, "%s/%s", cache_dir, cache_list[i]);
+                my_asprintf(&full_cache_path, "%s/%s", cache_dir, cache_list[i]);
                 if (recursive_remove(full_cache_path) < 0)
                     fprintf(stderr,"Warning: Garbage Collection failed to remove cache directory: %s\n", cache_list[i]);
+                g_free(full_cache_path);
                 i++;
 
-                sprintf(full_cache_path, "%s/%s", cache_dir, cache_list[i]);
+                my_asprintf(&full_cache_path, "%s/%s", cache_dir, cache_list[i]);
                 if (recursive_remove(full_cache_path) < 0)
                     fprintf(stderr,"Warning: Garbage Collection failed to remove cache directory: %s\n", cache_list[i]);
+                g_free(full_cache_path);
                 i++;
 
                 entry_count -= 2;  // Even if we fail to delete the targeted directory, keep going.  Otherwise we have an infinite loop.
