@@ -1500,7 +1500,7 @@ static void on_reroot(GtkWidget *menuitem, result_t *function_box)
 static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint num_results,
                                     guint col, guint starting_row, dir_e direction)
 {
-    int row, offset;
+    guint row;
     col_list_t *list;
     char *var_string;
     GtkWidget *function_label;
@@ -1509,7 +1509,7 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
     search_results_t *children;
     search_t operation;
 
-    offset = (direction == RIGHT ? 1 : -1);
+    
     node = function_list;
 
     for (row = starting_row; row < starting_row + num_results; row++)
@@ -1600,7 +1600,10 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
         children = SEARCH_lookup(operation, node->function_name);
         if (children->match_count > 0)
         {
-            make_expander_at_position(tcb, col + offset, row, direction);
+            if ( direction == RIGHT )
+                make_expander_at_position(tcb, col + 1, row, direction);
+            else
+                make_expander_at_position(tcb, col - 1, row, direction);
         }
         SEARCH_free_results(children);
 
