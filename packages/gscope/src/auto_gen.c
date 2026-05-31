@@ -150,7 +150,7 @@ void AUTOGEN_init(char *data_dir)
         // Extract the pre-existing EUID
         extract_ptr = strrchr(link_dest, '_');
         extract_ptr++;
-        strcpy(euid, extract_ptr);
+        my_asprintf(&euid, "%s", extract_ptr);
 
         if ( access(link_dest, X_OK) < 0 )       // Symlink exists, but symlink destination does not exist
         {
