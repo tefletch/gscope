@@ -757,7 +757,7 @@ static void create_header_button_with_adjuster(tcb_t *tcb, guint col, gint label
     GtkEventController  *pointer_motion = gtk_event_controller_motion_new();
     GtkGesture          *gesture = gtk_gesture_click_new();  // Caller must free gesture
 
-    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(adjuster_eventbox), GDK_BUTTON_PRIMARY);
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), GDK_BUTTON_PRIMARY);
     gtk_widget_add_controller(adjuster_eventbox, GTK_EVENT_CONTROLLER(gesture));
 
     g_signal_connect (pointer_motion, "enter",
@@ -2416,9 +2416,15 @@ static GtkWidget* create_browser_window(gchar *name, gchar *root_file, gchar *li
     tcb->browser_table = browser_table;
     initialize_table(tcb, name, root_file, line_num);
 
+    #ifndef GTK4_BUILD
     g_signal_connect((gpointer)browser_window, "delete_event",
                      G_CALLBACK(on_browser_delete_event),
                      tcb);
+    #else
+    g_signal_connect((gpointer)browser_window, "close_request",
+                     G_CALLBACK(on_browser_delete_event),
+                     tcb);
+    #endif
 
     /* Add the non-scrollable table header */
 
