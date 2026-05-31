@@ -356,13 +356,14 @@ static void get_function(tcb_t *tcb, guint col, guint row, dir_e direction, gcha
 //********************************************************************************************** 
 static result_t* parse_results(search_results_t *results)
 {
-    result_t *node, *next_node, *front;
+    result_t *node = NULL;
+    result_t *next_node, *front;
     gchar *curr;
     gboolean first_space;
     gchar *result_ptr = results->start_ptr;
     gchar *line_end;
 
-    node = front = next_node = (result_t *)g_malloc(sizeof(result_t));
+    front = next_node = (result_t *)g_malloc(sizeof(result_t));
     while (result_ptr != results->end_ptr)
     {
         node = next_node;
@@ -406,7 +407,8 @@ static result_t* parse_results(search_results_t *results)
             node->next = next_node;
         }
     }
-    node->next  = NULL;
+    if ( node )
+        node->next  = NULL;
 
     return front;
 }
@@ -1163,6 +1165,7 @@ static void make_expander_at_position(tcb_t *tcb, guint col, guint row, dir_e di
     else
         image = create_pixmap(expander, "sca_expander_right.png");
     gtk_widget_show(image);
+    
     #ifndef GTK4_BUILD
     gtk_table_attach (GTK_TABLE(tcb->browser_table), expander, 
                     col, col + 1, 
@@ -1509,7 +1512,7 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
     search_results_t *children;
     search_t operation;
 
-    
+
     node = function_list;
 
     for (row = starting_row; row < starting_row + num_results; row++)
