@@ -232,7 +232,6 @@ void AUTOGEN_init(char *data_dir)
     }
     
     // Release all the dynamic buffers
-    g_free(bld_symlink_path);
     g_free(gen_symlink_path);
     g_free(link_dest);
     g_free(username);
@@ -271,6 +270,7 @@ void AUTOGEN_init(char *data_dir)
         fprintf(stderr, "ERROR: Failed to open auto_gen BUILD directory[%s]: %s\n", bld_symlink_path, strerror(errno));
         exit(EXIT_FAILURE);
     }
+    g_free(bld_symlink_path);
 
     pc_stats.num_proto_files = 0;
 
