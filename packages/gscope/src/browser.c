@@ -324,14 +324,15 @@ static column_entry_t* column_list_get_row(col_list_t *list, guint row)
 //********************************************************************************************** 
 static void get_function(tcb_t *tcb, guint col, guint row, dir_e direction, gchar **fname, gchar **file)
 {
-    guint offset;
     col_list_t *column;
     column_entry_t *function_node;
     GtkWidget *label;
 
-    offset = (direction == RIGHT ? -1 : 1);
+    if ( direction == RIGHT )
+        column = &(tcb->col_list[col - 1]);
+    else
+        column = &(tcb->col_list[col + 1]);
 
-    column = &(tcb->col_list[col + offset]);
     function_node = column_list_get_row(column, row);
 
     #ifndef GTK4_BUILD
