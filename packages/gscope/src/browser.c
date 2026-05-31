@@ -406,9 +406,9 @@ static result_t* parse_results(search_results_t *results)
             next_node = (result_t *)g_malloc(sizeof(result_t));
             node->next = next_node;
         }
+        else
+            node->next = NULL;
     }
-    if ( node )
-        node->next  = NULL;
 
     return front;
 }
