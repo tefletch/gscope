@@ -340,8 +340,7 @@ static void get_function(tcb_t *tcb, guint col, guint row, dir_e direction, gcha
     GList *children = gtk_container_get_children((GtkContainer *)function_node->widget);
     label = (GtkWidget *)children->data;
     #else
-    GtkWidget *child = gtk_widget_get_first_child(function_node->widget);
-    label = (GtkWidget *)child;
+    label = (GtkWidget *)function_node->widget;
     #endif
 
     *fname = (gchar *)gtk_label_get_text((GtkLabel *)label);
@@ -1263,8 +1262,6 @@ static void make_filler_column(tcb_t *tcb, guint position)
     gtk_widget_set_hexpand(button, TRUE);
     gtk_widget_set_halign(button, GTK_ALIGN_FILL);
 
-    gtk_widget_set_hexpand(button, TRUE);
-    gtk_widget_set_halign(button, GTK_ALIGN_FILL);
     gtk_grid_attach(GTK_GRID(tcb->browser_table), button, position, 0, 1, 1);
     #endif
 
@@ -1441,7 +1438,7 @@ static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gc
     gtk_widget_set_halign(root_function_blue_eventbox, GTK_ALIGN_FILL);
     gtk_widget_set_valign(root_function_blue_eventbox, GTK_ALIGN_FILL);
     gtk_grid_attach(GTK_GRID(tcb->browser_table), root_function_blue_eventbox, tcb->root_col, 1, 1, 1);
-    gtk_box_append(GTK_BOX(tcb->browser_table), root_function_label);
+    gtk_box_append(GTK_BOX(root_function_blue_eventbox), root_function_label);
     #endif
 
     #else   // GTK2
@@ -1775,7 +1772,7 @@ static void make_collapser_at_position(tcb_t *tcb, guint col, guint row, dir_e d
     g_signal_connect(collapser, "button_release_event", callback, tcb);
 
     #else
-    GtkGesture *gesture = gtk_gesture_click_new();  // Revisit: Potential resource leak.  aller must free gesture
+    GtkGesture *gesture = gtk_gesture_click_new();  // Revisit: Potential resource leak.  caller must free gesture
     gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(collapser), GDK_BUTTON_PRIMARY);    // 0 = Any button click
     gtk_widget_add_controller(collapser, GTK_EVENT_CONTROLLER(gesture));
     g_signal_connect(gesture, "released", callback, tcb);
@@ -1807,7 +1804,9 @@ static void on_right_expander_button_release_event(GtkGestureClick *gesture, int
     #else
     GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
     row = gtk_grid_layout_child_get_row(GTK_GRID_LAYOUT_CHILD(widget));
+    row++;      // Logical grid row
     col = gtk_grid_layout_child_get_column(GTK_GRID_LAYOUT_CHILD(widget));
+    col++;      // Logical grid column
     #endif
 
     // Remove the selected expander widget from the [col] column list
@@ -1845,8 +1844,10 @@ static void on_left_expander_button_release_event(GtkGestureClick *gesture, int 
                             NULL);
     #else
     GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
-    row = gtk_grid_layout_child_get_row(GTK_GRID_LAYOUT_CHILD(widget));
-    col = gtk_grid_layout_child_get_column(GTK_GRID_LAYOUT_CHILD(widget));
+    row = gtk_grid_layout_child_get_row(GTK_GRID_LAYOUT_CHILD(widget));     // top-attach
+    row++;      // Logical grid row
+    col = gtk_grid_layout_child_get_column(GTK_GRID_LAYOUT_CHILD(widget));  // left-attach
+    col++;      // Logical gird col
     #endif
 
     // Remove the selected expander widget from the [col] column list
@@ -2248,7 +2249,9 @@ static void on_right_collapser_button_release_event(GtkGestureClick *gesture, in
     #else
     GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
     row = gtk_grid_layout_child_get_row(GTK_GRID_LAYOUT_CHILD(widget));
+    row++;      // Logical grid row
     col = gtk_grid_layout_child_get_column(GTK_GRID_LAYOUT_CHILD(widget));
+    col++;      // Logical grid column
     #endif
 
     // Remove the selected collapser widget pointer from the column [col] member list
@@ -2289,7 +2292,9 @@ static void on_left_collapser_button_release_event(GtkGestureClick *gesture, int
     #else
     GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
     row = gtk_grid_layout_child_get_row(GTK_GRID_LAYOUT_CHILD(widget));
+    row++;      // Logical grid row
     col = gtk_grid_layout_child_get_column(GTK_GRID_LAYOUT_CHILD(widget));
+    col++;      // Logical grid column
     #endif
 
     // Remove the selected collapser widget pointer from the column [col] member list
