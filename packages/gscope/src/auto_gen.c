@@ -89,7 +89,6 @@ static int      recursive_remove(char *path);
 void AUTOGEN_init(char *data_dir)
 {
     ssize_t num_bytes;
-    ssize_t bufsize;
     char    *extract_ptr;
     char    *gen_symlink_path = NULL;
     char    *link_dest = NULL;
@@ -137,17 +136,15 @@ void AUTOGEN_init(char *data_dir)
     }
     else    // Symlink exists
     {
-        bufsize = sb.st_size + 1;   // Normal, expected result when symlink exists
- 
-        link_dest = g_malloc(bufsize);    
+        link_dest = g_malloc(sb.st_size + 1);    
         if ( !link_dest )
         {
             perror("Fatal AUTOGEN_init() auto-gen malloc error");
             exit(EXIT_FAILURE);
         }
 
-        num_bytes = readlink(gen_symlink_path, link_dest, bufsize);
-        if (num_bytes > 0 && num_bytes <= bufsize)
+        num_bytes = readlink(gen_symlink_path, link_dest, sb.st_size);
+        if (num_bytes > 0 && num_bytes <= sb.st_size)
             link_dest[num_bytes] = '\0';
 
         // Extract the pre-existing EUID
@@ -205,20 +202,15 @@ void AUTOGEN_init(char *data_dir)
     }
     else    // Symlink exists
     {
-        if ( sb.st_size == 0 )           // Rare: Some magic symlinks under /proc and /sys report st_size as zero
-            bufsize = PATH_MAX;
-        else
-            bufsize = sb.st_size + 1;   // Normal, expected resule when symlink exists
-
-        link_dest = g_malloc(bufsize);
+        link_dest = g_malloc(sb.st_size + 1);
         if ( !link_dest )
         {
             perror("Fatal AUTOGEN_init() auto-build malloc error");
             exit(EXIT_FAILURE);
         }
 
-        num_bytes = readlink(bld_symlink_path, link_dest, bufsize);
-        if (num_bytes >= 0)
+        num_bytes = readlink(bld_symlink_path, link_dest, sb.st_size);
+        if (num_bytes >= 0 && num_bytes <= sb.st_size)
             link_dest[num_bytes] = '\0';
 
         if ( access(link_dest, X_OK) < 0 )       // Symlink exists, but symlink destination does not exist
