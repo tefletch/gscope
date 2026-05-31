@@ -757,7 +757,6 @@ static void create_header_button_with_adjuster(tcb_t *tcb, guint col, gint label
     GtkEventController  *pointer_motion = gtk_event_controller_motion_new();
     GtkGesture          *gesture = gtk_gesture_click_new();  // Caller must free gesture
 
-    gtk_widget_add_controller(adjuster_eventbox, GTK_EVENT_CONTROLLER(pointer_motion));
     gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(adjuster_eventbox), GDK_BUTTON_PRIMARY);
     gtk_widget_add_controller(adjuster_eventbox, GTK_EVENT_CONTROLLER(gesture));
 
@@ -776,7 +775,6 @@ static void create_header_button_with_adjuster(tcb_t *tcb, guint col, gint label
     g_signal_connect (pointer_motion, "motion",
                       G_CALLBACK(on_adjuster_eventbox_motion_notify_event),
                       header_button);
-
     #endif
 }
 
@@ -1195,9 +1193,12 @@ static void make_expander_at_position(tcb_t *tcb, guint col, guint row, dir_e di
     g_signal_connect(expander, "button_release_event", callback, tcb);
                         
     #else
+    
     GtkGesture *gesture = gtk_gesture_click_new();  // Revisit: Potential resource leak.  aller must free gesture
-    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(expander), GDK_BUTTON_PRIMARY);
+
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), GDK_BUTTON_PRIMARY);
     gtk_widget_add_controller(expander, GTK_EVENT_CONTROLLER(gesture));
+
     g_signal_connect(gesture, "released", callback, tcb);
     #endif
 }
@@ -1458,8 +1459,10 @@ static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gc
                      G_CALLBACK(on_function_button_press), &(tcb->root_entry));
 
     #else   // GTK4
+    
     GtkGesture *gesture = gtk_gesture_click_new();  // Caller must free gesture
-    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(root_function_blue_eventbox), GDK_BUTTON_PRIMARY);
+    
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), GDK_BUTTON_PRIMARY);
     gtk_widget_add_controller(root_function_blue_eventbox, GTK_EVENT_CONTROLLER(gesture));
    
     g_signal_connect(gesture, "pressed", G_CALLBACK(on_function_button_press), &(tcb->root_entry));
@@ -1592,9 +1595,11 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
             g_signal_connect(function_event_box, "button_press_event", G_CALLBACK(on_function_button_press), node);
             #else
 
-            GtkGesture *gesture = gtk_gesture_click_new();  // Revisit: Potential resource leak.  aller must free gesture
-            gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(function_event_box), GDK_BUTTON_ANY);    // 0 = Any button click
+            GtkGesture *gesture = gtk_gesture_click_new();  // Revisit: Potential resource leak.  caller must free gesture
+
+            gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), GDK_BUTTON_ANY);    // 0 = Any button click
             gtk_widget_add_controller(function_event_box, GTK_EVENT_CONTROLLER(gesture));
+            
             g_signal_connect(gesture, "pressed", G_CALLBACK(on_function_button_press), node);
             #endif
 
