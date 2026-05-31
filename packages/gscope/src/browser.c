@@ -362,7 +362,7 @@ static result_t* parse_results(search_results_t *results)
     gchar *result_ptr = results->start_ptr;
     gchar *line_end;
 
-    front = next_node = (result_t *)g_malloc(sizeof(result_t));
+    node = front = next_node = (result_t *)g_malloc(sizeof(result_t));
     while (result_ptr != results->end_ptr)
     {
         node = next_node;
@@ -406,7 +406,7 @@ static result_t* parse_results(search_results_t *results)
             node->next = next_node;
         }
     }
-    node->next = NULL;
+    node->next  = NULL;
 
     return front;
 }
