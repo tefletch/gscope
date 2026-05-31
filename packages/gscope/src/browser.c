@@ -363,7 +363,9 @@ static result_t* parse_results(search_results_t *results)
     gchar *result_ptr = results->start_ptr;
     gchar *line_end;
 
-    front = next_node = (result_t *)g_malloc(sizeof(result_t));
+    front = (result_t *)g_malloc(sizeof(result_t));
+    next_node = front;
+
     while (result_ptr != results->end_ptr)
     {
         node = next_node;
@@ -1513,104 +1515,107 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
     search_t operation;
 
 
-    node = function_list;
-
-    for (row = starting_row; row < starting_row + num_results; row++)
+    if ( function_list )
     {
-        function_event_box = create_event_box();
-        gtk_widget_set_name(function_event_box, "blue_eventbox");
-        gtk_widget_show(function_event_box);
+        node = function_list;
 
-        my_asprintf(&var_string, "%s", node->function_name);
-        function_label = gtk_label_new(var_string);
-        g_free(var_string);
-
-        #if !defined(GTK3_BUILD) && !defined(GTK4_BUILD)
-        gtk_table_attach(GTK_TABLE(tcb->browser_table), function_event_box, col, col + 1, row, row + 1,
-                         (GtkAttachOptions)(GTK_FILL),
-                         (GtkAttachOptions)(GTK_FILL), 0, 0);
-        gtk_container_add(GTK_CONTAINER(function_event_box), function_label);
-        #else
-        
-        #if defined(GTK3_BUILD)
-        gtk_widget_set_halign(function_event_box, GTK_ALIGN_FILL);
-        gtk_widget_set_valign(function_event_box, GTK_ALIGN_FILL);
-        gtk_grid_attach(GTK_GRID(tcb->browser_table), function_event_box, col, row, 1, 1);
-        gtk_container_add(GTK_CONTAINER(function_event_box), function_label);
-        #endif
-
-        #if defined(GTK4_BUILD)
-        gtk_widget_set_halign(function_event_box, GTK_ALIGN_FILL);
-        gtk_widget_set_valign(function_event_box, GTK_ALIGN_FILL);
-        gtk_grid_attach(GTK_GRID(tcb->browser_table), function_event_box, col, row, 1, 1);
-        gtk_box_append(GTK_BOX(function_event_box), function_label);
-        #endif
-        
-        #endif
-
-        // Place File and Line information into the tooltip for the label.
-        my_asprintf(&var_string, "%s : %s", node->file_name, node->line_num);
-        gtk_widget_set_tooltip_text(function_label, var_string); 
-        g_free(var_string);
-
-        gtk_widget_set_name(function_label, "function_label");
-        gtk_widget_show(function_label);
-        gtk_label_set_use_markup(GTK_LABEL(function_label), TRUE);
-        
-        #ifndef GTK4_BUILD
-        gtk_misc_set_alignment(GTK_MISC(function_label), 0, 0.5);
-        gtk_misc_set_padding(GTK_MISC(function_label), 1, 0);
-        #else
-        gtk_widget_set_halign(function_label, GTK_ALIGN_START);
-        gtk_widget_set_valign(function_label, GTK_ALIGN_CENTER);
-
-        gtk_widget_set_margin_start(function_label, 1);
-        gtk_widget_set_margin_end(function_label, 1);
-        gtk_widget_set_margin_top(function_label, 0);
-        gtk_widget_set_margin_bottom(function_label, 0);
-        #endif
-
-        gtk_label_set_ellipsize(GTK_LABEL(function_label), PANGO_ELLIPSIZE_END);
-
-        list = &(tcb->col_list[col]);
-        column_list_insert_file(list, function_event_box, row, node->file_name);
-
-        // set the last_row field
-        if (row == starting_row + num_results - 1)
+        for (row = starting_row; row < starting_row + num_results; row++)
         {
-            column_list_get_row(list, row)->last_entry = TRUE;
-        }
-        else
-        {
-            column_list_get_row(list, row)->last_entry = FALSE;
-        }
+            function_event_box = create_event_box();
+            gtk_widget_set_name(function_event_box, "blue_eventbox");
+            gtk_widget_show(function_event_box);
 
-        node->tcb = tcb;
+            my_asprintf(&var_string, "%s", node->function_name);
+            function_label = gtk_label_new(var_string);
+            g_free(var_string);
 
-        #ifndef GTK4_BUILD
-        g_signal_connect(function_event_box, "button_press_event", G_CALLBACK(on_function_button_press), node);
-        #else
+            #if !defined(GTK3_BUILD) && !defined(GTK4_BUILD)
+            gtk_table_attach(GTK_TABLE(tcb->browser_table), function_event_box, col, col + 1, row, row + 1,
+                            (GtkAttachOptions)(GTK_FILL),
+                            (GtkAttachOptions)(GTK_FILL), 0, 0);
+            gtk_container_add(GTK_CONTAINER(function_event_box), function_label);
+            #else
+            
+            #if defined(GTK3_BUILD)
+            gtk_widget_set_halign(function_event_box, GTK_ALIGN_FILL);
+            gtk_widget_set_valign(function_event_box, GTK_ALIGN_FILL);
+            gtk_grid_attach(GTK_GRID(tcb->browser_table), function_event_box, col, row, 1, 1);
+            gtk_container_add(GTK_CONTAINER(function_event_box), function_label);
+            #endif
 
-        GtkGesture *gesture = gtk_gesture_click_new();  // Revisit: Potential resource leak.  aller must free gesture
-        gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(function_event_box), GDK_BUTTON_ANY);    // 0 = Any button click
-        gtk_widget_add_controller(function_event_box, GTK_EVENT_CONTROLLER(gesture));
-        g_signal_connect(gesture, "pressed", G_CALLBACK(on_function_button_press), node);
-        #endif
+            #if defined(GTK4_BUILD)
+            gtk_widget_set_halign(function_event_box, GTK_ALIGN_FILL);
+            gtk_widget_set_valign(function_event_box, GTK_ALIGN_FILL);
+            gtk_grid_attach(GTK_GRID(tcb->browser_table), function_event_box, col, row, 1, 1);
+            gtk_box_append(GTK_BOX(function_event_box), function_label);
+            #endif
+            
+            #endif
 
-        // check to see if we actually need to add an expander
-        // only need one if this function calls [or is called by] other functions
-        operation = (direction == RIGHT ? FIND_CALLEDBY : FIND_CALLING);
-        children = SEARCH_lookup(operation, node->function_name);
-        if (children->match_count > 0)
-        {
-            if ( direction == RIGHT )
-                make_expander_at_position(tcb, col + 1, row, direction);
+            // Place File and Line information into the tooltip for the label.
+            my_asprintf(&var_string, "%s : %s", node->file_name, node->line_num);
+            gtk_widget_set_tooltip_text(function_label, var_string); 
+            g_free(var_string);
+
+            gtk_widget_set_name(function_label, "function_label");
+            gtk_widget_show(function_label);
+            gtk_label_set_use_markup(GTK_LABEL(function_label), TRUE);
+            
+            #ifndef GTK4_BUILD
+            gtk_misc_set_alignment(GTK_MISC(function_label), 0, 0.5);
+            gtk_misc_set_padding(GTK_MISC(function_label), 1, 0);
+            #else
+            gtk_widget_set_halign(function_label, GTK_ALIGN_START);
+            gtk_widget_set_valign(function_label, GTK_ALIGN_CENTER);
+
+            gtk_widget_set_margin_start(function_label, 1);
+            gtk_widget_set_margin_end(function_label, 1);
+            gtk_widget_set_margin_top(function_label, 0);
+            gtk_widget_set_margin_bottom(function_label, 0);
+            #endif
+
+            gtk_label_set_ellipsize(GTK_LABEL(function_label), PANGO_ELLIPSIZE_END);
+
+            list = &(tcb->col_list[col]);
+            column_list_insert_file(list, function_event_box, row, node->file_name);
+
+            // set the last_row field
+            if (row == starting_row + num_results - 1)
+            {
+                column_list_get_row(list, row)->last_entry = TRUE;
+            }
             else
-                make_expander_at_position(tcb, col - 1, row, direction);
-        }
-        SEARCH_free_results(children);
+            {
+                column_list_get_row(list, row)->last_entry = FALSE;
+            }
 
-        node = node->next;
+            node->tcb = tcb;
+
+            #ifndef GTK4_BUILD
+            g_signal_connect(function_event_box, "button_press_event", G_CALLBACK(on_function_button_press), node);
+            #else
+
+            GtkGesture *gesture = gtk_gesture_click_new();  // Revisit: Potential resource leak.  aller must free gesture
+            gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(function_event_box), GDK_BUTTON_ANY);    // 0 = Any button click
+            gtk_widget_add_controller(function_event_box, GTK_EVENT_CONTROLLER(gesture));
+            g_signal_connect(gesture, "pressed", G_CALLBACK(on_function_button_press), node);
+            #endif
+
+            // check to see if we actually need to add an expander
+            // only need one if this function calls [or is called by] other functions
+            operation = (direction == RIGHT ? FIND_CALLEDBY : FIND_CALLING);
+            children = SEARCH_lookup(operation, node->function_name);
+            if (children->match_count > 0)
+            {
+                if ( direction == RIGHT )
+                    make_expander_at_position(tcb, col + 1, row, direction);
+                else
+                    make_expander_at_position(tcb, col - 1, row, direction);
+            }
+            SEARCH_free_results(children);
+
+            node = node->next;
+        }
     }
 }
 
