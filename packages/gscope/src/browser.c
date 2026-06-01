@@ -1046,7 +1046,7 @@ static void add_connectors(tcb_t *tcb, guint col, guint row, guint count, dir_e 
                     for (j = row + 1; j  < row + count; j++)
                     {
                         connector = make_straight_connector();
-                        #if !defined(GTK3_BUILD) && !defined(GTK4_BUILD)
+                        #ifndef GTK4_BUILD
                         gtk_table_attach(GTK_TABLE(tcb->browser_table), connector, i, i + 1, j, j + 1,
                                          (GtkAttachOptions)(GTK_FILL),
                                          (GtkAttachOptions)(GTK_FILL), 0, 0);
@@ -1098,7 +1098,7 @@ static void add_connectors(tcb_t *tcb, guint col, guint row, guint count, dir_e 
     for (i = row + 1; i < row + count - 1; i++)
     {
         connector = make_three_way_connector(direction);
-        #if !defined(GTK3_BUILD) && !defined(GTK4_BUILD)
+        #ifndef GTK4_BUILD
         gtk_table_attach(GTK_TABLE(tcb->browser_table), connector, col, col + 1, i, i + 1,
                          (GtkAttachOptions)(GTK_FILL),
                          (GtkAttachOptions)(GTK_FILL), 0, 0);
@@ -1114,7 +1114,7 @@ static void add_connectors(tcb_t *tcb, guint col, guint row, guint count, dir_e 
     if (count > 1)
     {
         connector = make_end_connector(direction);
-        #if !defined(GTK3_BUILD) && !defined(GTK4_BUILD)
+        #ifndef GTK4_BUILD
         gtk_table_attach(GTK_TABLE(tcb->browser_table), connector, col, col + 1, row + count - 1, row + count,
                          (GtkAttachOptions)(GTK_FILL),
                          (GtkAttachOptions)(GTK_FILL), 0, 0);
@@ -1253,7 +1253,7 @@ static void make_filler_column(tcb_t *tcb, guint position)
     gtk_widget_set_name(button, "horizontal_filler_header_button");
     gtk_widget_show(button);
     gtk_widget_set_can_focus(button, FALSE);
-    #if !defined(GTK3_BUILD) && !defined(GTK4_BUILD)
+    #ifndef GTK4_BUILD
     gtk_button_set_focus_on_click(GTK_BUTTON(button), FALSE);
     gtk_table_attach(GTK_TABLE(tcb->browser_table), button, position, position + 1, 0, 1,
                      (GtkAttachOptions)(GTK_EXPAND | GTK_FILL),
@@ -1426,30 +1426,26 @@ static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gc
     gtk_widget_set_name(root_function_blue_eventbox, "blue_eventbox");
     gtk_widget_show(root_function_blue_eventbox);
 
-    #if defined(GTK3_BUILD) || defined(GTK4_BUILD)
+    #ifndef GTK4_BUILD
+    gtk_table_attach(GTK_TABLE(tcb->browser_table), root_function_blue_eventbox, tcb->root_col, tcb->root_col + 1, 1, 2,
+                     (GtkAttachOptions)(GTK_FILL),
+                     (GtkAttachOptions)(GTK_FILL), 0, 0);
+    // Place label in eventbox 
+    gtk_container_add(GTK_CONTAINER(root_function_blue_eventbox), root_function_label);
 
     #if defined(GTK3_BUILD)
     gtk_widget_set_halign(root_function_blue_eventbox, GTK_ALIGN_FILL);
     gtk_widget_set_valign(root_function_blue_eventbox, GTK_ALIGN_FILL);
-    gtk_grid_attach(GTK_GRID(tcb->browser_table), root_function_blue_eventbox, tcb->root_col, 1, 1, 1);
-    gtk_container_add(GTK_CONTAINER(root_function_blue_eventbox), root_function_label);
     #endif
-
-    #if defined(GTK4_BUILD)
+    
+    #else
+    
     gtk_widget_set_halign(root_function_blue_eventbox, GTK_ALIGN_FILL);
     gtk_widget_set_valign(root_function_blue_eventbox, GTK_ALIGN_FILL);
     gtk_grid_attach(GTK_GRID(tcb->browser_table), root_function_blue_eventbox, tcb->root_col, 1, 1, 1);
     gtk_box_append(GTK_BOX(root_function_blue_eventbox), root_function_label);
     #endif
 
-    #else   // GTK2
-    gtk_table_attach(GTK_TABLE(tcb->browser_table), root_function_blue_eventbox, tcb->root_col, tcb->root_col + 1, 1, 2,
-                     (GtkAttachOptions)(GTK_FILL),
-                     (GtkAttachOptions)(GTK_FILL), 0, 0);
-    // Place label in eventbox 
-    gtk_container_add(GTK_CONTAINER(root_function_blue_eventbox), root_function_label);
-    #endif
-    
     column_list_insert_file(&(tcb->col_list[tcb->root_col]), root_function_blue_eventbox, 1, root_file);
     tcb->col_list[tcb->root_col].type = NAME;
 
@@ -1529,29 +1525,25 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
             function_label = gtk_label_new(var_string);
             g_free(var_string);
 
-            #if !defined(GTK3_BUILD) && !defined(GTK4_BUILD)
+            #ifndef GTK4_BUILD
             gtk_table_attach(GTK_TABLE(tcb->browser_table), function_event_box, col, col + 1, row, row + 1,
                             (GtkAttachOptions)(GTK_FILL),
                             (GtkAttachOptions)(GTK_FILL), 0, 0);
             gtk_container_add(GTK_CONTAINER(function_event_box), function_label);
-            #else
             
             #if defined(GTK3_BUILD)
             gtk_widget_set_halign(function_event_box, GTK_ALIGN_FILL);
             gtk_widget_set_valign(function_event_box, GTK_ALIGN_FILL);
-            gtk_grid_attach(GTK_GRID(tcb->browser_table), function_event_box, col, row, 1, 1);
-            gtk_container_add(GTK_CONTAINER(function_event_box), function_label);
             #endif
 
-            #if defined(GTK4_BUILD)
+            #else
+
             gtk_widget_set_halign(function_event_box, GTK_ALIGN_FILL);
             gtk_widget_set_valign(function_event_box, GTK_ALIGN_FILL);
             gtk_grid_attach(GTK_GRID(tcb->browser_table), function_event_box, col, row, 1, 1);
             gtk_box_append(GTK_BOX(function_event_box), function_label);
             #endif
             
-            #endif
-
             // Place File and Line information into the tooltip for the label.
             my_asprintf(&var_string, "%s : %s", node->file_name, node->line_num);
             gtk_widget_set_tooltip_text(function_label, var_string); 
