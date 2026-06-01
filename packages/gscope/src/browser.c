@@ -340,7 +340,7 @@ static void get_function(tcb_t *tcb, guint col, guint row, dir_e direction, gcha
     GList *children = gtk_container_get_children((GtkContainer *)function_node->widget);
     label = (GtkWidget *)children->data;
     #else
-    label = (GtkWidget *)function_node->widget;
+    label = gtk_widget_get_first_child(function_node->widget);  // Note: this logic assumes node->widget has ONLY one child (a GTK label)
     #endif
 
     *fname = (gchar *)gtk_label_get_text((GtkLabel *)label);
@@ -1807,11 +1807,10 @@ static void on_right_expander_button_release_event(GtkGestureClick *gesture, int
                             "left-attach", &col,
                             NULL);
     #else
+
     GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
-    row = gtk_grid_layout_child_get_row(GTK_GRID_LAYOUT_CHILD(widget));
-    row++;      // Logical grid row
-    col = gtk_grid_layout_child_get_column(GTK_GRID_LAYOUT_CHILD(widget));
-    col++;      // Logical grid column
+    gtk_grid_query_child(GTK_GRID(tcb->browser_table), widget, &col, &row, NULL, NULL);  // left-attach, top-attach
+
     #endif
 
     // Remove the selected expander widget from the [col] column list
@@ -1848,11 +1847,10 @@ static void on_left_expander_button_release_event(GtkGestureClick *gesture, int 
                             "left-attach", &col,
                             NULL);
     #else
+    
     GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
-    row = gtk_grid_layout_child_get_row(GTK_GRID_LAYOUT_CHILD(widget));     // top-attach
-    row++;      // Logical grid row
-    col = gtk_grid_layout_child_get_column(GTK_GRID_LAYOUT_CHILD(widget));  // left-attach
-    col++;      // Logical gird col
+    gtk_grid_query_child(GTK_GRID(tcb->browser_table), widget, &col, &row, NULL, NULL);  // left-attach, top-attach
+
     #endif
 
     // Remove the selected expander widget from the [col] column list
@@ -2252,11 +2250,10 @@ static void on_right_collapser_button_release_event(GtkGestureClick *gesture, in
                             "left-attach", &col,
                             NULL);
     #else
+
     GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
-    row = gtk_grid_layout_child_get_row(GTK_GRID_LAYOUT_CHILD(widget));
-    row++;      // Logical grid row
-    col = gtk_grid_layout_child_get_column(GTK_GRID_LAYOUT_CHILD(widget));
-    col++;      // Logical grid column
+    gtk_grid_query_child(GTK_GRID(tcb->browser_table), widget, &col, &row, NULL, NULL);  // left-attach, top-attach
+
     #endif
 
     // Remove the selected collapser widget pointer from the column [col] member list
@@ -2295,11 +2292,10 @@ static void on_left_collapser_button_release_event(GtkGestureClick *gesture, int
                             "left-attach", &col,
                             NULL);
     #else
+
     GtkWidget *widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
-    row = gtk_grid_layout_child_get_row(GTK_GRID_LAYOUT_CHILD(widget));
-    row++;      // Logical grid row
-    col = gtk_grid_layout_child_get_column(GTK_GRID_LAYOUT_CHILD(widget));
-    col++;      // Logical grid column
+    gtk_grid_query_child(GTK_GRID(tcb->browser_table), widget, &col, &row, NULL, NULL);  // left-attach, top-attach
+
     #endif
 
     // Remove the selected collapser widget pointer from the column [col] member list
