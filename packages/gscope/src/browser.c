@@ -2391,6 +2391,7 @@ static GtkWidget* create_browser_window(gchar *name, gchar *root_file, gchar *li
     browser_scrolledwindow = gtk_scrolled_window_new();
     gtk_box_append(GTK_BOX(browser_vbox), browser_scrolledwindow);
     browser_table = gtk_grid_new();
+    gtk_widget_set_vexpand(browser_table, TRUE);
     #endif
 
     gtk_widget_set_name(browser_scrolledwindow, "browser_scrolledwindow");
