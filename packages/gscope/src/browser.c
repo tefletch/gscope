@@ -454,7 +454,7 @@ static void delete_column(tcb_t *tcb, guint col)
         #ifndef GTK4_BUILD
         gtk_widget_destroy(curr->widget);
         #else
-        gtk_box_remove(GTK_BOX(tcb->browser_table), curr->widget);
+        gtk_grid_remove(GTK_GRID(tcb->browser_table), curr->widget);
         #endif
 
         next = curr->next;
@@ -1778,7 +1778,7 @@ static void make_collapser_at_position(tcb_t *tcb, guint col, guint row, dir_e d
 
     #else
     GtkGesture *gesture = gtk_gesture_click_new();  // Revisit: Potential resource leak.  caller must free gesture
-    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(collapser), GDK_BUTTON_PRIMARY);    // 0 = Any button click
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), GDK_BUTTON_PRIMARY);    // 0 = Any button click
     gtk_widget_add_controller(collapser, GTK_EVENT_CONTROLLER(gesture));
     g_signal_connect(gesture, "released", callback, tcb);
     #endif
@@ -1823,7 +1823,7 @@ static void on_right_expander_button_release_event(GtkGestureClick *gesture, int
     return FALSE;
     #else
      // Destroy the selected expander widget and associated controller
-    gtk_box_remove(GTK_BOX(tcb->browser_table), widget);
+    gtk_grid_remove(GTK_GRID(tcb->browser_table), widget);
     #endif
 }
 
@@ -1863,7 +1863,7 @@ static void on_left_expander_button_release_event(GtkGestureClick *gesture, int 
     return FALSE;
     #else
      // Destroy the selected expander widget and associated controller
-    gtk_box_remove(GTK_BOX(tcb->browser_table), widget);
+    gtk_grid_remove(GTK_GRID(tcb->browser_table), widget);
     #endif
 }
 
@@ -1911,7 +1911,7 @@ static guint delete_items_from_column(tcb_t *tcb, guint col, guint starting_row,
             #ifndef GTK4_BUILD
             gtk_widget_destroy(item->widget);
             #else
-            gtk_box_remove(GTK_BOX(tcb->browser_table), item->widget);
+            gtk_grid_remove(GTK_GRID(tcb->browser_table), item->widget);
             #endif
 
             column_list_remove(&(tcb->col_list[col]), item->widget);
@@ -2040,7 +2040,7 @@ static void delete_header_button_with_adjuster(tcb_t *tcb, guint col)
         #ifndef GTK4_BUILD
         gtk_widget_destroy(col_list->member_list_head->widget);
         #else
-        gtk_box_remove(GTK_BOX(tcb->browser_table), col_list->member_list_head->widget);
+        gtk_grid_remove(GTK_GRID(tcb->browser_table), col_list->member_list_head->widget);
         #endif
 
         column_list_remove(col_list, col_list->member_list_head->widget);
@@ -2050,7 +2050,7 @@ static void delete_header_button_with_adjuster(tcb_t *tcb, guint col)
         #ifndef GTK4_BUILD
         gtk_widget_destroy(col_list->member_list_head->widget);
         #else
-        gtk_box_remove(GTK_BOX(tcb->browser_table), col_list->member_list_head->widget);
+        gtk_grid_remove(GTK_GRID(tcb->browser_table), col_list->member_list_head->widget);
         #endif
 
         column_list_remove(col_list, col_list->member_list_head->widget);
@@ -2268,7 +2268,7 @@ static void on_right_collapser_button_release_event(GtkGestureClick *gesture, in
     return FALSE;
     #else
     // Destroy the selected collapser widget and associated controller
-    gtk_box_remove(GTK_BOX(tcb->browser_table), widget);
+    gtk_grid_remove(GTK_GRID(tcb->browser_table), widget);
     #endif
 }
 
@@ -2309,7 +2309,7 @@ static void on_left_collapser_button_release_event(GtkGestureClick *gesture, int
     return FALSE;
     #else
     // Destroy the selected expander widget and associated controller
-    gtk_box_remove(GTK_BOX(tcb->browser_table), widget);
+    gtk_grid_remove(GTK_GRID(tcb->browser_table), widget);
     #endif
 }
 
