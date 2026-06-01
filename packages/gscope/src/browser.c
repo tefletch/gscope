@@ -491,7 +491,7 @@ static void move_table_widget(GtkWidget *widget, tcb_t *tcb, guint row, guint co
                      (GtkAttachOptions)(GTK_FILL), 0, 0);
 
     #else
-    gtk_box_remove(GTK_BOX(tcb->browser_table), widget);
+    gtk_grid_remove(GTK_GRID(tcb->browser_table), widget);
 
     if ( tcb->col_list[col].type == FILLER )
         gtk_widget_set_hexpand(widget, TRUE);   // FILLER: GTK_EXPAND + GTK_FILL
@@ -1297,7 +1297,7 @@ static void right_click_menu(GdkEventButton *event, result_t *function_box)
 void on_reroot_activate(GSimpleAction *action, GVariant *parameter, gpointer app)
 {
     printf("hello from: %s\n", __func__);
-    //call on_reroot(NULL, result_t) - need to figure out how to pas result_t
+    // call on_reroot(NULL, result_t) - need to figure out how to pas result_t
 }
 
 static void right_click_menu(result_t *function_box)
@@ -1706,7 +1706,7 @@ static void expand_table(guint origin_row, guint origin_col, tcb_t *tcb, dir_e d
 
         // if this is the furthest left column then origin_col - 1 is not the correct
         // place to add due to columns being shifted right
-        //add_pos = origin_col == 1 ? 2 : origin_col - 1;
+        // add_pos = origin_col == 1 ? 2 : origin_col - 1;
         // adjusted_col = origin_col == 1 ? 3 : origin_col;
 
         for (i = tcb->root_col; i > 1; i--)
