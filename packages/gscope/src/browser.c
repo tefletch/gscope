@@ -2318,6 +2318,7 @@ static void on_left_collapser_button_release_event(GtkGestureClick *gesture, int
 //=============================================================================================
 
 
+#ifndef GTK4_BUILD
 //********************************************************************************************** 
 // on_browser_delete_event
 //********************************************************************************************** 
@@ -2328,6 +2329,13 @@ static gboolean on_browser_delete_event(GtkWidget *widget, GdkEvent *event, gpoi
 
     return FALSE;    // Return FALSE to destroy the widget.
 }
+#else
+
+static gboolean on_browser_close_request(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+    return FALSE;    // Destroy the widget
+}
+#endif
 
 
 //********************************************************************************************** 
@@ -2419,7 +2427,7 @@ static GtkWidget* create_browser_window(gchar *name, gchar *root_file, gchar *li
                      tcb);
     #else
     g_signal_connect((gpointer)browser_window, "close_request",
-                     G_CALLBACK(on_browser_delete_event),
+                     G_CALLBACK(on_browser_close_request),
                      tcb);
     #endif
 
