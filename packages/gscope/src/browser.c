@@ -19,7 +19,7 @@
 
 #define NUM_COL_MAX             (40)
 #define INITIAL_SCA_COL_WIDTH   (70)
-#define MIN_COLUMN_WIDTH        (25)  /* Units = points, should be sufficient for both large and small default font sizes */
+#define MIN_COLUMN_WIDTH        (40)  /* Units = points, should be sufficient for both large and small default font sizes */
 #define GDK_BUTTON_ANY          (0)
 
 // Typedefs
@@ -563,6 +563,7 @@ static void on_adjuster_eventbox_enter_notify_event(GtkEventControllerMotion* se
     gtk_image_set_from_pixbuf(adjuster_image, adjuster_active_image);
     
     #ifndef GTK4_BUILD
+    printf("fn: %s\n", __func__);
     return FALSE;
     #endif
 }
@@ -610,6 +611,7 @@ static void on_adjuster_eventbox_button_press_event(GtkGestureClick *gesture, in
     return FALSE;
 
     #else
+    printf("fn: %s x=%f\n", __func__, x);
     initial_x_offset = x;
     #endif
 }
@@ -754,11 +756,13 @@ static void create_header_button_with_adjuster(tcb_t *tcb, guint col, gint label
                       header_button);
     
     #else
-    GtkEventController  *pointer_motion = gtk_event_controller_motion_new();
-    GtkGesture          *gesture = gtk_gesture_click_new();  // Caller must free gesture
 
+    GtkGesture          *gesture = gtk_gesture_click_new();  // Caller must free gesture
     gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), GDK_BUTTON_PRIMARY);
     gtk_widget_add_controller(adjuster_eventbox, GTK_EVENT_CONTROLLER(gesture));
+
+    GtkEventController  *pointer_motion = gtk_event_controller_motion_new();
+    gtk_widget_add_controller(adjuster_eventbox, GTK_EVENT_CONTROLLER(pointer_motion));
 
     g_signal_connect (pointer_motion, "enter",
                       G_CALLBACK(on_adjuster_eventbox_enter_notify_event),
