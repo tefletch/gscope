@@ -85,6 +85,13 @@ gchar *srcDir = NULL;
 gchar *geometry = NULL;
 gboolean option_error = FALSE;
 
+static void arg_trunc_warn(gchar *string_name)
+{
+    fprintf(stderr, "Warning: Option string [%s] was truncated.\n", string_name);
+}
+
+
+
 static gboolean cmd_line_handler(gpointer data)
 {
     GApplicationCommandLine *cmd_line = data;
@@ -187,17 +194,41 @@ static gboolean cmd_line_handler(gpointer data)
     /* Copy any dynamically allocated [argument] strings to the settings structure (and free them) */
     /* Buffer overflow protection:  Any [argument] string that exceeds the maximum allowed size is truncated */
     if (refFile)
-    {g_strlcpy(settings.refFile,    refFile,    MAX_STRING_ARG_SIZE); g_free(refFile);}
+    {
+        if ( g_strlcpy(settings.refFile, refFile, MAX_STRING_ARG_SIZE) >= MAX_STRING_ARG_SIZE )
+            arg_trunc_warn("settings.refFile");
+        g_free(refFile); 
+    }
     if (nameFile)
-    {g_strlcpy(settings.nameFile,   nameFile,   MAX_STRING_ARG_SIZE); g_free(nameFile);}
+    {
+        if ( g_strlcpy(settings.nameFile, nameFile, MAX_STRING_ARG_SIZE) >= MAX_STRING_ARG_SIZE )
+            arg_trunc_warn("settings.nameFile");
+        g_free(nameFile);
+    }
     if (includeDir)
-    {g_strlcpy(settings.includeDir, includeDir, MAX_STRING_ARG_SIZE); g_free(includeDir);}
+    {
+        if ( g_strlcpy(settings.includeDir, includeDir, MAX_STRING_ARG_SIZE) >= MAX_STRING_ARG_SIZE )
+            arg_trunc_warn("settings.includeDir"); 
+        g_free(includeDir);
+    }
     if (rcFile)
-    {g_strlcpy(settings.rcFile,     rcFile,     MAX_STRING_ARG_SIZE); g_free(rcFile);}
+    {
+        if ( g_strlcpy(settings.rcFile, rcFile, MAX_STRING_ARG_SIZE) >= MAX_STRING_ARG_SIZE )
+            arg_trunc_warn("settings.rcFile");
+        g_free(rcFile);
+    }
     if (srcDir)
-    {g_strlcpy(settings.srcDir,     srcDir,     MAX_STRING_ARG_SIZE); g_free(srcDir);}
+    {
+        if ( g_strlcpy(settings.srcDir, srcDir, MAX_STRING_ARG_SIZE) >= MAX_STRING_ARG_SIZE )
+            arg_trunc_warn("settings.srcDir"); 
+        g_free(srcDir);
+    }
     if (geometry)
-    {g_strlcpy(settings.geometry,   geometry,   MAX_STRING_ARG_SIZE); g_free(geometry);}
+    {
+        if ( g_strlcpy(settings.geometry, geometry, MAX_STRING_ARG_SIZE) >= MAX_STRING_ARG_SIZE ) 
+            arg_trunc_warn("settings.geometry");
+        g_free(geometry);
+    }
 
 
     g_strfreev(args);

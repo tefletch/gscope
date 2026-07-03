@@ -229,7 +229,7 @@ void FILEVIEW_create(gchar *file_name, gint line)
 {
     GtkTextMark *mark;
     GtkTextIter iter;
-    GtkTextBuffer *s_buffer;
+    GtkTextBuffer *s_buffer = NULL;
     ViewWindow *windowPtr;
     gboolean   sameName;
 
@@ -258,10 +258,10 @@ void FILEVIEW_create(gchar *file_name, gint line)
             windowPtr->filename = strdup(file_name);
             gtk_window_set_title (GTK_WINDOW (windowPtr->topWidget), windowPtr->filename);
             gtk_widget_set_name(GTK_WIDGET(windowPtr->topWidget), windowPtr->filename);
+            s_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(windowPtr->srcViewWidget));
 
             // Clear the current buffer text
             #ifndef GTK4_BUILD  // needs gtk4 menu migration
-            s_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(windowPtr->srcViewWidget));
             gtk_source_buffer_begin_not_undoable_action (GTK_SOURCE_BUFFER (s_buffer) );
             gtk_text_buffer_set_text (GTK_TEXT_BUFFER (s_buffer), "", 0);
             gtk_source_buffer_end_not_undoable_action (GTK_SOURCE_BUFFER (s_buffer) );

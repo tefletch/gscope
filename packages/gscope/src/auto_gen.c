@@ -122,7 +122,7 @@ void AUTOGEN_init(char *data_dir)
                 if ( symlink (link_dest , gen_symlink_path) < 0 )
                 {
                     fprintf(stderr, "Fatal AUTOGEN_init Error: auto-gen symlink() failed: old=%s new=%s\n%s\n", link_dest, gen_symlink_path, strerror(errno));
-                    //exit(EXIT_FAILURE);
+                    exit(EXIT_FAILURE);
                 }
 
                 _do_garbage_collection();  // Every time we create a new cache directory, manage the overall collection of caches.
@@ -144,8 +144,15 @@ void AUTOGEN_init(char *data_dir)
         }
 
         num_bytes = readlink(gen_symlink_path, link_dest, sb.st_size);
-        if (num_bytes > 0 && num_bytes <= sb.st_size)
-            link_dest[num_bytes] = '\0';
+        if ( num_bytes < 0 )    // readlink() Error: No string returned
+            link_dest[0] = '\0';
+        else
+        {
+            if (num_bytes <= sb.st_size)
+                link_dest[num_bytes] = '\0';
+            else
+                link_dest[sb.st_size] = '\0';   // overflow
+        }
 
         // Extract the pre-existing EUID
         extract_ptr = strrchr(link_dest, '_');
@@ -190,7 +197,7 @@ void AUTOGEN_init(char *data_dir)
                 if ( symlink (link_dest, bld_symlink_path) < 0 )
                 {
                     fprintf(stderr, "Fatal AUTOGEN_init Error: auto-build symlink() failed: old=%s new=%s\n%s\n", link_dest, gen_symlink_path, strerror(errno));
-                    //exit(EXIT_FAILURE);
+                    exit(EXIT_FAILURE);
                 }
             break;
 
@@ -210,8 +217,15 @@ void AUTOGEN_init(char *data_dir)
         }
 
         num_bytes = readlink(bld_symlink_path, link_dest, sb.st_size);
-        if (num_bytes >= 0 && num_bytes <= sb.st_size)
-            link_dest[num_bytes] = '\0';
+        if ( num_bytes < 0 )    // readlink() Error: No string returned
+            link_dest[0] = '\0';
+        else
+        {
+            if (num_bytes <= sb.st_size)
+                link_dest[num_bytes] = '\0';
+            else
+                link_dest[sb.st_size] = '\0';   // overflow
+        }
 
         if ( access(link_dest, X_OK) < 0 )       // Symlink exists, but symlink destination does not exist
         {
@@ -909,7 +923,10 @@ static void _do_garbage_collection()
                 g_free(full_cache_path);
                 i++;
 
-                entry_count -= 2;  // Even if we fail to delete the targeted directory, keep going.  Otherwise we have an infinite loop.
+                if (entry_count >= 2)
+                    entry_count -= 2;  // Even if we fail to delete the targeted directory, keep going.  Otherwise we have an infinite loop.
+                else
+                    entry_count = 0;
             }
 
 

@@ -237,7 +237,7 @@ static gboolean file_is_ascii_text(FILE *filename, char *srcfile)
             check_buf[i]   = '(';
             check_buf[i+1] = ')';
             fprintf(stderr, "\nWarning: Non-ASCII copyright symbol detected in source file");
-            fprintf(stderr, "\n         File: %s\n");
+            fprintf(stderr, "\n         File: %s\n", srcfile);
             fprintf(stderr, "Gscope classifies this file as ASCII, but may malfunction\n");
             fprintf(stderr, "It is STRONGLY suggested that you remove this non-ASCII data from the file.\n");
         }

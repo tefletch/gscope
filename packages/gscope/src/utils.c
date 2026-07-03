@@ -530,6 +530,7 @@ void my_gtk_box_pack_start (GtkBox* box,   GtkWidget* child,   gboolean expand, 
 gboolean my_command_check(gchar *command)
 {
     gchar *which_cmd;
+    gboolean retval;
     char out[1024];
 
     my_asprintf(&which_cmd, "which %s", command);
@@ -538,9 +539,12 @@ gboolean my_command_check(gchar *command)
     g_free(which_cmd);
 
     if (fp && fgets(out, sizeof out, fp))
-        return(TRUE);   // command found
+        retval = TRUE;   // command found
     else
-        return(FALSE);   // command not found
+        retval = FALSE;   // command not found
+
+    if (fp) pclose(fp);
+    return(retval);
 }
 
 

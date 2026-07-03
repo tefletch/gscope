@@ -673,7 +673,7 @@ static void parsing_error(GtkCssProvider* self, GtkCssSection* section, GError* 
     
     gtk_css_section_print(section, sect_string);
     printf("CSS parsing error: Section: %s: ", sect_string->str);
-    free(sect_string);
+    g_string_free(sect_string, TRUE);
     if ( error )
         printf("%s\n", error->message);
     else
