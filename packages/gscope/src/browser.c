@@ -563,7 +563,6 @@ static void on_adjuster_eventbox_enter_notify_event(GtkEventControllerMotion* se
     gtk_image_set_from_pixbuf(adjuster_image, adjuster_active_image);
     
     #ifndef GTK4_BUILD
-    printf("fn: %s\n", __func__);
     return FALSE;
     #endif
 }
@@ -611,54 +610,71 @@ static void on_adjuster_eventbox_button_press_event(GtkGestureClick *gesture, in
     return FALSE;
 
     #else
-    printf("fn: %s x=%f\n", __func__, x);
     initial_x_offset = x;
     #endif
+
+    //printf("fn: %s x=%f\n", __func__, x);
 }
 
 
 //********************************************************************************************** 
-// on_adjuster_eventbox_motion_notify_event
+// on_adjuster_eventbox_motion_notify_event (GTK2 & GTK3 Variant)
+//   We can share initial_x_offset via a global because only one adjuster_eventbox can be active 
+//   at a time.
 //********************************************************************************************** 
 #ifndef GTK4_BUILD
 gboolean on_adjuster_eventbox_motion_notify_event(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
-#else
-static void on_adjuster_eventbox_motion_notify_event(GtkEventControllerMotion* self, gdouble x, gdouble y, gpointer user_data)
-#endif
 {
     GtkAllocation allocation;
     gint  width, height;
     GtkWidget *header_button = (GtkWidget *) user_data;
-    
-    // We can share initial_x_offset via a global because only one adjuster_eventbox can
-    // be active at a time.
-    #ifndef GTK4_BUILD
+ 
     GdkEventMotion *my_event = (GdkEventMotion *) event;
     gint offset = (gint)my_event->x - initial_x_offset;
-    #else
-    gdouble offset = x - initial_x_offset;
-    #endif
-
 
     gtk_widget_get_size_request(header_button, &width, &height);
     gtk_widget_get_allocation(header_button, &allocation);
 
     allocation.width += offset;
-    if (allocation.width < MIN_COLUMN_WIDTH)
-        allocation.width = MIN_COLUMN_WIDTH;
-
-    //printf("my_event=%d, off=%d, new_width=%d\n", (gint)my_event->x, offset, allocation.width);
+    if (allocation.width < MIN_COLUMN_WIDTH) allocation.width = MIN_COLUMN_WIDTH;
 
     gtk_widget_set_size_request(header_button, allocation.width, height);
     
-    #ifndef GTK4_BUILD
+    //printf("my_event=%d, off=%d, new_width=%d\n", (gint)my_event->x, offset, allocation.width);
     gtk_widget_size_allocate(header_button, &allocation);
     return(FALSE);
-    
-    #else
-    gtk_widget_size_allocate(header_button, &allocation, -1);
-    #endif
 }
+
+#else
+
+//********************************************************************************************** 
+// on_adjuster_eventbox_motion_notify_event (GTK4 Variant)
+//   We can share initial_x_offset via a global because only one adjuster_eventbox can be active 
+//   at a time.
+//********************************************************************************************** 
+static void on_adjuster_eventbox_motion_notify_event(GtkEventControllerMotion *controller, gdouble x, gdouble y, gpointer user_data)
+{
+    GtkAllocation allocation;
+    gint  width, height;
+    GtkWidget *header_button = (GtkWidget *) user_data;
+
+    if (gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller)) & GDK_BUTTON1_MASK)
+    {
+        gdouble offset = x - initial_x_offset;
+
+        gtk_widget_get_size_request(header_button, &width, &height);
+        gtk_widget_get_allocation(header_button, &allocation);
+
+        allocation.width += offset;
+        if (allocation.width < MIN_COLUMN_WIDTH) allocation.width = MIN_COLUMN_WIDTH;
+
+        gtk_widget_set_size_request(header_button, allocation.width, height);
+
+        printf("Adj-Motion: off=%d, new_width=%d\n", offset, allocation.width);
+        gtk_widget_size_allocate(header_button, &allocation, -1);
+    }
+}
+#endif
 
 
 // Revisit:  Might be able to "calculate" the column label number.  If so, we can eliminate
