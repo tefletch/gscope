@@ -1,9 +1,23 @@
 #include <gtk/gtk.h>
 
+
+static void on_event_button_press(GtkGestureClick *gesture, int n_press, double x, double y, GtkLabel *label)
+{
+    if ( (n_press == 2) && gtk_gesture_single_get_current_button(GTK_GESTURE_SINGLE(gesture)) == GDK_BUTTON_PRIMARY ) // Double-click, left button: View/Edit entry
+    {
+        g_print("Double Click Left: %s\n", gtk_label_get_text(label));
+    }
+    else if ( (n_press == 1) && gtk_gesture_single_get_current_button(GTK_GESTURE_SINGLE(gesture)) == GDK_BUTTON_SECONDARY )  // Single-click, right button: Open Menu
+    {
+        g_print("Single Click Right: %s\n", gtk_label_get_text(label));
+    }
+}
+
 static void grid_init(GtkWidget *grid)
 {
     GtkWidget *label;
     GtkWidget *button1, *button2;
+    GtkWidget *eventbox;
     char *var_string;
     guint count = 0;
     guint row, col;
@@ -26,14 +40,25 @@ static void grid_init(GtkWidget *grid)
     {
         for (col = 1; col < 4; col++)
         {
+            // Create an event box
+            eventbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
+            // Create a label
             asprintf(&var_string, "kinda long test string %d", count++);
             label = gtk_label_new(var_string);
             g_free(var_string);
-
             gtk_label_set_max_width_chars(GTK_LABEL(label), 4);
             gtk_label_set_width_chars(GTK_LABEL(label), 4);
             gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-            gtk_grid_attach(GTK_GRID(grid), label, col, row, 1, 1);
+
+            gtk_box_append(GTK_BOX(eventbox), label);
+            gtk_grid_attach(GTK_GRID(grid), eventbox, col, row, 1, 1);
+
+            // Connect the "pressed" signal for the eventbox
+            GtkGesture *gesture = gtk_gesture_click_new();  // Revisit: Potential resource leak.  caller must free gesture
+            gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), 0);    // 0 = Any button click
+            gtk_widget_add_controller(eventbox, GTK_EVENT_CONTROLLER(gesture));
+            g_signal_connect(gesture, "pressed", G_CALLBACK(on_event_button_press), label);
         }
     }
 
@@ -43,7 +68,8 @@ static void grid_init(GtkWidget *grid)
 static void on_value_changed(GtkRange *range, gpointer user_data)
 {
     guint row;
-    GtkWidget *child;
+    GtkWidget *child;   //eventbox
+    GtkWidget *label;
     GtkWidget *grid = (GtkWidget *) user_data;
 
     gdouble value = gtk_range_get_value(range);
@@ -52,8 +78,9 @@ static void on_value_changed(GtkRange *range, gpointer user_data)
     for (row = 0; row < 8; row++)
     {
         child = gtk_grid_get_child_at(GTK_GRID(grid), 2, row);
-        gtk_label_set_max_width_chars(GTK_LABEL(child), value);
-        gtk_label_set_width_chars(GTK_LABEL(child), value);
+        label = gtk_widget_get_first_child(child);
+        gtk_label_set_max_width_chars(GTK_LABEL(label), value);
+        gtk_label_set_width_chars(GTK_LABEL(label), value);
     }
 }
 
