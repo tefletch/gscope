@@ -21,7 +21,7 @@ static void grid_init(GtkWidget *grid)
     gtk_widget_set_halign(button2, GTK_ALIGN_FILL);
     gtk_grid_attach(GTK_GRID(grid), button2, 5, 0, 1, 1);
     
-
+    // Populate the grid
     for (row = 0; row < 8; row++)
     {
         for (col = 1; col < 4; col++)
@@ -30,8 +30,6 @@ static void grid_init(GtkWidget *grid)
             label = gtk_label_new(var_string);
             g_free(var_string);
 
-            gtk_widget_set_hexpand(label, FALSE);
-            //gtk_widget_set_halign(label, GTK_ALIGN_CENTER);
             gtk_label_set_max_width_chars(GTK_LABEL(label), 4);
             gtk_label_set_width_chars(GTK_LABEL(label), 4);
             gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
