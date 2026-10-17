@@ -1530,11 +1530,11 @@ static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gc
     gtk_widget_set_margin_top(function_label, 0);
     gtk_widget_set_margin_bottom(function_label, 0);
 
+    #endif
+    
     // set function label min/max width
     gtk_label_set_max_width_chars(GTK_LABEL(function_label), MIN_FN_NAME_SIZE);
     gtk_label_set_width_chars(GTK_LABEL(function_label), MIN_FN_NAME_SIZE);
-    #endif
-    
     gtk_label_set_ellipsize(GTK_LABEL(function_label), PANGO_ELLIPSIZE_END);
 
     column_list_insert_file(&(tcb->col_list[tcb->root_col]), function_eventbox, 1, root_file);
@@ -1658,11 +1658,11 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
             gtk_widget_set_margin_top(function_label, 0);
             gtk_widget_set_margin_bottom(function_label, 0);
 
+           #endif
+
             // set function label min/max width
             gtk_label_set_max_width_chars(GTK_LABEL(function_label), MIN_FN_NAME_SIZE);
             gtk_label_set_width_chars(GTK_LABEL(function_label), MIN_FN_NAME_SIZE);
-            #endif
-
             gtk_label_set_ellipsize(GTK_LABEL(function_label), PANGO_ELLIPSIZE_END);
 
             list = &(tcb->col_list[col]);
@@ -2449,12 +2449,17 @@ static GtkWidget* create_browser_window(gchar *name, gchar *root_file, gchar *li
     #else
     browser_window = gtk_window_new();
     gtk_window_present (GTK_WINDOW (browser_window));
-
     #endif
 
     gtk_widget_set_name(browser_window, "browser_window");
-    //gtk_widget_set_size_request(browser_window, 800, 130); -- Modified 10/15/26 --
+    
+    // Set the initial size of the browser window
+    #ifndef GTK4_BUILD
+    gtk_window_resize(GTK_WINDOW(browser_window), BROWSER_WIDTH, BROWSER_HEIGHT);
+    #else
     gtk_window_set_default_size(GTK_WINDOW(browser_window), BROWSER_WIDTH, BROWSER_HEIGHT);
+    #endif
+
     my_asprintf(&var_string, "Static Call Browser (%s)", name);
     gtk_window_set_title(GTK_WINDOW(browser_window), var_string);
     g_free(var_string);
