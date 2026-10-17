@@ -13,6 +13,7 @@
 #include "display.h"
 #include "fileview.h"
 
+#define MOTION_DEBUG    TRUE
 
 // Defines
 //=======================
@@ -650,7 +651,7 @@ static void set_browser_column_width(col_list_t *list, gint width_in_points)
             if (avg_char_width_pango > 0) 
                 char_count = width_in_pango_units / avg_char_width_pango;
 
-            g_print("char width = %d\n", char_count);
+            if (MOTION_DEBUG) g_print("char width = %d\n\n", char_count);
             
             // Set the character bounds for this function label
             gtk_label_set_max_width_chars(GTK_LABEL(box_child), char_count);
@@ -718,14 +719,11 @@ static void on_adjuster_eventbox_motion_notify_event(GtkEventControllerMotion *c
 
     if (gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller)) & GDK_BUTTON1_MASK)
     {
-
-        //gtk_widget_get_size_request(header_button, &width, &height);
-        //g_print("request: w=%d, h=%d\n", width, height);
         gtk_widget_get_allocation(header_button, &allocation);
-        g_print("alloc:   w=%d, h=%d\n", allocation.width, allocation.height);
+        if (MOTION_DEBUG) g_print("alloc:   w=%d, h=%d\n", allocation.width, allocation.height);
 
         gdouble offset = (gint)x - initial_x_offset;
-        g_print("offset: %.4f - %.4f = %.4f\n", x, initial_x_offset, offset);
+        if (MOTION_DEBUG) g_print("offset: %.4f - %.4f = %.4f\n", x, initial_x_offset, offset);
         
         allocation.width += offset;
 
