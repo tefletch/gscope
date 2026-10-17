@@ -21,6 +21,10 @@
 #define INITIAL_SCA_COL_WIDTH   (70)
 #define MIN_COLUMN_WIDTH        (40)  /* Units = points, should be sufficient for both large and small default font sizes */
 #define GDK_BUTTON_ANY          (0)
+#define BROWSER_WIDTH           (800)
+#define BROWSER_HEIGHT          (130)
+#define MIN_FN_NAME_SIZE        (8)
+
 
 // Typedefs
 //=======================
@@ -608,13 +612,66 @@ static void on_adjuster_eventbox_button_press_event(GtkGestureClick *gesture, in
         initial_x_offset = (gint) my_event->x;
     }
     return FALSE;
-
     #else
-    initial_x_offset = x;
-    #endif
+    
+    initial_x_offset = (gdouble) x; 
 
-    //printf("fn: %s x=%f\n", __func__, x);
+    #endif
 }
+
+
+#ifdef GTK4_BUILD
+static void set_browser_column_width(col_list_t *list, gint width_in_points)
+{
+    GtkAllocation allocation;
+    column_entry_t *list_ptr = list->member_list_head;
+    GtkWidget   *event_box;
+    GtkWidget   *box_child;
+    gint        char_count = 0;
+
+    if ( list_ptr )     // There should alway be a column header, skip over it
+    {
+        // Go to the next item in the list (first non-header row)
+        list_ptr = list_ptr->next;
+        if ( list_ptr )
+        {
+            event_box = list_ptr->widget;
+            box_child = gtk_widget_get_first_child(event_box);
+
+            // Convert width_in_points to chars
+            PangoContext         *context = gtk_widget_get_pango_context(box_child);
+            PangoFontDescription *font_desc = pango_context_get_font_description(context);            
+            PangoFontMetrics     *metrics = pango_context_get_metrics(context, font_desc, NULL);
+            int                  avg_char_width_pango = pango_font_metrics_get_approximate_char_width(metrics);
+            int                  width_in_pango_units = width_in_points * PANGO_SCALE;
+            
+            pango_font_metrics_unref(metrics);        
+
+            if (avg_char_width_pango > 0) 
+                char_count = width_in_pango_units / avg_char_width_pango;
+
+            g_print("char width = %d\n", char_count);
+            
+            // Set the character bounds for this function label
+            gtk_label_set_max_width_chars(GTK_LABEL(box_child), char_count);
+            gtk_label_set_width_chars(GTK_LABEL(box_child), char_count);
+
+            // Set the character bounds for any addional function labels in this column
+            list_ptr = list_ptr->next;
+            while ( list_ptr )
+            {
+                event_box = list_ptr->widget;
+                box_child = gtk_widget_get_first_child(event_box);
+
+                gtk_label_set_max_width_chars(GTK_LABEL(box_child), char_count);
+                gtk_label_set_width_chars(GTK_LABEL(box_child), char_count);
+
+                list_ptr = list_ptr->next;
+            }
+        }
+    }   
+}
+#endif
 
 
 //********************************************************************************************** 
@@ -627,7 +684,8 @@ gboolean on_adjuster_eventbox_motion_notify_event(GtkWidget *widget, GdkEventMot
 {
     GtkAllocation allocation;
     gint  width, height;
-    GtkWidget *header_button = (GtkWidget *) user_data;
+    col_list_t *list = (col_list_t *) user_data;
+    GtkWidget *header_button = (list->member_list_head)->widget;
  
     GdkEventMotion *my_event = (GdkEventMotion *) event;
     gint offset = (gint)my_event->x - initial_x_offset;
@@ -641,7 +699,7 @@ gboolean on_adjuster_eventbox_motion_notify_event(GtkWidget *widget, GdkEventMot
     gtk_widget_set_size_request(header_button, allocation.width, height);
     
     //printf("my_event=%d, off=%d, new_width=%d\n", (gint)my_event->x, offset, allocation.width);
-    gtk_widget_size_allocate(header_button, &allocation);
+    gtk_widget_size_allocate(header_button, allocation.width);
     return(FALSE);
 }
 
@@ -656,22 +714,29 @@ static void on_adjuster_eventbox_motion_notify_event(GtkEventControllerMotion *c
 {
     GtkAllocation allocation;
     gint  width, height;
-    GtkWidget *header_button = (GtkWidget *) user_data;
+    col_list_t *list = (col_list_t *) user_data;
+    GtkWidget *header_button = (list->member_list_head)->widget;
 
     if (gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller)) & GDK_BUTTON1_MASK)
     {
-        gdouble offset = x - initial_x_offset;
 
-        gtk_widget_get_size_request(header_button, &width, &height);
+        //gtk_widget_get_size_request(header_button, &width, &height);
+        //g_print("request: w=%d, h=%d\n", width, height);
         gtk_widget_get_allocation(header_button, &allocation);
+        g_print("alloc:   w=%d, h=%d\n", allocation.width, allocation.height);
 
+        gdouble offset = (gint)x - initial_x_offset;
+        g_print("offset: %.4f - %.4f = %.4f\n", x, initial_x_offset, offset);
+        
         allocation.width += offset;
+
         if (allocation.width < MIN_COLUMN_WIDTH) allocation.width = MIN_COLUMN_WIDTH;
 
-        gtk_widget_set_size_request(header_button, allocation.width, height);
+        gtk_widget_set_size_request(header_button, (gint) allocation.width, height);
 
-        printf("Adj-Motion: off=%d, new_width=%d\n", offset, allocation.width);
         gtk_widget_size_allocate(header_button, &allocation, -1);
+        
+        set_browser_column_width(list, (gint) allocation.width);
     }
 }
 #endif
@@ -709,7 +774,8 @@ static void create_header_button_with_adjuster(tcb_t *tcb, guint col, gint label
     gtk_widget_set_focus_on_click(header_button, FALSE);
     #endif
 
-    gtk_widget_set_size_request (header_button, INITIAL_SCA_COL_WIDTH, -1);
+    // Revisit: 10/15/26 is the next line needed [for any GTK variant]
+    // gtk_widget_set_size_request (header_button, INITIAL_SCA_COL_WIDTH, -1);
     gtk_widget_show(header_button);
 
     // Create and insert the column width adjuster
@@ -742,7 +808,7 @@ static void create_header_button_with_adjuster(tcb_t *tcb, guint col, gint label
     gtk_grid_attach(GTK_GRID(tcb->browser_table), header_button, col, 0, 1, 1);
     
     gtk_widget_set_halign(adjuster_eventbox, GTK_ALIGN_FILL);
-    gtk_widget_set_valign(adjuster_eventbox, GTK_ALIGN_FILL);
+    //gtk_widget_set_valign(adjuster_eventbox, GTK_ALIGN_FILL);  --Revisit: needed?
     gtk_grid_attach (GTK_GRID(tcb->browser_table), adjuster_eventbox, col + 1, 0, 1, 1);
     gtk_box_append(GTK_BOX(adjuster_eventbox), adjuster_image);
     #endif
@@ -769,7 +835,7 @@ static void create_header_button_with_adjuster(tcb_t *tcb, guint col, gint label
 
     g_signal_connect ((gpointer) adjuster_eventbox, "motion_notify_event",
                       G_CALLBACK(on_adjuster_eventbox_motion_notify_event),
-                      header_button);
+                      &(tcb->col_list[col]));
     
     #else
 
@@ -794,7 +860,7 @@ static void create_header_button_with_adjuster(tcb_t *tcb, guint col, gint label
 
     g_signal_connect (pointer_motion, "motion",
                       G_CALLBACK(on_adjuster_eventbox_motion_notify_event),
-                      header_button);
+                      &(tcb->col_list[col]));
     #endif
 }
 
@@ -1269,7 +1335,7 @@ static void make_filler_column(tcb_t *tcb, guint position)
 {
     GtkWidget *button;
 
-    button= gtk_button_new_with_mnemonic("");
+    button = gtk_button_new_with_mnemonic("");
     gtk_widget_set_name(button, "horizontal_filler_header_button");
     gtk_widget_show(button);
     gtk_widget_set_can_focus(button, FALSE);
@@ -1286,7 +1352,7 @@ static void make_filler_column(tcb_t *tcb, guint position)
     gtk_grid_attach(GTK_GRID(tcb->browser_table), button, position, 0, 1, 1);
     #endif
 
-    column_list_insert(&(tcb->col_list[position]), button, 0);
+    column_list_insert(&(tcb->col_list[position]), button, 0);  // Perform column bookkeeping
 
     tcb->col_list[position].type = FILLER;
 }
@@ -1380,8 +1446,8 @@ static void on_function_button_press(GtkGestureClick *gesture, int n_press, doub
 //********************************************************************************************** 
 static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gchar *line_num)
 {
-    GtkWidget   *root_function_blue_eventbox;
-    GtkWidget   *root_function_label;
+    GtkWidget   *function_eventbox;
+    GtkWidget   *function_label;
     gchar       *var_string;
 
     #if !defined(GTK3_BUILD) && !defined(GTK4_BUILD)
@@ -1401,6 +1467,8 @@ static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gc
     tcb->root_entry.line_num = line_num;
     tcb->root_entry.tcb = tcb;
 
+    make_filler_column(tcb, 0);     // Create the left filler column
+
     make_expander_at_position(tcb, 1, 1, LEFT);     // Create Left Expander
     make_expander_at_position(tcb, 3, 1, RIGHT);    // Create Right Expander
 
@@ -1410,68 +1478,74 @@ static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gc
     // Create and Insert a dummy left-side [header] adjuster for the root column
     create_dummy_adjuster(tcb, tcb->root_col - 1, 0);
 
-    make_filler_column(tcb, 0);     // Create the left filler column
+    
     make_filler_column(tcb, 4);     // Create the right filler column
+
+    // Create the root function table entry eventbox [container for label]
+    function_eventbox = create_event_box();
+    gtk_widget_set_name(function_eventbox, "blue_eventbox");
+    gtk_widget_show(function_eventbox);
 
     // Create the root function table entry label -- Revisit:  Lots of common code with add_functions_to_column()
     my_asprintf(&var_string, "<span color=\"darkred\">%s</span>", root_fname);
-    root_function_label = gtk_label_new(var_string);
+    function_label = gtk_label_new(var_string);
     g_free(var_string);
-    gtk_widget_set_name(root_function_label, "root_function_label");
-    gtk_widget_show(root_function_label);
-    gtk_label_set_use_markup(GTK_LABEL(root_function_label), TRUE);
     
     #ifndef GTK4_BUILD
-    gtk_misc_set_alignment(GTK_MISC(root_function_label), 0, 0.5);
-    gtk_misc_set_padding(GTK_MISC(root_function_label), 1, 0);
-    #else
-    gtk_widget_set_halign(root_function_label, GTK_ALIGN_START);
-    gtk_widget_set_valign(root_function_label, GTK_ALIGN_CENTER);
-
-    gtk_widget_set_margin_start(root_function_label, 1);
-    gtk_widget_set_margin_end(root_function_label, 1);
-    gtk_widget_set_margin_top(root_function_label, 0);
-    gtk_widget_set_margin_bottom(root_function_label, 0);
-    #endif
-    
-    gtk_label_set_ellipsize(GTK_LABEL(root_function_label), PANGO_ELLIPSIZE_END);
-
-    // Place File and Line information into the tooltip for the label.
-    my_asprintf(&var_string, "%s : %s", tcb->root_entry.file_name, tcb->root_entry.line_num);
-    gtk_widget_set_tooltip_text(root_function_label, var_string); 
-    g_free(var_string);
-
-    // Create the root function table entry eventbox [container for label]
-    root_function_blue_eventbox = create_event_box();
-    gtk_widget_set_name(root_function_blue_eventbox, "blue_eventbox");
-    gtk_widget_show(root_function_blue_eventbox);
-
-    #ifndef GTK4_BUILD
-    gtk_table_attach(GTK_TABLE(tcb->browser_table), root_function_blue_eventbox, tcb->root_col, tcb->root_col + 1, 1, 2,
+    gtk_table_attach(GTK_TABLE(tcb->browser_table), function_eventbox, tcb->root_col, tcb->root_col + 1, 1, 2,
                      (GtkAttachOptions)(GTK_FILL),
                      (GtkAttachOptions)(GTK_FILL), 0, 0);
-    // Place label in eventbox 
-    gtk_container_add(GTK_CONTAINER(root_function_blue_eventbox), root_function_label);
+    gtk_container_add(GTK_CONTAINER(function_eventbox), function_label);
 
     #if defined(GTK3_BUILD)
-    gtk_widget_set_halign(root_function_blue_eventbox, GTK_ALIGN_FILL);
-    gtk_widget_set_valign(root_function_blue_eventbox, GTK_ALIGN_FILL);
+    gtk_widget_set_halign(function_eventbox, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(function_eventbox, GTK_ALIGN_FILL);
     #endif
     
     #else
     
-    gtk_widget_set_halign(root_function_blue_eventbox, GTK_ALIGN_FILL);
-    gtk_widget_set_valign(root_function_blue_eventbox, GTK_ALIGN_FILL);
-    gtk_grid_attach(GTK_GRID(tcb->browser_table), root_function_blue_eventbox, tcb->root_col, 1, 1, 1);
-    gtk_box_append(GTK_BOX(root_function_blue_eventbox), root_function_label);
+    // Set eventbox alignment
+    gtk_widget_set_halign(function_eventbox, GTK_ALIGN_FILL);
+    gtk_grid_attach(GTK_GRID(tcb->browser_table), function_eventbox, tcb->root_col, 1, 1, 1);
+    gtk_box_append(GTK_BOX(function_eventbox), function_label);
     #endif
+    
+    // Place File and Line information into the tooltip for the label.
+    my_asprintf(&var_string, "%s : %s", tcb->root_entry.file_name, tcb->root_entry.line_num);
+    gtk_widget_set_tooltip_text(function_label, var_string); 
+    g_free(var_string);
 
-    column_list_insert_file(&(tcb->col_list[tcb->root_col]), root_function_blue_eventbox, 1, root_file);
+    gtk_widget_set_name(function_label, "function_label");
+    gtk_widget_show(function_label);
+    gtk_label_set_use_markup(GTK_LABEL(function_label), TRUE);
+    
+    #ifndef GTK4_BUILD
+    gtk_misc_set_alignment(GTK_MISC(function_label), 0, 0.5);
+    gtk_misc_set_padding(GTK_MISC(function_label), 1, 0);
+    #else
+    // set function label alignment
+    gtk_label_set_xalign(GTK_LABEL(function_label), 0.0);
+    gtk_widget_set_valign(function_label, GTK_ALIGN_START);
+
+    // set function label padding
+    gtk_widget_set_margin_start(function_label, 1);
+    gtk_widget_set_margin_end(function_label, 1);
+    gtk_widget_set_margin_top(function_label, 0);
+    gtk_widget_set_margin_bottom(function_label, 0);
+
+    // set function label min/max width
+    gtk_label_set_max_width_chars(GTK_LABEL(function_label), MIN_FN_NAME_SIZE);
+    gtk_label_set_width_chars(GTK_LABEL(function_label), MIN_FN_NAME_SIZE);
+    #endif
+    
+    gtk_label_set_ellipsize(GTK_LABEL(function_label), PANGO_ELLIPSIZE_END);
+
+    column_list_insert_file(&(tcb->col_list[tcb->root_col]), function_eventbox, 1, root_file);
     tcb->col_list[tcb->root_col].type = NAME;
 
-    // Hook up button press event.
+    // Hook up button press event
     #ifndef GTK4_BUILD
-    g_signal_connect((gpointer)root_function_blue_eventbox, "button_press_event",
+    g_signal_connect((gpointer)function_eventbox, "button_press_event",
                      G_CALLBACK(on_function_button_press), &(tcb->root_entry));
 
     #else   // GTK4
@@ -1479,7 +1553,7 @@ static void initialize_table(tcb_t *tcb, gchar *root_fname, gchar *root_file, gc
     GtkGesture *gesture = gtk_gesture_click_new();  // Caller must free gesture
     
     gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), GDK_BUTTON_PRIMARY);
-    gtk_widget_add_controller(root_function_blue_eventbox, GTK_EVENT_CONTROLLER(gesture));
+    gtk_widget_add_controller(function_eventbox, GTK_EVENT_CONTROLLER(gesture));
    
     g_signal_connect(gesture, "pressed", G_CALLBACK(on_function_button_press), &(tcb->root_entry));
     #endif
@@ -1558,8 +1632,8 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
 
             #else
 
+            // Set eventbox alignment
             gtk_widget_set_halign(function_event_box, GTK_ALIGN_FILL);
-            gtk_widget_set_valign(function_event_box, GTK_ALIGN_FILL);
             gtk_grid_attach(GTK_GRID(tcb->browser_table), function_event_box, col, row, 1, 1);
             gtk_box_append(GTK_BOX(function_event_box), function_label);
             #endif
@@ -1577,13 +1651,19 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
             gtk_misc_set_alignment(GTK_MISC(function_label), 0, 0.5);
             gtk_misc_set_padding(GTK_MISC(function_label), 1, 0);
             #else
+            // set function label alignment
+            gtk_label_set_xalign(GTK_LABEL(function_label), 0.0);
             gtk_widget_set_halign(function_label, GTK_ALIGN_START);
-            gtk_widget_set_valign(function_label, GTK_ALIGN_CENTER);
 
+            //set function label padding
             gtk_widget_set_margin_start(function_label, 1);
             gtk_widget_set_margin_end(function_label, 1);
             gtk_widget_set_margin_top(function_label, 0);
             gtk_widget_set_margin_bottom(function_label, 0);
+
+            // set function label min/max width
+            gtk_label_set_max_width_chars(GTK_LABEL(function_label), MIN_FN_NAME_SIZE);
+            gtk_label_set_width_chars(GTK_LABEL(function_label), MIN_FN_NAME_SIZE);
             #endif
 
             gtk_label_set_ellipsize(GTK_LABEL(function_label), PANGO_ELLIPSIZE_END);
@@ -1603,9 +1683,11 @@ static void add_functions_to_column(tcb_t *tcb, result_t *function_list, guint n
 
             node->tcb = tcb;
 
+            // Hook up button press event
             #ifndef GTK4_BUILD
             g_signal_connect(function_event_box, "button_press_event", G_CALLBACK(on_function_button_press), node);
-            #else
+            
+            #else   // GTK4
 
             GtkGesture *gesture = gtk_gesture_click_new();  // Revisit: Potential resource leak.  caller must free gesture
 
@@ -2360,79 +2442,94 @@ static GtkWidget* create_browser_window(gchar *name, gchar *root_file, gchar *li
     GtkWidget *browser_scrolledwindow;
     GtkWidget *browser_viewport;
     GtkWidget *browser_table;
-    gchar *var_string;
+    gchar     *var_string;
     tcb_t     *tcb;
 
-    // Malloc a Table Control Block (TCB) for this window.  This keeps the table data with the
-    // widget and makes this function re-entrant-safe.
-
-    tcb = g_malloc(sizeof(tcb_t));
-
+    // Create a Browser Window
     #ifndef GTK4_BUILD
     browser_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_windows_show(browser_window);
     #else
     browser_window = gtk_window_new();
+    gtk_window_present (GTK_WINDOW (browser_window));
+
     #endif
 
     gtk_widget_set_name(browser_window, "browser_window");
-    gtk_widget_set_size_request(browser_window, 800, 130);
+    //gtk_widget_set_size_request(browser_window, 800, 130); -- Modified 10/15/26 --
+    gtk_window_set_default_size(GTK_WINDOW(browser_window), BROWSER_WIDTH, BROWSER_HEIGHT);
     my_asprintf(&var_string, "Static Call Browser (%s)", name);
     gtk_window_set_title(GTK_WINDOW(browser_window), var_string);
     g_free(var_string);
     gtk_window_set_destroy_with_parent(GTK_WINDOW(browser_window), TRUE);
 
+    // Create/set Browser Window Icon
     #ifndef GTK4_BUILD
     GdkPixbuf *browser_window_icon_pixbuf = create_pixbuf("icon-search.png");
     if (browser_window_icon_pixbuf)
     {
         gtk_window_set_icon(GTK_WINDOW(browser_window), browser_window_icon_pixbuf);
         gdk_pixbuf_unref(browser_window_icon_pixbuf);
-        browser_vbox = gtk_vbox_new(FALSE, 0);
     }
     #else
     gtk_window_set_icon_name(GTK_WINDOW(browser_window), "system-search");
-    browser_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     #endif
 
-    gtk_widget_set_name(browser_vbox, "browser_vbox");
-    gtk_widget_show(browser_vbox);
-    
+    // Create a vbox and insert it into the Browser window
     #ifndef GTK4_BUILD
+    browser_vbox = gtk_vbox_new(FALSE, 0);
     gtk_container_add(GTK_CONTAINER(browser_window), browser_vbox);
-    browser_scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
-    gtk_box_pack_start(GTK_BOX(browser_vbox), browser_scrolledwindow, TRUE, TRUE, 0);
     browser_table = gtk_table_new(3, 5, FALSE);   // 3rows x 5 columns, not-homogeneous
     #else
+    browser_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_window_set_child(GTK_WINDOW(browser_window), browser_vbox);
-    browser_scrolledwindow = gtk_scrolled_window_new();
-    gtk_box_append(GTK_BOX(browser_vbox), browser_scrolledwindow);
-    browser_table = gtk_grid_new();
-    gtk_widget_set_vexpand(browser_table, TRUE);
     #endif
+    gtk_widget_set_name(browser_vbox, "browser_vbox");
+    gtk_widget_show(browser_vbox);
 
+    // Create a scrolledwindow and insert it into the vbox
+    #ifndef GTK4_BUILD
+    browser_scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
+    gtk_box_pack_start(GTK_BOX(browser_vbox), browser_scrolledwindow, TRUE, TRUE, 0);
+    #else
+    browser_scrolledwindow = gtk_scrolled_window_new();
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(browser_scrolledwindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_overlay_scrolling(GTK_SCROLLED_WINDOW(browser_scrolledwindow), FALSE);
+    gtk_box_append(GTK_BOX(browser_vbox), browser_scrolledwindow);
+    #endif
     gtk_widget_set_name(browser_scrolledwindow, "browser_scrolledwindow");
     gtk_widget_show(browser_scrolledwindow);
 
-    /* Add the scrollable call-tree table */
+    
+    // Create a viewport and insert it into the scrolledwindow
     browser_viewport = gtk_viewport_new(NULL, NULL);
     gtk_widget_set_name(browser_viewport, "browser_viewport");
     gtk_widget_show(browser_viewport);
+    #ifndef GTK4_BUILD
+    gtk_container_add(GTK_CONTAINER(browser_scrolledwindow), browser_viewport);
+    #else
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(browser_scrolledwindow), browser_viewport);
+    #endif
 
+    // Create a grid (table) and insert it into the scrolledwindow viewport
+    #ifndef GTK4_BUILD
+    browser_table = gtk_table_new(3, 5, FALSE);   // 3rows x 5 columns, not-homogeneous
+    gtk_container_add(GTK_CONTAINER(browser_viewport), browser_table);
+    #else
+    browser_table = gtk_grid_new();
+    gtk_widget_set_vexpand(browser_table, TRUE);
+    gtk_viewport_set_child(GTK_VIEWPORT(browser_viewport), browser_table);
+    #endif
     gtk_widget_set_name(browser_table, "browser_table");
     gtk_widget_show(browser_table);
 
-    #ifndef GTK4_BUILD
-    gtk_container_add(GTK_CONTAINER(browser_scrolledwindow), browser_viewport);
-    gtk_container_add(GTK_CONTAINER(browser_viewport), browser_table);
-    #else
-    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(browser_scrolledwindow), browser_viewport);
-    gtk_viewport_set_child(GTK_VIEWPORT(browser_viewport), browser_table);
-    #endif
-
-    // Initialize the TCB
+    // Malloc a Table Control Block (TCB) for this window.  This keeps the table data with the
+    // widget and makes this function re-entrant-safe.
+    tcb = g_malloc(sizeof(tcb_t));
     tcb->browser_table = browser_table;
     initialize_table(tcb, name, root_file, line_num);
 
+    // Connect Browser Window signals
     #ifndef GTK4_BUILD
     g_signal_connect((gpointer)browser_window, "delete_event",
                      G_CALLBACK(on_browser_delete_event),
@@ -2442,9 +2539,6 @@ static GtkWidget* create_browser_window(gchar *name, gchar *root_file, gchar *li
                      G_CALLBACK(on_browser_close_request),
                      tcb);
     #endif
-
-    /* Add the non-scrollable table header */
-
 
     return browser_window;
 }
