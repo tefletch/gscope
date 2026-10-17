@@ -698,8 +698,7 @@ gboolean on_adjuster_eventbox_motion_notify_event(GtkWidget *widget, GdkEventMot
 
     gtk_widget_set_size_request(header_button, allocation.width, height);
     
-    //printf("my_event=%d, off=%d, new_width=%d\n", (gint)my_event->x, offset, allocation.width);
-    gtk_widget_size_allocate(header_button, allocation.width);
+    gtk_widget_size_allocate(header_button, &allocation);
     return(FALSE);
 }
 
@@ -2448,7 +2447,7 @@ static GtkWidget* create_browser_window(gchar *name, gchar *root_file, gchar *li
     // Create a Browser Window
     #ifndef GTK4_BUILD
     browser_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_windows_show(browser_window);
+    gtk_widget_show(browser_window);
     #else
     browser_window = gtk_window_new();
     gtk_window_present (GTK_WINDOW (browser_window));
