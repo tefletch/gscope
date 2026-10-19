@@ -24,7 +24,7 @@
 #define GDK_BUTTON_ANY          (0)
 #define BROWSER_WIDTH           (800)
 #define BROWSER_HEIGHT          (130)
-#define MIN_FN_NAME_SIZE        (8)
+#define MIN_FN_NAME_SIZE        (16)
 
 
 // Typedefs
@@ -2465,17 +2465,8 @@ static GtkWidget* create_browser_window(gchar *name, gchar *root_file, gchar *li
     g_free(var_string);
     gtk_window_set_destroy_with_parent(GTK_WINDOW(browser_window), TRUE);
 
-    // Create/set Browser Window Icon
-    #ifndef GTK4_BUILD
-    GdkPixbuf *browser_window_icon_pixbuf = create_pixbuf("icon-search.png");
-    if (browser_window_icon_pixbuf)
-    {
-        gtk_window_set_icon(GTK_WINDOW(browser_window), browser_window_icon_pixbuf);
-        gdk_pixbuf_unref(browser_window_icon_pixbuf);
-    }
-    #else
+    // Set Browser Window Icon
     gtk_window_set_icon_name(GTK_WINDOW(browser_window), "system-search");
-    #endif
 
     // Create a vbox and insert it into the Browser window
     #ifndef GTK4_BUILD
