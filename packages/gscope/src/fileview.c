@@ -361,7 +361,7 @@ void ModifyTextPopUp(GtkTextView *textview, GtkMenu *menu, gpointer user_data)
     gtk_widget_show_all(GTK_WIDGET(menu));
 
 }
-#else
+#else   // GTK4 modify text popup
 
 static void on_right_click_pressed(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data)
 {
@@ -406,11 +406,11 @@ static gboolean on_shortcut_activated (GtkWidget *widget, GVariant *args, gpoint
 // After struggling for days, the Google AI overview to the following
 // query produced solutions that actually worked: 
 //   "gtk4 override gtktextview action menu.popup"
+
 static void modify_text_popup(ViewWindow *window_ptr)
 {
     // Intercept right click (and Keyboard shortcut <shift>F10)
     //=========================================================
-    printf("START: intercept right click method\n");
 
     // Define a custom popover menu
     GMenu *menu = g_menu_new();
@@ -439,60 +439,8 @@ static void modify_text_popup(ViewWindow *window_ptr)
     
     gtk_shortcut_controller_add_shortcut (GTK_SHORTCUT_CONTROLLER (controller), shortcut);
     gtk_widget_add_controller (GTK_WIDGET(window_ptr->srcViewWidget), controller);
-
-    printf("END: intercept right click method\n");
-
-    
-    printf("Exiting %s\n", __func__);
-
-    #if 0 // working_menu_append method:  SUCCESSFULLY ADDS TWO ITEMS to sourceview context menu
-    printf("START: working_menu_append method\n");
-    GMenu *custom_menu = g_menu_new();
-    g_menu_append (custom_menu, "Test Action", "app.my-custom-action");
-    g_menu_append (custom_menu, "Test2 Action", "app.my-custom2-action");
-    gtk_text_view_set_extra_menu (GTK_TEXT_VIEW (window_ptr->srcViewWidget), G_MENU_MODEL (custom_menu));
-    g_object_unref (custom_menu);
-    printf("END: working_menu_append method\n");
-    #endif
-
-    #if 0  // intercept menu.popup action method: Code runs without error, but context menu for sourceview is unchanged
-
-    printf("START: intercept menu.popup action\n");
-    gtk_widget_realize(GTK_WIDGET(window_ptr->srcViewWidget));
-
-    // Define new custom menu layout
-    GMenu *menu = g_menu_new();
-    g_menu_append(menu, "Custom Action", "custom.my_action");
-
-    // Create the popover menu for this model
-    GtkWidget *popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(menu));
-    gtk_widget_set_parent(popover, GTK_WIDGET(window_ptr->srcViewWidget));
-    gtk_popover_set_has_arrow(GTK_POPOVER(popover), FALSE);
-
-    // Define the action group that handles custom menu items
-    GSimpleActionGroup *action_group = g_simple_action_group_new();
-    GSimpleAction  *my_action = g_simple_action_new("my_action", NULL);
-    g_signal_connect(my_action, "activate", G_CALLBACK(on_my_action_activated), NULL);
-    g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(my_action));
-    gtk_widget_insert_action_group(GTK_WIDGET(window_ptr->srcViewWidget), "custom", G_ACTION_GROUP(action_group));
-
-    // Create a replacement action for the build-in "menu.popup"
-    // This prevents GTK from opening the default context menu
-    GSimpleActionGroup *override_group = g_simple_action_group_new();""
-    GSimpleAction  *popup_action = g_simple_action_new("popup", NULL);
-
-    // Trigger custom popover
-    g_signal_connect(popup_action, "activate", G_CALLBACK(on_popup_action_activated), popover);
-    
-    g_action_map_add_action(G_ACTION_MAP(override_group), G_ACTION(popup_action));
-
-    // Intercepting 'menu' overrides 'menu.popup'
-    gtk_widget_insert_action_group(GTK_WIDGET(window_ptr->srcViewWidget), "menu", NULL);    // TomTest
-    gtk_widget_insert_action_group(GTK_WIDGET(window_ptr->srcViewWidget), "menu", G_ACTION_GROUP(override_group));
-    printf("END: intercept menu.popup action\n");
-    #endif
 }
-#endif
+#endif  // GTK4 modify text popup
 
 
 static void createFileViewer(ViewWindow *windowPtr)
