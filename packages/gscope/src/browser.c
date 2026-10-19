@@ -713,7 +713,6 @@ gboolean on_adjuster_eventbox_motion_notify_event(GtkWidget *widget, GdkEventMot
 static void on_adjuster_eventbox_motion_notify_event(GtkEventControllerMotion *controller, gdouble x, gdouble y, gpointer user_data)
 {
     GtkAllocation allocation;
-    gint  width, height;
     col_list_t *list = (col_list_t *) user_data;
     GtkWidget *header_button = (list->member_list_head)->widget;
 
@@ -729,7 +728,7 @@ static void on_adjuster_eventbox_motion_notify_event(GtkEventControllerMotion *c
 
         if (allocation.width < MIN_COLUMN_WIDTH) allocation.width = MIN_COLUMN_WIDTH;
 
-        gtk_widget_set_size_request(header_button, (gint) allocation.width, height);
+        gtk_widget_set_size_request(header_button, (gint) allocation.width, -1);
 
         gtk_widget_size_allocate(header_button, &allocation, -1);
         
