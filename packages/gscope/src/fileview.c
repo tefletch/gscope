@@ -363,79 +363,134 @@ void ModifyTextPopUp(GtkTextView *textview, GtkMenu *menu, gpointer user_data)
 }
 #else
 
-void gtk_text_view_popup_menu(GtkWidget *widget, const char *action_name, GVariant   *parameters)
+static void on_right_click_pressed(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data)
 {
-    printf("Hello from %s\n", __func__);
+    GtkWidget *popover = GTK_WIDGET(user_data);
+
+    // Only intercept right-clicks (Button 3)
+    if (gtk_gesture_single_get_current_button(GTK_GESTURE_SINGLE(gesture)) == 3)
+    {
+        
+        // Point the popover exactly where the user clicked
+        GdkRectangle rect = { (int)x, (int)y, 1, 1 };
+        gtk_popover_set_pointing_to(GTK_POPOVER(popover), &rect);
+        
+        // Show the custom menu
+        gtk_popover_popup(GTK_POPOVER(popover));
+
+        // Stop event propagation so the native menu.popup doesn't fire
+        gtk_gesture_set_state(GTK_GESTURE(gesture), GTK_EVENT_SEQUENCE_CLAIMED);
+    }
 }
 
-void modify_text_popup(ViewWindow *window_ptr)
+static gboolean on_shortcut_activated (GtkWidget *widget, GVariant *args, gpointer user_data) 
 {
-    #ifdef dummy_code // experimental logic
-    // *************************** this logic doesn't work here.  The gtkpopup child doesn't exist YET.  need to hook up to popup activate.
-    // i think we want to connect to the 'map' signal for the popover
-    GtkWidget *child;
+    GtkWidget *popover = GTK_WIDGET(user_data);
+    
+    // Point the popover to the center of the window
+    gint width = gtk_widget_get_width(widget);
+    gint height = gtk_widget_get_height(widget);
+    gint x = width / 2;
+    gint y = height / 2;
 
-    for ( child = gtk_widget_get_first_child(GTK_WIDGET(window_ptr->srcViewWidget)); child != NULL;  child = gtk_widget_get_next_sibling(child) ) 
-    {
-        if ( GTK_IS_POPOVER_MENU(child) )
-            printf("Child %lx is popover\n", child);
-        else
-            printf("Child %lx is NOT a popover\n", child);
-    }
+    GdkRectangle rect = { x, y, 1, 1 };
+    gtk_popover_set_pointing_to(GTK_POPOVER(popover), &rect);
+        
+    // Show the custom menu
+    gtk_popover_popup(GTK_POPOVER(popover));
 
-    //gtk_widget_action_set_enabled(GTK_WIDGET(window_ptr->srcViewWidget), "menu.popup", FALSE);
-    //g_action_map_add_action(G_ACTION_MAP(menu), "menu.popup", NULL, gtk_text_view_popup_menu);
-    if ( g_action_name_is_valid("menu.popup") )
-        printf("TRUE\n");
-    else
-        printf("FALSE\n");
+    return TRUE; // Handled
+}
 
-    printf("pdname: %s\n", g_action_print_detailed_name("menu.popup", NULL));
+// GTK4 does not make this sort of functionality easy or straightforward
+// After struggling for days, the Google AI overview to the following
+// query produced solutions that actually worked: 
+//   "gtk4 override gtktextview action menu.popup"
+static void modify_text_popup(ViewWindow *window_ptr)
+{
+    // Intercept right click (and Keyboard shortcut <shift>F10)
+    //=========================================================
+    printf("START: intercept right click method\n");
 
-    GSimpleAction *sa = g_simple_action_new("menu.popup", NULL);
-    g_signal_connect(sa, "activate", G_CALLBACK(gtk_text_view_popup_menu), NULL);
-    g_action_map_add_action(G_ACTION_MAP("menu"), G_ACTION(sa));
+    // Define a custom popover menu
+    GMenu *menu = g_menu_new();
+    g_menu_append(menu, "Edit", "win.edit");
+    g_menu_append(menu, "Close", "win.close");
+
+    GtkWidget *custom_popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(menu));
+    gtk_widget_set_parent(custom_popover, GTK_WIDGET(window_ptr->srcViewWidget));
+    gtk_popover_set_has_arrow(GTK_POPOVER(custom_popover), FALSE);
+
+    // Suppress the default handler using a gesture
+    GtkGesture *gesture = gtk_gesture_click_new();
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture), 0); // Listen to all buttons
+
+    // CAPTURE phase intercepts the event before the textview handles it natively
+    gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(gesture), GTK_PHASE_CAPTURE);
+
+    g_signal_connect(gesture, "pressed", G_CALLBACK(on_right_click_pressed), custom_popover);
+    gtk_widget_add_controller(GTK_WIDGET(window_ptr->srcViewWidget), GTK_EVENT_CONTROLLER(gesture));
+
+    // Intercept the keyboard shortcut
+    GtkShortcutTrigger *trigger = gtk_shortcut_trigger_parse_string("<Shift>F10");
+    GtkShortcutAction  *action = gtk_callback_action_new (on_shortcut_activated, custom_popover, NULL);
+    GtkShortcut        *shortcut = gtk_shortcut_new (trigger, action);
+    GtkEventController *controller = gtk_shortcut_controller_new ();
+    
+    gtk_shortcut_controller_add_shortcut (GTK_SHORTCUT_CONTROLLER (controller), shortcut);
+    gtk_widget_add_controller (GTK_WIDGET(window_ptr->srcViewWidget), controller);
+
+    printf("END: intercept right click method\n");
 
     
-    printf("hello again\n");
-    #endif
-
-    GMenuModel *my_menu_model;
-
-    my_menu_model = gtk_text_view_get_extra_menu(GTK_TEXT_VIEW(window_ptr->srcViewWidget));
-    // g_menu_remove_all(G_MENU(my_menu_model));
-
-    printf("Menu Model item count: %d\n", g_menu_model_get_n_items(my_menu_model));
-
-    char *id;
-    if ( g_menu_model_get_item_attribute (my_menu_model, 0, G_MENU_ATTRIBUTE_LABEL, "s", &id) )
-    {
-        printf("id = %s\n", id);
-        g_free(id);
-    }
-
-    // *** Try next:  Add a new action to my_menu_model  ---------------------------------
-
-
-    // g_action_map_remove_action(G_ACTION_MAP("clipboard"), "cut");
-
-    #if 0   // This doesn't work because menu_model is NOT a widget
-    *parent = gtk_widget_get_parent(GTK_WIDGET(my_menu_model));
-    if (parent)
-        printf("found parent\n");
-    else
-        printf("no parent\n");
-    #endif
-
-    if ( g_action_name_is_valid("menu.popup") )
-        printf("menu.popup valid: TRUE\n");
-    else
-        printf("menu.popup valid: FALSE\n");
-
-    printf("pdname: %s\n", g_action_print_detailed_name("menu.popup", NULL));
-
     printf("Exiting %s\n", __func__);
 
+    #if 0 // working_menu_append method:  SUCCESSFULLY ADDS TWO ITEMS to sourceview context menu
+    printf("START: working_menu_append method\n");
+    GMenu *custom_menu = g_menu_new();
+    g_menu_append (custom_menu, "Test Action", "app.my-custom-action");
+    g_menu_append (custom_menu, "Test2 Action", "app.my-custom2-action");
+    gtk_text_view_set_extra_menu (GTK_TEXT_VIEW (window_ptr->srcViewWidget), G_MENU_MODEL (custom_menu));
+    g_object_unref (custom_menu);
+    printf("END: working_menu_append method\n");
+    #endif
+
+    #if 0  // intercept menu.popup action method: Code runs without error, but context menu for sourceview is unchanged
+
+    printf("START: intercept menu.popup action\n");
+    gtk_widget_realize(GTK_WIDGET(window_ptr->srcViewWidget));
+
+    // Define new custom menu layout
+    GMenu *menu = g_menu_new();
+    g_menu_append(menu, "Custom Action", "custom.my_action");
+
+    // Create the popover menu for this model
+    GtkWidget *popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(menu));
+    gtk_widget_set_parent(popover, GTK_WIDGET(window_ptr->srcViewWidget));
+    gtk_popover_set_has_arrow(GTK_POPOVER(popover), FALSE);
+
+    // Define the action group that handles custom menu items
+    GSimpleActionGroup *action_group = g_simple_action_group_new();
+    GSimpleAction  *my_action = g_simple_action_new("my_action", NULL);
+    g_signal_connect(my_action, "activate", G_CALLBACK(on_my_action_activated), NULL);
+    g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(my_action));
+    gtk_widget_insert_action_group(GTK_WIDGET(window_ptr->srcViewWidget), "custom", G_ACTION_GROUP(action_group));
+
+    // Create a replacement action for the build-in "menu.popup"
+    // This prevents GTK from opening the default context menu
+    GSimpleActionGroup *override_group = g_simple_action_group_new();""
+    GSimpleAction  *popup_action = g_simple_action_new("popup", NULL);
+
+    // Trigger custom popover
+    g_signal_connect(popup_action, "activate", G_CALLBACK(on_popup_action_activated), popover);
+    
+    g_action_map_add_action(G_ACTION_MAP(override_group), G_ACTION(popup_action));
+
+    // Intercepting 'menu' overrides 'menu.popup'
+    gtk_widget_insert_action_group(GTK_WIDGET(window_ptr->srcViewWidget), "menu", NULL);    // TomTest
+    gtk_widget_insert_action_group(GTK_WIDGET(window_ptr->srcViewWidget), "menu", G_ACTION_GROUP(override_group));
+    printf("END: intercept menu.popup action\n");
+    #endif
 }
 #endif
 
@@ -482,16 +537,11 @@ static void createFileViewer(ViewWindow *windowPtr)
     windowPtr->topWidget = window;
     g_signal_connect (GTK_WINDOW(window),"destroy",G_CALLBACK(on_fileview_destroy), window);
 
-    GdkPixbuf *fileview_icon_pixbuf = create_pixbuf ("icon-search.png"); // Revisit: fileview_icon_pixbuf not needed for gtk4
+    // According to documentation, all GTK variants support gtk_window_set_icon_name()
+    // gtk_window_set_icon (GTK_WINDOW (window), fileview_icon_pixbuf);  // direct-set call obsoleted 10/17/26
+    gtk_window_set_icon_name(GTK_WINDOW (window), "system-search");
 
-    #ifndef GTK4_BUILD  // Use a custom icon
-    if (fileview_icon_pixbuf)
-        gtk_window_set_icon (GTK_WINDOW (window), fileview_icon_pixbuf);
-    #else   // GTK4: use a system-provided icon
-        gtk_window_set_icon_name(GTK_WINDOW (window), "system-search");
-    #endif
-
-    /* Create a Scrolled Window that will contain the GtkSourceView */
+    // Create a Scrolled Window that will contain the GtkSourceView
     #ifndef GTK4_BUILD
     pScrollWin = gtk_scrolled_window_new (NULL, NULL);
     #else
@@ -501,11 +551,11 @@ static void createFileViewer(ViewWindow *windowPtr)
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (pScrollWin),
                                     GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
-    /* Now create a GtkSourceLanguagesManager */
-
-    // "lang_files_dir" HACK: instead of simply calling gtk_source_languages_manager_new(), we
-    // create the language manager with the "lang_files_dir" property set to $PACKAGE_DATA_DIR/gtksourceview/language-specs.
-    // This enables gtksourceview to find the language spec files when it is not installed at its "normal" path.
+    
+    // Create a GtkSourceLanguagesManager
+        // "lang_files_dir" HACK: instead of simply calling gtk_source_languages_manager_new(), we
+        // create the language manager with the "lang_files_dir" property set to $PACKAGE_DATA_DIR/gtksourceview/language-specs.
+        // This enables gtksourceview to find the language spec files when it is not installed at its "normal" path.
 
     lm = gtk_source_language_manager_new();
     #ifndef GTK4_BUILD // Actually gtksourceview-2 and gtksourceview-3
@@ -514,12 +564,11 @@ static void createFileViewer(ViewWindow *windowPtr)
     gtk_source_language_manager_set_search_path(lm, (const gchar * const*) lang_dirs);
     #endif
 
-    /* and a GtkSourceBuffer to hold text (similar to GtkTextBuffer) */
+    // Add a GtkSourceBuffer to hold text (similar to GtkTextBuffer) */
     sBuf = GTK_SOURCE_BUFFER (gtk_source_buffer_new (NULL));
 
     g_object_ref (lm);
-    g_object_set_data_full ( G_OBJECT (sBuf), "languages-manager",
-                             lm, (GDestroyNotify) g_object_unref);
+    g_object_set_data_full ( G_OBJECT (sBuf), "languages-manager", lm, (GDestroyNotify) g_object_unref);
 
     /* Create the GtkSourceView and associate it with the buffer */
     sView = gtk_source_view_new_with_buffer(sBuf);
@@ -531,30 +580,28 @@ static void createFileViewer(ViewWindow *windowPtr)
     gtk_source_view_set_highlight_current_line(GTK_SOURCE_VIEW(sView), TRUE);  // only effective for GTK2, harmless for GTK3 and later
     gtk_source_view_set_show_line_marks(GTK_SOURCE_VIEW(sView), TRUE);
 
+    // Configure the source-mark icon
+    GdkPixbuf *mark_pixbuf = create_pixbuf ("source-mark.png");
     #if defined(GTK3_BUILD) || defined(GTK4_BUILD)
     {
         GtkSourceMarkAttributes *attrs;
 
         attrs = gtk_source_mark_attributes_new();
-        gtk_source_mark_attributes_set_pixbuf(attrs, fileview_icon_pixbuf);
+        gtk_source_mark_attributes_set_pixbuf(attrs, mark_pixbuf);
         gtk_source_mark_attributes_render_icon(attrs, GTK_WIDGET(sView), 20);
         gtk_source_view_set_mark_attributes(GTK_SOURCE_VIEW(sView), "LMtype", attrs, 1);
     }
     #else   // GTK2
-    gtk_source_view_set_mark_category_icon_from_pixbuf(GTK_SOURCE_VIEW(sView), "LMtype", fileview_icon_pixbuf);
+    gtk_source_view_set_mark_category_icon_from_pixbuf(GTK_SOURCE_VIEW(sView), "LMtype", mark_pixbuf);
     #endif
-
-    g_object_unref (fileview_icon_pixbuf);  // Free the pixbuf
+    g_object_unref (mark_pixbuf);  // Free the pixbuf
     
-    #ifndef GTK4_BUILD  // needs gtk4 menu migration ******************************************** see gtk_text_view_set_extra_menu()
-    g_signal_connect (GTK_SOURCE_VIEW(sView),"populate-popup",G_CALLBACK(ModifyTextPopUp),windowPtr);
-    #else
-    modify_text_popup(windowPtr);
-    #endif
 
+    // Schedule a deferred callback to avoid race condition between scrolling and 'final/true' souce window height calculations
     #if defined(GTK3_BUILD) || defined(GTK4_BUILD)
     g_idle_add (&scroll_view_cb, sView);
     #endif
+
 
     /* Set default Font name,size */
     #ifndef GTK4_BUILD
@@ -588,6 +635,11 @@ static void createFileViewer(ViewWindow *windowPtr)
     gtk_window_set_child(GTK_WINDOW(window), GTK_WIDGET(pScrollWin));
     #endif
 
+    #ifndef GTK4_BUILD  // needs gtk4 menu migration ******************************************** see gtk_text_view_set_extra_menu()
+    g_signal_connect (GTK_SOURCE_VIEW(sView),"populate-popup",G_CALLBACK(ModifyTextPopUp),windowPtr);
+    #else
+    modify_text_popup(windowPtr);
+    #endif
 }
 
 
