@@ -331,37 +331,60 @@ void FILEVIEW_create(gchar *file_name, gint line)
 }
 
 
-#ifndef GTK4_BUILD  // needs gtk4 menu migration
-void ModifyTextPopUp(GtkTextView *textview, GtkMenu *menu, gpointer user_data)
+#ifndef GTK4_BUILD  // Pre-GTK4 modify text popup (function + callbacks)
+
+void show_custom_menu(GdkEvent *event, gpointer user_data)
 {
-    GList *list;
-    GtkWidget *menuitem;
-    GtkWidget *ImageMenuItem1, *ImageMenuItem2;
-    int i = 0;
+        GtkWidget *menu = gtk_menu_new();
+        GtkWidget *menu_item1 = gtk_image_menu_item_new_from_stock (GTK_STOCK_EDIT, NULL);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item1);
+        g_signal_connect(menu_item1, "activate", G_CALLBACK(on_fileview_start_editor_activate), user_data);        
 
-    list = gtk_container_get_children (GTK_CONTAINER(menu));
+        GtkWidget *menu_item2 = gtk_image_menu_item_new_from_stock (GTK_STOCK_CLOSE, NULL);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item2);
+        g_signal_connect(menu_item2, "activate", G_CALLBACK(on_fileview_close_activate), user_data);        
+                
+        gtk_widget_show_all(menu);
 
-    while( (menuitem = (GtkWidget *) g_list_nth_data( list, i)) != NULL )
+        // 2. Pop up the custom menu
+        gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
+}
+
+static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+ {
+    // Check if it's a right-click (button 3) and a single click
+    if (event->type == GDK_BUTTON_PRESS && event->button == 3) 
     {
-        gtk_widget_destroy(menuitem);
-        i++;
+        show_custom_menu((GdkEvent *)event, hb_map_set_user_data);
+        // Return TRUE to stop further propagation and block the default menu
+        return TRUE; 
     }
 
-    g_list_free(list);
-
-    ImageMenuItem1 = gtk_image_menu_item_new_from_stock (GTK_STOCK_EDIT, NULL);
-    gtk_container_add (GTK_CONTAINER (menu), ImageMenuItem1);
-
-    ImageMenuItem2 = gtk_image_menu_item_new_from_stock (GTK_STOCK_CLOSE, NULL);
-    gtk_container_add (GTK_CONTAINER (menu), ImageMenuItem2);
-
-    g_signal_connect(G_OBJECT(ImageMenuItem1), "activate", G_CALLBACK(on_fileview_start_editor_activate), user_data);
-    g_signal_connect(G_OBJECT(ImageMenuItem2), "activate", G_CALLBACK(on_fileview_close_activate), user_data);
-
-    gtk_widget_show_all(GTK_WIDGET(menu));
-
+    // Return FALSE for all other clicks (left/middle) to keep default behavior
+    return FALSE; 
 }
-#else   // GTK4 modify text popup
+
+gboolean on_popup_menu(GtkWidget *widget, gpointer user_data)
+{
+    show_custom_menu(NULL, user_data);
+    return TRUE; // Blocks default keyboard menu
+}
+
+void modify_text_popup(ViewWindow *window_ptr)
+{
+    // Intercept right click (and keyboard shortcut <shift>F10)
+    //=========================================================
+    
+    g_signal_connect(window_ptr->srcViewWidget, "button-press-event", G_CALLBACK(on_button_press), window_ptr);
+    g_signal_connect(window_ptr->srcViewWidget, "popup-menu", G_CALLBACK(on_popup_menu), window_ptr);
+}
+
+#else   // GTK4 modify text popup (function + callbacks)
+
+// GTK4 does not make this sort of functionality easy or straightforward
+// After struggling for days, the Google AI overview to the following
+// query produced sample solutions that actually worked: 
+//   "gtk4 override gtktextview action menu.popup"
 
 static void on_right_click_pressed(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data)
 {
@@ -401,11 +424,6 @@ static gboolean on_shortcut_activated (GtkWidget *widget, GVariant *args, gpoint
 
     return TRUE; // Handled
 }
-
-// GTK4 does not make this sort of functionality easy or straightforward
-// After struggling for days, the Google AI overview to the following
-// query produced solutions that actually worked: 
-//   "gtk4 override gtktextview action menu.popup"
 
 static void modify_text_popup(ViewWindow *window_ptr)
 {
@@ -583,11 +601,7 @@ static void createFileViewer(ViewWindow *windowPtr)
     gtk_window_set_child(GTK_WINDOW(window), GTK_WIDGET(pScrollWin));
     #endif
 
-    #ifndef GTK4_BUILD  // needs gtk4 menu migration ******************************************** see gtk_text_view_set_extra_menu()
-    g_signal_connect (GTK_SOURCE_VIEW(sView),"populate-popup",G_CALLBACK(ModifyTextPopUp),windowPtr);
-    #else
     modify_text_popup(windowPtr);
-    #endif
 }
 
 
