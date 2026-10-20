@@ -372,7 +372,7 @@ static void on_fileview_close_activate(GSimpleAction *action, GVariant *paramete
 
 #ifndef GTK4_BUILD  // Pre-GTK4 modify text popup (function + callbacks)
 
-void show_custom_menu(GdkEvent *event, gpointer user_data)
+static void show_custom_menu(GdkEvent *event, gpointer user_data)
 {
         GtkWidget *menu = gtk_menu_new();
         GtkWidget *menu_item1 = gtk_image_menu_item_new_from_stock (GTK_STOCK_EDIT, NULL);
@@ -403,7 +403,7 @@ static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpoint
     return FALSE; 
 }
 
-gboolean on_popup_menu(GtkWidget *widget, gpointer user_data)
+static gboolean on_popup_menu(GtkWidget *widget, gpointer user_data)
 {
     show_custom_menu(NULL, user_data);
     return TRUE; // Blocks default keyboard menu
@@ -413,7 +413,6 @@ void modify_text_popup(ViewWindow *window_ptr)
 {
     // Intercept right click (and keyboard shortcut <shift>F10)
     //=========================================================
-    
     g_signal_connect(window_ptr->srcViewWidget, "button-press-event", G_CALLBACK(on_button_press), window_ptr);
     g_signal_connect(window_ptr->srcViewWidget, "popup-menu", G_CALLBACK(on_popup_menu), window_ptr);
 }
@@ -570,8 +569,8 @@ static void createFileViewer(ViewWindow *windowPtr)
     pScrollWin = gtk_scrolled_window_new ();
     #endif
 
-    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (pScrollWin),
-                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(pScrollWin), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_overlay_scrolling(GTK_SCROLLED_WINDOW(pScrollWin), FALSE);
 
     
     // Create a GtkSourceLanguagesManager
