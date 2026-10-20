@@ -394,7 +394,7 @@ static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpoint
     // Check if it's a right-click (button 3) and a single click
     if (event->type == GDK_BUTTON_PRESS && event->button == 3) 
     {
-        show_custom_menu((GdkEvent *)event, hb_map_set_user_data);
+        show_custom_menu((GdkEvent *)event, user_data);
         // Return TRUE to stop further propagation and block the default menu
         return TRUE; 
     }
@@ -472,9 +472,9 @@ static void modify_text_popup(ViewWindow *window_ptr)
 
     // Create context menu actions
     GSimpleAction *edit_action = g_simple_action_new("edit", NULL);
-    g_signal_connect(edit_action, "activate", G_CALLBACK(on_fileview_start_editor_activate), window_ptr->srcViewWidget);
+    g_signal_connect(edit_action, "activate", G_CALLBACK(on_fileview_start_editor_activate), window_ptr);
     GSimpleAction *close_action = g_simple_action_new("close", NULL);
-    g_signal_connect(close_action, "activate", G_CALLBACK(on_fileview_close_activate), window_ptr->srcViewWidget);
+    g_signal_connect(close_action, "activate", G_CALLBACK(on_fileview_close_activate), window_ptr);
     
     // Map the new actions to the action map
     g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(edit_action));
@@ -484,7 +484,6 @@ static void modify_text_popup(ViewWindow *window_ptr)
     
     // Add new actions to the grouop
     gtk_widget_insert_action_group(GTK_WIDGET(window_ptr->srcViewWidget), "view", G_ACTION_GROUP(action_group));
-    gtk_widget_insert_action_group(GTK_WIDGET(window_ptr->srcViewWidget), "close", G_ACTION_GROUP(action_group));
     g_object_unref(action_group);
     
     // Define a custom popover menu
