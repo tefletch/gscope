@@ -546,7 +546,34 @@ GtkWidget *CALLBACKS_get_widget(gchar *widget_name)
     return(NULL);
 }
 
+#ifndef GTK4_BUILD
+static gboolean supress_right_click(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+ {
+    // Check if it's a right-click (button 3) and a single click
+    if (event->type == GDK_BUTTON_PRESS && event->button == 3) 
+        return TRUE; 
 
+    // Return FALSE for all other clicks (left/middle) to keep default behavior
+    return FALSE; 
+}
+
+
+static gboolean supress_shortcut(GtkWidget *widget, gpointer user_data)
+{
+    return TRUE; // Blocks default keyboard menu
+}
+
+#else
+static void supress_right_click(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data)
+{
+    gtk_gesture_set_state(GTK_GESTURE(gesture), GTK_EVENT_SEQUENCE_CLAIMED);
+}
+
+static gboolean supress_shortcut(GtkWidget *widget, GVariant *args, gpointer user_data)
+{
+    return TRUE;  // Handled
+}
+#endif
 
 
 
@@ -601,6 +628,38 @@ void CALLBACKS_init(GtkWidget *main)
         printf("%s: Synchronize confirm_exit_checkbutton to settings.exitConfirm = %s\n", __func__, settings.exitConfirm ? "TRUE" : "FALSE");
         gtk_check_button_set_active(GTK_CHECK_BUTTON(my_lookup_widget("confirm_exit_checkbutton")), settings.exitConfirm);
     }
+    #endif
+
+    // Disable context-menus for certain widgets
+    //==========================================
+
+    GtkWidget *query_entry = lookup_widget(GTK_WIDGET(gscope_main), "query_entry");
+    
+    #ifndef GTK4_BUILD
+    // Intercept right click (and keyboard shortcut <shift>F10)
+    //=========================================================
+    g_signal_connect(query_entry, "button-press-event", G_CALLBACK(supress_right_click), NULL);
+    g_signal_connect(query_entry, "popup-menu", G_CALLBACK(supress_shortcut), NULL);
+
+    #else
+   
+
+    // Intercept the context menu right-click
+    GtkGesture *query_gesture = gtk_gesture_click_new();
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(query_gesture), GDK_BUTTON_SECONDARY); // Right click
+    gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(query_gesture), GTK_PHASE_CAPTURE);
+    g_signal_connect(query_gesture, "pressed", G_CALLBACK(supress_right_click), NULL);
+    gtk_widget_add_controller(query_entry, GTK_EVENT_CONTROLLER(query_gesture));
+
+    // Intercept the keyboard shortcut 
+    GtkShortcutTrigger *q_trigger = gtk_shortcut_trigger_parse_string("<Shift>F10");
+    GtkShortcutAction  *q_action = gtk_callback_action_new (supress_shortcut, NULL, NULL);
+    GtkShortcut        *q_shortcut = gtk_shortcut_new (q_trigger, q_action);
+    GtkEventController *q_controller = gtk_shortcut_controller_new ();
+    gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(q_controller), GTK_PHASE_CAPTURE);
+    gtk_shortcut_controller_add_shortcut (GTK_SHORTCUT_CONTROLLER (q_controller), q_shortcut);
+    gtk_widget_add_controller (query_entry, q_controller);
+
     #endif
 }
 
