@@ -869,31 +869,6 @@ void on_release_wiki_activate(GSimpleAction *action, GVariant *parameter, gpoint
 
 
 
-#ifndef GTK4_BUILD  // GtkMenu evolution
-
-
-void on_fileview_start_editor_activate(GtkMenuItem *menuitem, gpointer user_data)
-{
-    ViewWindow *windowPtr;
-    gchar *line_str;
-
-    windowPtr = user_data;
-
-    // Get the current line number from the ViewWindow structure
-    my_asprintf(&line_str, "%d", windowPtr->line);
-    my_start_text_editor(windowPtr->filename, line_str);
-    g_free(line_str);
-
-    gtk_widget_destroy(GTK_WIDGET(windowPtr->topWidget));
-}
-
-
-void on_fileview_close_activate(GtkMenuItem *menuitem, gpointer user_data)
-{
-    gtk_widget_destroy(GTK_WIDGET(((ViewWindow *)user_data)->topWidget));
-}
-
-#endif
 
 
 //====================================================

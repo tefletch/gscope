@@ -4,8 +4,6 @@
 void on_window1_destroy (GtkWidget *widget, gpointer user_data);
 
 #ifndef GTK4_BUILD
-void on_fileview_start_editor_activate(GtkMenuItem *menuitem, gpointer user_data);
-void on_fileview_close_activate(GtkMenuItem *menuitem, gpointer user_data);
 void on_reset_query_activate(GtkMenuItem *menuitem, gpointer user_data);
 #endif
 

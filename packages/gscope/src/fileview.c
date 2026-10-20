@@ -10,6 +10,7 @@
 #include "callbacks.h"
 #include "fileview.h"
 #include "app_config.h"
+#include "utils.h"
 
 // ---- Defines ----
 
@@ -330,6 +331,44 @@ void FILEVIEW_create(gchar *file_name, gint line)
     return;
 }
 
+// Fileview context menu action callbacks
+#ifndef GTK4_BUILD
+static void on_fileview_start_editor_activate(GtkMenuItem *menuitem, gpointer user_data)
+#else
+static void on_fileview_start_editor_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+#endif
+{
+    gchar *line_str;
+    ViewWindow *windowPtr = user_data;
+
+    // Get the current line number from the ViewWindow structure
+    my_asprintf(&line_str, "%d", windowPtr->line);
+    my_start_text_editor(windowPtr->filename, line_str);
+    g_free(line_str);
+
+    #ifndef GTK4_BUILD
+    gtk_widget_destroy(GTK_WIDGET(windowPtr->topWidget));
+    #else
+    gtk_window_destroy(GTK_WINDOW(windowPtr->topWidget));
+    #endif
+}
+
+
+#ifndef GTK4_BUILD
+static void on_fileview_close_activate(GtkMenuItem *menuitem, gpointer user_data)
+#else
+static void on_fileview_close_activate(GSimpleAction *action, GVariant *parameter, gpointer user_data)
+#endif
+{
+    ViewWindow *windowPtr = user_data;
+
+    #ifndef GTK4_BUILD
+    gtk_widget_destroy(GTK_WIDGET(windowPtr->topWidget));
+    #else
+    gtk_window_destroy(GTK_WINDOW(windowPtr->topWidget));
+    #endif
+}
+
 
 #ifndef GTK4_BUILD  // Pre-GTK4 modify text popup (function + callbacks)
 
@@ -381,9 +420,8 @@ void modify_text_popup(ViewWindow *window_ptr)
 
 #else   // GTK4 modify text popup (function + callbacks)
 
-// GTK4 does not make this sort of functionality easy or straightforward
-// After struggling for days, the Google AI overview to the following
-// query produced sample solutions that actually worked: 
+// GTK4 does not make this sort of functionality easy or straightforward. After struggling for days, the 
+// Google AI overview to the following query produced sample solutions that actually worked: 
 //   "gtk4 override gtktextview action menu.popup"
 
 static void on_right_click_pressed(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data)
@@ -429,11 +467,30 @@ static void modify_text_popup(ViewWindow *window_ptr)
 {
     // Intercept right click (and Keyboard shortcut <shift>F10)
     //=========================================================
+    
+    GSimpleActionGroup *action_group = g_simple_action_group_new ();    // Create an action group
 
+    // Create context menu actions
+    GSimpleAction *edit_action = g_simple_action_new("edit", NULL);
+    g_signal_connect(edit_action, "activate", G_CALLBACK(on_fileview_start_editor_activate), window_ptr->srcViewWidget);
+    GSimpleAction *close_action = g_simple_action_new("close", NULL);
+    g_signal_connect(close_action, "activate", G_CALLBACK(on_fileview_close_activate), window_ptr->srcViewWidget);
+    
+    // Map the new actions to the action map
+    g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(edit_action));
+    g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(close_action));
+    g_object_unref(edit_action);
+    g_object_unref(close_action);
+    
+    // Add new actions to the grouop
+    gtk_widget_insert_action_group(GTK_WIDGET(window_ptr->srcViewWidget), "view", G_ACTION_GROUP(action_group));
+    gtk_widget_insert_action_group(GTK_WIDGET(window_ptr->srcViewWidget), "close", G_ACTION_GROUP(action_group));
+    g_object_unref(action_group);
+    
     // Define a custom popover menu
     GMenu *menu = g_menu_new();
-    g_menu_append(menu, "Edit", "win.edit");
-    g_menu_append(menu, "Close", "win.close");
+    g_menu_append(menu, "Edit", "view.edit");
+    g_menu_append(menu, "Close", "view.close");
 
     GtkWidget *custom_popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(menu));
     gtk_widget_set_parent(custom_popover, GTK_WIDGET(window_ptr->srcViewWidget));
