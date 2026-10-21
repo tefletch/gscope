@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
 <!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
-<!-- Created with Cambalache 0.99.1 -->
-<cambalache-project version="0.96.0" target_tk="gtk-4.0">
-  <ui filename="gscope4.ui" sha256="33d69e41cb5fc459039d8a861fd3dbc074a7618dee1f4bd9e9522f6bf158968d"/>
+<!-- Created with Cambalache 1.1.0 -->
+<cambalache-project version="1.0.0" target_tk="gtk-4.0" depends="casilda-1.0,libadwaita-1,webkitgtk-6.0">
+  <ui filename="gscope4.ui" sha256="c410528da119f69c53fca0947a5b34728a40602d0029711402b77d9924d148d2"/>
   <ui filename="splash.ui" sha256="0acbc39d9b9e92d48aae2958f8d985a095c343934865d3452da854b859658c7b"/>
   <ui filename="preferences.ui" sha256="faa34f1f8aea248bff57881760e91a8fe0ef6bbb3c7d09ab2d47e7cc2fd02a26"/>
-  <ui filename="quit.ui" sha256="3e9ae8274a71e5b9ce0d57fe275b0e4f88fded49b76e403eb5b4474deb287230"/>
+  <ui filename="quit.ui" sha256="d505ac7690a1ebc22ace615ec4fa3c43f7aa2959f9771adf99a88b3610e2a625"/>
 </cambalache-project>
