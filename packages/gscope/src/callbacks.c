@@ -2517,7 +2517,6 @@ void on_treeview1_button3_pressed(GtkGestureClick* self, gint n_press, gdouble x
 
 void on_treeview1_row_activated(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *column, gpointer user_data)
 {
-    printf("Hello from: %s\n", __func__);
     if (!settings.singleClick)
     {
         gchar *filename;
