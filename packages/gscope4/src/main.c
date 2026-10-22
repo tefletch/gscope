@@ -125,7 +125,7 @@ static gboolean cmd_line_handler(gpointer data)
         },
         {
             "nameFile", 'i', G_OPTION_FLAG_NONE, G_OPTION_ARG_FILENAME, &nameFile,
-            "Use the filename specified as the list of source files to cross-reference", "FILE"
+            "Use the filename specified as the list of source file names to cross-reference", "FILE"
         },
         {
             "includeDir", 'I', G_OPTION_FLAG_NONE, G_OPTION_ARG_STRING, &includeDir,
