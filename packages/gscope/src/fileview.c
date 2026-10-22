@@ -385,8 +385,20 @@ static void show_custom_menu(GdkEvent *event, gpointer user_data)
                 
         gtk_widget_show_all(menu);
 
+        #ifndef GTK3_BUILD  // GTK2
         // 2. Pop up the custom menu
+        gtk_menu_popup(GTK_MENU(menu), 
+            NULL,          /* parent_menu_shell */
+            NULL,          /* parent_menu_item */
+            NULL,          /* GtkMenuPositionFunc (NULL defaults to pointer context) */
+            NULL,          /* user_data */
+            0,             /* button that triggered the event (e.g., event->button or 0) */
+            gtk_get_current_event_time());  /* time of the event (e.g., event->time or gtk_get_current_event_time()) */
+        
+        #else   // GTK3
+         // 2. Pop up the custom menu
         gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
+        #endif
 }
 
 static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
@@ -570,7 +582,9 @@ static void createFileViewer(ViewWindow *windowPtr)
     #endif
 
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(pScrollWin), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    #if defined(GTK3_BUILD) || defined (GTK4_BUILD)
     gtk_scrolled_window_set_overlay_scrolling(GTK_SCROLLED_WINDOW(pScrollWin), FALSE);
+    #endif
 
     
     // Create a GtkSourceLanguagesManager
