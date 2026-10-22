@@ -28,11 +28,7 @@
 #include "search.h"
 #include "display.h"
 #include "auto_gen.h"
-#ifdef GTK4_BUILD
-#include "callbacks_pub.h"
-#else
 #include "callbacks.h"
-#endif
 
 
 //===============================================================

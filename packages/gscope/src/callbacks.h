@@ -1,10 +1,21 @@
 #include <gtk/gtk.h>
-#include "callbacks_pub.h"
 
-void on_window1_destroy (GtkWidget *widget, gpointer user_data);
+
+// General CALLBACK module public funcitons
+//=========================================
+void        CALLBACKS_init(GtkWidget *main);
+GtkWidget   *CALLBACKS_get_widget(gchar *widget_name);
+void        on_window1_destroy (GtkWidget *widget, gpointer user_data);
 
 #ifndef GTK4_BUILD
 void on_reset_query_activate(GtkMenuItem *menuitem, gpointer user_data);
+#else
+void        CALLBACKS_register_app(GtkApplication *app);
+#endif
+
+
+
+#if defined (GTK4_BUILD)
 #endif
 
 
