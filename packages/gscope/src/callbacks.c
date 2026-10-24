@@ -2413,9 +2413,7 @@ gboolean on_treeview1_popup_menu(GtkWidget       *widget,
 
     return TRUE;
 }
-#else
-// Difficult, if not impossible to implement with GTK4 - This functionality is deprecated starting with Gscope4
-#endif 
+#endif
 
 
 #ifndef GTK4_BUILD
