@@ -609,11 +609,6 @@ void my_message_dialog(GtkWindow *parent, GtkMessageType severity, const gchar *
                                 MsgDialog);
         }
         #else   // GTK4 build
-        MsgDialog = gtk_message_dialog_new_with_markup(parent,
-                                                    GTK_DIALOG_DESTROY_WITH_PARENT,
-                                                    severity,
-                                                    GTK_BUTTONS_NONE,
-                                                    message);
 
         GtkWindow   *message_window;
         GtkLabel    *message_label;
@@ -651,7 +646,7 @@ void my_message_dialog(GtkWindow *parent, GtkMessageType severity, const gchar *
 
         gtk_box_append(GTK_BOX(message_box), GTK_WIDGET(message_label));
         gtk_label_set_markup(message_label, message);
-        gtk_widget_show(GTK_WIDGET(message_window));
+        gtk_window_present(GTK_WINDOW(message_window));
 
         #endif
     }
