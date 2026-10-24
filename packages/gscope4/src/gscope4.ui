@@ -258,12 +258,12 @@
                 <child>
                   <object class="GtkGestureClick" id="treeview1_button3">
                     <property name="button">3</property>
-                    <signal name="pressed" handler="on_treeview1_button3_pressed"/>
+                    <signal name="pressed" handler="on_treeview1_button3_pressed" swapped="False" object="treeview1"/>
                   </object>
                 </child>
                 <child>
                   <object class="GtkGestureClick" id="treeview1_button1">
-                    <signal name="pressed" handler="on_treeview1_button1_pressed"/>
+                    <signal name="pressed" handler="on_treeview1_button1_pressed" swapped="False" object="treeview1"/>
                   </object>
                 </child>
               </object>

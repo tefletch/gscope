@@ -2457,7 +2457,7 @@ gboolean on_treeview1_button_press_event(GtkWidget *widget, GdkEventButton  *eve
                 // Get the GtkTreePath
                 if (gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(widget), event->x, event->y, &path, NULL, NULL, NULL))
                 {
-                    if (DISPLAY_get_entry_info(path, &filename, &linenum, &symbol)) // Get the selected filename
+                    if (DISPLAY_get_entry_info(path, &filename, &linenum, &symbol)) // Get the selected row data
                     {
                         // pass filename into show menu call
                         show_context_menu(widget, event, filename, linenum, symbol);
@@ -2475,11 +2475,46 @@ gboolean on_treeview1_button_press_event(GtkWidget *widget, GdkEventButton  *eve
     return FALSE;
 }
 
-#else
-// Left-button press -- OPTIONAL single click open
+#else   // GTK4
+
 void on_treeview1_button1_pressed(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, gpointer user_data)
 {
-    printf("Hello from: " YELLOW(%s) "\n", __func__);
+    GtkTreePath     *path;
+    gchar           *filename;
+    gchar           *linenum;
+    gchar           *symbol;
+    gint            bin_x;
+    gint            bin_y;
+    GtkWidget       *widget = user_data;
+
+    //printf("Hello from: " YELLOW(%s) " clicks=%d\n", __func__, n_press);
+
+    // Only process to single left-button-clicks
+    if ( n_press == 1 )
+    {
+        // Convert gesture (widget) coordinates to bin_window coordinates
+        gtk_tree_view_convert_widget_to_bin_window_coords(GTK_TREE_VIEW(widget), (gint)x, (gint)y, &bin_x, &bin_y);
+        
+        if ( settings.singleClick ) // OPTIONAL single click open
+        {
+            if ( gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(widget), bin_x, bin_y, &path, NULL, NULL, NULL) )
+            {
+                if ( DISPLAY_get_entry_info(path, &filename, &linenum, &symbol) ) // Get the selected row data
+                {
+                    if (settings.useEditor)
+                    {
+                        my_start_text_editor(filename, linenum);
+                    }
+                    else
+                    {
+                        FILEVIEW_create(filename, atoi(linenum));
+                    }
+                }
+                gtk_tree_path_free(path);      
+            }
+            // else if no-path: do nothing
+        }
+    }   // else if multi-click: do nothing
 }
 
 
@@ -2492,24 +2527,20 @@ void on_treeview1_button3_pressed(GtkGestureClick* self, gint n_press, gdouble x
     gchar           *symbol;
     gint            bin_x;
     gint            bin_y;
+    GtkWidget       *widget = user_data;
 
-    gtk_tree_view_convert_widget_to_bin_window_coords(GTK_TREE_VIEW(my_lookup_widget("treeview1")), (gint) x, (gint) y, &bin_x, &bin_y);
-    //printf("wx = %f, bin_x = %d\n", x, bin_x);
-    //printf("wy = %f, bin_y = %d\n", y, bin_y);
+    gtk_tree_view_convert_widget_to_bin_window_coords(GTK_TREE_VIEW(widget), (gint) x, (gint) y, &bin_x, &bin_y);
 
-    if ( gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(my_lookup_widget("treeview1")), bin_x, bin_y, &path, NULL, NULL, NULL) )
+    if ( gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(widget), bin_x, bin_y, &path, NULL, NULL, NULL) )
     {
-        if (DISPLAY_get_entry_info(path, &filename, &linenum, &symbol)) // Get the selected filename
+        if (DISPLAY_get_entry_info(path, &filename, &linenum, &symbol)) // Get the selected row data
         {
             show_context_menu(bin_x, bin_y, filename, linenum, symbol);
             //printf("%s: file: %s, line: %s, sym: %s\n", __func__, filename, linenum, symbol);
         }
         gtk_tree_path_free(path);      
     }
-    else
-        printf("%s: tree view path-get FAILED\n", __func__);
- 
-
+    // else if no-path: do nothing
 }
 
 #endif
