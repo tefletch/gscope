@@ -82,7 +82,6 @@ static unsigned int active_output_entry;
 
 // Top-level Widget global convenince pointers
 static GtkWidget    *gscope_main = NULL;
-static GtkWidget    *quit_dialog = NULL;
 static GtkWidget    *aboutdialog1 = NULL;
 static GtkWidget    *gscope_preferences = NULL;
 static GtkWidget    *quit_confirm_dialog = NULL;
@@ -714,10 +713,10 @@ static gboolean exit_confirmed()
     if (settings.exitConfirm)
     {
         #ifndef GTK4_BUILD
-        if ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(quit_dialog), "confirm_exit_checkbutton"))) != settings.exitConfirm )
-            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(quit_dialog), "confirm_exit_checkbutton")), settings.exitConfirm);
-        gtk_dialog_run(GTK_DIALOG(quit_dialog));
-        gtk_widget_hide(GTK_WIDGET(quit_dialog));
+        if ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(quit_confirm_dialog), "confirm_exit_checkbutton"))) != settings.exitConfirm )
+            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lookup_widget(GTK_WIDGET(quit_confirm_dialog), "confirm_exit_checkbutton")), settings.exitConfirm);
+        gtk_dialog_run(GTK_DIALOG(quit_confirm_dialog));
+        gtk_widget_hide(GTK_WIDGET(quit_confirm_dialog));
         #else
 
         // Show the 'quit_confirm_dialog'
