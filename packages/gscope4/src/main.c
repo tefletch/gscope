@@ -99,7 +99,7 @@ static gboolean cmd_line_handler(gpointer data)
     gchar **GskShaderArgsBuilder;
     gchar **args;
     gint  argc;
-    gint  file_count;
+    gint  file_count = 0;
     GOptionContext  *context;
     GError *error = NULL;
     gchar  **file_list = NULL;
@@ -198,7 +198,9 @@ static gboolean cmd_line_handler(gpointer data)
         g_application_command_line_set_exit_status (cmd_line, 0);       
     }
 
-    for (file_count = 0; file_list[file_count] != NULL; file_count++);
+    if ( file_list )
+        for (file_count = 0; file_list[file_count] != NULL; file_count++);
+
     DIR_init_cli_file_list(file_count, file_list);
 
  
@@ -376,7 +378,7 @@ static void activate (GtkApplication *app, gpointer *user_data)
     }
 
     if (strcmp(secure_getenv("XDG_SESSION_TYPE"), "wayland") == 0)
-        printf("You are running on Wayland.  Gscope May not operate normally under Wayland\n");
+        printf("You are running on a Wayland display server.  Gscope window managment WILL behave inconsitantly under Wayland\n");
     #if 0    
     else if (strcmp(secure_getenv("XDG_SESSION_TYPE"), "x11") == 0) 
         printf("We're on X11.\n");
