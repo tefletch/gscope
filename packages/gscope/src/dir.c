@@ -275,9 +275,28 @@ void DIR_init(dir_init_e init_type)
 
 void     DIR_init_cli_file_list(int argc, char *argv[])
 {
+    #ifndef GTK4_BUILD  // GTK4 main.c has already removed program_name
+    
     /* skip program name */
     fileargc = --argc;
     fileargv = ++argv;
+    
+    #else   // In the GTK4 variant, the argument list is already sanitized to just the list of file names (or NULL)
+ 
+    fileargc = argc;
+    fileargv = argv;
+
+    #endif
+    
+    #if file_list_debugging
+    printf("FILE LIST\n=========\n");
+    if ( argv )
+    {
+        for (gint file_count = 0; file_count < argc; file_count++)
+            printf("File[%d]: %s\n", file_count, argv[file_count]);
+    }
+    printf("===== End =====\n\n");
+    #endif
 }
 
 

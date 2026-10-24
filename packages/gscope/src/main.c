@@ -16,6 +16,7 @@
 #include "display.h"
 #include "build.h"
 #include "utils.h"
+#include "dir.h"
 
 
 //  ======= #defines ========
@@ -148,7 +149,7 @@ int main(int argc, char *argv[])
 
 
     /* save the filename arguments */
-    BUILD_init_cli_file_list(argc, argv);
+    DIR_init_cli_file_list(argc, argv);
 
     if (settings.refOnly)
     {

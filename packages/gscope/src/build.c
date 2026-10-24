@@ -391,13 +391,6 @@ void BUILD_initDatabase(GtkWidget *progress_bar)
 }
 
 
-
-void BUILD_init_cli_file_list(int argc, char *argv[])
-{
-    DIR_init_cli_file_list(argc, argv);
-}
-
-
 static gchar *initialize_using_old_cref()
 {
     FILE      *old_file;           /* old cross-reference file */

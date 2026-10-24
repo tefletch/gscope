@@ -25,6 +25,7 @@
 #include "display.h"
 #include "build.h"
 #include "utils.h"
+#include "dir.h"
 
 
 // Test callback
@@ -98,8 +99,10 @@ static gboolean cmd_line_handler(gpointer data)
     gchar **GskShaderArgsBuilder;
     gchar **args;
     gint  argc;
+    gint  file_count;
     GOptionContext  *context;
     GError *error = NULL;
+    gchar  **file_list = NULL;
 
  
     GOptionEntry options[] = {
@@ -160,12 +163,16 @@ static gboolean cmd_line_handler(gpointer data)
             "version", 'v', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, &settings.version,
             "Show version information", NULL
         },
+        { 
+            // Any argument, in any position, that is not an option (or associated option parameter) is a file name.
+            G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &file_list, "Files to process", "[Source Files]..."
+        },
         { NULL }
     };
 
     printf("%s\n", __func__);
 
-    /* Process the command line options */
+   /* Process the command line options */
     args = g_application_command_line_get_arguments(cmd_line, &argc);
     context = g_option_context_new (NULL);
     g_option_context_set_help_enabled (context, TRUE);
@@ -191,6 +198,10 @@ static gboolean cmd_line_handler(gpointer data)
         g_application_command_line_set_exit_status (cmd_line, 0);       
     }
 
+    for (file_count = 0; file_list[file_count] != NULL; file_count++);
+    DIR_init_cli_file_list(file_count, file_list);
+
+ 
     /* Copy any dynamically allocated [argument] strings to the settings structure (and free them) */
     /* Buffer overflow protection:  Any [argument] string that exceeds the maximum allowed size is truncated */
     if (refFile)
