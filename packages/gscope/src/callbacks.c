@@ -1745,9 +1745,11 @@ void on_usage1_activate(GSimpleAction *action, GVariant *parameter, gpointer use
        "\n  <span weight=\"bold\">gscope [OPTION...] [source files]</span>"
        "\n"
        "\n<span weight=\"bold\">Help Options:</span>"
-       "\n  -?, --help                      Show help options"
+       "\n  -h, --help                      Show help options"
+       #ifndef GTK4_BUILD
        "\n  --help-all                      Show all help options"
        "\n  --help-gtk                     Show GTK Options"
+       #endif
        "\n"
        "\n<span weight=\"bold\">Application Options:</span>"
        "\n  -b, --refOnly"
