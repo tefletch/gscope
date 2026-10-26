@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.99.1 -->
+<!-- Created with Cambalache 1.1.0 -->
 <interface>
   <!-- interface-name splash.ui -->
   <requires lib="gtk" version="4.18"/>
@@ -17,6 +17,7 @@
             <property name="focus-on-click">False</property>
             <property name="height-request">500</property>
             <property name="name">splash_screen</property>
+            <property name="pixel-size">100</property>
             <property name="width-request">420</property>
           </object>
         </child>

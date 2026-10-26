@@ -6,6 +6,7 @@
   <requires lib="gtk" version="4.8"/>
   <object class="GtkWindow" id="gscope_main">
     <property name="default-widget">find_c_identifier_button</property>
+    <property name="default-width">1300</property>
     <property name="height-request">600</property>
     <property name="icon-name">system-search</property>
     <property name="title">Gscope</property>
