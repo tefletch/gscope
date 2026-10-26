@@ -194,9 +194,9 @@ void helper_app_missing(gchar *app, gchar *app_type)
     char *message;
 
     asprintf(&message,
-    "Missing helper App [%s]: " BRIGHT_RED(%s) "\n"
+    "\nMissing helper App [%s]: " BRIGHT_RED(%s) "\n"
     "Install missing App or Change configured %s.\n"
-    "G-Scope [%s] operations will fail until this is corrected.\n\n", app_type, app, app_type, app_type);
+    "G-Scope [%s] operations will fail until this is corrected.\n", app_type, app, app_type, app_type);
 
     printf("%s", message);
     free(message);
