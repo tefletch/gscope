@@ -1,0 +1,264 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 1.1.0 -->
+<interface>
+  <!-- interface-name start_gui.ui -->
+  <requires lib="gtk" version="4.18"/>
+  <object class="GtkWindow" id="start_gui">
+    <property name="default-width">1050</property>
+    <property name="focus-on-click">False</property>
+    <property name="hexpand">True</property>
+    <property name="title">Gscope</property>
+    <property name="width-request">800</property>
+    <child>
+      <object class="GtkBox">
+        <property name="hexpand">True</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">27</property>
+        <property name="width-request">800</property>
+        <child>
+          <object class="GtkGrid">
+            <property name="css-classes">bordered-grid</property>
+            <property name="css-name">bordered-grid</property>
+            <property name="hexpand">True</property>
+            <property name="name">bordered-grid</property>
+            <property name="vexpand">True</property>
+            <child>
+              <object class="GtkBox">
+                <child>
+                  <object class="GtkCheckButton" id="recursive_checkbutton">
+                    <property name="active">True</property>
+                    <property name="halign">center</property>
+                    <property name="hexpand">True</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">Recursive
+Directory
+Search</property>
+                        <property name="lines">3</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="flat_checkbutton">
+                    <property name="group">recursive_checkbutton</property>
+                    <property name="halign">center</property>
+                    <property name="hexpand">True</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">Flat
+Directory
+Search</property>
+                        <property name="lines">3</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="import_checkbutton">
+                    <property name="group">recursive_checkbutton</property>
+                    <property name="halign">center</property>
+                    <property name="hexpand">True</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">Import
+File List</property>
+                        <property name="lines">2</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <layout>
+                  <property name="column">2</property>
+                  <property name="column-span">1</property>
+                  <property name="row">2</property>
+                  <property name="row-span">1</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox" id="recursive_dir_box">
+                <child>
+                  <object class="GtkLabel" id="src_dir_label">
+                    <property name="can-focus">False</property>
+                    <property name="can-target">False</property>
+                    <property name="focus-on-click">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="label">&lt;span font="bold"&gt;CWD&lt;/span&gt;</property>
+                    <property name="name">blue_eventbox</property>
+                    <property name="use-markup">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="src_dir_browse_button">
+                    <property name="margin-bottom">10</property>
+                    <property name="margin-end">4</property>
+                    <property name="margin-start">6</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="icon-name">folder</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <layout>
+                  <property name="column">2</property>
+                  <property name="column-span">1</property>
+                  <property name="row">3</property>
+                  <property name="row-span">1</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkSeparator">
+                <property name="focus-on-click">False</property>
+                <property name="height-request">8</property>
+                <property name="hexpand">True</property>
+                <property name="margin-top">0</property>
+                <property name="valign">center</property>
+                <layout>
+                  <property name="column">0</property>
+                  <property name="column-span">3</property>
+                  <property name="row">4</property>
+                  <property name="row-span">1</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkSeparator">
+                <property name="can-focus">False</property>
+                <property name="can-target">False</property>
+                <property name="focus-on-click">False</property>
+                <property name="halign">center</property>
+                <property name="width-request">8</property>
+                <layout>
+                  <property name="column">1</property>
+                  <property name="row">0</property>
+                  <property name="row-span">5</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">&lt;span weight="bold" size="large"&gt;Source File Input Method&lt;/span&gt;</property>
+                <property name="use-markup">True</property>
+                <layout>
+                  <property name="column">2</property>
+                  <property name="row">0</property>
+                  <property name="row-span">1</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkSeparator">
+                <property name="height-request">8</property>
+                <property name="valign">center</property>
+                <layout>
+                  <property name="column">2</property>
+                  <property name="row">1</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkImage">
+                <property name="file">../packages/gscope/pixmaps/gscope_splash3.png</property>
+                <property name="icon-size">large</property>
+                <property name="pixel-size">175</property>
+                <layout>
+                  <property name="column">0</property>
+                  <property name="column-span">1</property>
+                  <property name="row">0</property>
+                  <property name="row-span">4</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox" id="flat_dir_box">
+                <property name="visible">False</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="hexpand">True</property>
+                    <property name="label">Placeholder</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="hexpand">True</property>
+                    <property name="label">Placeholder</property>
+                  </object>
+                </child>
+                <layout>
+                  <property name="column">2</property>
+                  <property name="column-span">1</property>
+                  <property name="row">3</property>
+                  <property name="row-span">1</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox" id="import_file_box">
+                <property name="visible">False</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="hexpand">True</property>
+                    <property name="label">Placeholder2</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="hexpand">True</property>
+                    <property name="label">Placeholder2</property>
+                  </object>
+                </child>
+                <layout>
+                  <property name="column">2</property>
+                  <property name="column-span">1</property>
+                  <property name="row">3</property>
+                  <property name="row-span">1</property>
+                </layout>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <child>
+              <object class="GtkLabel">
+                <property name="ellipsize">end</property>
+                <property name="halign">start</property>
+                <property name="label">&lt;span weight="bold" size="large"&gt;Start Command:&lt;/span&gt;</property>
+                <property name="margin-end">10</property>
+                <property name="margin-start">8</property>
+                <property name="single-line-mode">True</property>
+                <property name="use-markup">True</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="start_command_label">
+                <property name="ellipsize">end</property>
+                <property name="hexpand">True</property>
+                <property name="label">&lt;span color="blue" weight="bold" size="large"&gt;gscope -R&lt;/span&gt;</property>
+                <property name="single-line-mode">True</property>
+                <property name="use-markup">True</property>
+                <property name="xalign">0.0</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton">
+            <property name="halign">center</property>
+            <property name="height-request">70</property>
+            <property name="name">start_button</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">&lt;span weight="bold" size="large"&gt;        Start        &lt;/span&gt;</property>
+                <property name="use-markup">True</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
