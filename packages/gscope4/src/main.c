@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <ctype.h>
 
 #include "app_config.h"
 
@@ -84,6 +85,48 @@ gboolean option_error = FALSE;
 static void arg_trunc_warn(gchar *string_name)
 {
     fprintf(stderr, "Warning: Option string [%s] was truncated.\n", string_name);
+}
+
+
+
+gboolean parse_resolution(const char *str, int *width, int *height)
+{
+    if (str == NULL || width == NULL || height == NULL) return false;
+
+    char *endptr;
+    
+    // 1. Parse Width
+    long w = strtol(str, &endptr, 10);
+    
+    // Fail if no conversion happened or value overflows an integer
+    if (endptr == str || w < INT_MIN || w > INT_MAX) return false;
+
+    // 2. Skip whitespace before the separator
+    while (isspace((unsigned char)*endptr)) {
+        endptr++;
+    }
+
+    // 3. Check and skip the 'x' or 'X' separator
+    if (*endptr != 'x' && *endptr != 'X') return false;
+    endptr++; // Move past 'x'/'X'
+
+    // 4. Parse Height
+    char *endptr2;
+    long h = strtol(endptr, &endptr2, 10);
+    
+    // Fail if no conversion happened or value overflows an integer
+    if (endptr2 == endptr || h < INT_MIN || h > INT_MAX) return false;
+
+    // 5. Check for trailing garbage (allowing trailing whitespace)
+    while (isspace((unsigned char)*endptr2)) {
+        endptr2++;
+    }
+    if (*endptr2 != '\0') return false;
+
+    // Success: Assign values
+    *width = (int)w;
+    *height = (int)h;
+    return true;
 }
 
 
@@ -359,7 +402,6 @@ static void startup (GApplication *app, gpointer *user_data)
 
 static void activate (GtkApplication *app, gpointer *user_data)
 {
-
     // printf("** %s **\n\n", __func__);
 
     if (settings.version)
@@ -388,6 +430,15 @@ static void activate (GtkApplication *app, gpointer *user_data)
     }
     else
     {
+        gint width;
+        gint height;
+
+        if ( settings.geometry[0] )
+        {
+            if ( parse_resolution(settings.geometry, &width, &height) )  
+                gtk_window_set_default_size(GTK_WINDOW (my_lookup_widget("gscope_main")), width, height); 
+        }
+ 
         // Since we don't have modal dialogs in GTK4 we cannot use gscope_splash as the parent window
         APP_CONFIG_init(GTK_WIDGET(my_lookup_widget("gscope_main")));
         CALLBACKS_init(GTK_WIDGET(my_lookup_widget("gscope_main")));
