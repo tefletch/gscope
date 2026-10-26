@@ -89,10 +89,6 @@ int main(int argc, char *argv[])
             "Use only the first eight characters to match against C symbols.", NULL
         },
         {
-            "updateAll", 'u', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, &option_error,
-            "***DEPRICATED option do not use*** Unconditionally [re]build the cross-reference file.", NULL
-        },
-        {
             /* Debugging tool, not for end-user consumption */
             "UpdateAll", 'U', G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &settings.updateAll,
             "Unconditionally [re]build the cross-reference file.", NULL
