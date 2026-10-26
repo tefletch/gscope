@@ -11,6 +11,8 @@
 .cscope*
 .gscope*
 cscope*
+grid
+gui
 
 # ignore files created by autotools
 ###################################
