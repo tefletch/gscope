@@ -28,11 +28,6 @@
 #include "dir.h"
 
 
-// Test callback
-void print_hello (GtkWidget *widget, gpointer   data)
-{
-  printf ("Hello World\n");
-}
 
 static GActionEntry app_entries[] = {
     {"rebuild", on_rebuild_database1_activate, NULL, NULL, NULL },
@@ -166,7 +161,7 @@ static gboolean cmd_line_handler(gpointer data)
         { NULL }
     };
 
-    printf("%s\n", __func__);
+    // printf("%s\n", __func__);
 
    /* Process the command line options */
     args = g_application_command_line_get_arguments(cmd_line, &argc);
@@ -243,7 +238,7 @@ static gboolean cmd_line_handler(gpointer data)
     g_strfreev(args);
     g_option_context_free(context);
 
-    printf("%s: done\n", __func__);
+    // printf("%s: done\n", __func__);
 
     return (G_SOURCE_REMOVE);   // Revisit: should no longer be needed since we aren't processing options in another thread.
 }
@@ -261,7 +256,7 @@ static void startup (GApplication *app, gpointer *user_data)
     GError      *error = NULL;
     GAction     *action;
 
-    printf("** %s **\n", __func__);
+    // printf("** %s **\n", __func__);
 
     /* App-Standard location for pixmap files */
     add_pixmap_directory("../pixmaps");
@@ -365,7 +360,7 @@ static void startup (GApplication *app, gpointer *user_data)
 static void activate (GtkApplication *app, gpointer *user_data)
 {
 
-    printf("** %s **\n\n", __func__);
+    // printf("** %s **\n\n", __func__);
 
     if (settings.version)
     {
@@ -389,6 +384,7 @@ static void activate (GtkApplication *app, gpointer *user_data)
     {
         APP_CONFIG_init(NULL);
         BUILD_initDatabase(NULL);
+        g_application_quit(G_APPLICATION(app));
     }
     else
     {
@@ -397,65 +393,63 @@ static void activate (GtkApplication *app, gpointer *user_data)
         CALLBACKS_init(GTK_WIDGET(my_lookup_widget("gscope_main")));
         CALLBACKS_register_app(app);    // Give a reference to callbacks.c for application shutdown.
         BUILD_initDatabase(GTK_WIDGET(my_lookup_widget("splash_progressbar")));
+
+
+        gtk_widget_set_visible(my_lookup_widget("gscope_splash"), FALSE);
+        gtk_widget_set_visible (my_lookup_widget("gscope_main"), TRUE);
+
+
+        // Comment out for standard theme, un-comment for stardard-dark theme -- Revisit: make this a view-->checkbox-dark-theme [on/off]
+        // g_object_set(gtk_settings_get_default(), "gtk-application-prefer-dark-theme", TRUE, NULL);
+
+        //=====================================================
+        // Reconcile start-up settings with stateful UI actions
+        //=====================================================
+
+        GAction     *my_action;
+        GVariant    *action_state;
+
+        // *** ignorecase ***
+        my_action = g_action_map_lookup_action(G_ACTION_MAP(app), "ignorecase");
+        action_state = g_action_get_state(my_action);
+        if ( g_variant_get_boolean(action_state) != settings.ignoreCase )
+            g_simple_action_set_state(G_SIMPLE_ACTION(my_action), g_variant_new_boolean(settings.ignoreCase));
+        g_variant_unref(action_state);
+
+        // *** useeditor ***
+        my_action = g_action_map_lookup_action(G_ACTION_MAP(app), "useeditor");
+        action_state = g_action_get_state(my_action);
+        if ( g_variant_get_boolean(action_state) != settings.useEditor)
+            g_simple_action_set_state(G_SIMPLE_ACTION(my_action), g_variant_new_boolean(settings.useEditor));
+        g_variant_unref(action_state);
+
+        // *** reusewin***
+        my_action = g_action_map_lookup_action(G_ACTION_MAP(app), "reusewin");
+        action_state = g_action_get_state(my_action);
+        if ( g_variant_get_boolean(action_state) != settings.reuseWin)
+            g_simple_action_set_state(G_SIMPLE_ACTION(my_action), g_variant_new_boolean(settings.reuseWin));
+        g_variant_unref(action_state);
+
+        // *** retaininput ***
+        my_action = g_action_map_lookup_action(G_ACTION_MAP(app), "retaininput");
+        action_state = g_action_get_state(my_action);
+        if ( g_variant_get_boolean(action_state) != settings.retainInput)
+            g_simple_action_set_state(G_SIMPLE_ACTION(my_action), g_variant_new_boolean(settings.retainInput));
+        g_variant_unref(action_state);
+
+        // *** smartquery ***
+        my_action = g_action_map_lookup_action(G_ACTION_MAP(app), "smartquery");
+        action_state = g_action_get_state(my_action);
+        if ( g_variant_get_boolean(action_state) != settings.smartQuery)
+            g_simple_action_set_state(G_SIMPLE_ACTION(my_action), g_variant_new_boolean(settings.smartQuery));
+        g_variant_unref(action_state);
     }
-
-
-    gtk_widget_set_visible(my_lookup_widget("gscope_splash"), FALSE);
-    gtk_widget_set_visible (my_lookup_widget("gscope_main"), TRUE);
-
-
-    // Comment out for standard theme, un-comment for stardard-dark theme -- Revisit: make this a view-->checkbox-dark-theme [on/off]
-    // g_object_set(gtk_settings_get_default(), "gtk-application-prefer-dark-theme", TRUE, NULL);
-
-    //=====================================================
-    // Reconcile start-up settings with stateful UI actions
-    //=====================================================
-
-    GAction     *my_action;
-    GVariant    *action_state;
-
-    // *** ignorecase ***
-    my_action = g_action_map_lookup_action(G_ACTION_MAP(app), "ignorecase");
-    action_state = g_action_get_state(my_action);
-    if ( g_variant_get_boolean(action_state) != settings.ignoreCase )
-        g_simple_action_set_state(G_SIMPLE_ACTION(my_action), g_variant_new_boolean(settings.ignoreCase));
-    g_variant_unref(action_state);
-
-    // *** useeditor ***
-    my_action = g_action_map_lookup_action(G_ACTION_MAP(app), "useeditor");
-    action_state = g_action_get_state(my_action);
-    if ( g_variant_get_boolean(action_state) != settings.useEditor)
-        g_simple_action_set_state(G_SIMPLE_ACTION(my_action), g_variant_new_boolean(settings.useEditor));
-    g_variant_unref(action_state);
-
-    // *** reusewin***
-    my_action = g_action_map_lookup_action(G_ACTION_MAP(app), "reusewin");
-    action_state = g_action_get_state(my_action);
-    if ( g_variant_get_boolean(action_state) != settings.reuseWin)
-        g_simple_action_set_state(G_SIMPLE_ACTION(my_action), g_variant_new_boolean(settings.reuseWin));
-    g_variant_unref(action_state);
-
-     // *** retaininput ***
-    my_action = g_action_map_lookup_action(G_ACTION_MAP(app), "retaininput");
-    action_state = g_action_get_state(my_action);
-    if ( g_variant_get_boolean(action_state) != settings.retainInput)
-        g_simple_action_set_state(G_SIMPLE_ACTION(my_action), g_variant_new_boolean(settings.retainInput));
-    g_variant_unref(action_state);
-
-     // *** smartquery ***
-    my_action = g_action_map_lookup_action(G_ACTION_MAP(app), "smartquery");
-    action_state = g_action_get_state(my_action);
-    if ( g_variant_get_boolean(action_state) != settings.smartQuery)
-        g_simple_action_set_state(G_SIMPLE_ACTION(my_action), g_variant_new_boolean(settings.smartQuery));
-    g_variant_unref(action_state);
-
-
 }
 
 
 static int command_line(GApplication *app, GApplicationCommandLine *cmdline)
 {
-    printf("\n%s: enter\n", __func__);
+    // printf("\n%s: enter\n", __func__);
 
     // Keep the application running until we are done with this commandline
     g_application_hold (app);     // Increase the use count of 'application'
@@ -468,13 +462,12 @@ static int command_line(GApplication *app, GApplicationCommandLine *cmdline)
     // g_idle_add (cmd_line_handler, cmdline);  // Call command line handler from THE main-loop('default-idle' priority)
     
     cmd_line_handler(cmdline);
-    printf("%s: All options set\n\n", __func__);
+    // printf("%s: All options set\n\n", __func__);
 
     // When command_line option is processed, the activate signal is not automatically issued
     activate(GTK_APPLICATION(app), NULL);
 
-    printf("%s: done\n", __func__);
-    printf("========== startup complete ========\n\n");
+    //printf("========== startup complete ========\n\n");
     return 0;
 }
 
@@ -530,13 +523,13 @@ int main(int argc, char *argv[])
 
     
     // *** Run the application instance ***
-    printf("\n======== start application =========\n");
+    // printf("\n======== start application =========\n");
     status = g_application_run (G_APPLICATION(app), argc, argv);
 
     //printf("hello from %s: application_run complete\n", __func__);
     g_object_unref (app);
 
-    printf("%s: done\n", __func__);
+    // printf("%s: done\n", __func__);
 
     return status;
 }
