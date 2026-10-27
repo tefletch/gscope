@@ -76,7 +76,6 @@ static gboolean  terminal_app_entry_changed = FALSE;
 static gboolean  file_manager_app_entry_changed = FALSE;
 
 
-static unsigned int active_dir_entry;
 static unsigned int active_input_entry;
 static unsigned int active_output_entry;
 
@@ -3419,7 +3418,6 @@ static void open_directory_browser(void)
 void on_source_directory_browse_button_clicked(GtkButton  *button, gpointer user_data)
 {
     open_directory_browser();
-    active_dir_entry = 0;
 }
 
 
@@ -3427,62 +3425,27 @@ void on_folder_chooser_dialog_response(GtkDialog       *dialog,
                                        gint             response_id,
                                        gpointer         user_data)
 {
-    static GtkWidget *source_entry[3];
-    static gboolean initialized = FALSE;
     gchar *dirname;
-
-    if (!initialized)
-    {
-        // This is an array of "entry" widgets served by this directory chooser response handler
-        source_entry[0] = lookup_widget(GTK_WIDGET(gscope_preferences), "source_entry");
-        //source_entry[1] = lookup_widget(GTK_WIDGET (gscope_preferences), "autogen_cache_path_entry");
-    }
 
     switch (response_id)
     {
         case GTK_RESPONSE_OK:
             dirname = my_gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-            my_gtk_entry_set_text(GTK_ENTRY(source_entry[active_dir_entry]), dirname);
+            my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "source_entry")), dirname);
 
             
-            // Update the settings structure and the preferences file
-            switch (active_dir_entry)
-            {
-                case 0:    // Source Directory
-                    strcpy(settings.srcDir, dirname);
-                    APP_CONFIG_set_string("srcDir", dirname);
-                    break;
-
-#if 0
-                case 1:    // AutoGen Cache Location
-                    strcpy(settings.autoGenPath, dirname);
-                    APP_CONFIG_set_string("autoGenPath", dirname);
-                    {
-                        gchar       active_path[PATHLEN * 2];
-
-                        snprintf(active_path, PATHLEN * 2, "Active cache path: <span color=\"blue\">%s.%d</span>",
-                                 settings.autoGenPath,
-                                 getpid());
-                        gtk_label_set_markup(GTK_LABEL(lookup_widget(GTK_WIDGET(gscope_preferences),"autogen_active_cache_path_label")), active_path);
-                    }
-                    break;
-
-                case 2:    // Include Directory
-                    strcpy(settings.includeDir, dirname);
-                    APP_CONFIG_set_string("includeDir", dirname);
-                    break;
-#endif
-            }
+            // Update the Source Directory settings structure and the preferences file
+            strcpy(settings.srcDir, dirname);
+            APP_CONFIG_set_string("srcDir", dirname);
 
             g_free(dirname);
             gtk_widget_hide(GTK_WIDGET(dialog));
-
-            break;
+        break;
 
         case GTK_RESPONSE_CANCEL:
         case GTK_RESPONSE_DELETE_EVENT:
             gtk_widget_hide(GTK_WIDGET(dialog));
-            break;
+        break;
 
         default:
         {
@@ -3494,8 +3457,7 @@ void on_folder_chooser_dialog_response(GtkDialog       *dialog,
 
             gtk_widget_hide(GTK_WIDGET(dialog));
         }
-
-            break;
+        break;
     }
 
     return;
