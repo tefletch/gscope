@@ -195,7 +195,7 @@ void helper_app_missing(gchar *app, gchar *app_type)
 
     asprintf(&message,
     "\nMissing helper App [%s]: " BRIGHT_RED(%s) "\n"
-    "Install missing App or Change configured %s.\n"
+    YELLOW(Install missing App or Change configured) " " YELLOW(%s) ".\n"
     "G-Scope [%s] operations will fail until this is corrected.\n", app_type, app, app_type, app_type);
 
     printf("%s", message);
@@ -1822,7 +1822,7 @@ gchar *template =
 "\nshowIncludes    = false"
 "\n"
 "\n# Trace the directories searched by a recursive source-file-search"
-"\nsearchLogFile   = gscope_srch.log"
+"\nsearchLogFile   = ./gscope_srch.log"
 "\n"
 "\n# Only files with the following suffixes are considered to be 'source' files."
 "\nsuffixList      = :c:h:cpp:hpp:arm:fml:mf:l:y:s:ld:lnk:"
@@ -1887,7 +1887,7 @@ gchar *template =
 "\n"
 "\n# This is the name of the cross-reference file.  Sometimes it is useful to save"
 "\n# it in another location besides the current working directory."
-"\nrefFile         = cscope_db.out"
+"\nrefFile         = ./cscope_db.out"
 "\n"
 "\n# A list of source file names to be used as input to the cross reference engine."
 "\nnameFile        ="

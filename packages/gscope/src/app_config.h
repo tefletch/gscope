@@ -28,7 +28,7 @@
 #define menuIconsDef       TRUE
 #define singleClickDef     FALSE
 #define showIncludesDef    FALSE
-#define refFileDef         "cscope_db.out"
+#define refFileDef         "./cscope_db.out"
 #define nameFileDef        ""
 #define includeDirDef      ""
 #define includeDirDelimDef 0
@@ -41,7 +41,7 @@
 #define autoGenRootDef     ""
 #define autoGenIdDef       ".pb-c"
 #define autoGenThreshDef   10
-#define searchLogFileDef   "cscope_srch.log"
+#define searchLogFileDef   "./gscope_srch.log"
 #define suffixListDef      ":c:h:cpp:hpp:arm:fml:mf:l:y:s:ld:lnk:"
 #define suffixDelimDef     0
 #define typelessListDef    ":Makefile:"
