@@ -76,7 +76,6 @@ static gboolean  terminal_app_entry_changed = FALSE;
 static gboolean  file_manager_app_entry_changed = FALSE;
 
 
-static unsigned int active_input_entry;
 static unsigned int active_output_entry;
 
 // Top-level Widget global convenince pointers
@@ -658,6 +657,13 @@ void CALLBACKS_init(GtkWidget *main)
     gtk_shortcut_controller_add_shortcut (GTK_SHORTCUT_CONTROLLER (q_controller), q_shortcut);
     gtk_widget_add_controller (query_entry, q_controller);
 
+    #endif
+
+    #if defined (GTK4_BUILD)
+    // Set up gtk4 data and callback for gtkfiledialog (source directory browser)
+    //===========================================================================
+    g_signal_connect(my_lookup_widget("source_directory_browse_button"), "clicked", G_CALLBACK(on_source_directory_browse_button_clicked), gscope_preferences);
+    g_signal_connect(my_lookup_widget("file_name_browse_button"), "clicked", G_CALLBACK(on_file_name_browse_button_clicked), gscope_preferences);
     #endif
 }
 
@@ -1329,7 +1335,9 @@ void on_preferences_activate(GSimpleAction *action, GVariant *parameter, gpointe
         // Initialize Search log settings
         gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_label"), settings.searchLogging);
         gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_entry"), settings.searchLogging);
+        #ifndef GTK4_BUILD  // Revisit: Depricated button, remove button and dialog from GTK2 and GTK3 variants
         gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_browse_button"), settings.searchLogging);
+        #endif
         if (settings.searchLogging)
             gtk_button_set_label(GTK_BUTTON(lookup_widget(GTK_WIDGET(prefs_dialog), "search_log_button")), "Disable");
         else
@@ -3277,7 +3285,7 @@ void on_file_manager_app_entry_focus_out_event(GtkEventControllerFocus *controll
             entry_text =  my_gtk_entry_get_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "file_manager_app_entry")));
         }
 
-        if (strcmp(settings.terminalApp, entry_text) != 0)  // Only update if a real change has been made
+        if (strcmp(settings.fileManager, entry_text) != 0)  // Only update if a real change has been made
         {
             // Update the preferences file
             APP_CONFIG_set_string("fileManager", entry_text);
@@ -3409,21 +3417,77 @@ void on_ignored_entry_changed(GtkEditable     *editable,
 }
 
 
+#ifndef GTK4_BUILD  // Utilize directory browser created by the UI builder
 static void open_directory_browser(void)
 {
     gtk_widget_show(folder_chooser_dialog);
 }
 
+#else   // New GTK4 dialog methodology (GtkFile Dialog)
+
+// Callback function triggered when the user finishes with the dialog
+static void on_folder_selected(GObject *source_object, GAsyncResult *res, gpointer user_data)
+{
+    GtkFileDialog *dialog = GTK_FILE_DIALOG(source_object);
+    GError *error = NULL;
+
+    // 3. Finish the async operation to get the GFile object
+    GFile *folder = gtk_file_dialog_select_folder_finish(dialog, res, &error);
+
+    if ( folder )   // Valid directory selection
+    {
+        
+        char *dirname = g_file_get_path(folder);    // 4. Extract the physical path string
+
+
+        // Update the Source Directory entry, settings-structure and the preferences file
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "source_entry")), dirname);
+        strcpy(settings.srcDir, dirname);
+        APP_CONFIG_set_string("srcDir", dirname);
+
+        g_free(dirname);
+        g_object_unref(folder);
+    }
+    else
+    {
+        // Check if the user simply closed the dialog, which is not a critical error
+        if ( !g_error_matches (error, GTK_DIALOG_ERROR, GTK_DIALOG_ERROR_DISMISSED) )
+        {
+            // Handle actual failures (GTK_DIALOG_ERROR_FAILED or GTK_DIALOG_ERROR_CANCELLED)
+            g_printerr ("File dialog error: %s\n", error->message);
+        }
+        if (error) g_error_free(error);
+    }
+}
+#endif
+
 
 void on_source_directory_browse_button_clicked(GtkButton  *button, gpointer user_data)
 {
+    #ifndef GTK4_BUILD
+    
     open_directory_browser();
+    
+    #else   // New GTK4 (4.10+) directory chooser logic
+    
+    GtkWindow *parent_window = (GtkWindow *) user_data;
+
+    // 1. Initialize the FileDialog
+    GtkFileDialog *dialog = gtk_file_dialog_new();
+    gtk_file_dialog_set_title(dialog, "Gscope: Choose a Directory");
+    
+    // 2. Open the folder selection dialog - register callback on_folder_selected()
+    gtk_file_dialog_select_folder(dialog, parent_window, NULL, on_folder_selected, NULL);
+    
+    // Balance the reference count since select_folder increments it internally if needed
+    g_object_unref(dialog);
+
+    #endif
 }
 
 
-void on_folder_chooser_dialog_response(GtkDialog       *dialog,
-                                       gint             response_id,
-                                       gpointer         user_data)
+#ifndef GTK4_BUILD
+void on_folder_chooser_dialog_response(GtkDialog *dialog, gint response_id, gpointer user_data)
 {
     gchar *dirname;
 
@@ -3432,7 +3496,6 @@ void on_folder_chooser_dialog_response(GtkDialog       *dialog,
         case GTK_RESPONSE_OK:
             dirname = my_gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
             my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "source_entry")), dirname);
-
             
             // Update the Source Directory settings structure and the preferences file
             strcpy(settings.srcDir, dirname);
@@ -3451,7 +3514,7 @@ void on_folder_chooser_dialog_response(GtkDialog       *dialog,
         {
             char *error_string;
 
-            my_asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"folder chooser\" dialog.", response_id);
+            my_asprintf(&error_string, "\nG-Scope Warning: Unexpected response: [%d] from: \"Gscope folder chooser\" dialog.", response_id);
             my_message_dialog(GTK_WINDOW(gscope_main), GTK_MESSAGE_WARNING, error_string, TRUE);
             g_free(error_string);
 
@@ -3462,8 +3525,7 @@ void on_folder_chooser_dialog_response(GtkDialog       *dialog,
 
     return;
 }
-
-
+#endif
 
 
 
@@ -3480,51 +3542,107 @@ void on_include_entry_changed(GtkEditable *editable, gpointer user_data)
 }
 
 
-// ==== Input File Selection ====
+void on_name_entry_changed(GtkEditable *editable, gpointer user_data)
+{
+    name_entry_changed = TRUE;
+}
+
+
+void on_cref_entry_changed(GtkEditable *editable, gpointer user_data)
+{
+    cref_entry_changed = TRUE;
+}
+
+
+void on_search_log_entry_changed(GtkEditable *editable, gpointer user_data)
+{
+    search_log_entry_changed = TRUE;
+}
+
+
+// ======== Input File Selection (Source Name File) ========
+#ifndef GTK4_BUILD
 static void open_file_name_browser(void)
 {
     gtk_widget_show(open_file_chooser_dialog);
 }
 
+#else   // New GTK4 dialog methodology (GtkFile Dialog)
 
+// Callback function triggered when the user finishes with the file chooser dialog
+static void on_open_response(GObject *source, GAsyncResult *result, gpointer user_data)
+{
+    GtkFileDialog *dialog = GTK_FILE_DIALOG(source);
+    GError *error = NULL;
+    GFile *file = gtk_file_dialog_open_finish(dialog, result, &error);
+
+    if ( file ) 
+    {
+        gchar *filename = g_file_get_path(file);    // Extract the physical path string
+
+        // Update the Source File Name List file entry, settings-structure and the preferences file
+        my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "name_entry")), filename);
+        strcpy(settings.nameFile, filename);
+        APP_CONFIG_set_string("nameFile", filename);
+
+        g_free(filename);
+        g_object_unref(file);
+    } 
+    else 
+    {
+        // Check if the user simply closed the dialog, which is not a critical error
+        if ( !g_error_matches (error, GTK_DIALOG_ERROR, GTK_DIALOG_ERROR_DISMISSED) )
+        {
+            // Handle actual failures (GTK_DIALOG_ERROR_FAILED or GTK_DIALOG_ERROR_CANCELLED)
+            g_printerr ("File dialog error: %s\n", error->message);
+        }
+        if (error) g_error_free(error);
+    }
+}
+
+#endif
+
+
+void on_file_name_browse_button_clicked(GtkButton *button, gpointer window)
+{
+    #ifndef GTK4_BUILD
+    open_file_name_browser();
+    #else
+    
+    GtkFileDialog *dialog = gtk_file_dialog_new();
+    gtk_file_dialog_set_title(dialog, "Gscope: Choose a File");
+
+    
+    // Open the aync file selection dialog - register callback on_file_selected()
+    gtk_file_dialog_open(dialog, GTK_WINDOW(window), NULL, on_open_response, NULL);
+    
+    // Balance the reference count since select_folder increments it internally if needed
+    g_object_unref(dialog);
+
+    #endif
+}
+
+
+#ifndef GTK4_BUILD
 void on_open_file_chooser_dialog_response(GtkDialog       *dialog,
                                           gint             response_id,
                                           gpointer         user_data)
 {
     static GtkWidget *input_entry[2];
-    static gboolean initialized = FALSE;
     gchar *filename;
-
-    if (!initialized)
-    {
-        // This is an array of "entry" widgets served by the "open file" chooser response handler
-        input_entry[0] = lookup_widget(GTK_WIDGET(gscope_preferences), "name_entry");
-        //input_entry[1] = lookup_widget(GTK_WIDGET (gscope_preferences), "context_entry");
-    }
 
     switch (response_id)
     {
         case GTK_RESPONSE_OK:
             filename = my_gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-            my_gtk_entry_set_text(GTK_ENTRY(input_entry[active_input_entry]), filename);
+            my_gtk_entry_set_text(GTK_ENTRY(lookup_widget(GTK_WIDGET(gscope_preferences), "name_entry")), filename);
 
-            // Update the settings structure and the preferences file
-            switch (active_input_entry)
-            {
-                case 0:    // Source file name list
-                    strcpy(settings.nameFile, filename);
-                    APP_CONFIG_set_string("nameFile", filename);
-                    break;
-
-                case 1:    // No longer used
-                    /* do nothing */
-                    break;
-            }
+            // Update the settings structure and the preferences file (Source File Name List)
+            strcpy(settings.nameFile, filename);
+            APP_CONFIG_set_string("nameFile", filename);
 
             g_free(filename);
             gtk_widget_hide(GTK_WIDGET(dialog));
-
-            break;
 
         case GTK_RESPONSE_CANCEL:
         case GTK_RESPONSE_DELETE_EVENT:
@@ -3557,34 +3675,20 @@ gboolean on_open_file_chooser_dialog_delete_event(GtkWidget *widget,
     gtk_widget_hide(widget);
     return TRUE;     // Do not destroy the widget
 }
+#endif
 
 
-
-void on_name_entry_changed(GtkEditable     *editable,
-                           gpointer         user_data)
-{
-    name_entry_changed = TRUE;
-}
-
-
-void on_file_name_browse_button_clicked(GtkButton *button, gpointer user_data)
-{
-    open_file_name_browser();
-    active_input_entry = 0;
-}
-
-
-// ==== Output file selection ====
+// ======== Output file selection ========
+#ifndef GTK4_BUILD      // Revisit: depricated dialog remove from GTK2 and GTK3 variants
 static void open_output_file_name_browser(void)
 {
     gtk_widget_show(output_file_chooser_dialog);
 }
+#endif
 
 
-
-void on_output_file_chooser_dialog_response(GtkDialog       *dialog,
-                                            gint             response_id,
-                                            gpointer         user_data)
+#ifndef GTK4_BUILD      // Revisit: depricated dialog remove from GTK2 and GTK3 variants
+void on_output_file_chooser_dialog_response(GtkDialog *dialog, gint response_id, gpointer user_data)
 {
     static GtkWidget *output_entry[2];
     static gboolean initialized = FALSE;
@@ -3675,49 +3779,36 @@ gboolean on_output_file_chooser_dialog_delete_event(GtkWidget *widget,
     gtk_widget_hide(widget);
     return TRUE;     // Do not destroy the widget
 }
+#endif
 
 
-
-void on_cref_entry_changed(GtkEditable     *editable,
-                           gpointer         user_data)
+#ifndef GTK4_BUILD  // Revisit: This button is depricated, needs to be removed from GTK2 and GTK3 variants
+void on_cross_reference_browse_button_clicked(GtkButton *button, gpointer user_data)
 {
-    cref_entry_changed = TRUE;
+    open_output_file_name_browser();    // Revisit: remove GTK builder variants
+    active_output_entry = 0;            // Revisit: remove dialog response handler function
 }
+#endif
 
-
-void on_cross_reference_browse_button_clicked(GtkButton       *button,
-                                              gpointer         user_data)
-{
-    open_output_file_name_browser();
-    active_output_entry = 0;
-}
-
-
-void on_search_log_entry_changed(GtkEditable     *editable,
-                                 gpointer         user_data)
-{
-    search_log_entry_changed = TRUE;
-}
-
-
-void on_search_log_browse_button_clicked(GtkButton       *button,
-                                         gpointer         user_data)
+#ifndef GTK4_BUILD  // Revisit: This button is depricated, needs to be removed from GTK2 and GTK3 variants
+void on_search_log_browse_button_clicked(GtkButton *button, gpointer user_data)
 {
     open_output_file_name_browser();
     active_output_entry = 1;
-
 }
+#endif
 
 
 // Enable/Disable search logging
-void on_search_log_button_clicked(GtkButton       *button,
-                                  gpointer         user_data)
+void on_search_log_button_clicked(GtkButton *button, gpointer user_data)
 {
     settings.searchLogging = !settings.searchLogging;
 
     gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "search_log_label"), settings.searchLogging);
     gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "search_log_entry"), settings.searchLogging);
+    #ifndef GTK4_BUILD  // Revisit: Remove depricated button from GTK2 and GTK3 variants
     gtk_widget_set_sensitive(lookup_widget(GTK_WIDGET(gscope_preferences), "search_log_browse_button"), settings.searchLogging);
+    #endif
 
     APP_CONFIG_set_boolean("searchLogging", settings.searchLogging);
 

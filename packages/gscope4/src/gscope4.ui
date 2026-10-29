@@ -3,7 +3,7 @@
 <interface>
   <!-- interface-name gscope.ui -->
   <requires lib="gio" version="2.0"/>
-  <requires lib="gtk" version="4.8"/>
+  <requires lib="gtk" version="4.10"/>
   <object class="GtkWindow" id="gscope_main">
     <property name="default-widget">find_c_identifier_button</property>
     <property name="default-width">1300</property>
@@ -841,11 +841,11 @@
   <menu id="context_menu">
     <item>
       <attribute name="action">app.open_in_terminal</attribute>
-      <attribute name="label">Open In Terminal</attribute>
+      <attribute name="label">Open containing folder</attribute>
     </item>
     <item>
       <attribute name="action">app.open_in_file_manager</attribute>
-      <attribute name="label">Open in File Manager</attribute>
+      <attribute name="label">Browse containing folder</attribute>
     </item>
     <item>
       <attribute name="action">app.browse_static_function_calls</attribute>

@@ -2,7 +2,7 @@
 <!-- Created with Cambalache 1.1.0 -->
 <interface>
   <!-- interface-name quit.ui -->
-  <requires lib="gtk" version="4.6"/>
+  <requires lib="gtk" version="4.10"/>
   <object class="GtkDialog" id="quit_confirm_dialog">
     <property name="height-request">-1</property>
     <property name="hexpand">False</property>

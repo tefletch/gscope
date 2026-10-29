@@ -2,7 +2,7 @@
 <!-- Created with Cambalache 1.1.0 -->
 <interface>
   <!-- interface-name preferences.ui -->
-  <requires lib="gtk" version="4.18"/>
+  <requires lib="gtk" version="4.10"/>
   <object class="GtkWindow" id="gscope_preferences">
     <property name="icon-name">preferences-desktop</property>
     <property name="title">Startup Preferences</property>
@@ -580,24 +580,16 @@ and View</property>
                     </child>
                     <child>
                       <object class="GtkEntry" id="cref_entry">
+                        <property name="has-tooltip">True</property>
                         <property name="hexpand">True</property>
                         <property name="margin-end">8</property>
                         <property name="placeholder-text">&lt;full path&gt; cscope_db.out</property>
+                        <property name="tooltip-text">Absolute or relative path to the cross-reference file.</property>
                         <signal name="changed" handler="on_cref_entry_changed"/>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_cref_entry_focus_out_event</property>
                             <signal name="leave" handler="on_cref_entry_focus_out_event"/>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="cross_reference_browse_button">
-                        <property name="margin-end">4</property>
-                        <child>
-                          <object class="GtkImage">
-                            <property name="icon-name">folder</property>
                           </object>
                         </child>
                       </object>
@@ -629,21 +621,12 @@ and View</property>
                         <property name="hexpand">True</property>
                         <property name="margin-end">8</property>
                         <property name="placeholder-text">&lt;full-path&gt;gscope_srch.log</property>
+                        <property name="tooltip-text">Absolute or relative path to the search log file</property>
                         <signal name="changed" handler="on_search_log_entry_changed"/>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_search_log_entry_focus_out_event</property>
                             <signal name="leave" handler="on_search_log_entry_focus_out_event"/>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="search_log_browse_button">
-                        <property name="margin-end">4</property>
-                        <child>
-                          <object class="GtkImage">
-                            <property name="icon-name">folder</property>
                           </object>
                         </child>
                       </object>
@@ -790,6 +773,7 @@ Reference</property>
                           <object class="GtkEntry" id="terminal_app_entry">
                             <property name="hexpand">True</property>
                             <property name="margin-end">4</property>
+                            <property name="tooltip-markup">Preferred Terminal App (with %s option).  &amp;#10;Example: &lt;span weight="bold" color="yellow"&gt;gnome-terminal  --workding-directory=%s&lt;/span&gt;</property>
                             <signal name="changed" handler="on_terminal_app_entry_changed"/>
                             <child>
                               <object class="GtkEventControllerFocus">
@@ -815,6 +799,8 @@ Reference</property>
                       <object class="GtkEntry" id="file_manager_app_entry">
                         <property name="hexpand">True</property>
                         <property name="margin-end">4</property>
+                        <property name="tooltip-markup">Preferred File Manager (with %s option).&amp;#10;Example: &lt;span weight="bold" color="yellow"&gt;nautilus %s&lt;/span&gt;</property>
+                        <signal name="changed" handler="on_file_manager_app_entry_changed"/>
                         <child>
                           <object class="GtkEventControllerFocus">
                             <property name="name">on_file_manager_app_entry_focus_out_event</property>

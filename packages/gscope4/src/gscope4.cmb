@@ -2,8 +2,8 @@
 <!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
 <!-- Created with Cambalache 1.1.0 -->
 <cambalache-project version="1.0.0" target_tk="gtk-4.0" depends="casilda-1.0,libadwaita-1,webkitgtk-6.0">
-  <ui filename="gscope4.ui" sha256="ebbe8a01e2d83efc944a940d449049889a8e8ff54dbdef3e0bfce357d7380279"/>
-  <ui filename="splash.ui" sha256="bebe07a55af792a4b4053be37b8e64a76204985c80795b5242db9507a74e9814"/>
-  <ui filename="preferences.ui" sha256="3892d3f54ae1ad85d0c3bee06f5ecdfa974f2ab9efa986858807b612bbd70603"/>
-  <ui filename="quit.ui" sha256="d505ac7690a1ebc22ace615ec4fa3c43f7aa2959f9771adf99a88b3610e2a625"/>
+  <ui filename="gscope4.ui" sha256="faa114ba3c50c025a4662170c53d153911369404fb9d89cb3fdb493abf8f0f8e"/>
+  <ui filename="splash.ui" sha256="0f9145fe09c1884a1d1edea1d2df6574d262c00c1b4f55da03366ee69604cfd4"/>
+  <ui filename="preferences.ui" sha256="2cc2f5a22c5d06f0fc8008ee21ebfdbc8286a0f7e9c7fbf2e5d9f56f454c13f8"/>
+  <ui filename="quit.ui" sha256="89d96ffcda845d9925be6a6f01d5f0bea7a12fe721ebe344674e5ff72cfbee82"/>
 </cambalache-project>

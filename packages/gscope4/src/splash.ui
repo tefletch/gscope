@@ -2,7 +2,7 @@
 <!-- Created with Cambalache 1.1.0 -->
 <interface>
   <!-- interface-name splash.ui -->
-  <requires lib="gtk" version="4.18"/>
+  <requires lib="gtk" version="4.10"/>
   <object class="GtkWindow" id="gscope_splash">
     <property name="decorated">False</property>
     <child>
