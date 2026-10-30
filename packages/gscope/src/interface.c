@@ -3081,66 +3081,6 @@ create_open_file_chooser_dialog (void)
 }
 
 GtkWidget*
-create_output_file_chooser_dialog (void)
-{
-  GtkWidget *output_file_chooser_dialog;
-  GtkWidget *vbox11;
-  GtkWidget *hbuttonbox3;
-  GtkWidget *button4;
-  GtkWidget *button5;
-
-  output_file_chooser_dialog = gtk_file_chooser_dialog_new ("Open File", NULL, GTK_FILE_CHOOSER_ACTION_OPEN, NULL);
-  gtk_widget_set_name (output_file_chooser_dialog, "output_file_chooser_dialog");
-  gtk_container_set_border_width (GTK_CONTAINER (output_file_chooser_dialog), 5);
-  g_object_set (output_file_chooser_dialog,
-                "show-hidden", TRUE,
-                NULL);
-  gtk_window_set_modal (GTK_WINDOW (output_file_chooser_dialog), TRUE);
-  gtk_window_set_destroy_with_parent (GTK_WINDOW (output_file_chooser_dialog), TRUE);
-  gtk_window_set_icon_name (GTK_WINDOW (output_file_chooser_dialog), "gtk-open");
-  gtk_window_set_role (GTK_WINDOW (output_file_chooser_dialog), "GtkFileChooserDialog");
-  gtk_window_set_type_hint (GTK_WINDOW (output_file_chooser_dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
-
-  vbox11 = GTK_DIALOG (output_file_chooser_dialog)->vbox;
-  gtk_widget_set_name (vbox11, "vbox11");
-  gtk_widget_show (vbox11);
-
-  hbuttonbox3 = GTK_DIALOG (output_file_chooser_dialog)->action_area;
-  gtk_widget_set_name (hbuttonbox3, "hbuttonbox3");
-  gtk_widget_show (hbuttonbox3);
-  gtk_button_box_set_layout (GTK_BUTTON_BOX (hbuttonbox3), GTK_BUTTONBOX_END);
-
-  button4 = gtk_button_new_from_stock ("gtk-cancel");
-  gtk_widget_set_name (button4, "button4");
-  gtk_widget_show (button4);
-  gtk_dialog_add_action_widget (GTK_DIALOG (output_file_chooser_dialog), button4, GTK_RESPONSE_CANCEL);
-  GTK_WIDGET_SET_FLAGS (button4, GTK_CAN_DEFAULT);
-
-  button5 = gtk_button_new_from_stock ("gtk-open");
-  gtk_widget_set_name (button5, "button5");
-  gtk_widget_show (button5);
-  gtk_dialog_add_action_widget (GTK_DIALOG (output_file_chooser_dialog), button5, GTK_RESPONSE_OK);
-  GTK_WIDGET_SET_FLAGS (button5, GTK_CAN_DEFAULT);
-
-  g_signal_connect ((gpointer) output_file_chooser_dialog, "response",
-                    G_CALLBACK (on_output_file_chooser_dialog_response),
-                    NULL);
-  g_signal_connect ((gpointer) output_file_chooser_dialog, "delete_event",
-                    G_CALLBACK (on_output_file_chooser_dialog_delete_event),
-                    NULL);
-
-  /* Store pointers to all widgets, for use by lookup_widget(). */
-  GLADE_HOOKUP_OBJECT_NO_REF (output_file_chooser_dialog, output_file_chooser_dialog, "output_file_chooser_dialog");
-  GLADE_HOOKUP_OBJECT_NO_REF (output_file_chooser_dialog, vbox11, "vbox11");
-  GLADE_HOOKUP_OBJECT_NO_REF (output_file_chooser_dialog, hbuttonbox3, "hbuttonbox3");
-  GLADE_HOOKUP_OBJECT (output_file_chooser_dialog, button4, "button4");
-  GLADE_HOOKUP_OBJECT (output_file_chooser_dialog, button5, "button5");
-
-  gtk_widget_grab_default (button5);
-  return output_file_chooser_dialog;
-}
-
-GtkWidget*
 create_quit_confirm_dialog (void)
 {
   GtkWidget *quit_confirm_dialog;
