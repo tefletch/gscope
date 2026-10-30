@@ -3974,30 +3974,9 @@ Search</property>
                         <signal name="focus-out-event" handler="on_cref_entry_focus_out_event" swapped="no"/>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
                         <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="cross_reference_browse_button">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">False</property>
-                        <signal name="clicked" handler="on_cross_reference_browse_button_clicked" swapped="no"/>
-                        <child>
-                          <object class="GtkImage" id="image40">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="stock">gtk-directory</property>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="padding">8</property>
-                        <property name="position">2</property>
                       </packing>
                     </child>
                   </object>
@@ -4057,30 +4036,9 @@ Search</property>
                         <signal name="focus-out-event" handler="on_search_log_entry_focus_out_event" swapped="no"/>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
                         <property name="position">2</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="search_log_browse_button">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">False</property>
-                        <signal name="clicked" handler="on_search_log_browse_button_clicked" swapped="no"/>
-                        <child>
-                          <object class="GtkImage" id="image128">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="stock">gtk-directory</property>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="padding">8</property>
-                        <property name="position">3</property>
                       </packing>
                     </child>
                   </object>
