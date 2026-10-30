@@ -1193,14 +1193,10 @@ create_gscope_preferences (void)
   GtkWidget *hbox36;
   GtkWidget *label36;
   GtkWidget *cref_entry;
-  GtkWidget *cross_reference_browse_button;
-  GtkWidget *image40;
   GtkWidget *hbox37;
   GtkWidget *search_log_button;
   GtkWidget *search_log_label;
   GtkWidget *search_log_entry;
-  GtkWidget *search_log_browse_button;
-  GtkWidget *image128;
   GtkWidget *label74;
   GtkWidget *hbuttonbox5;
   GtkWidget *prefs_help_file_button;
@@ -2265,21 +2261,9 @@ create_gscope_preferences (void)
   cref_entry = gtk_entry_new ();
   gtk_widget_set_name (cref_entry, "cref_entry");
   gtk_widget_show (cref_entry);
-  gtk_box_pack_start (GTK_BOX (hbox36), cref_entry, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox36), cref_entry, TRUE, TRUE, 0);
   gtk_tooltips_set_tip (tooltips, cref_entry, "The absolute or relative path name of the cross-reference file.", NULL);
   gtk_entry_set_invisible_char (GTK_ENTRY (cref_entry), 8226);
-  gtk_entry_set_width_chars (GTK_ENTRY (cref_entry), 30);
-
-  cross_reference_browse_button = gtk_button_new ();
-  gtk_widget_set_name (cross_reference_browse_button, "cross_reference_browse_button");
-  gtk_widget_show (cross_reference_browse_button);
-  gtk_box_pack_start (GTK_BOX (hbox36), cross_reference_browse_button, FALSE, FALSE, 8);
-  GTK_WIDGET_UNSET_FLAGS (cross_reference_browse_button, GTK_CAN_FOCUS);
-
-  image40 = gtk_image_new_from_stock ("gtk-directory", GTK_ICON_SIZE_BUTTON);
-  gtk_widget_set_name (image40, "image40");
-  gtk_widget_show (image40);
-  gtk_container_add (GTK_CONTAINER (cross_reference_browse_button), image40);
 
   hbox37 = gtk_hbox_new (FALSE, 0);
   gtk_widget_set_name (hbox37, "hbox37");
@@ -2304,22 +2288,10 @@ create_gscope_preferences (void)
   search_log_entry = gtk_entry_new ();
   gtk_widget_set_name (search_log_entry, "search_log_entry");
   gtk_widget_show (search_log_entry);
-  gtk_box_pack_start (GTK_BOX (hbox37), search_log_entry, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox37), search_log_entry, TRUE, TRUE, 0);
   gtk_widget_set_sensitive (search_log_entry, FALSE);
   gtk_tooltips_set_tip (tooltips, search_log_entry, "Log the results of a recursive source file search operation (handy for verification of search results).", NULL);
   gtk_entry_set_invisible_char (GTK_ENTRY (search_log_entry), 8226);
-  gtk_entry_set_width_chars (GTK_ENTRY (search_log_entry), 30);
-
-  search_log_browse_button = gtk_button_new ();
-  gtk_widget_set_name (search_log_browse_button, "search_log_browse_button");
-  gtk_widget_show (search_log_browse_button);
-  gtk_box_pack_start (GTK_BOX (hbox37), search_log_browse_button, FALSE, FALSE, 8);
-  GTK_WIDGET_UNSET_FLAGS (search_log_browse_button, GTK_CAN_FOCUS);
-
-  image128 = gtk_image_new_from_stock ("gtk-directory", GTK_ICON_SIZE_BUTTON);
-  gtk_widget_set_name (image128, "image128");
-  gtk_widget_show (image128);
-  gtk_container_add (GTK_CONTAINER (search_log_browse_button), image128);
 
   label74 = gtk_label_new ("");
   gtk_widget_set_name (label74, "label74");
@@ -2726,9 +2698,6 @@ create_gscope_preferences (void)
   g_signal_connect ((gpointer) cref_entry, "focus_out_event",
                     G_CALLBACK (on_cref_entry_focus_out_event),
                     NULL);
-  g_signal_connect ((gpointer) cross_reference_browse_button, "clicked",
-                    G_CALLBACK (on_cross_reference_browse_button_clicked),
-                    NULL);
   g_signal_connect ((gpointer) search_log_button, "clicked",
                     G_CALLBACK (on_search_log_button_clicked),
                     NULL);
@@ -2737,9 +2706,6 @@ create_gscope_preferences (void)
                     NULL);
   g_signal_connect ((gpointer) search_log_entry, "focus_out_event",
                     G_CALLBACK (on_search_log_entry_focus_out_event),
-                    NULL);
-  g_signal_connect ((gpointer) search_log_browse_button, "clicked",
-                    G_CALLBACK (on_search_log_browse_button_clicked),
                     NULL);
   g_signal_connect ((gpointer) prefs_help_file_button, "clicked",
                     G_CALLBACK (on_prefs_help_file_button_clicked),
@@ -2940,14 +2906,10 @@ create_gscope_preferences (void)
   GLADE_HOOKUP_OBJECT (gscope_preferences, hbox36, "hbox36");
   GLADE_HOOKUP_OBJECT (gscope_preferences, label36, "label36");
   GLADE_HOOKUP_OBJECT (gscope_preferences, cref_entry, "cref_entry");
-  GLADE_HOOKUP_OBJECT (gscope_preferences, cross_reference_browse_button, "cross_reference_browse_button");
-  GLADE_HOOKUP_OBJECT (gscope_preferences, image40, "image40");
   GLADE_HOOKUP_OBJECT (gscope_preferences, hbox37, "hbox37");
   GLADE_HOOKUP_OBJECT (gscope_preferences, search_log_button, "search_log_button");
   GLADE_HOOKUP_OBJECT (gscope_preferences, search_log_label, "search_log_label");
   GLADE_HOOKUP_OBJECT (gscope_preferences, search_log_entry, "search_log_entry");
-  GLADE_HOOKUP_OBJECT (gscope_preferences, search_log_browse_button, "search_log_browse_button");
-  GLADE_HOOKUP_OBJECT (gscope_preferences, image128, "image128");
   GLADE_HOOKUP_OBJECT (gscope_preferences, label74, "label74");
   GLADE_HOOKUP_OBJECT (gscope_preferences, hbuttonbox5, "hbuttonbox5");
   GLADE_HOOKUP_OBJECT (gscope_preferences, prefs_help_file_button, "prefs_help_file_button");
