@@ -57,7 +57,6 @@ gboolean on_stats_dialog_delete_event                    (GtkWidget *widget, Gdk
 gboolean on_save_results_file_chooser_dialog_delete_event(GtkWidget *widget, GdkEvent *event, gpointer user_data);
 gboolean on_aboutdialog1_delete_event                    (GtkWidget *widget, GdkEvent *event, gpointer user_data);
 gboolean on_open_file_chooser_dialog_delete_event        (GtkWidget *widget, GdkEvent *event, gpointer user_data);
-gboolean on_output_file_chooser_dialog_delete_event      (GtkWidget *widget, GdkEvent *event, gpointer user_data);
 
 #else   // GTK4 menu-item (action) callbacks
 // "command" sub-menu
@@ -152,8 +151,6 @@ void on_rebuild_radiobutton_activate      (GtkButton *button, gpointer user_data
 
 void on_preferences_dialog_close_button_clicked(GtkButton *button, gpointer user_data);
 void on_initial_context_browse_button_clicked  (GtkButton *button, gpointer user_data);
-void on_cross_reference_browse_button_clicked  (GtkButton *button, gpointer user_data);
-void on_search_log_browse_button_clicked       (GtkButton *button, gpointer user_data);
 void on_search_log_button_clicked              (GtkButton *button, gpointer user_data);
 void on_stats_dialog_closebutton_clicked       (GtkButton *button, gpointer user_data);
 void on_session_info_button_clicked            (GtkButton *button, gpointer user_data);
@@ -167,7 +164,6 @@ void on_quit_confirm_dialog_response       (GtkDialog *dialog, gint response_id,
 #ifndef GTK4_BUILD
 void on_aboutdialog1_response              (GtkDialog *dialog, gint response_id, gpointer user_data);
 void on_save_results_file_chooser_dialog_response(GtkDialog *dialog, gint response_id, gpointer user_data);
-void on_output_file_chooser_dialog_response(GtkDialog *dialog, gint response_id, gpointer user_data);
 void on_open_file_chooser_dialog_response  (GtkDialog *dialog, gint response_id, gpointer user_data);
 void on_folder_chooser_dialog_response     (GtkDialog *dialog, gint response_id, gpointer user_data);
 #endif
