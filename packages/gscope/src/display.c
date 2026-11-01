@@ -605,7 +605,6 @@ void DISPLAY_progress(GtkWidget *bar, char *progress_msg, guint count, guint max
     //printf("fraction = %.8f\n", fraction);
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(bar), fraction);
     
-
     // Process pending GTK events
     while ( g_main_context_pending( NULL/*default context*/  ) )
         g_main_context_iteration( NULL/*default context*/, TRUE/*may block*/);
@@ -665,6 +664,12 @@ void DISPLAY_set_cref_current(gboolean up_to_date)
         gtk_container_add (GTK_CONTAINER (cref_update_button), image_visible);
         #else
         gtk_button_set_child(GTK_BUTTON(cref_update_button), image_visible);
+        // gtk4 hack: gtk_image_set_icon_size() is a quick and dirty way to bump up the size of the button icon.
+        //            The gtk4-correct method would be to use at GtkPicture, set_size_request() and then use
+        //            gtk_picture_set_content_fit(GTK_PICTURE(picture), GTK_CONTENT_FIT_CONTAIN) to make the image
+        //            scale with the button
+        gtk_image_set_pixel_size(GTK_IMAGE(image_blue), 25);
+        gtk_image_set_pixel_size(GTK_IMAGE(image_red), 25);
         #endif
         gtk_widget_set_tooltip_text(cref_update_button, update_string);
         gtk_widget_show(image_visible);

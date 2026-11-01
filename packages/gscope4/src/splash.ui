@@ -9,6 +9,7 @@
       <object class="GtkBox" id="splash_box">
         <property name="baseline-position">top</property>
         <property name="halign">center</property>
+        <property name="height-request">550</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkImage" id="splash_image">
@@ -24,10 +25,12 @@
         <child>
           <object class="GtkProgressBar" id="splash_progressbar">
             <property name="can-focus">False</property>
-            <property name="height-request">60</property>
+            <property name="height-request">30</property>
+            <property name="hexpand">True</property>
             <property name="name">splash_progressbar</property>
             <property name="show-text">True</property>
             <property name="text">Building Cross-Reference...Please Wait.</property>
+            <property name="valign">center</property>
           </object>
         </child>
       </object>

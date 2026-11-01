@@ -660,6 +660,15 @@ void CALLBACKS_init(GtkWidget *main)
     g_signal_connect(my_lookup_widget("source_directory_browse_button"), "clicked", G_CALLBACK(on_source_directory_browse_button_clicked), gscope_preferences);
     g_signal_connect(my_lookup_widget("file_name_browse_button"), "clicked", G_CALLBACK(on_file_name_browse_button_clicked), gscope_preferences);
     #endif
+
+    #if defined (GTK4_BUILD)
+    // Configure 'reasonable' scrollbar thickness
+    //===========================================
+    GtkWidget *progress_bar = my_lookup_widget("progressbar1");
+    progressbar_init(progress_bar);
+
+
+    #endif
 }
 
 
@@ -940,19 +949,31 @@ void on_rebuild_database1_activate (GSimpleAction *action, GVariant *parameter, 
 #endif
 {
     static gboolean in_progress_lockout = FALSE;
+    static GtkWidget    *rebuild_progressbar  = NULL;
+    static GtkWidget    *status_label;
+
+    if ( !rebuild_progressbar )
+    { 
+        rebuild_progressbar = lookup_widget(gscope_main, "rebuild_progressbar");
+        #if defined (GTK4_BUILD)
+        progressbar_init(rebuild_progressbar);
+        #endif
+    }
+    if ( !status_label )
+        status_label = lookup_widget(gscope_main, "status_label");
 
     if (!in_progress_lockout)
     {
         in_progress_lockout = TRUE;
 
-        gtk_widget_show(lookup_widget(gscope_main, "rebuild_progressbar"));
-        gtk_widget_hide(lookup_widget(gscope_main, "status_label"));
+        gtk_widget_show(rebuild_progressbar);
+        gtk_widget_hide(status_label);
 
         // This widget will not actually appear until the first progress bar update.
 
         /* Rebuild the cross-reference */
         settings.noBuild = FALSE;   /* Override the noBuild setting (for this session only - leave preferences file as-is) */
-        BUILD_initDatabase(lookup_widget(gscope_main, "rebuild_progressbar"));  /* Rebuild the cross-reference */
+        BUILD_initDatabase(rebuild_progressbar);  /* Rebuild the cross-reference */
 
         /* Close results of previous searches */
         SEARCH_cleanup_prev();
@@ -963,8 +984,8 @@ void on_rebuild_database1_activate (GSimpleAction *action, GVariant *parameter, 
          */
         process_query(FIND_NULL);
 
-        gtk_widget_hide(lookup_widget(gscope_main, "rebuild_progressbar"));
-        gtk_widget_show(lookup_widget(gscope_main, "status_label"));
+        gtk_widget_hide(rebuild_progressbar);
+        gtk_widget_show(status_label);
 
         DISPLAY_status("<span foreground=\"seagreen\" weight=\"bold\">Cross Reference rebuild complete</span>");
         in_progress_lockout = FALSE;

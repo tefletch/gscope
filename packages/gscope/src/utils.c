@@ -653,5 +653,22 @@ void my_message_dialog(GtkWindow *parent, GtkMessageType severity, const gchar *
 }
 
 
+#if defined (GTK4_BUILD)   // Needed to initialze the preferred style for GTK4 progress bars
+void progressbar_init(GtkWidget *progress_bar)
+{
+    const char *css = 
+        "progressbar.thick-bar trough,\n"
+        "progressbar.thick-bar progress {\n"
+        "    min-height: 24px;\n" /* Adjust this value to make it thicker or thinner */
+        "    border-radius: 12px;\n" /* Optional: smooth rounded edges */
+        "}\n";
+
+        GtkCssProvider *css_provider = gtk_css_provider_new();
+        gtk_css_provider_load_from_string(css_provider, css);
+        gtk_style_context_add_provider_for_display(gdk_display_get_default(), GTK_STYLE_PROVIDER(css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+        gtk_widget_add_css_class(progress_bar, "thick-bar");
+}
+#endif
+
 
     

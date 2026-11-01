@@ -65,3 +65,8 @@ void        my_gtk_box_pack_start (GtkBox* box,   GtkWidget* child,   gboolean e
 void        my_message_dialog(GtkWindow *parent, GtkMessageType severity, const gchar *message, gboolean modal);
 
 
+// GTK4 Unique function(s)
+#if defined (GTK4_BUILD)
+void progressbar_init(GtkWidget *progress_bar);
+#endif
+

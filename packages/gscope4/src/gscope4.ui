@@ -227,6 +227,7 @@
                   <object class="GtkProgressBar" id="rebuild_progressbar">
                     <property name="show-text">True</property>
                     <property name="text">Building Cross Reference...Please Wait</property>
+                    <property name="visible">False</property>
                   </object>
                 </child>
               </object>
@@ -283,6 +284,7 @@
                 <child>
                   <object class="GtkImage" id="session_info_button_image">
                     <property name="file">../share/gscope/pixmaps/info.png</property>
+                    <property name="pixel-size">25</property>
                   </object>
                 </child>
               </object>

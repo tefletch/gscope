@@ -88,8 +88,7 @@ static void arg_trunc_warn(gchar *string_name)
 }
 
 
-
-gboolean parse_resolution(const char *str, int *width, int *height)
+static gboolean parse_resolution(const char *str, int *width, int *height)
 {
     if (str == NULL || width == NULL || height == NULL) return false;
 
@@ -443,12 +442,14 @@ static void activate (GtkApplication *app, gpointer *user_data)
         APP_CONFIG_init(GTK_WIDGET(my_lookup_widget("gscope_main")));
         CALLBACKS_init(GTK_WIDGET(my_lookup_widget("gscope_main")));
         CALLBACKS_register_app(app);    // Give a reference to callbacks.c for application shutdown.
-        BUILD_initDatabase(GTK_WIDGET(my_lookup_widget("splash_progressbar")));
+
+        GtkWidget   *splash_progressbar = my_lookup_widget("splash_progressbar");
+        progressbar_init(splash_progressbar);
+        BUILD_initDatabase(splash_progressbar);
 
 
         gtk_widget_set_visible(my_lookup_widget("gscope_splash"), FALSE);
         gtk_widget_set_visible (my_lookup_widget("gscope_main"), TRUE);
-
 
         // Comment out for standard theme, un-comment for stardard-dark theme -- Revisit: make this a view-->checkbox-dark-theme [on/off]
         // g_object_set(gtk_settings_get_default(), "gtk-application-prefer-dark-theme", TRUE, NULL);
