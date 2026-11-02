@@ -186,15 +186,10 @@ uint32_t  nsrcfiles;
 
 
 
-
 //=====================================================================================
 //  Private (File-Global) Variables
 //=====================================================================================
 
-//static int     nsrcdirs;                /* number of source directories */
-
-
-//static char    currentdir[PATHLEN + 1];  /* current directory */
 static char     **include_dirs;             /* List of directories to search for #include files */
 static int      num_include_dirs;           /* number of #include directories */
 static int      max_include_dirs;           /* maximum number of #include directories */
@@ -205,10 +200,7 @@ static char     master_ignored_delim;
 static int      fileargc;          /* file argument count */
 static char     **fileargv;        /* file argument values */
 
-
-int     msrcdirs;                 /* maximum number of source directories */
-char    *namefile;                /* file of file names */
-FILE    *rlogfile;
+static FILE    *rlogfile;
 
 
 #if (ANALYZE_HASH == 1)
@@ -800,7 +792,7 @@ static void _make_src_file_list()
         {
             if ( settings.refOnly )
             {
-                my_cannotopen(namefile);
+                my_cannotopen(settings.nameFile);
                 exit(EXIT_FAILURE);
             }
             else
